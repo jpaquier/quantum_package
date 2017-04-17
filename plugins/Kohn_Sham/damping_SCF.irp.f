@@ -61,6 +61,8 @@ subroutine damping_SCF
     write(output_hartree_fock,'(I4,1X,F16.10, 1X, F16.10, 1X, F16.10, 3X, A )')  &
       k, E, delta_E, delta_D, save_char
     
+ print*, 'e_exchange_dft      = ',(1.d0 - HF_exchange) * e_exchange_dft
+    
     D_alpha = HF_density_matrix_ao_alpha
     D_beta  = HF_density_matrix_ao_beta 
     mo_coef = eigenvectors_fock_matrix_mo

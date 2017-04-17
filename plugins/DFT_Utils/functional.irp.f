@@ -52,3 +52,57 @@ end
 
 END_PROVIDER 
 
+
+ BEGIN_PROVIDER [double precision, energy_x, (N_states)]
+&BEGIN_PROVIDER [double precision, energy_c, (N_states)]
+&BEGIN_PROVIDER [double precision, potential_x_alpha_ao,(ao_num_align,ao_num,N_states)]
+&BEGIN_PROVIDER [double precision, potential_x_beta_ao,(ao_num_align,ao_num,N_states)]
+&BEGIN_PROVIDER [double precision, potential_c_alpha_ao,(ao_num_align,ao_num,N_states)]
+&BEGIN_PROVIDER [double precision, potential_c_beta_ao,(ao_num_align,ao_num,N_states)]
+
+ implicit none
+ integer :: i,j,k,l
+ integer :: m,n
+ double precision :: aos_array(ao_num)
+ double precision :: r(3)
+ potential_c_alpha_ao = 0.d0
+ potential_c_beta_ao = 0.d0
+ potential_x_alpha_ao = 0.d0
+ potential_x_beta_ao = 0.d0
+ do l = 1, N_states
+  energy_x(l) = 0.d0
+  energy_c(l) = 0.d0
+  do j = 1, nucl_num
+   do i = 1, n_points_radial_grid 
+    do k = 1, n_points_integration_angular
+     double precision :: rho_a,rho_b,ex
+     double precision :: vx_a,vx_b
+     rho_a = one_body_dm_mo_alpha_at_grid_points(k,i,j,l)
+     rho_b = one_body_dm_mo_beta_at_grid_points(k,i,j,l)
+     if(exchange_functional.EQ."LDA")then
+      call ex_lda(rho_a,rho_b,ex,vx_a,vx_b) 
+     else if(exchange_functional.EQ."short_range_LDA")then
+      call ex_lda_sr(rho_a,rho_b,ex,vx_a,vx_b)
+     else 
+      print*, 'Exchange function required does not exist ...'
+      stop
+     endif
+     energy_x(l) += final_weight_functions_at_grid_points(k,i,j) * ex * (1.d0 - HF_exchange)   
+     r(1) = grid_points_per_atom(1,k,i,j) 
+     r(2) = grid_points_per_atom(2,k,i,j) 
+     r(3) = grid_points_per_atom(3,k,i,j) 
+     call give_all_aos_at_r(r,aos_array)
+     do m = 1, ao_num
+!     lda_ex_potential_ao(m,m,l) += (vx_a + vx_b) * aos_array(m)*aos_array(m)
+      do n = 1, ao_num
+       potential_x_alpha_ao(m,n,l) += (1.d0 - HF_exchange) * (vx_a ) * aos_array(m)*aos_array(n) * final_weight_functions_at_grid_points(k,i,j)
+       potential_x_beta_ao(m,n,l)  += (1.d0 - HF_exchange) * (vx_b) * aos_array(m)*aos_array(n) * final_weight_functions_at_grid_points(k,i,j)
+      enddo
+     enddo
+    enddo
+   enddo
+  enddo
+ enddo
+
+END_PROVIDER 
+

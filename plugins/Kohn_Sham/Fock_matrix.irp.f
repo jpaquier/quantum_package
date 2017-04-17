@@ -345,11 +345,11 @@ END_PROVIDER
     one_electron_energy += ao_mono_elec_integral(i,j) * (HF_density_matrix_ao_alpha(i,j) + HF_density_matrix_ao_beta (i,j) )
    enddo
  enddo
- print*, 'one_electron_energy = ',one_electron_energy
- print*, 'two_electron_energy = ',two_electron_energy
- print*, 'e_exchange_dft      = ',(1.d0 - HF_exchange) * e_exchange_dft
+!print*, 'one_electron_energy = ',one_electron_energy
+!print*, 'two_electron_energy = ',two_electron_energy
+!print*, 'e_exchange_dft      = ',(1.d0 - HF_exchange) * e_exchange_dft
 !print*, 'accu_cor  = ',e_correlation_dft
- HF_energy += (1.d0 - HF_exchange) * e_exchange_dft + e_correlation_dft + one_electron_energy + two_electron_energy
+ HF_energy +=  e_exchange_dft + e_correlation_dft + one_electron_energy + two_electron_energy
 !print*, 'HF_energy '
   
 END_PROVIDER

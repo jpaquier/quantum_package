@@ -27,9 +27,9 @@ BEGIN_PROVIDER [double precision, effective_short_range_operator, (mo_tot_num,mo
    if(dabs(one_body_dm_mo(i,j)).le.1.d-10)cycle
    do k = 1, mo_tot_num
     do l = 1, mo_tot_num
-!    integral = get_mo_bielec_integral(i,k,j,l,mo_integrals_map)
+     integral = get_mo_bielec_integral(i,k,j,l,mo_integrals_map) ! <ik|jl> = (ij|kl)
      integral_erf = get_mo_bielec_integral_erf(i,k,j,l,mo_integrals_erf_map)
-     effective_short_range_operator(l,k) += one_body_dm_mo(i,j) * integral_erf
+     effective_short_range_operator(l,k) += one_body_dm_mo(i,j) * (integral  - integral_erf)
     enddo
    enddo
   enddo
@@ -45,7 +45,7 @@ BEGIN_PROVIDER [double precision, effective_one_e_potential, (mo_tot_num_align, 
   do i = 1, mo_tot_num
    do j = 1, mo_tot_num
     effective_one_e_potential(i,j,i_state) = effective_short_range_operator(i,j) + mo_nucl_elec_integral(i,j) + mo_kinetic_integral(i,j) & 
-                                   + 0.5d0 * (lda_ex_potential_alpha_ao(i,j,i_state) + lda_ex_potential_beta_ao(i,j,i_state))
+                                   + lda_ex_potential_alpha_ao(i,j,i_state) + lda_ex_potential_beta_ao(i,j,i_state) 
    enddo
   enddo
  enddo

@@ -36,9 +36,9 @@ subroutine i_H_j_erf(key_i,key_j,Nint,hij)
       if (exc(0,1,1) == 1) then
         ! Mono alpha, mono beta
         if(exc(1,1,1) == exc(1,2,2) )then
-         hij = phase * big_array_exchange_integrals(exc(1,1,1),exc(1,1,2),exc(1,2,1))
+         hij = phase * big_array_exchange_integrals_erf(exc(1,1,1),exc(1,1,2),exc(1,2,1))
         else if (exc(1,2,1) ==exc(1,1,2))then
-         hij = phase * big_array_exchange_integrals(exc(1,2,1),exc(1,1,1),exc(1,2,2))
+         hij = phase * big_array_exchange_integrals_erf(exc(1,2,1),exc(1,1,1),exc(1,2,2))
         else
          hij = phase*get_mo_bielec_integral_erf(                          &
              exc(1,1,1),                                              &
