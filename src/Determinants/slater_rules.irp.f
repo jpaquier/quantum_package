@@ -11,6 +11,7 @@ subroutine get_excitation_degree(key1,key2,degree,Nint)
   integer, intent(out)           :: degree
   
   integer(bit_kind)              :: xorvec(2*N_int_max)
+  !DIR$ ATTRIBUTES ALIGN : $IRP_ALIGN :: xorvec
   integer                        :: l
   
   ASSERT (Nint > 0)
@@ -2541,7 +2542,7 @@ subroutine i_H_j_mono_spin(key_i,key_j,Nint,spin,hij)
   PROVIDE big_array_exchange_integrals mo_bielec_integrals_in_map
 
   call get_mono_excitation_spin(key_i(1,spin),key_j(1,spin),exc,phase,Nint)
-  call get_mono_excitation_from_fock(key_i,key_j,exc(1,2),exc(1,1),spin,phase,hij)
+  call get_mono_excitation_from_fock(key_i,key_j,exc(1,1),exc(1,2),spin,phase,hij)
 end
 
 subroutine i_H_j_double_spin(key_i,key_j,Nint,hij)
@@ -2584,13 +2585,14 @@ subroutine i_H_j_double_alpha_beta(key_i,key_j,Nint,hij)
   double precision, intent(out)  :: hij
   
   integer                        :: exc(0:2,2,2)
-  double precision               :: phase
+  double precision               :: phase, phase2
   double precision, external     :: get_mo_bielec_integral
 
   PROVIDE big_array_exchange_integrals mo_bielec_integrals_in_map
 
   call get_mono_excitation_spin(key_i(1,1),key_j(1,1),exc(0,1,1),phase,Nint)
-  call get_mono_excitation_spin(key_i(1,2),key_j(1,2),exc(0,1,2),phase,Nint)
+  call get_mono_excitation_spin(key_i(1,2),key_j(1,2),exc(0,1,2),phase2,Nint)
+  phase = phase*phase2
   if (exc(1,1,1) == exc(1,2,2)) then
     hij = phase * big_array_exchange_integrals(exc(1,1,1),exc(1,1,2),exc(1,2,1))
   else if (exc(1,2,1) == exc(1,1,2)) then
