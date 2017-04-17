@@ -106,7 +106,7 @@ END_PROVIDER
       print*, 'Correlation functional required does not exist ...'
       stop
      endif
-     energy_x(l) += final_weight_functions_at_grid_points(k,i,j) * ex * (1.d0 - HF_exchange)   
+     energy_x(l) += final_weight_functions_at_grid_points(k,i,j) * ex !* (1.d0 - HF_exchange)   
      energy_c(l) += final_weight_functions_at_grid_points(k,i,j) * ec
      r(1) = grid_points_per_atom(1,k,i,j) 
      r(2) = grid_points_per_atom(2,k,i,j) 
@@ -115,8 +115,8 @@ END_PROVIDER
      do m = 1, ao_num
 !     lda_ex_potential_ao(m,m,l) += (vx_a + vx_b) * aos_array(m)*aos_array(m)
       do n = 1, ao_num
-       potential_x_alpha_ao(m,n,l) += (1.d0 - HF_exchange) * (vx_a ) * aos_array(m)*aos_array(n) * final_weight_functions_at_grid_points(k,i,j)
-       potential_x_beta_ao(m,n,l)  += (1.d0 - HF_exchange) * (vx_b) * aos_array(m)*aos_array(n) * final_weight_functions_at_grid_points(k,i,j)
+       potential_x_alpha_ao(m,n,l) += (vx_a ) * aos_array(m)*aos_array(n) * final_weight_functions_at_grid_points(k,i,j)
+       potential_x_beta_ao(m,n,l)  += (vx_b) * aos_array(m)*aos_array(n) * final_weight_functions_at_grid_points(k,i,j)
        potential_c_alpha_ao(m,n,l) += (vc_a ) * aos_array(m)*aos_array(n) * final_weight_functions_at_grid_points(k,i,j)
        potential_c_beta_ao(m,n,l)  += (vc_b) * aos_array(m)*aos_array(n) * final_weight_functions_at_grid_points(k,i,j)
       enddo
