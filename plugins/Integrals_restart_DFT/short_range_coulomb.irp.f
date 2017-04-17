@@ -27,9 +27,9 @@ BEGIN_PROVIDER [double precision, effective_short_range_operator, (mo_tot_num,mo
    if(dabs(one_body_dm_mo(i,j)).le.1.d-10)cycle
    do k = 1, mo_tot_num
     do l = 1, mo_tot_num
-     integral = get_mo_bielec_integral(i,k,j,l,mo_integrals_map)
-!    integral_erf = get_mo_bielec_integral_erf(i,k,j,l,mo_integrals_erf_map)
-     effective_short_range_operator(l,k) += one_body_dm_mo(i,j) * integral
+!    integral = get_mo_bielec_integral(i,k,j,l,mo_integrals_map)
+     integral_erf = get_mo_bielec_integral_erf(i,k,j,l,mo_integrals_erf_map)
+     effective_short_range_operator(l,k) += one_body_dm_mo(i,j) * integral_erf
     enddo
    enddo
   enddo

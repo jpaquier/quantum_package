@@ -98,7 +98,6 @@ subroutine i_H_j_erf(key_i,key_j,Nint,hij)
          hij += big_array_coulomb_integrals_erf(occ(i,1),m,p)
         enddo
       endif
-      hij = hij + mo_nucl_elec_integral(m,p) + mo_kinetic_integral(m,p)
       hij = hij * phase
     case (0)
       hij = diag_H_mat_elem_erf(key_i,Nint)
@@ -116,7 +115,6 @@ double precision function diag_H_mat_elem_erf(key_i,Nint)
  diag_H_mat_elem_erf = 0.d0
  ! alpha - alpha
  do i = 1, n_occ_ab(1)
-  diag_H_mat_elem_erf += mo_nucl_elec_integral(occ(i,1),mo_nucl_elec_integral(i,1))
   do j = i+1, n_occ_ab(1)
    diag_H_mat_elem_erf += mo_bielec_integral_erf_jj_anti(occ(i,1),occ(j,1))
   enddo
@@ -124,7 +122,6 @@ double precision function diag_H_mat_elem_erf(key_i,Nint)
 
  ! beta - beta 
  do i = 1, n_occ_ab(2)
-  diag_H_mat_elem_erf += mo_nucl_elec_integral(occ(i,2),mo_nucl_elec_integral(i,2))
   do j = i+1, n_occ_ab(2)
    diag_H_mat_elem_erf += mo_bielec_integral_erf_jj_anti(occ(i,2),occ(j,2))
   enddo
@@ -440,6 +437,89 @@ subroutine diag_H_mat_elem_erf_component(key_i,hij_core,hij_hartree,hij_erf,hij_
  enddo
  hij_total = hij_erf + hij_hartree + hij_core
 
+end
+
+
+
+subroutine i_H_j_mono_spin_erf(key_i,key_j,Nint,spin,hij)
+  use bitmasks
+  implicit none
+  BEGIN_DOC
+  ! Returns <i|H|j> where i and j are determinants differing by a single excitation
+  END_DOC
+  integer, intent(in)            :: Nint, spin
+  integer(bit_kind), intent(in)  :: key_i(Nint,2), key_j(Nint,2)
+  double precision, intent(out)  :: hij
+  
+  integer                        :: exc(0:2,2)
+  double precision               :: phase
+
+  PROVIDE big_array_exchange_integrals_erf mo_bielec_integrals_erf_in_map
+
+  call i_H_j_erf(key_i,key_j,Nint,hij)
+! call get_mono_excitation_spin(key_i(1,spin),key_j(1,spin),exc,phase,Nint)
+! call get_mono_excitation_from_fock(key_i,key_j,exc(1,1),exc(1,2),spin,phase,hij)
+end
+
+subroutine i_H_j_double_spin_erf(key_i,key_j,Nint,hij)
+  use bitmasks
+  implicit none
+  BEGIN_DOC
+  ! Returns <i|H|j> where i and j are determinants differing by a same-spin double excitation
+  END_DOC
+  integer, intent(in)            :: Nint
+  integer(bit_kind), intent(in)  :: key_i(Nint), key_j(Nint)
+  double precision, intent(out)  :: hij
+  
+  integer                        :: exc(0:2,2)
+  double precision               :: phase
+  double precision, external     :: get_mo_bielec_integral_erf
+
+  PROVIDE big_array_exchange_integrals_erf mo_bielec_integrals_erf_in_map
+
+  call get_double_excitation_spin(key_i,key_j,exc,phase,Nint)
+  hij = phase*(get_mo_bielec_integral_erf(                               &
+      exc(1,1),                                                      &
+      exc(2,1),                                                      &
+      exc(1,2),                                                      &
+      exc(2,2), mo_integrals_erf_map) -                                  &
+      get_mo_bielec_integral_erf(                                        &
+      exc(1,1),                                                      &
+      exc(2,1),                                                      &
+      exc(2,2),                                                      &
+      exc(1,2), mo_integrals_erf_map) )
+end
+
+subroutine i_H_j_double_alpha_beta_erf(key_i,key_j,Nint,hij)
+  use bitmasks
+  implicit none
+  BEGIN_DOC
+  ! Returns <i|H|j> where i and j are determinants differing by an opposite-spin double excitation
+  END_DOC
+  integer, intent(in)            :: Nint
+  integer(bit_kind), intent(in)  :: key_i(Nint,2), key_j(Nint,2)
+  double precision, intent(out)  :: hij
+  
+  integer                        :: exc(0:2,2,2)
+  double precision               :: phase, phase2
+  double precision, external     :: get_mo_bielec_integral_erf
+
+  PROVIDE big_array_exchange_integrals_erf mo_bielec_integrals_erf_in_map
+
+  call get_mono_excitation_spin(key_i(1,1),key_j(1,1),exc(0,1,1),phase,Nint)
+  call get_mono_excitation_spin(key_i(1,2),key_j(1,2),exc(0,1,2),phase2,Nint)
+  phase = phase*phase2
+  if (exc(1,1,1) == exc(1,2,2)) then
+    hij = phase * big_array_exchange_integrals_erf(exc(1,1,1),exc(1,1,2),exc(1,2,1))
+  else if (exc(1,2,1) == exc(1,1,2)) then
+    hij = phase * big_array_exchange_integrals_erf(exc(1,2,1),exc(1,1,1),exc(1,2,2))
+  else
+    hij = phase*get_mo_bielec_integral_Erf(                              &
+        exc(1,1,1),                                                  &
+        exc(1,1,2),                                                  &
+        exc(1,2,1),                                                  &
+        exc(1,2,2) ,mo_integrals_erf_map)
+  endif
 end
 
 
