@@ -75,19 +75,39 @@ END_PROVIDER
   do j = 1, nucl_num
    do i = 1, n_points_radial_grid 
     do k = 1, n_points_integration_angular
-     double precision :: rho_a,rho_b,ex
-     double precision :: vx_a,vx_b
+     double precision :: rho_a,rho_b,ex,ec
+     double precision :: vx_a,vx_b,vc_a,vc_b
      rho_a = one_body_dm_mo_alpha_at_grid_points(k,i,j,l)
      rho_b = one_body_dm_mo_beta_at_grid_points(k,i,j,l)
      if(exchange_functional.EQ."LDA")then
       call ex_lda(rho_a,rho_b,ex,vx_a,vx_b) 
      else if(exchange_functional.EQ."short_range_LDA")then
       call ex_lda_sr(rho_a,rho_b,ex,vx_a,vx_b)
-     else 
-      print*, 'Exchange function required does not exist ...'
+     else if(exchange_functional.EQ."None")then
+      ex = 0.d0
+      vx_a = 0.d0
+      vx_b = 0.d0
+     else
+      print*, 'Exchange functional required does not exist ...'
+      stop
+     endif
+
+!    print*, correlation_functional
+!    print*, correlation_functional.EQ."LDA"
+     if(correlation_functional.EQ."short_range_LDA")then
+      call ec_lda_sr(rho_a,rho_b,ec,vc_a,vc_b)
+     else if(correlation_functional.EQ."LDA")then
+      call ec_lda(rho_a,rho_b,ec,vc_a,vc_b)
+     else if(correlation_functional.EQ."None")then
+      ec = 0.d0
+      vc_a = 0.d0
+      vc_b = 0.d0
+     else
+      print*, 'Correlation functional required does not exist ...'
       stop
      endif
      energy_x(l) += final_weight_functions_at_grid_points(k,i,j) * ex * (1.d0 - HF_exchange)   
+     energy_c(l) += final_weight_functions_at_grid_points(k,i,j) * ec
      r(1) = grid_points_per_atom(1,k,i,j) 
      r(2) = grid_points_per_atom(2,k,i,j) 
      r(3) = grid_points_per_atom(3,k,i,j) 
@@ -97,6 +117,8 @@ END_PROVIDER
       do n = 1, ao_num
        potential_x_alpha_ao(m,n,l) += (1.d0 - HF_exchange) * (vx_a ) * aos_array(m)*aos_array(n) * final_weight_functions_at_grid_points(k,i,j)
        potential_x_beta_ao(m,n,l)  += (1.d0 - HF_exchange) * (vx_b) * aos_array(m)*aos_array(n) * final_weight_functions_at_grid_points(k,i,j)
+       potential_c_alpha_ao(m,n,l) += (vc_a ) * aos_array(m)*aos_array(n) * final_weight_functions_at_grid_points(k,i,j)
+       potential_c_beta_ao(m,n,l)  += (vc_b) * aos_array(m)*aos_array(n) * final_weight_functions_at_grid_points(k,i,j)
       enddo
      enddo
     enddo

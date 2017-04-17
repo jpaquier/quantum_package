@@ -11,5 +11,6 @@ subroutine routine3
  integer :: i,j,k,l
  double precision :: accu
  accu = 0.d0
- print*, 'energy_xc',energy_xc
+ print*, 'energy_x',energy_x
+ print*, 'energy_c',energy_c
 end

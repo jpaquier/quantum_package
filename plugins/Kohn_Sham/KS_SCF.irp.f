@@ -26,5 +26,6 @@ subroutine run
   
  print*, 'one_electron_energy = ',one_electron_energy
  print*, 'two_electron_energy = ',two_electron_energy
- print*, 'e_exchange_dft      = ',(1.d0 - HF_exchange) * e_exchange_dft
+ print*, 'e_exchange_dft      = ',e_exchange_dft
+ print*, 'e_correlation_dft   = ',e_correlation_dft
 end
