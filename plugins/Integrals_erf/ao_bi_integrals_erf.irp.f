@@ -133,6 +133,11 @@ double precision function ao_bielec_integral_schwartz_accel_erf(i,j,k,l)
   
   allocate(schwartz_kl(0:ao_prim_num(l),0:ao_prim_num(k)))
 
+      double precision               :: coef3
+      double precision               :: coef2
+      double precision               :: p_inv,q_inv
+      double precision               :: coef1
+      double precision               :: coef4
 
   if (num_i /= num_j .or. num_k /= num_l .or. num_j /= num_k)then
     do p = 1, 3
@@ -166,12 +171,9 @@ double precision function ao_bielec_integral_schwartz_accel_erf(i,j,k,l)
     enddo
 
     do p = 1, ao_prim_num(i)
-      double precision               :: coef1
       coef1 = ao_coef_normalized_ordered_transp(p,i)
       do q = 1, ao_prim_num(j)
-        double precision               :: coef2
         coef2 = coef1*ao_coef_normalized_ordered_transp(q,j)
-        double precision               :: p_inv,q_inv
         call give_explicit_poly_and_gaussian(P_new,P_center,pp,fact_p,iorder_p,&
             ao_expo_ordered_transp(p,i),ao_expo_ordered_transp(q,j),                 &
             I_power,J_power,I_center,J_center,dim1)
@@ -187,10 +189,8 @@ double precision function ao_bielec_integral_schwartz_accel_erf(i,j,k,l)
           if (schwartz_kl(0,r)*schwartz_ij < thr) then
              cycle
           endif
-          double precision               :: coef3
           coef3 = coef2*ao_coef_normalized_ordered_transp(r,k)
           do s = 1, ao_prim_num(l)
-            double precision               :: coef4
             if (schwartz_kl(s,r)*schwartz_ij < thr) then
                cycle
             endif
@@ -508,12 +508,91 @@ double precision function ERI_erf(alpha,beta,delta,gama,a_x,b_x,c_x,d_x,a_y,b_y,
     return
   endif
   
-  call integrale_new(I_f,a_x,b_x,c_x,d_x,a_y,b_y,c_y,d_y,a_z,b_z,c_z,d_z,p,q,n_pt)
+  call integrale_new_erf(I_f,a_x,b_x,c_x,d_x,a_y,b_y,c_y,d_y,a_z,b_z,c_z,d_z,p,q,n_pt)
   
   ERI_erf = I_f * coeff
 end
 
 
+
+subroutine integrale_new_erf(I_f,a_x,b_x,c_x,d_x,a_y,b_y,c_y,d_y,a_z,b_z,c_z,d_z,p,q,n_pt)
+  BEGIN_DOC
+  ! calculate the integral of the polynom :: 
+  !         I_x1(a_x+b_x, c_x+d_x,p,q) * I_x1(a_y+b_y, c_y+d_y,p,q) * I_x1(a_z+b_z, c_z+d_z,p,q)
+  ! between ( 0 ; 1)
+  END_DOC
+  
+  
+  implicit none
+  include 'Utils/constants.include.F'
+  double precision               :: p,q
+  integer                        :: a_x,b_x,c_x,d_x,a_y,b_y,c_y,d_y,a_z,b_z,c_z,d_z
+  integer                        :: i, n_iter, n_pt, j
+  double precision               :: I_f, pq_inv, p10_1, p10_2, p01_1, p01_2,rho,pq_inv_2
+  integer :: ix,iy,iz, jx,jy,jz, sx,sy,sz
+  
+  j = ishft(n_pt,-1)
+  ASSERT (n_pt > 1)
+  double precision :: p_plus_q
+  p_plus_q = (p+q) * ((p*q)/(p+q) + mu_erf*mu_erf)/(mu_erf*mu_erf)
+  
+  pq_inv = 0.5d0/(p_plus_q)
+  pq_inv_2 = pq_inv + pq_inv
+  p10_1 = 0.5d0/p
+  p01_1 = 0.5d0/q
+  p10_2 = 0.5d0 *  q /(p * q + p * p)
+  p01_2 = 0.5d0 *  p /(q * q + q * p)
+  double precision               :: B00(n_pt_max_integrals)
+  double precision               :: B10(n_pt_max_integrals), B01(n_pt_max_integrals)
+  double precision               :: t1(n_pt_max_integrals), t2(n_pt_max_integrals)
+  !DIR$ ATTRIBUTES ALIGN : $IRP_ALIGN :: t1, t2, B10, B01, B00
+  ix = a_x+b_x
+  jx = c_x+d_x
+  iy = a_y+b_y
+  jy = c_y+d_y
+  iz = a_z+b_z
+  jz = c_z+d_z
+  sx = ix+jx
+  sy = iy+jy
+  sz = iz+jz
+
+  !DIR$ VECTOR ALIGNED
+  do i = 1,n_pt
+    B10(i)  = p10_1 -  gauleg_t2(i,j)* p10_2
+    B01(i)  = p01_1 -  gauleg_t2(i,j)* p01_2
+    B00(i)  = gauleg_t2(i,j)*pq_inv
+  enddo
+  if (sx > 0) then
+    call I_x1_new(ix,jx,B10,B01,B00,t1,n_pt)
+  else
+    !DIR$ VECTOR ALIGNED
+    do i = 1,n_pt
+      t1(i) = 1.d0
+    enddo
+  endif
+  if (sy > 0) then
+    call I_x1_new(iy,jy,B10,B01,B00,t2,n_pt)
+    !DIR$ VECTOR ALIGNED
+    do i = 1,n_pt
+      t1(i) = t1(i)*t2(i)
+    enddo
+  endif
+  if (sz > 0) then
+    call I_x1_new(iz,jz,B10,B01,B00,t2,n_pt)
+    !DIR$ VECTOR ALIGNED
+    do i = 1,n_pt
+      t1(i) = t1(i)*t2(i)
+    enddo
+  endif
+  I_f= 0.d0
+  !DIR$ VECTOR ALIGNED
+  do i = 1,n_pt
+    I_f += gauleg_w(i,j)*t1(i)
+  enddo
+  
+  
+  
+end
   
 
 subroutine compute_ao_integrals_erf_jl(j,l,n_integrals,buffer_i,buffer_value)
