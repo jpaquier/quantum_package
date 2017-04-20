@@ -130,6 +130,7 @@ double precision function diag_H_mat_elem_erf(key_i,Nint)
  ! alpha - beta 
  do i = 1, n_occ_ab(1)
   do j = 1, n_occ_ab(2)
+!  print*,'mo_bielec_integral_erf_jj(occ(i,1),occ(j,2))',mo_bielec_integral_erf_jj(occ(i,1),occ(j,2))
    diag_H_mat_elem_erf += mo_bielec_integral_erf_jj(occ(i,1),occ(j,2))
   enddo
  enddo
@@ -237,7 +238,7 @@ subroutine i_H_j_erf_and_short_coulomb(key_i,key_j,Nint,hij)
          hij += big_array_coulomb_integrals_erf(occ(i,1),m,p)
         enddo
       endif
-      hij = hij + mo_nucl_elec_integral(m,p) + mo_kinetic_integral(m,p) + effective_short_range_operator(m,p)
+      hij = hij + mo_nucl_elec_integral(m,p) + mo_kinetic_integral(m,p) + short_range_Hartree_operator(m,p)
       hij = hij * phase
     case (0)
       hij = diag_H_mat_elem_erf(key_i,Nint)
@@ -257,7 +258,7 @@ double precision function diag_H_mat_elem_erf_and_short_coulomb(key_i,Nint)
  ! alpha - alpha
  do i = 1, n_occ_ab(1)
   diag_H_mat_elem_erf_and_short_coulomb += mo_nucl_elec_integral(occ(i,1),mo_nucl_elec_integral(i,1)) + mo_kinetic_integral(occ(i,1),mo_nucl_elec_integral(i,1)) &
-                                         + effective_short_range_operator(occ(i,1),occ(i,1))
+                                         + short_range_Hartree_operator(occ(i,1),occ(i,1))
   do j = i+1, n_occ_ab(1)
    diag_H_mat_elem_erf_and_short_coulomb += mo_bielec_integral_erf_jj_anti(occ(i,1),occ(j,1))
   enddo
@@ -266,7 +267,7 @@ double precision function diag_H_mat_elem_erf_and_short_coulomb(key_i,Nint)
  ! beta - beta 
  do i = 1, n_occ_ab(2)
   diag_H_mat_elem_erf_and_short_coulomb += mo_nucl_elec_integral(occ(i,2),mo_nucl_elec_integral(i,2)) + mo_kinetic_integral(occ(i,2),mo_nucl_elec_integral(i,2)) & 
-                                         + effective_short_range_operator(occ(i,2),occ(i,2))
+                                         + short_range_Hartree_operator(occ(i,2),occ(i,2))
   do j = i+1, n_occ_ab(2)
    diag_H_mat_elem_erf_and_short_coulomb += mo_bielec_integral_erf_jj_anti(occ(i,2),occ(j,2))
   enddo
@@ -388,7 +389,7 @@ subroutine i_H_j_erf_component(key_i,key_j,Nint,hij_core,hij_hartree,hij_erf,hij
         enddo
       endif
       hij_core = mo_nucl_elec_integral(m,p) + mo_kinetic_integral(m,p) 
-      hij_hartree =  effective_short_range_operator(m,p)
+      hij_hartree =  short_range_Hartree_operator(m,p)
       hij_total = (hij_erf + hij_core + hij_hartree) * phase
     case (0)
       call diag_H_mat_elem_erf_component(key_i,hij_core,hij_hartree,hij_erf,hij_total,Nint)
@@ -414,7 +415,7 @@ subroutine diag_H_mat_elem_erf_component(key_i,hij_core,hij_hartree,hij_erf,hij_
  ! alpha - alpha
  do i = 1, n_occ_ab(1)
   hij_core += mo_nucl_elec_integral(occ(i,1),mo_nucl_elec_integral(i,1)) + mo_kinetic_integral(occ(i,1),mo_nucl_elec_integral(i,1))  
-  hij_hartree += effective_short_range_operator(occ(i,1),occ(i,1))
+  hij_hartree += short_range_Hartree_operator(occ(i,1),occ(i,1))
   do j = i+1, n_occ_ab(1)
    hij_erf += mo_bielec_integral_erf_jj_anti(occ(i,1),occ(j,1))
   enddo
@@ -423,7 +424,7 @@ subroutine diag_H_mat_elem_erf_component(key_i,hij_core,hij_hartree,hij_erf,hij_
  ! beta - beta 
  do i = 1, n_occ_ab(2)
   hij_core += mo_nucl_elec_integral(occ(i,2),mo_nucl_elec_integral(i,2)) + mo_kinetic_integral(occ(i,2),mo_nucl_elec_integral(i,2))   
-  hij_hartree += effective_short_range_operator(occ(i,2),occ(i,2))
+  hij_hartree += short_range_Hartree_operator(occ(i,2),occ(i,2))
   do j = i+1, n_occ_ab(2)
    hij_erf += mo_bielec_integral_erf_jj_anti(occ(i,2),occ(j,2))
   enddo

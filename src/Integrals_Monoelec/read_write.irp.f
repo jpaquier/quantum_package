@@ -28,6 +28,7 @@
    endif
  
    if (disk_access_only_mo_one_integrals.EQ.'Read')then
+     print*, 'read_only_mo_one_integrals',read_only_mo_one_integrals
      read_only_mo_one_integrals = .True.
    endif
    

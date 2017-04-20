@@ -24,8 +24,10 @@ subroutine run
   mo_label = "Canonical"
   call damping_SCF
   
- print*, 'one_electron_energy = ',one_electron_energy
- print*, 'two_electron_energy = ',two_electron_energy
- print*, 'e_exchange_dft      = ',e_exchange_dft
- print*, 'e_correlation_dft   = ',e_correlation_dft
+ write(*, '(A22,X,F16.10)') 'one_electron_energy = ',one_electron_energy
+ write(*, '(A22,X,F16.10)') 'two_electron_energy = ',two_electron_energy
+ write(*, '(A22,X,F16.10)') 'e_exchange_dft      = ',e_exchange_dft
+ write(*, '(A22,X,F16.10)') 'e_correlation_dft   = ',e_correlation_dft
+ write(*, '(A22,X,F16.10)') 'Fock_matrix_energy  = ',Fock_matrix_energy
+  
 end

@@ -498,7 +498,7 @@ double precision function ERI_erf(alpha,beta,delta,gama,a_x,b_x,c_x,d_x,a_y,b_y,
   p = alpha + beta
   q = delta + gama
   double precision :: p_plus_q
-   p_plus_q = (p+q) * ((p*q)/(p+q) + mu_erf*mu_erf)/(mu_erf*mu_erf)
+  p_plus_q = (p+q) * ((p*q)/(p+q) + mu_erf*mu_erf)/(mu_erf*mu_erf)
   ASSERT (p+q >= 0.d0)
   n_pt =  ishft( nx+ny+nz,1 )
   

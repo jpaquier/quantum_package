@@ -26,6 +26,7 @@ end
  BEGIN_PROVIDER [ double precision, psi_energy_erf, (N_states) ]
 &BEGIN_PROVIDER [ double precision, psi_energy_core, (N_states) ]
 &BEGIN_PROVIDER [ double precision, psi_energy_hartree, (N_states) ]
+&BEGIN_PROVIDER [ double precision, total_electronic_energy, (N_states) ]
   implicit none
   BEGIN_DOC
 ! Energy of the current wave function
@@ -38,12 +39,13 @@ end
   integer :: i,j
   do i = 1, mo_tot_num
    do j = 1, mo_tot_num
-    array(i,j) = effective_short_range_operator(i,j)
+    array(i,j) = short_range_Hartree_operator(i,j)
    enddo
   enddo
   call get_average(array,one_body_dm_mo,average)
-  psi_energy_hartree = average
+  psi_energy_hartree = 0.5d0 * average
   call u_0_H_u_0_erf(psi_energy_erf,psi_coef,N_det,psi_det,N_int,N_states,psi_det_size)
+  total_electronic_energy = psi_energy_hartree + psi_energy_core + psi_energy_erf + energy_x + energy_c
 END_PROVIDER
 
 

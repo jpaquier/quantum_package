@@ -358,6 +358,7 @@ END_PROVIDER
  BEGIN_PROVIDER [ double precision, HF_energy ]
 &BEGIN_PROVIDER [ double precision, two_electron_energy]
 &BEGIN_PROVIDER [ double precision, one_electron_energy]
+&BEGIN_PROVIDER [ double precision, Fock_matrix_energy]
  implicit none
  BEGIN_DOC
  ! Hartree-Fock energy
@@ -368,8 +369,11 @@ END_PROVIDER
  double precision :: accu_mono,accu_fock
  one_electron_energy = 0.d0
  two_electron_energy = 0.d0
+ Fock_matrix_energy = 0.d0
  do j=1,ao_num
    do i=1,ao_num
+    Fock_matrix_energy +=   Fock_matrix_alpha_ao(i,j) * HF_density_matrix_ao_alpha(i,j) + & 
+                            Fock_matrix_beta_ao(i,j) * HF_density_matrix_ao_beta(i,j) 
     two_electron_energy += 0.5d0 * ( ao_bi_elec_integral_alpha(i,j) * HF_density_matrix_ao_alpha(i,j) & 
                 +ao_bi_elec_integral_beta(i,j) * HF_density_matrix_ao_beta(i,j) ) 
     one_electron_energy += ao_mono_elec_integral(i,j) * (HF_density_matrix_ao_alpha(i,j) + HF_density_matrix_ao_beta (i,j) )

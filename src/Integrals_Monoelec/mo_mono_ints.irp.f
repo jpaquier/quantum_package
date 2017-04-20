@@ -11,6 +11,7 @@ BEGIN_PROVIDER [ double precision, mo_mono_elec_integral,(mo_tot_num_align,mo_to
     call read_one_e_integrals('mo_one_integral', mo_mono_elec_integral,      &
         size(mo_mono_elec_integral,1), size(mo_mono_elec_integral,2))
     print *,  'MO N-e integrals read from disk'
+    return
   else
    do j = 1, mo_tot_num
      do i = 1, mo_tot_num

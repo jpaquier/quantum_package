@@ -5,7 +5,7 @@
 
 BEGIN_PROVIDER [integer, n_points_radial_grid]
  implicit none
- n_points_radial_grid = 100
+ n_points_radial_grid = 500
 END_PROVIDER 
 
 

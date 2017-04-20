@@ -91,6 +91,12 @@ END_PROVIDER
       print*, 'Exchange functional required does not exist ...'
       stop
      endif
+    !if(dabs(vx_a - vx_b).gt.1.d-6)then
+    ! print*, i,j,k
+    ! print*, rho_a,rho_b
+    ! print*, vx_a,vx_b,dabs(vx_a - vx_b)
+    ! stop
+    !endif
 
 !    print*, correlation_functional
 !    print*, correlation_functional.EQ."LDA"
@@ -128,3 +134,41 @@ END_PROVIDER
 
 END_PROVIDER 
 
+ BEGIN_PROVIDER [double precision, potential_x_alpha_mo,(mo_tot_num_align,mo_tot_num,N_states)]
+&BEGIN_PROVIDER [double precision, potential_x_beta_mo,(mo_tot_num_align,mo_tot_num,N_states)]
+&BEGIN_PROVIDER [double precision, potential_c_alpha_mo,(mo_tot_num_align,mo_tot_num,N_states)]
+&BEGIN_PROVIDER [double precision, potential_c_beta_mo,(mo_tot_num_align,mo_tot_num,N_states)]
+ implicit none
+ 
+    call ao_to_mo(                                                   &
+        potential_x_alpha_ao(1,1,1),                                       &
+        size(potential_x_alpha_ao,1),                               &
+        potential_x_alpha_mo(1,1,1),                                       &
+        size(potential_x_alpha_mo,1)                                &
+        )
+
+    call ao_to_mo(                                                   &
+        potential_x_beta_ao(1,1,1),                                       &
+        size(potential_x_beta_ao,1),                               &
+        potential_x_beta_mo(1,1,1),                                       &
+        size(potential_x_beta_mo,1)                                &
+        )
+
+
+    call ao_to_mo(                                                   &
+        potential_c_alpha_ao(1,1,1),                                       &
+        size(potential_c_alpha_ao,1),                               &
+        potential_c_alpha_mo(1,1,1),                                       &
+        size(potential_c_alpha_mo,1)                                &
+        )
+
+    call ao_to_mo(                                                   &
+        potential_c_beta_ao(1,1,1),                                       &
+        size(potential_c_beta_ao,1),                               &
+        potential_c_beta_mo(1,1,1),                                       &
+        size(potential_c_beta_mo,1)                                &
+        )
+
+
+
+END_PROVIDER 
