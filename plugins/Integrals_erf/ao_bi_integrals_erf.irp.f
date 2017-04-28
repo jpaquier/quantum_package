@@ -540,8 +540,8 @@ subroutine integrale_new_erf(I_f,a_x,b_x,c_x,d_x,a_y,b_y,c_y,d_y,a_z,b_z,c_z,d_z
   pq_inv_2 = pq_inv + pq_inv
   p10_1 = 0.5d0/p
   p01_1 = 0.5d0/q
-  p10_2 = 0.5d0 *  q /(p * q + p * p)
-  p01_2 = 0.5d0 *  p /(q * q + q * p)
+  p10_2 = 0.5d0 *  q /(p * p_plus_q)
+  p01_2 = 0.5d0 *  p /(q * p_plus_q)
   double precision               :: B00(n_pt_max_integrals)
   double precision               :: B10(n_pt_max_integrals), B01(n_pt_max_integrals)
   double precision               :: t1(n_pt_max_integrals), t2(n_pt_max_integrals)
