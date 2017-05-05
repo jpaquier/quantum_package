@@ -35,13 +35,20 @@ end
   array = mo_nucl_elec_integral + mo_kinetic_integral
   call get_average(array,one_body_dm_mo,average)
   psi_energy_core = average
+  print*, 'average'
+  print*, average
   array = 0.d0
   integer :: i,j
+  double precision :: pouet
+  pouet  = 0.d0
   do i = 1, mo_tot_num
    do j = 1, mo_tot_num
     array(i,j) = short_range_Hartree_operator(i,j)
+    pouet += one_body_dm_mo(i,j) * (mo_nucl_elec_integral(i,j) + mo_kinetic_integral(i,j))
    enddo
   enddo
+  print*, 'pouet'
+  print*, average
   call get_average(array,one_body_dm_mo,average)
   psi_energy_hartree = 0.5d0 * average
   call u_0_H_u_0_erf(psi_energy_erf,psi_coef,N_det,psi_det,N_int,N_states,psi_det_size)

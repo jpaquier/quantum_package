@@ -515,7 +515,7 @@ subroutine i_H_j_double_alpha_beta_erf(key_i,key_j,Nint,hij)
   else if (exc(1,2,1) == exc(1,1,2)) then
     hij = phase * big_array_exchange_integrals_erf(exc(1,2,1),exc(1,1,1),exc(1,2,2))
   else
-    hij = phase*get_mo_bielec_integral_Erf(                              &
+    hij = phase*get_mo_bielec_integral_erf(                              &
         exc(1,1,1),                                                  &
         exc(1,1,2),                                                  &
         exc(1,2,1),                                                  &
