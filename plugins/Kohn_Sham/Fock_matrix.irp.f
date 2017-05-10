@@ -3,7 +3,7 @@
    implicit none
    BEGIN_DOC
    ! Fock matrix on the MO basis.
-   ! For open shells, the ROHF Fock Matrix is
+   ! For open shells, the ROKS Fock Matrix is
    !
    !  |   F-K    |  F + K/2  |    F     |
    !  |---------------------------------|
@@ -146,7 +146,7 @@ END_PROVIDER
        !$OMP PRIVATE(i,j,l,k1,k,integral,ii,jj,kk,ll,i8,keys,values,p,q,r,s,i0,j0,k0,l0, &
        !$OMP ao_bi_elec_integral_alpha_tmp,ao_bi_elec_integral_beta_tmp, c0, c1, c2, &
        !$OMP local_threshold)&
-       !$OMP SHARED(ao_num,ao_num_align,HF_density_matrix_ao_alpha,HF_density_matrix_ao_beta,&
+       !$OMP SHARED(ao_num,ao_num_align,KS_density_matrix_ao_alpha,KS_density_matrix_ao_beta,&
        !$OMP ao_integrals_map,ao_integrals_threshold, ao_bielec_integral_schwartz, &
        !$OMP ao_overlap_abs, ao_bi_elec_integral_alpha, ao_bi_elec_integral_beta)
 
@@ -193,9 +193,9 @@ END_PROVIDER
              j = jj(k2)
              k = kk(k2)
              l = ll(k2)
-             c0 = HF_density_matrix_ao_alpha(k,l)+HF_density_matrix_ao_beta(k,l)
-             c1 = HF_density_matrix_ao_alpha(k,i)
-             c2 = HF_density_matrix_ao_beta(k,i)
+             c0 = KS_density_matrix_ao_alpha(k,l)+KS_density_matrix_ao_beta(k,l)
+             c1 = KS_density_matrix_ao_alpha(k,i)
+             c2 = KS_density_matrix_ao_beta(k,i)
              if ( dabs(c0)+dabs(c1)+dabs(c2) < local_threshold) then
                cycle
              endif
@@ -232,7 +232,7 @@ END_PROVIDER
 !  !$OMP PARALLEL DEFAULT(NONE)                                      &
 !      !$OMP PRIVATE(i,j,l,k1,k,integral,ii,jj,kk,ll,i8,keys,values,n_elements_max, &
 !      !$OMP  n_elements,ao_bi_elec_integral_alpha_tmp,ao_bi_elec_integral_beta_tmp)&
-!      !$OMP SHARED(ao_num,ao_num_align,HF_density_matrix_ao_alpha,HF_density_matrix_ao_beta,&
+!      !$OMP SHARED(ao_num,ao_num_align,KS_density_matrix_ao_alpha,KS_density_matrix_ao_beta,&
 !      !$OMP  ao_integrals_map, ao_bi_elec_integral_alpha, ao_bi_elec_integral_beta,HF_exchange) 
 
    call get_cache_map_n_elements_max(ao_integrals_map,n_elements_max)
@@ -258,12 +258,12 @@ END_PROVIDER
          j = jj(k2)
          k = kk(k2)
          l = ll(k2)
-         integral = (HF_density_matrix_ao_alpha(k,l)+HF_density_matrix_ao_beta(k,l)) * values(k1)
+         integral = (KS_density_matrix_ao_alpha(k,l)+KS_density_matrix_ao_beta(k,l)) * values(k1)
          ao_bi_elec_integral_alpha_tmp(i,j) += integral
          ao_bi_elec_integral_beta_tmp (i,j) += integral
          integral = values(k1)
-         ao_bi_elec_integral_alpha_tmp(l,j) -= HF_exchange * (HF_density_matrix_ao_alpha(k,i) * integral)
-         ao_bi_elec_integral_beta_tmp (l,j) -= HF_exchange * (HF_density_matrix_ao_beta (k,i) * integral)
+         ao_bi_elec_integral_alpha_tmp(l,j) -= HF_exchange * (KS_density_matrix_ao_alpha(k,i) * integral)
+         ao_bi_elec_integral_beta_tmp (l,j) -= HF_exchange * (KS_density_matrix_ao_beta (k,i) * integral)
        enddo
      enddo
    enddo
@@ -325,14 +325,14 @@ BEGIN_PROVIDER [ double precision, Fock_matrix_beta_mo, (mo_tot_num_align,mo_tot
    deallocate(T)
 END_PROVIDER
  
- BEGIN_PROVIDER [ double precision, HF_energy ]
+ BEGIN_PROVIDER [ double precision, KS_energy ]
 &BEGIN_PROVIDER [ double precision, two_electron_energy]
 &BEGIN_PROVIDER [ double precision, one_electron_energy]
  implicit none
  BEGIN_DOC
  ! Hartree-Fock energy
  END_DOC
- HF_energy = nuclear_repulsion
+ KS_energy = nuclear_repulsion
  
  integer                        :: i,j
  double precision :: accu_mono,accu_fock
@@ -340,17 +340,17 @@ END_PROVIDER
  two_electron_energy = 0.d0
  do j=1,ao_num
    do i=1,ao_num
-    two_electron_energy += 0.5d0 * ( ao_bi_elec_integral_alpha(i,j) * HF_density_matrix_ao_alpha(i,j) & 
-                +ao_bi_elec_integral_beta(i,j) * HF_density_matrix_ao_beta(i,j) ) 
-    one_electron_energy += ao_mono_elec_integral(i,j) * (HF_density_matrix_ao_alpha(i,j) + HF_density_matrix_ao_beta (i,j) )
+    two_electron_energy += 0.5d0 * ( ao_bi_elec_integral_alpha(i,j) * KS_density_matrix_ao_alpha(i,j) & 
+                +ao_bi_elec_integral_beta(i,j) * KS_density_matrix_ao_beta(i,j) ) 
+    one_electron_energy += ao_mono_elec_integral(i,j) * (KS_density_matrix_ao_alpha(i,j) + KS_density_matrix_ao_beta (i,j) )
    enddo
  enddo
 !print*, 'one_electron_energy = ',one_electron_energy
 !print*, 'two_electron_energy = ',two_electron_energy
 !print*, 'e_exchange_dft      = ',(1.d0 - HF_exchange) * e_exchange_dft
 !print*, 'accu_cor  = ',e_correlation_dft
- HF_energy +=  e_exchange_dft + e_correlation_dft + one_electron_energy + two_electron_energy
-!print*, 'HF_energy '
+ KS_energy +=  e_exchange_dft + e_correlation_dft + one_electron_energy + two_electron_energy
+!print*, 'KS_energy '
   
 END_PROVIDER
 

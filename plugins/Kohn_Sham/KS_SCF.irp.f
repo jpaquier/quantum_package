@@ -19,7 +19,7 @@ subroutine run
   double precision               :: E0
   integer                        :: i_it, i, j, k
    
-  E0 = HF_energy 
+  E0 = KS_energy 
 
   mo_label = "Canonical"
   call damping_SCF
