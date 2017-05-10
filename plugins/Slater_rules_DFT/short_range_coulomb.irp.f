@@ -1,19 +1,19 @@
-BEGIN_PROVIDER [double precision, density_matrix_read, (mo_tot_num, mo_tot_num)]
- implicit none
- integer :: i,j,k,l
- logical                        :: exists
- call ezfio_has_determinants_density_matrix_mo_disk(exists)
- if(exists)then
-  print*, 'reading the density matrix from input'
-  call ezfio_get_determinants_density_matrix_mo_disk(exists)
-  print*, 'reading done'
- else 
-  print*, 'no density matrix found in EZFIO file ...'
-  print*, 'stopping ..'
-  stop
- endif
+!BEGIN_PROVIDER [double precision, density_matrix_read, (mo_tot_num, mo_tot_num)]
+!implicit none
+!integer :: i,j,k,l
+!logical                        :: exists
+!call ezfio_has_determinants_density_matrix_mo_disk(exists)
+!if(exists)then
+! print*, 'reading the density matrix from input'
+! call ezfio_get_determinants_density_matrix_mo_disk(exists)
+! print*, 'reading done'
+!else 
+! print*, 'no density matrix found in EZFIO file ...'
+! print*, 'stopping ..'
+! stop
+!endif
 
-END_PROVIDER
+!END_PROVIDER
 
 
 BEGIN_PROVIDER [double precision, short_range_Hartree_operator, (mo_tot_num,mo_tot_num)]
