@@ -2,7 +2,7 @@
 &BEGIN_PROVIDER [ double precision, integral_density_beta_knowles_becke_per_atom, (nucl_num)]
  implicit none
  double precision :: accu
- integer :: i,j,k,l
+ integer :: i,j,k,l,istate
  double precision :: x
  double precision :: integrand(n_points_integration_angular), weights(n_points_integration_angular)
  double precision :: f_average_angular_alpha,f_average_angular_beta
@@ -20,13 +20,16 @@
      ! Angular integration over the solid angle Omega for a FIXED angular coordinate "r"
      f_average_angular_alpha = 0.d0
      f_average_angular_beta = 0.d0
-     do k = 1, n_points_integration_angular
-      f_average_angular_alpha += weights_angular_points(k) * one_body_dm_mo_alpha_at_grid_points(k,i,j,1) * weight_functions_at_grid_points(k,i,j)
-      f_average_angular_beta  += weights_angular_points(k) * one_body_dm_mo_beta_at_grid_points(k,i,j,1)  * weight_functions_at_grid_points(k,i,j)
+     do istate = 1, N_States
+      do k = 1, n_points_integration_angular
+       f_average_angular_alpha += weights_angular_points(k) * one_body_dm_mo_alpha_at_grid_points(k,i,j,istate) * weight_functions_at_grid_points(k,i,j)
+       f_average_angular_beta  += weights_angular_points(k) * one_body_dm_mo_beta_at_grid_points(k,i,j,istate)  * weight_functions_at_grid_points(k,i,j)
+      enddo
      enddo
      ! 
      x = grid_points_radial(i) ! x value for the mapping of the [0, +\infty] to [0,1]
      double precision ::  contrib_integration
+!    print*,m_knowles
      contrib_integration = derivative_knowles_function(alpha_knowles(int(nucl_charge(j))),m_knowles,x) & 
                           *knowles_function(alpha_knowles(int(nucl_charge(j))),m_knowles,x)**2          
      integral_density_alpha_knowles_becke_per_atom(j) += contrib_integration *f_average_angular_alpha

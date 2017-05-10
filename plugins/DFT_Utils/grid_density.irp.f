@@ -1,4 +1,4 @@
- BEGIN_PROVIDER [integer, n_points_integration_angular]
+BEGIN_PROVIDER [integer, n_points_integration_angular]
  implicit none
  n_points_integration_angular = 434
  END_PROVIDER 
@@ -9,6 +9,7 @@ BEGIN_PROVIDER [integer, n_points_radial_grid]
 END_PROVIDER 
 
 
+
  BEGIN_PROVIDER [double precision, angular_quadrature_points, (n_points_integration_angular,3) ]
 &BEGIN_PROVIDER [double precision, weights_angular_points, (n_points_integration_angular)]
  implicit none
@@ -17,17 +18,15 @@ END_PROVIDER
 ! the unit sphere centered on (0,0,0)
 ! According to the LEBEDEV scheme
  END_DOC
- angular_quadrature_points = 0.d0
- weights_angular_points = 0.d0
-!call cal_quad(n_points_integration_angular, angular_quadrature_points,weights_angular_points)
+ call cal_quad(n_points_integration_angular, angular_quadrature_points,weights_angular_points)
  include 'constants.include.F'
- integer :: i,n
+ integer :: i
  double precision :: accu
  double precision :: degre_rad
  degre_rad = pi/180.d0
  accu = 0.d0
  double precision :: x(n_points_integration_angular),y(n_points_integration_angular),z(n_points_integration_angular),w(n_points_integration_angular)
- call LD0434(X,Y,Z,W,N)
+ call LD0434(X,Y,Z,W,n_points_integration_angular)
  do i = 1, n_points_integration_angular
   angular_quadrature_points(i,1) = x(i)
   angular_quadrature_points(i,2) = y(i)
@@ -35,26 +34,6 @@ END_PROVIDER
   weights_angular_points(i) = w(i) * 4.d0 * pi
   accu += w(i)
  enddo
-!do i = 1, n_points_integration_angular
-! accu += weights_angular_integration_lebedev(i)
-! weights_angular_points(i) = weights_angular_integration_lebedev(i) * 4.d0 * pi
-! angular_quadrature_points(i,1) = dcos ( degre_rad *  theta_angular_integration_lebedev(i)) & 
-!                                * dsin ( degre_rad *  phi_angular_integration_lebedev(i))
-! angular_quadrature_points(i,2) = dsin ( degre_rad *  theta_angular_integration_lebedev(i)) & 
-!                                * dsin ( degre_rad *  phi_angular_integration_lebedev(i))
-! angular_quadrature_points(i,3) = dcos ( degre_rad *  phi_angular_integration_lebedev(i))   
-
-!!weights_angular_points(i) = weights_angular_integration_lebedev(i)
-!!angular_quadrature_points(i,1) = dcos ( degre_rad *  phi_angular_integration_lebedev(i)) & 
-!!                               * dsin ( degre_rad *  theta_angular_integration_lebedev(i))
-!!angular_quadrature_points(i,2) = dsin ( degre_rad *  phi_angular_integration_lebedev(i)) & 
-!!                               * dsin ( degre_rad *  theta_angular_integration_lebedev(i))
-!!angular_quadrature_points(i,3) = dcos ( degre_rad *  theta_angular_integration_lebedev(i))   
-!enddo
- print*,'ANGULAR'
- print*,''
- print*,'accu = ',accu
- ASSERT( dabs(accu - 1.D0) < 1.d-10)
 
 END_PROVIDER 
 
@@ -133,10 +112,46 @@ BEGIN_PROVIDER [double precision, weight_functions_at_grid_points, (n_points_int
      enddo
      accu = 1.d0/accu
      weight_functions_at_grid_points(l,k,j) = tmp_array(j) * accu 
+!    print*,weight_functions_at_grid_points(l,k,j)
     enddo
    enddo
   enddo
 
+
+END_PROVIDER 
+
+ BEGIN_PROVIDER [double precision, one_body_dm_mo_alpha_at_grid_points, (n_points_integration_angular,n_points_radial_grid,nucl_num,N_states) ]
+&BEGIN_PROVIDER [double precision, one_body_dm_mo_beta_at_grid_points, (n_points_integration_angular,n_points_radial_grid,nucl_num,N_states) ]
+ implicit none
+ integer :: i,j,k,l,m,istate
+ double precision :: contrib
+ double precision :: r(3)
+ double precision :: aos_array(ao_num),mos_array(mo_tot_num)
+  do j = 1, nucl_num
+   do k = 1, n_points_radial_grid -1
+    do l = 1, n_points_integration_angular
+     do istate = 1, N_States
+      one_body_dm_mo_alpha_at_grid_points(l,k,j,istate) = 0.d0
+      one_body_dm_mo_beta_at_grid_points(l,k,j,istate) = 0.d0
+     enddo
+     r(1) = grid_points_per_atom(1,l,k,j)
+     r(2) = grid_points_per_atom(2,l,k,j)
+     r(3) = grid_points_per_atom(3,l,k,j)
+
+     call give_all_mos_at_r(r,mos_array)
+     do istate = 1 , N_states
+      do i = 1, mo_tot_num
+       do m = 1, mo_tot_num
+        contrib = mos_array(i) * mos_array(m)
+        one_body_dm_mo_alpha_at_grid_points(l,k,j,istate) += one_body_dm_mo_alpha(i,m,istate) * contrib
+        one_body_dm_mo_beta_at_grid_points(l,k,j,istate) += one_body_dm_mo_beta(i,m,istate) * contrib
+       enddo
+      enddo
+     enddo
+
+    enddo
+   enddo
+  enddo
 
 END_PROVIDER 
 
@@ -164,41 +179,6 @@ BEGIN_PROVIDER [double precision, final_weight_functions_at_grid_points, (n_poin
     enddo
    enddo
   enddo
-
-END_PROVIDER 
-
-
- BEGIN_PROVIDER [double precision, one_body_dm_mo_alpha_at_grid_points, (n_points_integration_angular,n_points_radial_grid,nucl_num,N_states) ]
-&BEGIN_PROVIDER [double precision, one_body_dm_mo_beta_at_grid_points, (n_points_integration_angular,n_points_radial_grid,nucl_num,N_states) ]
- implicit none
- integer :: i,j,k,l,m,i_state
- double precision :: contrib
- double precision :: r(3)
- double precision :: aos_array(ao_num),mos_array(mo_tot_num)
- do i_state = 1, N_states
-  do j = 1, nucl_num
-   do k = 1, n_points_radial_grid 
-    do l = 1, n_points_integration_angular
-     one_body_dm_mo_alpha_at_grid_points(l,k,j,i_state) = 0.d0
-     one_body_dm_mo_beta_at_grid_points(l,k,j,i_state) = 0.d0
-     r(1) = grid_points_per_atom(1,l,k,j)
-     r(2) = grid_points_per_atom(2,l,k,j)
-     r(3) = grid_points_per_atom(3,l,k,j)
-
-     call give_all_mos_at_r(r,mos_array)
-     do m = 1, mo_tot_num
-      do i = 1, mo_tot_num
-       if(dabs(one_body_dm_mo_alpha(i,m,i_state)).lt.1.d-10)cycle
-       contrib = mos_array(i) * mos_array(m)
-       one_body_dm_mo_alpha_at_grid_points(l,k,j,i_state) += one_body_dm_mo_alpha(i,m,i_state) * contrib
-       one_body_dm_mo_beta_at_grid_points(l,k,j,i_state) += one_body_dm_mo_beta(i,m,i_state) * contrib
-      enddo
-     enddo
-
-    enddo
-   enddo
-  enddo
- enddo
 
 END_PROVIDER 
 
