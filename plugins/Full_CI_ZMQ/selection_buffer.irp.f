@@ -55,10 +55,6 @@ subroutine sort_selection_buffer(b)
   do i=1,b%cur
     iorder(i) = i
   end do
-  ! Optimal for almost sorted data
-!  call sorted_dnumber(absval, b%cur, i)
-!  if (b%cur/i > 
-!  call insertion_dsort(absval, iorder, b%cur)
   call dsort(absval, iorder, b%cur)
   do i=1, nmwen
     detmp(1:N_int,1,i) = b%det(1:N_int,1,iorder(i))

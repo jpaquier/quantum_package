@@ -28,3 +28,4 @@ BEGIN_PROVIDER [ double precision, mo_mono_elec_integral,(mo_tot_num_align,mo_to
 ! endif
 
 END_PROVIDER
+
