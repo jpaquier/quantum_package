@@ -275,6 +275,9 @@ subroutine select_singles_and_doubles(i_generator,hole_mask,particle_mask,fock_d
   use bitmasks
   use selection_types
   implicit none
+  BEGIN_DOC
+!            WARNING /!\ : It is assumed that the generators and selectors are psi_det_sorted
+  END_DOC
   
   integer, intent(in)            :: i_generator, subset
   integer(bit_kind), intent(in)  :: hole_mask(N_int,2), particle_mask(N_int,2)
@@ -313,27 +316,62 @@ subroutine select_singles_and_doubles(i_generator,hole_mask,particle_mask,fock_d
   integer                        :: N_holes(2), N_particles(2)
   integer                        :: hole_list(N_int*bit_kind_size,2)
   integer                        :: particle_list(N_int*bit_kind_size,2)
+  integer(bit_kind), allocatable:: preinteresting_det(:,:,:)
+  allocate (preinteresting_det(N_int,2,N_det))
 
   call bitstring_to_list_ab(hole    , hole_list    , N_holes    , N_int)
   call bitstring_to_list_ab(particle, particle_list, N_particles, N_int)
 
-!  ! ======
-!  ! If the subset doesn't exist, return
-!  logical :: will_compute
-!  will_compute = subset == 0
-!
-!  if (.not.will_compute) then
-!    maskInd = N_holes(1)*N_holes(2) + N_holes(2)*((N_holes(2)-1)/2) + N_holes(1)*((N_holes(1)-1)/2)
-!    will_compute = (maskInd >= subset)
-!    if (.not.will_compute) then
-!      return
-!    endif
-!  endif
-!  ! ======
+  integer :: l_a, nmax
+  integer, allocatable :: indices(:), exc_degree(:), iorder(:)
+  allocate (indices(N_det),  &
+            exc_degree(max(N_det_alpha_unique,N_det_beta_unique)))
+  k=1
+  do i=1,N_det_alpha_unique
+    call get_excitation_degree_spin(psi_det_alpha_unique(1,i), &
+      psi_det_generators(1,1,i_generator), exc_degree(i), N_int)
+  enddo
 
+  do j=1,N_det_beta_unique
+    call get_excitation_degree_spin(psi_det_beta_unique(1,j), &
+      psi_det_generators(1,2,i_generator), nt, N_int)
+    if (nt > 2) cycle
+    do l_a=psi_bilinear_matrix_columns_loc(j), psi_bilinear_matrix_columns_loc(j+1)-1
+      i = psi_bilinear_matrix_rows(l_a)
+      if (nt + exc_degree(i) <= 4) then
+        indices(k) = psi_det_sorted_order(psi_bilinear_matrix_order(l_a))
+        k=k+1
+      endif
+    enddo
+  enddo
   
-  integer(bit_kind), allocatable:: preinteresting_det(:,:,:)
-  allocate (preinteresting_det(N_int,2,N_det))
+  do i=1,N_det_beta_unique
+    call get_excitation_degree_spin(psi_det_beta_unique(1,i), &
+      psi_det_generators(1,2,i_generator), exc_degree(i), N_int)
+  enddo
+
+  do j=1,N_det_alpha_unique
+    call get_excitation_degree_spin(psi_det_alpha_unique(1,j), &
+      psi_det_generators(1,1,i_generator), nt, N_int)
+    if (nt > 1) cycle
+    do l_a=psi_bilinear_matrix_transp_rows_loc(j), psi_bilinear_matrix_transp_rows_loc(j+1)-1
+      i = psi_bilinear_matrix_transp_columns(l_a)
+      if (exc_degree(i) < 3) cycle
+      if (nt + exc_degree(i) <= 4) then
+        indices(k) = psi_det_sorted_order(                   &
+                        psi_bilinear_matrix_order(           &
+                          psi_bilinear_matrix_transp_order(l_a)))
+        k=k+1
+      endif
+    enddo
+  enddo
+  nmax=k-1
+  allocate(iorder(nmax))
+  do i=1,nmax
+    iorder(i) = i
+  enddo
+  call isort(indices,iorder,nmax)
+
 
   preinteresting(0) = 0
   prefullinteresting(0) = 0
@@ -343,7 +381,8 @@ subroutine select_singles_and_doubles(i_generator,hole_mask,particle_mask,fock_d
     negMask(i,2) = not(psi_det_generators(i,2,i_generator))
   end do
   
-  do i=1,N_det
+  do k=1,nmax
+    i = indices(k)
     mobMask(1,1) = iand(negMask(1,1), psi_det_sorted(1,1,i))
     mobMask(1,2) = iand(negMask(1,2), psi_det_sorted(1,2,i))
     nt = popcnt(mobMask(1, 1)) + popcnt(mobMask(1, 2)) 
@@ -509,7 +548,7 @@ subroutine fill_buffer_double(i_generator, sp, h1, h2, bannedOrb, banned, fock_d
   logical :: ok
   integer :: s1, s2, p1, p2, ib, j, istate
   integer(bit_kind) :: mask(N_int, 2), det(N_int, 2)
-  double precision :: e_pert, delta_E, val, Hii, max_e_pert,tmp
+  double precision :: e_pert, delta_E, val, Hii, min_e_pert,tmp
   double precision, external :: diag_H_mat_elem_fock
   
   logical, external :: detEq
@@ -536,7 +575,7 @@ subroutine fill_buffer_double(i_generator, sp, h1, h2, bannedOrb, banned, fock_d
       call apply_particles(mask, s1, p1, s2, p2, det, ok, N_int)
       
       Hii = diag_H_mat_elem_fock(psi_det_generators(1,1,i_generator),det,fock_diag_tmp,N_int)
-      max_e_pert = 0d0
+      min_e_pert = 0d0
       
       do istate=1,N_states
         delta_E = E0(istate) - Hii
@@ -545,14 +584,14 @@ subroutine fill_buffer_double(i_generator, sp, h1, h2, bannedOrb, banned, fock_d
         if (delta_E < 0.d0) then
             tmp = -tmp
         endif
-        e_pert = 0.5d0 * ( tmp - delta_E)
+        e_pert = 0.5d0 * (tmp - delta_E)
         pt2(istate) = pt2(istate) + e_pert
-        max_e_pert = min(e_pert,max_e_pert)
+        min_e_pert = min(e_pert,min_e_pert)
 !        ci(istate) = e_pert / mat(istate, p1, p2)
       end do
       
-      if(dabs(max_e_pert) > buf%mini) then
-        call add_to_selection_buffer(buf, det, max_e_pert)
+      if(min_e_pert <= buf%mini) then
+        call add_to_selection_buffer(buf, det, min_e_pert)
       end if
     end do
   end do
