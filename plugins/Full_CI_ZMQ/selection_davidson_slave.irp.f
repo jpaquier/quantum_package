@@ -37,7 +37,7 @@ subroutine run_wf
 
   do
 
-    call wait_for_states(states,zmq_state,3)
+    call wait_for_states(states,zmq_state,2)
 
     if(trim(zmq_state) == 'Stopped') then
 
