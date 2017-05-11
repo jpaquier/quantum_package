@@ -26,7 +26,6 @@ type t =
     address_tcp     : Address.Tcp.t option ; 
     address_inproc  : Address.Inproc.t option ;
     psi             : Message.Psi.t option;
-    vector             : Message.Vector.t option;
     progress_bar    : Progress_bar.t option ;
     running         : bool;
 }
@@ -49,7 +48,12 @@ let zmq_context =
   ZMQ.Context.create ()
 
 let () =
-  ZMQ.Context.set_io_threads zmq_context 2
+  let nproc =
+    match Sys.getenv "OMP_NUM_THREADS" with
+    | Some m -> int_of_string m
+    | None -> 2
+  in
+  ZMQ.Context.set_io_threads zmq_context nproc
 
 
 let bind_socket ~socket_type ~socket ~port =
@@ -65,7 +69,16 @@ let bind_socket ~socket_type ~socket ~port =
       with
       | Unix.Unix_error _ -> (Time.pause @@ Time.Span.of_float 1. ; loop (i-1) )
       | other_exception -> raise other_exception
-  in loop 60
+  in loop 60;
+  let filename =
+    Printf.sprintf "/tmp/qp_run:%d" port
+  in
+  begin
+    match Sys.file_exists filename with
+    | `Yes -> Sys.remove filename
+    | _ -> ()
+  end;
+  ZMQ.Socket.bind socket ("ipc://"^filename)
 
 
 let hostname = lazy (
@@ -119,7 +132,7 @@ let stop ~port =
     let req_socket =
       ZMQ.Socket.create zmq_context ZMQ.Socket.req
     and address =
-      Printf.sprintf "tcp://localhost:%d" port
+      Printf.sprintf "ipc:///tmp/qp_run:%d" port
     in
     ZMQ.Socket.set_linger_period req_socket 1_000_000;
     ZMQ.Socket.connect req_socket address;
@@ -199,7 +212,7 @@ let end_job msg program_state rep_socket pair_socket =
         reply_ok rep_socket;
         { program_state with
           state        = None ;
-          progress_bar = Progress_bar.clear ();
+          progress_bar = None ;
         }
 
     in
@@ -376,12 +389,7 @@ let get_task msg program_state rep_socket pair_socket =
         let new_queue, task_id, task =
             Queuing_system.pop_task ~client_id program_state.queue
         in
-
-        let no_task =
-          Queuing_system.number_of_queued new_queue = 0
-        in
-
-        if no_task then
+        if (Queuing_system.number_of_queued new_queue = 0) then
           string_of_pub_state Waiting 
           |> ZMQ.Socket.send pair_socket
         else
@@ -510,97 +518,13 @@ let get_psi msg program_state rep_socket =
 
 
 
-let put_vector msg rest_of_msg program_state rep_socket =
-
-    let vector_local =
-        match msg.Message.PutVector_msg.vector with
-        | Some x -> x
-        | None ->
-          begin
-            let data =
-              match rest_of_msg with
-              | [ x ] -> x
-              | _ -> failwith "Badly formed put_vector message"
-            in
-            Message.Vector.create
-              ~size:msg.Message.PutVector_msg.size
-              ~data
-          end
-    in
-    let new_program_state =
-        { program_state with
-          vector = Some vector_local
-        }
-    and client_id =
-      msg.Message.PutVector_msg.client_id
-    in
-    Message.PutVectorReply (Message.PutVectorReply_msg.create ~client_id)
-    |> Message.to_string
-    |> ZMQ.Socket.send rep_socket;
-
-    new_program_state
-
-
-let get_vector msg program_state rep_socket =
-
-      let client_id =
-          msg.Message.GetVector_msg.client_id
-      in
-      match program_state.vector with
-      | None -> failwith "No wave function saved in TaskServer"
-      | Some vector -> 
-          Message.GetVectorReply (Message.GetVectorReply_msg.create ~client_id ~vector)
-          |> Message.to_string_list 
-          |> ZMQ.Socket.send_all rep_socket;
-      program_state
-
-
-
 let terminate program_state rep_socket =
     reply_ok rep_socket;
     { program_state with
       psi = None;
-      vector = None;
       address_tcp = None;
       address_inproc = None;
       running = false
-    }
-
-  
-let abort program_state rep_socket =
-    let queue, client_id =
-        Queuing_system.add_client program_state.queue
-    in
-    let rec aux accu queue = function
-    | 0 -> (queue, accu)
-    | rest ->
-      let new_queue, task_id, _ =
-        Queuing_system.pop_task ~client_id queue
-      in
-      let new_accu = 
-        match task_id with
-        | Some task_id -> task_id::accu
-        | None -> accu
-      in
-      Queuing_system.number_of_queued new_queue
-      |> aux new_accu new_queue
-    in
-    let queue, tasks =
-      aux [] queue 1
-    in
-    let queue = 
-      List.fold ~f:(fun queue task_id -> 
-                  Queuing_system.end_task ~task_id ~client_id queue)
-                  ~init:queue tasks
-    in
-    let queue = 
-      List.fold ~f:(fun queue task_id -> Queuing_system.del_task ~task_id queue)
-                          ~init:queue tasks
-    in
-    reply_ok rep_socket;
-
-    { program_state with
-      queue 
     }
 
   
@@ -681,7 +605,6 @@ let run ~port =
     {   queue = Queuing_system.create () ;
         running = true ;
         psi = None;
-        vector = None;
         state = None;
         address_tcp = None;
         address_inproc = None;
@@ -735,25 +658,17 @@ let run ~port =
               in
 
               (** Debug input *)
-              let () = 
-                if debug_env then
-                  begin
-                    Printf.sprintf "q:%d  r:%d  n:%d  : %s\n%!"
-                    (Queuing_system.number_of_queued program_state.queue)
-                    (Queuing_system.number_of_running program_state.queue)
-                    (Queuing_system.number_of_tasks program_state.queue)
-                    (Message.to_string message)
-                    |> debug
-                  end
-              in
+              Printf.sprintf "q:%d  r:%d  n:%d  : %s\n%!"
+              (Queuing_system.number_of_queued program_state.queue)
+              (Queuing_system.number_of_running program_state.queue)
+              (Queuing_system.number_of_tasks program_state.queue)
+              (Message.to_string message)
+              |> debug;
 
               let new_program_state = 
                 try
                   match program_state.state, message with
                   | _     , Message.Terminate   _ -> terminate program_state rep_socket
-                  | _     , Message.Abort       _ -> abort program_state rep_socket
-                  | _     , Message.PutVector      x -> put_vector x rest program_state rep_socket
-                  | _     , Message.GetVector      x -> get_vector x program_state rep_socket
                   | _     , Message.PutPsi      x -> put_psi x rest program_state rep_socket
                   | _     , Message.GetPsi      x -> get_psi x program_state rep_socket
                   | None  , Message.Newjob      x -> new_job x program_state rep_socket pair_socket
