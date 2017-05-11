@@ -26,7 +26,7 @@ end
  do l = 1, N_states
   lda_exchange(l) = 0.d0
   do j = 1, nucl_num
-   do i = 1, n_points_radial_grid 
+   do i = 1, n_points_radial_grid  -1 
     do k = 1, n_points_integration_angular 
      double precision :: rho_a,rho_b,ex
      double precision :: vx_a,vx_b
@@ -73,7 +73,7 @@ END_PROVIDER
   energy_x(l) = 0.d0
   energy_c(l) = 0.d0
   do j = 1, nucl_num
-   do i = 1, n_points_radial_grid 
+   do i = 1, n_points_radial_grid  -1
     do k = 1, n_points_integration_angular 
      double precision :: rho_a,rho_b,ex,ec
      double precision :: vx_a,vx_b,vc_a,vc_b
