@@ -58,6 +58,16 @@ BEGIN_PROVIDER [double precision, effective_one_e_potential, (mo_tot_num_align, 
    enddo
   enddo
  enddo
+END_PROVIDER 
+
+BEGIN_PROVIDER [double precision, one_e_energy_potential, (mo_tot_num_align, mo_tot_num)]
+ implicit none
+ integer :: i,j,i_state
+  do i = 1, mo_tot_num
+   do j = 1, mo_tot_num
+    one_e_energy_potential(i,j) = mo_nucl_elec_integral(i,j) + mo_kinetic_integral(i,j) + short_range_Hartree_operator(i,j) * 0.5d0
+   enddo
+  enddo
 
 END_PROVIDER 
 
