@@ -21,11 +21,11 @@ BEGIN_PROVIDER [ double precision, mo_mono_elec_integral,(mo_tot_num_align,mo_to
    enddo
   endif
 
-! if (write_mo_one_integrals) then
-!   call write_one_e_integrals('mo_one_integral', mo_mono_elec_integral, &
-!       size(mo_mono_elec_integral,1), size(mo_mono_elec_integral,2))
-!   print *,  'MO N-e integrals written to disk'
-! endif
+  if (write_mo_one_integrals) then
+    call write_one_e_integrals('mo_one_integral', mo_mono_elec_integral, &
+        size(mo_mono_elec_integral,1), size(mo_mono_elec_integral,2))
+    print *,  'MO N-e integrals written to disk'
+  endif
 
 END_PROVIDER
 

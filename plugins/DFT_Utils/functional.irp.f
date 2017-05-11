@@ -27,7 +27,7 @@ end
   lda_exchange(l) = 0.d0
   do j = 1, nucl_num
    do i = 1, n_points_radial_grid 
-    do k = 1, n_points_integration_angular
+    do k = 1, n_points_integration_angular 
      double precision :: rho_a,rho_b,ex
      double precision :: vx_a,vx_b
      rho_a = one_body_dm_mo_alpha_at_grid_points(k,i,j,l)
@@ -74,7 +74,7 @@ END_PROVIDER
   energy_c(l) = 0.d0
   do j = 1, nucl_num
    do i = 1, n_points_radial_grid 
-    do k = 1, n_points_integration_angular
+    do k = 1, n_points_integration_angular 
      double precision :: rho_a,rho_b,ex,ec
      double precision :: vx_a,vx_b,vc_a,vc_b
      rho_a = one_body_dm_mo_alpha_at_grid_points(k,i,j,l)
@@ -82,6 +82,10 @@ END_PROVIDER
      if(exchange_functional.EQ."LDA")then
       call ex_lda(rho_a,rho_b,ex,vx_a,vx_b) 
      else if(exchange_functional.EQ."short_range_LDA")then
+      if(rho_a == 0.d0)then
+       print*,k,i,j,l 
+       pause
+      endif
       call ex_lda_sr(rho_a,rho_b,ex,vx_a,vx_b)
      else if(exchange_functional.EQ."None")then
       ex = 0.d0

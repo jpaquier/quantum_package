@@ -137,11 +137,11 @@ subroutine ao_bielec_integrals_erf_in_map_collector
       rc = f77_zmq_recv( zmq_socket_pull, task_id, 4, 0)
 
 ! Activate if zmq_socket_pull is a REP
-      rc = f77_zmq_send( zmq_socket_pull, 0, 4, 0)
-      if (rc /= 4) then
-        print *,  irp_here, ' : f77_zmq_send (zmq_socket_pull,...'
-        stop 'error'
-      endif
+!     rc = f77_zmq_send( zmq_socket_pull, 0, 4, 0)
+!     if (rc /= 4) then
+!       print *,  irp_here, ' : f77_zmq_send (zmq_socket_pull,...'
+!       stop 'error'
+!     endif
 
       
       call insert_into_ao_integrals_erf_map(n_integrals,buffer_i,buffer_value)
