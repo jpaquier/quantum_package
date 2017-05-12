@@ -6,6 +6,9 @@ program scf
 ! optional: mo_basis.mo_coef
   END_DOC
   call orthonormalize_mos
+  print*, '**************************'
+  print*, 'mu_erf = ',mu_erf
+  print*, '**************************'
   call run
 end
 subroutine run

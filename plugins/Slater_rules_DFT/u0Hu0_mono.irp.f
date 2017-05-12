@@ -1,4 +1,4 @@
-subroutine u_0_H_u_0_monoelec(e_0,u_0,n,keys_tmp,Nint,N_st,sze)
+subroutine u_0_H_u_0_monoelec_dft(e_0,u_0,n,keys_tmp,Nint,N_st,sze)
   use bitmasks
   implicit none
   BEGIN_DOC
@@ -16,24 +16,24 @@ subroutine u_0_H_u_0_monoelec(e_0,u_0,n,keys_tmp,Nint,N_st,sze)
   double precision               :: u_dot_u,u_dot_v,diag_H_mat_elem
   integer :: i,j
   allocate (v_0(sze,N_st),s_0(sze,N_st))
-  call H_S2_u_0_monoelec_nstates_openmp(v_0,s_0,u_0,N_st,sze)
+  call H_S2_u_0_monoelec_dft_nstates_openmp(v_0,s_0,u_0,N_st,sze)
   do i=1,N_st
     e_0(i) = u_dot_v(v_0(1,i),u_0(1,i),n)/u_dot_u(u_0(1,i),n)
   enddo
   deallocate (s_0, v_0)
 end
 
-BEGIN_PROVIDER [ double precision, psi_energy_monoelec, (N_states) ]
+BEGIN_PROVIDER [ double precision, psi_energy_monoelec_dft, (N_states) ]
   implicit none
   BEGIN_DOC
 ! Energy of the current wave function
   END_DOC
-  call u_0_H_u_0_monoelec(psi_energy_monoelec,psi_coef,N_det,psi_det,N_int,N_states,psi_det_size)
+  call u_0_H_u_0_monoelec_dft(psi_energy_monoelec_dft,psi_coef,N_det,psi_det,N_int,N_states,psi_det_size)
 END_PROVIDER
 
 
 
-subroutine H_S2_u_0_monoelec_nstates_openmp(v_0,s_0,u_0,N_st,sze)
+subroutine H_S2_u_0_monoelec_dft_nstates_openmp(v_0,s_0,u_0,N_st,sze)
   use bitmasks
   implicit none
   BEGIN_DOC
@@ -61,7 +61,7 @@ subroutine H_S2_u_0_monoelec_nstates_openmp(v_0,s_0,u_0,N_st,sze)
       size(u_t, 1),                                                  &
       N_det, N_st)
 
-  call H_S2_u_0_monoelec_nstates_openmp_work(v_0,s_0,u_t,N_st,sze,1,N_det,0,1)
+  call H_S2_u_0_monoelec_dft_nstates_openmp_work(v_0,s_0,u_t,N_st,sze,1,N_det,0,1)
   deallocate(u_t)
 
   do k=1,N_st
@@ -73,7 +73,7 @@ subroutine H_S2_u_0_monoelec_nstates_openmp(v_0,s_0,u_0,N_st,sze)
 end
 
 
-subroutine H_S2_u_0_monoelec_nstates_openmp_work(v_0,s_0,u_t,N_st,sze,istart,iend,ishift,istep)
+subroutine H_S2_u_0_monoelec_dft_nstates_openmp_work(v_0,s_0,u_t,N_st,sze,istart,iend,ishift,istep)
   use bitmasks
   implicit none
   BEGIN_DOC
@@ -86,24 +86,24 @@ subroutine H_S2_u_0_monoelec_nstates_openmp_work(v_0,s_0,u_t,N_st,sze,istart,ien
   double precision, intent(out)  :: v_0(sze,N_st), s_0(sze,N_st) 
 
   
-  PROVIDE bi_elec_ref_bitmask_energy N_int
+  PROVIDE bi_elec_ref_bitmask_energy short_range_Hartree N_int
 
   select case (N_int)
     case (1)
-      call H_S2_u_0_monoelec_nstates_openmp_work_1(v_0,s_0,u_t,N_st,sze,istart,iend,ishift,istep)
+      call H_S2_u_0_monoelec_dft_nstates_openmp_work_1(v_0,s_0,u_t,N_st,sze,istart,iend,ishift,istep)
     case (2)
-      call H_S2_u_0_monoelec_nstates_openmp_work_2(v_0,s_0,u_t,N_st,sze,istart,iend,ishift,istep)
+      call H_S2_u_0_monoelec_dft_nstates_openmp_work_2(v_0,s_0,u_t,N_st,sze,istart,iend,ishift,istep)
     case (3)
-      call H_S2_u_0_monoelec_nstates_openmp_work_3(v_0,s_0,u_t,N_st,sze,istart,iend,ishift,istep)
+      call H_S2_u_0_monoelec_dft_nstates_openmp_work_3(v_0,s_0,u_t,N_st,sze,istart,iend,ishift,istep)
     case (4)
-      call H_S2_u_0_monoelec_nstates_openmp_work_4(v_0,s_0,u_t,N_st,sze,istart,iend,ishift,istep)
+      call H_S2_u_0_monoelec_dft_nstates_openmp_work_4(v_0,s_0,u_t,N_st,sze,istart,iend,ishift,istep)
     case default
-      call H_S2_u_0_monoelec_nstates_openmp_work_N_int(v_0,s_0,u_t,N_st,sze,istart,iend,ishift,istep)
+      call H_S2_u_0_monoelec_dft_nstates_openmp_work_N_int(v_0,s_0,u_t,N_st,sze,istart,iend,ishift,istep)
   end select
 end
 BEGIN_TEMPLATE
 
-subroutine H_S2_u_0_monoelec_nstates_openmp_work_$N_int(v_0,s_0,u_t,N_st,sze,istart,iend,ishift,istep)
+subroutine H_S2_u_0_monoelec_dft_nstates_openmp_work_$N_int(v_0,s_0,u_t,N_st,sze,istart,iend,ishift,istep)
   use bitmasks
   implicit none
   BEGIN_DOC
@@ -182,50 +182,50 @@ subroutine H_S2_u_0_monoelec_nstates_openmp_work_$N_int(v_0,s_0,u_t,N_st,sze,ist
   s_t = 0.d0
 
 
-  !$OMP DO SCHEDULE(dynamic,64)
-  do k_a=istart+ishift,iend,istep
+! !$OMP DO SCHEDULE(dynamic,64)
+! do k_a=istart+ishift,iend,istep
 
-    krow = psi_bilinear_matrix_rows(k_a)
-    kcol = psi_bilinear_matrix_columns(k_a)
-    
-    tmp_det(1:$N_int,1) = psi_det_alpha_unique(1:$N_int, krow)
-    tmp_det(1:$N_int,2) = psi_det_beta_unique (1:$N_int, kcol)
-    
-    if (kcol /= kcol_prev) then
-      call get_all_spin_singles_$N_int(                              &
-          psi_det_beta_unique(1,kcol+1), idx0(kcol+1),               &
-          tmp_det(1,2), N_det_beta_unique-kcol,                      &
-          singles_b, n_singles_b)
-    endif
-    kcol_prev = kcol
+!   krow = psi_bilinear_matrix_rows(k_a)
+!   kcol = psi_bilinear_matrix_columns(k_a)
+!   
+!   tmp_det(1:$N_int,1) = psi_det_alpha_unique(1:$N_int, krow)
+!   tmp_det(1:$N_int,2) = psi_det_beta_unique (1:$N_int, kcol)
+!   
+!   if (kcol /= kcol_prev) then
+!     call get_all_spin_singles_$N_int(                              &
+!         psi_det_beta_unique(1,kcol+1), idx0(kcol+1),               &
+!         tmp_det(1,2), N_det_beta_unique-kcol,                      &
+!         singles_b, n_singles_b)
+!   endif
+!   kcol_prev = kcol
 
-    ! Loop over singly excited beta columns > current column
-    ! ------------------------------------------------------
+!   ! Loop over singly excited beta columns > current column
+!   ! ------------------------------------------------------
 
-    do i=1,n_singles_b
-      lcol = singles_b(i)
+!   do i=1,n_singles_b
+!     lcol = singles_b(i)
 
-      tmp_det2(1:$N_int,2) = psi_det_beta_unique(1:$N_int, lcol)
+!     tmp_det2(1:$N_int,2) = psi_det_beta_unique(1:$N_int, lcol)
 
-      l_a = psi_bilinear_matrix_columns_loc(lcol)
+!     l_a = psi_bilinear_matrix_columns_loc(lcol)
 
-      nmax = psi_bilinear_matrix_columns_loc(lcol+1) - l_a
-      do j=1,nmax
-        lrow = psi_bilinear_matrix_rows(l_a)
-        buffer(1:$N_int,j) = psi_det_alpha_unique(1:$N_int, lrow)
-        idx(j) = l_a
-        l_a = l_a+1
-      enddo
-      j = j-1
-      
-      call get_all_spin_singles_$N_int(                              &
-          buffer, idx, tmp_det(1,1), j,                              &
-          singles_a, n_singles_a )
+!     nmax = psi_bilinear_matrix_columns_loc(lcol+1) - l_a
+!     do j=1,nmax
+!       lrow = psi_bilinear_matrix_rows(l_a)
+!       buffer(1:$N_int,j) = psi_det_alpha_unique(1:$N_int, lrow)
+!       idx(j) = l_a
+!       l_a = l_a+1
+!     enddo
+!     j = j-1
+!     
+!     call get_all_spin_singles_$N_int(                              &
+!         buffer, idx, tmp_det(1,1), j,                              &
+!         singles_a, n_singles_a )
 
-    enddo
+!   enddo
 
-  enddo
-  !$OMP END DO 
+! enddo
+! !$OMP END DO 
 
   !$OMP DO SCHEDULE(dynamic,64)
   do k_a=istart+ishift,iend,istep
@@ -276,7 +276,7 @@ subroutine H_S2_u_0_monoelec_nstates_openmp_work_$N_int(v_0,s_0,u_t,N_st,sze,ist
       l_a = singles_a(i)
       lrow = psi_bilinear_matrix_rows(l_a)
       tmp_det2(1:$N_int,1) = psi_det_alpha_unique(1:$N_int, lrow)
-      call i_H_j_mono_spin_monoelec( tmp_det, tmp_det2, $N_int, 1, hij)
+      call i_H_j_mono_spin_monoelec_dft( tmp_det, tmp_det2, $N_int, 1, hij)
       do l=1,N_st
         v_t(l,l_a) = v_t(l,l_a) + hij * u_t(l,k_a)
         v_t(l,k_a) = v_t(l,k_a) + hij * u_t(l,l_a)
@@ -330,7 +330,7 @@ subroutine H_S2_u_0_monoelec_nstates_openmp_work_$N_int(v_0,s_0,u_t,N_st,sze,ist
       l_b = singles_b(i)
       lcol = psi_bilinear_matrix_transp_columns(l_b)
       tmp_det2(1:$N_int,2) = psi_det_beta_unique (1:$N_int, lcol)
-      call i_H_j_mono_spin_monoelec( tmp_det, tmp_det2, $N_int, 2, hij)
+      call i_H_j_mono_spin_monoelec_dft( tmp_det, tmp_det2, $N_int, 2, hij)
       l_a = psi_bilinear_matrix_transp_order(l_b)
       do l=1,N_st
         v_t(l,l_a) = v_t(l,l_a) + hij * u_t(l,k_a)
@@ -352,9 +352,9 @@ subroutine H_S2_u_0_monoelec_nstates_openmp_work_$N_int(v_0,s_0,u_t,N_st,sze,ist
     tmp_det(1:$N_int,1) = psi_det_alpha_unique(1:$N_int, krow)
     tmp_det(1:$N_int,2) = psi_det_beta_unique (1:$N_int, kcol)
     
-    double precision, external :: diag_H_mat_elem_monoelec, diag_S_mat_elem
+    double precision, external :: diag_H_mat_elem_monoelec_dft, diag_S_mat_elem
   
-    hij = diag_H_mat_elem_monoelec(tmp_det,$N_int) 
+    hij = diag_H_mat_elem_monoelec_dft(tmp_det,$N_int) 
     sij = diag_S_mat_elem(tmp_det,$N_int)
     do l=1,N_st
       v_t(l,k_a) = v_t(l,k_a) + hij * u_t(l,k_a)

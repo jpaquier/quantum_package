@@ -1,11 +1,11 @@
 BEGIN_PROVIDER [integer, n_points_integration_angular]
  implicit none
- n_points_integration_angular =434
+ n_points_integration_angular =1202
  END_PROVIDER 
 
 BEGIN_PROVIDER [integer, n_points_radial_grid]
  implicit none
- n_points_radial_grid = 500
+ n_points_radial_grid = 100
 END_PROVIDER 
 
 
@@ -26,7 +26,7 @@ END_PROVIDER
  degre_rad = pi/180.d0
  accu = 0.d0
  double precision :: x(n_points_integration_angular),y(n_points_integration_angular),z(n_points_integration_angular),w(n_points_integration_angular)
- call LD0434(X,Y,Z,W,n_points_integration_angular)
+ call LD1202(X,Y,Z,W,n_points_integration_angular)
  do i = 1, n_points_integration_angular
   angular_quadrature_points(i,1) = x(i)
   angular_quadrature_points(i,2) = y(i)

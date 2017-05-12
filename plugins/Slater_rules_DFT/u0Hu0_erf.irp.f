@@ -77,7 +77,7 @@ subroutine H_S2_u_0_erf_nstates_openmp_work(v_0,s_0,u_t,N_st,sze,istart,iend,ish
   double precision, intent(out)  :: v_0(sze,N_st), s_0(sze,N_st) 
 
   
-  PROVIDE ref_bitmask_energy N_int
+  PROVIDE ref_bitmask_energy_erf N_int short_range_Hartree
 
   select case (N_int)
     case (1)
