@@ -11,6 +11,7 @@ subroutine get_excitation_degree(key1,key2,degree,Nint)
   integer, intent(out)           :: degree
   
   integer(bit_kind)              :: xorvec(2*N_int_max)
+  !DIR$ ATTRIBUTES ALIGN : $IRP_ALIGN :: xorvec
   integer                        :: l
   
   ASSERT (Nint > 0)
@@ -2143,26 +2144,8 @@ subroutine H_u_0_stored(v_0,u_0,hmatrix,sze)
   double precision, intent(in)   :: u_0(sze)
   v_0 = 0.d0
   call matrix_vector_product(u_0,v_0,hmatrix,sze,sze)
-end
 
-subroutine H_s2_u_0_stored(v_0,u_0,hmatrix,s2matrix,sze)
-  use bitmasks
-  implicit none
-  BEGIN_DOC
-  ! Computes v_0 = H|u_0>
-  !
-  ! n : number of determinants
-  !
-  ! uses the big_matrix_stored array
-  END_DOC
-  integer, intent(in)            :: sze
-  double precision, intent(in)   :: hmatrix(sze,sze),s2matrix(sze,sze)
-  double precision, intent(out)  :: v_0(sze)
-  double precision, intent(in)   :: u_0(sze)
-  v_0 = 0.d0
-  call matrix_vector_product(u_0,v_0,hmatrix,sze,sze)
 end
-
 
 subroutine u_0_H_u_0_stored(e_0,u_0,hmatrix,sze)
   use bitmasks
@@ -2541,7 +2524,7 @@ subroutine i_H_j_mono_spin(key_i,key_j,Nint,spin,hij)
   PROVIDE big_array_exchange_integrals mo_bielec_integrals_in_map
 
   call get_mono_excitation_spin(key_i(1,spin),key_j(1,spin),exc,phase,Nint)
-  call get_mono_excitation_from_fock(key_i,key_j,exc(1,2),exc(1,1),spin,phase,hij)
+  call get_mono_excitation_from_fock(key_i,key_j,exc(1,1),exc(1,2),spin,phase,hij)
 end
 
 subroutine i_H_j_double_spin(key_i,key_j,Nint,hij)
@@ -2584,13 +2567,14 @@ subroutine i_H_j_double_alpha_beta(key_i,key_j,Nint,hij)
   double precision, intent(out)  :: hij
   
   integer                        :: exc(0:2,2,2)
-  double precision               :: phase
+  double precision               :: phase, phase2
   double precision, external     :: get_mo_bielec_integral
 
   PROVIDE big_array_exchange_integrals mo_bielec_integrals_in_map
 
   call get_mono_excitation_spin(key_i(1,1),key_j(1,1),exc(0,1,1),phase,Nint)
-  call get_mono_excitation_spin(key_i(1,2),key_j(1,2),exc(0,1,2),phase,Nint)
+  call get_mono_excitation_spin(key_i(1,2),key_j(1,2),exc(0,1,2),phase2,Nint)
+  phase = phase*phase2
   if (exc(1,1,1) == exc(1,2,2)) then
     hij = phase * big_array_exchange_integrals(exc(1,1,1),exc(1,1,2),exc(1,2,1))
   else if (exc(1,2,1) == exc(1,1,2)) then
@@ -2604,4 +2588,235 @@ subroutine i_H_j_double_alpha_beta(key_i,key_j,Nint,hij)
   endif
 end
 
+
+
+subroutine i_H_j_mono_spin_bielec(key_i,key_j,Nint,spin,hij)
+  use bitmasks
+  implicit none
+  BEGIN_DOC
+  ! Returns <i|H|j> where i and j are determinants differing by a single excitation
+  END_DOC
+  integer, intent(in)            :: Nint, spin
+  integer(bit_kind), intent(in)  :: key_i(Nint,2), key_j(Nint,2)
+  double precision, intent(out)  :: hij
+  
+  integer                        :: exc(0:2,2)
+  double precision               :: phase
+
+  PROVIDE big_array_exchange_integrals mo_bielec_integrals_in_map
+
+  call get_mono_excitation_spin(key_i(1,spin),key_j(1,spin),exc,phase,Nint)
+  call get_mono_excitation_from_fock_bielec(key_i,key_j,exc(1,1),exc(1,2),spin,phase,hij)
+end
+
+
+double precision function diag_H_mat_elem_bielec(det_in,Nint)
+  implicit none
+  BEGIN_DOC
+  ! Computes <i|H|i>
+  END_DOC
+  integer,intent(in)             :: Nint
+  integer(bit_kind),intent(in)   :: det_in(Nint,2)
+  
+  integer(bit_kind)              :: hole(Nint,2)
+  integer(bit_kind)              :: particle(Nint,2)
+  integer                        :: i, nexc(2), ispin
+  integer                        :: occ_particle(Nint*bit_kind_size,2)
+  integer                        :: occ_hole(Nint*bit_kind_size,2)
+  integer(bit_kind)              :: det_tmp(Nint,2)
+  integer                        :: na, nb
+  
+  ASSERT (Nint > 0)
+  ASSERT (sum(popcnt(det_in(:,1))) == elec_alpha_num)
+  ASSERT (sum(popcnt(det_in(:,2))) == elec_beta_num)
+  
+  nexc(1) = 0
+  nexc(2) = 0
+  do i=1,Nint
+    hole(i,1)     = xor(det_in(i,1),ref_bitmask(i,1))
+    hole(i,2)     = xor(det_in(i,2),ref_bitmask(i,2))
+    particle(i,1) = iand(hole(i,1),det_in(i,1))
+    particle(i,2) = iand(hole(i,2),det_in(i,2))
+    hole(i,1)     = iand(hole(i,1),ref_bitmask(i,1))
+    hole(i,2)     = iand(hole(i,2),ref_bitmask(i,2))
+    nexc(1)       = nexc(1) + popcnt(hole(i,1))
+    nexc(2)       = nexc(2) + popcnt(hole(i,2))
+  enddo
+  
+  diag_H_mat_elem_bielec = bi_elec_ref_bitmask_energy
+  if (nexc(1)+nexc(2) == 0) then
+    return
+  endif
+  
+  !call debug_det(det_in,Nint)
+  integer                        :: tmp(2)
+  !DIR$ FORCEINLINE
+  call bitstring_to_list_ab(particle, occ_particle, tmp, Nint)
+  ASSERT (tmp(1) == nexc(1))
+  ASSERT (tmp(2) == nexc(2))
+  !DIR$ FORCEINLINE
+  call bitstring_to_list_ab(hole, occ_hole, tmp, Nint)
+  ASSERT (tmp(1) == nexc(1))
+  ASSERT (tmp(2) == nexc(2))
+  
+  det_tmp = ref_bitmask
+  do ispin=1,2
+    na = elec_num_tab(ispin)
+    nb = elec_num_tab(iand(ispin,1)+1)
+    do i=1,nexc(ispin)
+      !DIR$ FORCEINLINE
+      call ac_operator_bielec( occ_particle(i,ispin), ispin, det_tmp, diag_H_mat_elem_bielec, Nint,na,nb)
+      !DIR$ FORCEINLINE
+      call a_operator_bielec ( occ_hole    (i,ispin), ispin, det_tmp, diag_H_mat_elem_bielec, Nint,na,nb)
+    enddo
+  enddo
+end
+
+
+subroutine a_operator_bielec(iorb,ispin,key,hjj,Nint,na,nb)
+  use bitmasks
+  implicit none
+  BEGIN_DOC
+  ! Needed for diag_H_mat_elem
+  END_DOC
+  integer, intent(in)            :: iorb, ispin, Nint
+  integer, intent(inout)         :: na, nb
+  integer(bit_kind), intent(inout) :: key(Nint,2)
+  double precision, intent(inout) :: hjj
+  
+  integer                        :: occ(Nint*bit_kind_size,2)
+  integer                        :: other_spin
+  integer                        :: k,l,i
+  integer                        :: tmp(2)
+  
+  ASSERT (iorb > 0)
+  ASSERT (ispin > 0)
+  ASSERT (ispin < 3)
+  ASSERT (Nint > 0)
+  
+  k = ishft(iorb-1,-bit_kind_shift)+1
+  ASSERT (k > 0)
+  l = iorb - ishft(k-1,bit_kind_shift)-1
+  key(k,ispin) = ibclr(key(k,ispin),l)
+  other_spin = iand(ispin,1)+1
+  
+  !DIR$ FORCEINLINE
+  call bitstring_to_list_ab(key, occ, tmp, Nint)
+  na = na-1
+  
+  ! Same spin
+  do i=1,na
+    hjj = hjj - mo_bielec_integral_jj_anti(occ(i,ispin),iorb)
+  enddo
+  
+  ! Opposite spin
+  do i=1,nb
+    hjj = hjj - mo_bielec_integral_jj(occ(i,other_spin),iorb)
+  enddo
+  
+end
+
+
+subroutine ac_operator_bielec(iorb,ispin,key,hjj,Nint,na,nb)
+  use bitmasks
+  implicit none
+  BEGIN_DOC
+  ! Needed for diag_H_mat_elem
+  END_DOC
+  integer, intent(in)            :: iorb, ispin, Nint
+  integer, intent(inout)         :: na, nb
+  integer(bit_kind), intent(inout) :: key(Nint,2)
+  double precision, intent(inout) :: hjj
+  
+  integer                        :: occ(Nint*bit_kind_size,2)
+  integer                        :: other_spin
+  integer                        :: k,l,i
+  
+  ASSERT (iorb > 0)
+  ASSERT (ispin > 0)
+  ASSERT (ispin < 3)
+  ASSERT (Nint > 0)
+  
+  integer                        :: tmp(2)
+  !DIR$ FORCEINLINE
+  call bitstring_to_list_ab(key, occ, tmp, Nint)
+  ASSERT (tmp(1) == elec_alpha_num)
+  ASSERT (tmp(2) == elec_beta_num)
+  
+  k = ishft(iorb-1,-bit_kind_shift)+1
+  ASSERT (k > 0)
+  l = iorb - ishft(k-1,bit_kind_shift)-1
+  key(k,ispin) = ibset(key(k,ispin),l)
+  other_spin = iand(ispin,1)+1
+  
+  
+  ! Same spin
+  do i=1,na
+    hjj = hjj + mo_bielec_integral_jj_anti(occ(i,ispin),iorb)
+  enddo
+  
+  ! Opposite spin
+  do i=1,nb
+    hjj = hjj + mo_bielec_integral_jj(occ(i,other_spin),iorb)
+  enddo
+  na = na+1
+end
+
+
+
+subroutine i_H_j_mono_spin_monoelec(key_i,key_j,Nint,spin,hij)
+  use bitmasks
+  implicit none
+  BEGIN_DOC
+  ! Returns <i|H|j> where i and j are determinants differing by a single excitation
+  END_DOC
+  integer, intent(in)            :: Nint, spin
+  integer(bit_kind), intent(in)  :: key_i(Nint,2), key_j(Nint,2)
+  double precision, intent(out)  :: hij
+  
+  integer                        :: exc(0:2,2)
+  double precision               :: phase
+
+  call get_mono_excitation_spin(key_i(1,spin),key_j(1,spin),exc,phase,Nint)
+  integer :: m,p
+  m = exc(1,1)
+  p = exc(1,2)
+  hij = phase * mo_mono_elec_integral(m,p)
+end
+
+
+double precision function diag_H_mat_elem_monoelec(det_in,Nint)
+  use bitmasks
+  implicit none
+  BEGIN_DOC
+  ! Computes <i|H|i>
+  END_DOC
+  integer,intent(in)             :: Nint
+  integer(bit_kind),intent(in)   :: det_in(Nint,2)
+  
+  integer(bit_kind)              :: hole(Nint,2)
+  integer(bit_kind)              :: particle(Nint,2)
+  integer                        :: i, nexc(2), ispin
+  integer                        :: occ_particle(Nint*bit_kind_size,2)
+  integer                        :: occ_hole(Nint*bit_kind_size,2)
+  integer(bit_kind)              :: det_tmp(Nint,2)
+  integer                        :: na, nb
+  
+  ASSERT (Nint > 0)
+  ASSERT (sum(popcnt(det_in(:,1))) == elec_alpha_num)
+  ASSERT (sum(popcnt(det_in(:,2))) == elec_beta_num)
+  
+  diag_H_mat_elem_monoelec = 0.d0
+  
+  !call debug_det(det_in,Nint)
+  integer                        :: tmp(2)
+  !DIR$ FORCEINLINE
+  call bitstring_to_list_ab(det_in, occ_particle, tmp, Nint)
+  do ispin = 1,2 
+   do i = 1, tmp(ispin)
+    diag_H_mat_elem_monoelec +=  mo_mono_elec_integral(occ_particle(i,ispin),occ_particle(i,ispin))
+   enddo
+  enddo
+  
+end
 
