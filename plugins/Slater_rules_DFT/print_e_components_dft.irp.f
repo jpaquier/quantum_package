@@ -8,7 +8,10 @@ end
 subroutine routine2
  implicit none
 
- print*,  '****************************************'
+ print*, '****************************************'
+ write(*, '(A31,X,F16.10)') 'mu_erf                       = ',mu_erf
+ print*, '****************************************'
+
  write(*, '(A31,X,F16.10)') 'TOTAL ENERGY                 = ',total_electronic_energy
  print*, ''
  print*, 'Component of the energy ....'

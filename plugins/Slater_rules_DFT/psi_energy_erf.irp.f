@@ -19,10 +19,27 @@ BEGIN_PROVIDER [ double precision, psi_energy_erf, (N_states) ]
 ! enddo
 ! call get_average(array,one_body_dm_mo,average)
 ! psi_energy_hartree = 0.5d0 * average
+
+
+! psi_energy_hartree = 0.d0
+! psi_energy_core = 0.d0
+! psi_energy_core_and_hartree = psi_energy_monoelec_dft 
+! call u_0_H_u_0_erf(psi_energy_erf,psi_coef,N_det,psi_det,N_int,N_states,psi_det_size)
+  double precision :: hij_core, hij_hartree, hij_erf, contrib
   psi_energy_hartree = 0.d0
   psi_energy_core = 0.d0
-  psi_energy_core_and_hartree = psi_energy_monoelec_dft 
-  call u_0_H_u_0_erf(psi_energy_erf,psi_coef,N_det,psi_det,N_int,N_states,psi_det_size)
+  psi_energy_erf = 0.d0
+  do i = 1, N_Det
+   do j = 1, N_det
+    contrib = psi_coef(i,1) * psi_coef(j,1)
+    call i_H_j_dft_general(psi_det(1,1,i),psi_det(1,1,j),N_int,hij_core, hij_hartree, hij_erf)
+    psi_energy_erf += contrib * hij_erf
+    psi_energy_core += contrib * hij_core 
+    psi_energy_hartree += contrib * hij_hartree
+!   print*, psi_energy_erf,psi_energy_core,psi_energy_hartree
+   enddo
+  enddo
+  psi_energy_core_and_hartree = psi_energy_core + psi_energy_hartree
 ! total_electronic_energy = psi_energy_hartree + psi_energy_core + psi_energy_erf + energy_x + energy_c
   total_electronic_energy = psi_energy_core_and_hartree + psi_energy_erf + energy_x + energy_c
 END_PROVIDER

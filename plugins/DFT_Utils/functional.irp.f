@@ -39,7 +39,6 @@ end
      r(3) = grid_points_per_atom(3,k,i,j) 
      call give_all_aos_at_r(r,aos_array)
      do m = 1, ao_num
-!     lda_ex_potential_ao(m,m,l) += (vx_a + vx_b) * aos_array(m)*aos_array(m)
       do n = 1, ao_num
        lda_ex_potential_alpha_ao(m,n,l) += (vx_a ) * aos_array(m)*aos_array(n) * final_weight_functions_at_grid_points(k,i,j)
        lda_ex_potential_beta_ao(m,n,l) += (vx_b) * aos_array(m)*aos_array(n) * final_weight_functions_at_grid_points(k,i,j)

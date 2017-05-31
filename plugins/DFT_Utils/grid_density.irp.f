@@ -5,7 +5,7 @@ BEGIN_PROVIDER [integer, n_points_integration_angular]
 
 BEGIN_PROVIDER [integer, n_points_radial_grid]
  implicit none
- n_points_radial_grid = 100
+ n_points_radial_grid = 1000
 END_PROVIDER 
 
 
@@ -56,6 +56,7 @@ END_PROVIDER
  integer :: i
  do i = 1, n_points_radial_grid
   grid_points_radial(i) = (i-1) * dr_radial_integral
+ !print*, grid_points_radial(i)
  enddo
 
 END_PROVIDER 
@@ -72,7 +73,7 @@ BEGIN_PROVIDER [double precision, grid_points_per_atom, (3,n_points_integration_
   x_ref = nucl_coord(i,1)
   y_ref = nucl_coord(i,2)
   z_ref = nucl_coord(i,3)
-  do j = 1, n_points_radial_grid
+  do j = 1, n_points_radial_grid-1
    double precision :: x,r
    x = grid_points_radial(j) ! x value for the mapping of the [0, +\infty] to [0,1]
    r = knowles_function(alpha_knowles(int(nucl_charge(i))),m_knowles,x) ! value of the radial coordinate for the integration 
@@ -98,7 +99,7 @@ BEGIN_PROVIDER [double precision, weight_functions_at_grid_points, (n_points_int
  double precision :: tmp_array(nucl_num)
  ! run over all points in space
   do j = 1, nucl_num  ! that are referred to each atom 
-   do k = 1, n_points_radial_grid   !for each radial grid attached to the "jth" atom
+   do k = 1, n_points_radial_grid -1  !for each radial grid attached to the "jth" atom
     do l = 1, n_points_integration_angular ! for each angular point attached to the "jth" atom
      r(1) = grid_points_per_atom(1,l,k,j)
      r(2) = grid_points_per_atom(2,l,k,j)
@@ -128,7 +129,7 @@ END_PROVIDER
  double precision :: r(3)
  double precision :: aos_array(ao_num),mos_array(mo_tot_num)
   do j = 1, nucl_num
-   do k = 1, n_points_radial_grid 
+   do k = 1, n_points_radial_grid -1
     do l = 1, n_points_integration_angular
      do istate = 1, N_States
       one_body_dm_mo_alpha_at_grid_points(l,k,j,istate) = 0.d0
@@ -138,22 +139,81 @@ END_PROVIDER
      r(2) = grid_points_per_atom(2,l,k,j)
      r(3) = grid_points_per_atom(3,l,k,j)
 
-     call give_all_mos_at_r(r,mos_array)
-     do istate = 1 , N_states
-      do i = 1, mo_tot_num
-       do m = 1, mo_tot_num
-        contrib = mos_array(i) * mos_array(m)
-        one_body_dm_mo_alpha_at_grid_points(l,k,j,istate) += one_body_dm_mo_alpha(i,m,istate) * contrib
-        one_body_dm_mo_beta_at_grid_points(l,k,j,istate) += one_body_dm_mo_beta(i,m,istate) * contrib
-       enddo
-      enddo
-     enddo
+!    call give_all_mos_at_r(r,mos_array)
+!    do istate = 1 , N_states
+!     do i = 1, mo_tot_num
+!      do m = 1, mo_tot_num
+!       contrib = mos_array(i) * mos_array(m)
+!       one_body_dm_mo_alpha_at_grid_points(l,k,j,istate) += one_body_dm_mo_alpha(i,m,istate) * contrib
+!       one_body_dm_mo_beta_at_grid_points(l,k,j,istate) += one_body_dm_mo_beta(i,m,istate) * contrib
+!      enddo
+!     enddo
+!    enddo
+ !!!!! Works also with the ao basis 
+     double precision :: dm_a,dm_b
+     call density_matrices_alpha_beta_at_r(r,dm_a,dm_b)
+     if(dabs(dm_a - one_body_dm_mo_alpha_at_grid_points(l,k,j,1)).gt.1.d-10)then
+       print*, r
+       print*, j,k,l
+       print*, dm_a,one_body_dm_mo_alpha_at_grid_points(l,k,j,1),dabs(dm_a - one_body_dm_mo_alpha_at_grid_points(l,k,j,1))
+       pause
+     endif
 
     enddo
    enddo
   enddo
 
 END_PROVIDER 
+
+
+ BEGIN_PROVIDER [double precision, one_body_dm_mo_alpha_and_grad_at_grid_points, (4,n_points_integration_angular,n_points_radial_grid,nucl_num,N_states) ]
+&BEGIN_PROVIDER [double precision, one_body_dm_mo_beta_and_grad_at_grid_points, (4,n_points_integration_angular,n_points_radial_grid,nucl_num,N_states) ]
+ BEGIN_DOC
+! one_body_dm_mo_alpha_and_grad_at_grid_points(1,.....,i_state) = d\dx \rho_{\alpha}^{\istate}(r)
+! one_body_dm_mo_alpha_and_grad_at_grid_points(2,.....,i_state) = d\dy \rho_{\alpha}^{\istate}(r)
+! one_body_dm_mo_alpha_and_grad_at_grid_points(3,.....,i_state) = d\dz \rho_{\alpha}^{\istate}(r)
+! one_body_dm_mo_alpha_and_grad_at_grid_points(4,.....,i_state) = \rho_{\alpha}^{\istate}(r)
+ END_DOC
+ implicit none
+ integer :: i,j,k,l,m,istate
+ double precision :: contrib
+ double precision :: r(3)
+ double precision :: aos_array(ao_num),mos_array(mo_tot_num)
+!do istate = 1, N_States
+  do j = 1, nucl_num
+   do k = 1, n_points_radial_grid -1
+    do l = 1, n_points_integration_angular
+      do m = 1, 4
+       one_body_dm_mo_alpha_and_grad_at_grid_points(m,l,k,j,1) = 0.d0
+       one_body_dm_mo_beta_and_grad_at_grid_points(m,l,k,j,1) = 0.d0
+      enddo
+     enddo
+     r(1) = grid_points_per_atom(1,l,k,j)
+     r(2) = grid_points_per_atom(2,l,k,j)
+     r(3) = grid_points_per_atom(3,l,k,j)
+
+ !!!!! Works also with the ao basis 
+     double precision :: dm_a,dm_b, dm_a_grad(3), dm_b_grad(3)
+     call density_matrices_and_gradients_alpha_beta_at_r(r,dm_a,dm_b, dm_a_grad, dm_b_grad)
+     one_body_dm_mo_alpha_and_grad_at_grid_points(1,l,k,j,1) +=  dm_a_grad(1)
+     one_body_dm_mo_alpha_and_grad_at_grid_points(2,l,k,j,1) +=  dm_a_grad(2)
+     one_body_dm_mo_alpha_and_grad_at_grid_points(3,l,k,j,1) +=  dm_a_grad(3)
+     one_body_dm_mo_alpha_and_grad_at_grid_points(4,l,k,j,1) +=  dm_a
+
+
+     one_body_dm_mo_beta_and_grad_at_grid_points(1,l,k,j,1) +=  dm_b_grad(1)
+     one_body_dm_mo_beta_and_grad_at_grid_points(2,l,k,j,1) +=  dm_b_grad(2)
+     one_body_dm_mo_beta_and_grad_at_grid_points(3,l,k,j,1) +=  dm_b_grad(3)
+     one_body_dm_mo_beta_and_grad_at_grid_points(4,l,k,j,1) +=  dm_b
+
+
+    enddo
+   enddo
+! enddo
+
+END_PROVIDER 
+
+
 
 BEGIN_PROVIDER [double precision, final_weight_functions_at_grid_points, (n_points_integration_angular,n_points_radial_grid,nucl_num) ]
  BEGIN_DOC 
@@ -170,7 +230,7 @@ BEGIN_PROVIDER [double precision, final_weight_functions_at_grid_points, (n_poin
  double precision :: derivative_knowles_function,knowles_function
  ! run over all points in space
   do j = 1, nucl_num  ! that are referred to each atom 
-   do i = 1, n_points_radial_grid  !for each radial grid attached to the "jth" atom
+   do i = 1, n_points_radial_grid -1 !for each radial grid attached to the "jth" atom
     x = grid_points_radial(i) ! x value for the mapping of the [0, +\infty] to [0,1]
     do k = 1, n_points_integration_angular  ! for each angular point attached to the "jth" atom
      contrib_integration = derivative_knowles_function(alpha_knowles(int(nucl_charge(j))),m_knowles,x) & 

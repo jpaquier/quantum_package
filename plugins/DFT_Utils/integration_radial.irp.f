@@ -49,6 +49,7 @@ END_PROVIDER
  END_DOC
  double precision, intent(in) :: alpha,x
  integer, intent(in) :: m
+!print*, x
  knowles_function = -alpha * dlog(1.d0-x**m)
  end
 

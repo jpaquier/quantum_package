@@ -28,7 +28,18 @@ BEGIN_PROVIDER [ double precision, psi_energy_monoelec, (N_states) ]
   BEGIN_DOC
 ! Energy of the current wave function
   END_DOC
-  call u_0_H_u_0_monoelec(psi_energy_monoelec,psi_coef,N_det,psi_det,N_int,N_states,psi_det_size)
+! call u_0_H_u_0_monoelec(psi_energy_monoelec,psi_coef,N_det,psi_det,N_int,N_states,psi_det_size)
+  integer :: i,j,m
+  double precision :: hij
+  psi_energy_monoelec = 0.d0
+  do i = 1, N_det
+   do j = 1, N_det
+    call i_H_j_monoelec(psi_det(1,1,i),psi_det(1,1,j),N_int,hij)
+    do m = 1, N_states
+     psi_energy_monoelec(m) += psi_coef(i,m) * psi_coef(j,m) * hij
+    enddo
+   enddo
+  enddo
 END_PROVIDER
 
 

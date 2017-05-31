@@ -36,92 +36,96 @@ END_PROVIDER
 
   one_body_dm_mo_alpha = 0.d0
   one_body_dm_mo_beta  = 0.d0
-  !$OMP PARALLEL DEFAULT(NONE)                                         &
-    !$OMP PRIVATE(j,k,l,m,occ,ck, cl, ckl,phase,h1,h2,p1,p2,s1,s2, degree,exc, &
-    !$OMP  tmp_a, tmp_b, n_occ, krow, kcol, lrow, lcol, tmp_det, tmp_det2)&
-    !$OMP SHARED(psi_det,psi_coef,N_int,N_states,elec_alpha_num,&
-    !$OMP  elec_beta_num,one_body_dm_mo_alpha,one_body_dm_mo_beta,N_det,mo_tot_num_align,&
-    !$OMP  mo_tot_num,psi_bilinear_matrix_rows,psi_bilinear_matrix_columns, &
-    !$OMP  psi_bilinear_matrix_transp_rows, psi_bilinear_matrix_transp_columns, &
-    !$OMP  psi_bilinear_matrix_order_reverse, psi_det_alpha_unique, psi_det_beta_unique, &
-    !$OMP  psi_bilinear_matrix_values, psi_bilinear_matrix_transp_values)
-  allocate(tmp_a(mo_tot_num_align,mo_tot_num,N_states), tmp_b(mo_tot_num_align,mo_tot_num,N_states) )
-  tmp_a = 0.d0
-  tmp_b = 0.d0
-  !$OMP DO SCHEDULE(guided)
-  do k=1,N_det
-    krow = psi_bilinear_matrix_rows(k) 
-    kcol = psi_bilinear_matrix_columns(k) 
-    tmp_det(:,1) = psi_det_alpha_unique(:,krow)
-    tmp_det(:,2) = psi_det_beta_unique (:,kcol)
-    call bitstring_to_list_ab(tmp_det, occ, n_occ, N_int)
-    do m=1,N_states
-      ck = psi_bilinear_matrix_values(k,m)*psi_bilinear_matrix_values(k,m)
-      do l=1,elec_alpha_num
-        j = occ(l,1)
-        tmp_a(j,j,m) += ck
-      enddo
-      do l=1,elec_beta_num
-        j = occ(l,2)
-        tmp_b(j,j,m) += ck
-      enddo
-    enddo
+ 
+  one_body_dm_mo_beta = one_body_dm_mo_beta_old 
+  one_body_dm_mo_alpha = one_body_dm_mo_alpha_old 
 
-    l = k+1
-    lrow = psi_bilinear_matrix_rows(l) 
-    lcol = psi_bilinear_matrix_columns(l) 
-    ! Fix beta determinant, loop over alphas
-    do while ( lcol == kcol )
-      tmp_det2(:) = psi_det_alpha_unique(:, lrow)
-      call get_excitation_degree_spin(tmp_det(1,1),tmp_det2,degree,N_int)
-      if (degree == 1) then
-        exc = 0
-        call get_mono_excitation_spin(tmp_det(1,1),tmp_det2,exc,phase,N_int)
-        call decode_exc_spin(exc,h1,p1,h2,p2)
-        do m=1,N_states
-          ckl = psi_bilinear_matrix_values(k,m)*psi_bilinear_matrix_values(l,m) * phase
-          tmp_a(h1,p1,m) += ckl
-          tmp_a(p1,h1,m) += ckl
-        enddo
-      endif
-      l = l+1
-      if (l>N_det) exit
-      lrow = psi_bilinear_matrix_rows(l) 
-      lcol = psi_bilinear_matrix_columns(l) 
-    enddo
+! !$OMP PARALLEL DEFAULT(NONE)                                         &
+!   !$OMP PRIVATE(j,k,l,m,occ,ck, cl, ckl,phase,h1,h2,p1,p2,s1,s2, degree,exc, &
+!   !$OMP  tmp_a, tmp_b, n_occ, krow, kcol, lrow, lcol, tmp_det, tmp_det2)&
+!   !$OMP SHARED(psi_det,psi_coef,N_int,N_states,elec_alpha_num,&
+!   !$OMP  elec_beta_num,one_body_dm_mo_alpha,one_body_dm_mo_beta,N_det,mo_tot_num_align,&
+!   !$OMP  mo_tot_num,psi_bilinear_matrix_rows,psi_bilinear_matrix_columns, &
+!   !$OMP  psi_bilinear_matrix_transp_rows, psi_bilinear_matrix_transp_columns, &
+!   !$OMP  psi_bilinear_matrix_order_reverse, psi_det_alpha_unique, psi_det_beta_unique, &
+!   !$OMP  psi_bilinear_matrix_values, psi_bilinear_matrix_transp_values)
+! allocate(tmp_a(mo_tot_num_align,mo_tot_num,N_states), tmp_b(mo_tot_num_align,mo_tot_num,N_states) )
+! tmp_a = 0.d0
+! tmp_b = 0.d0
+! !$OMP DO SCHEDULE(guided)
+! do k=1,N_det
+!   krow = psi_bilinear_matrix_rows(k) 
+!   kcol = psi_bilinear_matrix_columns(k) 
+!   tmp_det(:,1) = psi_det_alpha_unique(:,krow)
+!   tmp_det(:,2) = psi_det_beta_unique (:,kcol)
+!   call bitstring_to_list_ab(tmp_det, occ, n_occ, N_int)
+!   do m=1,N_states
+!     ck = psi_bilinear_matrix_values(k,m)*psi_bilinear_matrix_values(k,m)
+!     do l=1,elec_alpha_num
+!       j = occ(l,1)
+!       tmp_a(j,j,m) += ck
+!     enddo
+!     do l=1,elec_beta_num
+!       j = occ(l,2)
+!       tmp_b(j,j,m) += ck
+!     enddo
+!   enddo
 
-    l = psi_bilinear_matrix_order_reverse(k)+1
-    ! Fix alpha determinant, loop over betas
-    lrow = psi_bilinear_matrix_transp_rows(l) 
-    lcol = psi_bilinear_matrix_transp_columns(l) 
-    do while ( lrow == krow )
-      tmp_det2(:) = psi_det_beta_unique (:, lcol)
-      call get_excitation_degree_spin(tmp_det(1,2),tmp_det2,degree,N_int)
-      if (degree == 1) then
-        call get_mono_excitation_spin(tmp_det(1,2),tmp_det2,exc,phase,N_int)
-        call decode_exc_spin(exc,h1,p1,h2,p2)
-        do m=1,N_states
-          ckl = psi_bilinear_matrix_values(k,m)*psi_bilinear_matrix_transp_values(l,m) * phase
-          tmp_b(h1,p1,m) += ckl
-          tmp_b(p1,h1,m) += ckl
-        enddo
-      endif
-      l = l+1
-      if (l>N_det) exit
-      lrow = psi_bilinear_matrix_transp_rows(l) 
-      lcol = psi_bilinear_matrix_transp_columns(l) 
-    enddo
+!   l = k+1
+!   lrow = psi_bilinear_matrix_rows(l) 
+!   lcol = psi_bilinear_matrix_columns(l) 
+!   ! Fix beta determinant, loop over alphas
+!   do while ( lcol == kcol )
+!     tmp_det2(:) = psi_det_alpha_unique(:, lrow)
+!     call get_excitation_degree_spin(tmp_det(1,1),tmp_det2,degree,N_int)
+!     if (degree == 1) then
+!       exc = 0
+!       call get_mono_excitation_spin(tmp_det(1,1),tmp_det2,exc,phase,N_int)
+!       call decode_exc_spin(exc,h1,p1,h2,p2)
+!       do m=1,N_states
+!         ckl = psi_bilinear_matrix_values(k,m)*psi_bilinear_matrix_values(l,m) * phase
+!         tmp_a(h1,p1,m) += ckl
+!         tmp_a(p1,h1,m) += ckl
+!       enddo
+!     endif
+!     l = l+1
+!     if (l>N_det) exit
+!     lrow = psi_bilinear_matrix_rows(l) 
+!     lcol = psi_bilinear_matrix_columns(l) 
+!   enddo
 
-  enddo
-  !$OMP END DO NOWAIT
-  !$OMP CRITICAL
-  one_body_dm_mo_alpha(:,:,:) = one_body_dm_mo_alpha(:,:,:) + tmp_a(:,:,:)
-  !$OMP END CRITICAL
-  !$OMP CRITICAL
-  one_body_dm_mo_beta(:,:,:)  = one_body_dm_mo_beta(:,:,:)  + tmp_b(:,:,:)
-  !$OMP END CRITICAL
-  deallocate(tmp_a,tmp_b)
-  !$OMP END PARALLEL
+!   l = psi_bilinear_matrix_order_reverse(k)+1
+!   ! Fix alpha determinant, loop over betas
+!   lrow = psi_bilinear_matrix_transp_rows(l) 
+!   lcol = psi_bilinear_matrix_transp_columns(l) 
+!   do while ( lrow == krow )
+!     tmp_det2(:) = psi_det_beta_unique (:, lcol)
+!     call get_excitation_degree_spin(tmp_det(1,2),tmp_det2,degree,N_int)
+!     if (degree == 1) then
+!       call get_mono_excitation_spin(tmp_det(1,2),tmp_det2,exc,phase,N_int)
+!       call decode_exc_spin(exc,h1,p1,h2,p2)
+!       do m=1,N_states
+!         ckl = psi_bilinear_matrix_values(k,m)*psi_bilinear_matrix_transp_values(l,m) * phase
+!         tmp_b(h1,p1,m) += ckl
+!         tmp_b(p1,h1,m) += ckl
+!       enddo
+!     endif
+!     l = l+1
+!     if (l>N_det) exit
+!     lrow = psi_bilinear_matrix_transp_rows(l) 
+!     lcol = psi_bilinear_matrix_transp_columns(l) 
+!   enddo
+
+! enddo
+! !$OMP END DO NOWAIT
+! !$OMP CRITICAL
+! one_body_dm_mo_alpha(:,:,:) = one_body_dm_mo_alpha(:,:,:) + tmp_a(:,:,:)
+! !$OMP END CRITICAL
+! !$OMP CRITICAL
+! one_body_dm_mo_beta(:,:,:)  = one_body_dm_mo_beta(:,:,:)  + tmp_b(:,:,:)
+! !$OMP END CRITICAL
+! deallocate(tmp_a,tmp_b)
+! !$OMP END PARALLEL
 
 END_PROVIDER
 
@@ -282,6 +286,8 @@ END_PROVIDER
 
  BEGIN_PROVIDER [ double precision, one_body_dm_ao_alpha, (ao_num_align,ao_num) ]
 &BEGIN_PROVIDER [ double precision, one_body_dm_ao_beta, (ao_num_align,ao_num) ]
+&BEGIN_PROVIDER [ double precision, one_body_dm_ao_alpha_no_align, (ao_num,ao_num) ]
+&BEGIN_PROVIDER [ double precision, one_body_dm_ao_beta_no_align, (ao_num,ao_num) ]
  BEGIN_DOC
 ! one body density matrix on the AO basis : rho_AO(alpha) , rho_AO(beta)
  END_DOC
@@ -300,9 +306,14 @@ END_PROVIDER
 !    if(dabs(dm_mo).le.1.d-10)cycle
      one_body_dm_ao_alpha(l,k) += mo_coef(k,i) * mo_coef(l,j) *  mo_alpha
      one_body_dm_ao_beta(l,k) += mo_coef(k,i) * mo_coef(l,j)  *  mo_beta        
-
     enddo
    enddo
+  enddo
+ enddo
+ do i = 1, ao_num
+  do j = 1, ao_num
+   one_body_dm_ao_alpha_no_align(j,i) = one_body_dm_ao_alpha(j,i)
+   one_body_dm_ao_beta_no_align(j,i) = one_body_dm_ao_beta(j,i)
   enddo
  enddo
 
@@ -379,3 +390,5 @@ END_PROVIDER
      !$OMP END PARALLEL
 
 END_PROVIDER
+
+

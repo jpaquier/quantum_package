@@ -31,6 +31,7 @@ subroutine ec_lda_sr(rho_a,rho_b,ec,vc_a,vc_b)
       call vcorrlr(rs,z,mu_erf,vclrup,vclrdown,vclrupd,vclrdownd)
       vc_a = vcup-vclrup
       vc_b = vcdown-vclrdown
+!     ec = 0.d0
 
       endif
 
