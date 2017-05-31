@@ -119,7 +119,7 @@
 
  ! 1h2p   
  delta_ij_tmp = 0.d0
-!call give_1h2p_contrib(delta_ij_tmp)
+ call give_1h2p_contrib(delta_ij_tmp)
  call H_apply_mrpt_1h2p(delta_ij_tmp,N_det)
  accu = 0.d0
  do i_state = 1, N_states
@@ -135,7 +135,7 @@
 
  ! 2h1p   
  delta_ij_tmp = 0.d0
-!call give_2h1p_contrib(delta_ij_tmp)
+ call give_2h1p_contrib(delta_ij_tmp)
  call H_apply_mrpt_2h1p(delta_ij_tmp,N_det)
  accu = 0.d0
  do i_state = 1, N_states
