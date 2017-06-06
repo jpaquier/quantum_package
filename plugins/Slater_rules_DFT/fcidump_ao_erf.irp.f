@@ -26,7 +26,7 @@ program fcidump
   PROVIDE ao_bielec_integrals_erf_in_map
 
   double precision :: get_ao_bielec_integral_erf, integral_erf
-  double precision :: get_ao_bielec_integral_sr, integral_sr
+! double precision :: get_ao_bielec_integral_sr, integral_sr
   double precision :: get_ao_bielec_integral, integral
 
   do l=1,n_act_orb
@@ -39,13 +39,13 @@ program fcidump
       i1 = list_act(i)
        if (i1>=j1) then
           integral_erf = get_ao_bielec_integral_erf(i1,j1,k1,l1,ao_integrals_erf_map)
-          integral_sr = get_ao_bielec_integral_sr(i1,j1,k1,l1,ao_integrals_sr_map)
+!         integral_sr = get_ao_bielec_integral_sr(i1,j1,k1,l1,ao_integrals_sr_map)
           integral = get_ao_bielec_integral(i1,j1,k1,l1,ao_integrals_map)
-          if (dabs(integral - integral_erf - integral_sr).gt.1.d-10)then
-           print*, i,j,k,l
-           print*, integral,integral_erf,integral_sr
-           pause
-          endif
+!         if (dabs(integral - integral_erf - integral_sr).gt.1.d-10)then
+!          print*, i,j,k,l
+!          print*, integral,integral_erf,integral_sr
+!          pause
+!         endif
           if (dabs(integral_erf) > ao_integrals_threshold) then 
             write(i_unit_output,*) integral_erf, i,k,j,l
           endif

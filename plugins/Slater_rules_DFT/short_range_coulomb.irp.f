@@ -103,15 +103,15 @@ subroutine save_erf_bi_elec_integrals
  call ezfio_set_integrals_bielec_disk_access_mo_integrals("Read")
 end
 
-subroutine save_sr_bi_elec_integrals
- implicit none
- integer :: i,j,k,l
- PROVIDE mo_bielec_integrals_sr_in_map
- call ezfio_set_work_empty(.False.)
- call map_save_to_disk(trim(ezfio_filename)//'/work/mo_ints',mo_integrals_sr_map)
- call ezfio_set_integrals_bielec_disk_access_mo_integrals("Read")
-end
-
+!subroutine save_sr_bi_elec_integrals
+!implicit none
+!integer :: i,j,k,l
+!PROVIDE mo_bielec_integrals_sr_in_map
+!call ezfio_set_work_empty(.False.)
+!call map_save_to_disk(trim(ezfio_filename)//'/work/mo_ints',mo_integrals_sr_map)
+!call ezfio_set_integrals_bielec_disk_access_mo_integrals("Read")
+!end
+ 
 subroutine save_erf_bi_elec_integrals_ao
  implicit none
  integer :: i,j,k,l
