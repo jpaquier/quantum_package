@@ -45,6 +45,8 @@ subroutine FOBOCI_lmct_mlct_old_thr(iter)
    lmct = .True.
    integer :: i_hole_osoci
    i_hole_osoci = list_inact(i)
+!  if (i.gt.2)cycle
+!  if(i_hole_osoci.gt.17)cycle
    print*,'--------------------------'
    ! First set the current generators to the one of restart
    call check_symetry(i_hole_osoci,thr,test_sym)
@@ -152,9 +154,9 @@ subroutine FOBOCI_lmct_mlct_old_thr(iter)
        enddo
       enddo
       call all_single(e_pt2)
-      call make_s2_eigenfunction_first_order
-      threshold_davidson = 1.d-6
-      soft_touch threshold_davidson davidson_criterion
+!     call make_s2_eigenfunction_first_order
+!     threshold_davidson = 1.d-6
+!     soft_touch threshold_davidson davidson_criterion
      
       call diagonalize_ci
       deallocate(dressing_matrix)

@@ -69,6 +69,7 @@ subroutine set_intermediate_normalization_lmct_old(norm,i_hole)
   print*,'state ',k
   do i = 1, n_good_hole
    print*,'psi_coef(index_good_hole) = ',psi_coef(index_good_hole(i),k)/psi_coef(index_ref_generators_restart,k)
+   call debug_det(psi_det(1,1,index_good_hole(i)),N_int)
   enddo
   print*,''
  enddo
@@ -214,6 +215,10 @@ subroutine update_density_matrix_osoci
   do j = 1, mo_tot_num
    one_body_dm_mo_alpha_osoci(i,j) = one_body_dm_mo_alpha_osoci(i,j) + (one_body_dm_mo_alpha_average(i,j) - one_body_dm_mo_alpha_generators_restart(i,j))
    one_body_dm_mo_beta_osoci(i,j) = one_body_dm_mo_beta_osoci(i,j) + (one_body_dm_mo_beta_average(i,j) - one_body_dm_mo_beta_generators_restart(i,j))
+!  if (i.ne.j)then
+!   print*, i,j
+!   print*, (one_body_dm_mo_alpha_average(i,j) - one_body_dm_mo_alpha_generators_restart(i,j)),one_body_dm_mo_alpha_average(i,j) , one_body_dm_mo_alpha_generators_restart(i,j)
+!  endif
   enddo
  enddo
 

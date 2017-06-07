@@ -81,9 +81,30 @@ subroutine all_single(e_pt2)
    print*,'E        = ',CI_energy(i)
    print*,'S^2      = ',CI_eigenvectors_s2(i)
   enddo
+  print*, 'psi_coef_1 = ',psi_coef(1,1)
   do i = 1, max(2,N_det_generators)
+   call debug_det(psi_det(1,1,i),N_int)
    print*,'psi_coef = ',psi_coef(i,1)
   enddo
+  print*, '***'
+  do i = 1, N_det
+   if(dabs(psi_Coef(i,1)).gt.0.1d0)then
+   print*, 'i',i
+   call debug_det(psi_det(1,1,i),N_int)
+   print*,'psi_coef = ',psi_coef(i,1)
+   endif
+!  do j = i+1, N_det
+!   integer :: j
+!   call  get_excitation_degree(psi_det(1,1,i),psi_det(1,1,j),degree,N_int) 
+!   if(degree==0)then
+!    print*, 'doublon !!!'
+!    print*, j
+!    stop
+!   endif
+!  enddo
+  enddo
+  
+! call save_wavefunction
   deallocate(pt2,norm_pert,E_before)
 end
 

@@ -439,6 +439,9 @@ END_PROVIDER
      !$OMP END CRITICAL
      deallocate(tmp_a,tmp_b)
      !$OMP END PARALLEL
+!    do m = 1, mo_tot_num
+!      write(*,'(100(F8.6,X))')one_body_dm_mo_beta_old(m,:,1)
+!    enddo
 
 END_PROVIDER
 

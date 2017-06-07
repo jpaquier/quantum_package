@@ -24,6 +24,8 @@ subroutine reorder_active_orb
  
  do i = 1, n_act_orb
   iorb = list_act(i)
+! print*, '*********'
+! print*, 'i ===',i
   do j = 1, mo_tot_num
    accu(j) = 0.d0
    iorder(j) = j
@@ -35,6 +37,9 @@ subroutine reorder_active_orb
    accu(j) = -dabs(accu(j))
   enddo
   call dsort(accu,iorder,mo_tot_num)
+  do j = 1, mo_tot_num
+   print*, accu(j),iorder(j)
+  enddo
   index_active_orb(i) = iorder(1) 
  enddo
 
@@ -51,6 +56,7 @@ subroutine reorder_active_orb
     mo_coef(i,i2) = x
   enddo
  enddo
+ touch mo_coef
 
  deallocate(accu,index_active_orb, iorder)
 end
