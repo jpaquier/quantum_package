@@ -9,14 +9,23 @@
 &BEGIN_PROVIDER [ double precision, second_order_pt_new_1h2p, (N_states) ]
 &BEGIN_PROVIDER [ double precision, second_order_pt_new_2h1p, (N_states) ]
 &BEGIN_PROVIDER [ double precision, second_order_pt_new_2h2p, (N_states) ]
+  use bitmasks
  implicit none
  BEGIN_DOC
  ! Dressing matrix in N_det basis
  END_DOC
  integer :: i,j,m
- integer :: i_state
+ integer :: idet,jdet,hole,part
+ integer :: i_state,ispin
  double precision :: accu(N_states)
  double precision, allocatable :: delta_ij_tmp(:,:,:)
+ integer           :: degree(N_det)
+ integer           :: idx(0:N_det)
+ integer :: exc(0:2,2,2)
+ double precision :: phase
+ integer :: occ(N_int*bit_kind_size,2)
+ integer  :: n_elec_tmp(2)
+ integer :: iorb_a
 
 
  delta_ij = 0.d0
@@ -24,6 +33,7 @@
  allocate (delta_ij_tmp(N_det,N_det,N_states))
 
 
+ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  ! 1h 
  delta_ij_tmp = 0.d0
  accu = 0.d0
@@ -44,8 +54,10 @@
    second_order_pt_new_1h(i_state) = accu(i_state) 
  enddo
  print*, '1h   = ',accu
- ! 1h 
+ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+
+ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  ! 1p 
  delta_ij_tmp = 0.d0
  if(orbital_ordered)then
@@ -66,7 +78,11 @@
  second_order_pt_new_1p(i_state) = accu(i_state) 
  enddo
  print*, '1p   = ',accu
+ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+
+
+ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  ! 1h1p 
  delta_ij_tmp = 0.d0
  if(orbital_ordered)then
@@ -88,7 +104,12 @@
  second_order_pt_new_1h1p(i_state) = accu(i_state) 
  enddo
  print*, '1h1p = ',accu
+ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+
+
+ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  ! 1h1p third order
  if(do_third_order_1h1p)then
   delta_ij_tmp = 0.d0
@@ -105,7 +126,11 @@
   enddo
   print*, '1h1p(3)',accu
  endif
+ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+
+ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  ! 2h   
  delta_ij_tmp = 0.d0
  if(orbital_ordered)then
@@ -126,7 +151,10 @@
  second_order_pt_new_2h(i_state) = accu(i_state) 
  enddo
  print*, '2h   = ',accu
+ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+
+ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  ! 2p   
  delta_ij_tmp = 0.d0
  if(orbital_ordered)then
@@ -147,54 +175,101 @@
  second_order_pt_new_2p(i_state) = accu(i_state) 
  enddo
  print*, '2p   = ',accu
+ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  ! 1h2p   
- delta_ij_tmp = 0.d0
- call give_1h2p_contrib(delta_ij_tmp)
-!call H_apply_mrpt_1h2p(delta_ij_tmp,N_det)
- accu = 0.d0
- do i_state = 1, N_states
- do i = 1, N_det
-  do j = 1, N_det
-   accu(i_state) += delta_ij_tmp(j,i,i_state) * psi_coef(i,i_state) * psi_coef(j,i_state)
-   delta_ij(j,i,i_state) += delta_ij_tmp(j,i,i_state)
-  enddo
- enddo
- second_order_pt_new_1h2p(i_state) = accu(i_state) 
- enddo
- print*, '1h2p = ',accu
+!!!QQcall H_apply_mrpt_1h2p(delta_ij_tmp,N_det)  very old way to do it
+!!!QQcall give_1h2p_contrib(delta_ij_tmp)   old way to do it 
 
- ! 2h1p   
- delta_ij_tmp = 0.d0
- call give_2h1p_contrib(delta_ij_tmp)
-!call H_apply_mrpt_2h1p(delta_ij_tmp,N_det)
  accu = 0.d0
  do i_state = 1, N_states
- do i = 1, N_det
-  do j = 1, N_det
-   accu(i_state) += delta_ij_tmp(j,i,i_state) * psi_coef(i,i_state) * psi_coef(j,i_state)
-   delta_ij(j,i,i_state) += delta_ij_tmp(j,i,i_state)
+  do idet = 1, N_det
+   !!! Diagonal element 
+   call bitstring_to_list_ab(psi_active(1,1,idet), occ, n_elec_tmp, N_int)
+   do ispin = 1, 2
+    do i = 1, n_elec_tmp(ispin)
+     iorb_a = list_act_reverse(occ(i,ispin))
+     delta_ij(idet,idet,i_state) += effective_fock_operator_1h2p(iorb_a,iorb_a,ispin,i_state)
+     accu(i_state) += effective_fock_operator_1h2p(iorb_a,iorb_a,ispin,i_state)* psi_coef(idet,i_state)**2
+    enddo
+   enddo
+   !!! Extra diagonal elements 
+   call get_excitation_degree_vector_mono(psi_det,psi_det(1,1,idet),degree,N_int,N_det,idx)
+   do jdet = 1, idx(0)
+    if(idx(jdet)==idet)cycle
+    call get_mono_excitation(psi_det(1,1,idet),psi_det(1,1,idx(jdet)),exc,phase,N_int)
+    if (exc(0,1,1) == 1) then
+       ! Mono alpha
+       hole = list_act_reverse(exc(1,1,1))   !!!  a_a
+       part = list_act_reverse(exc(1,2,1))   !!!  a^{\dagger}_{b}
+       ispin =  1
+    else
+       ! Mono beta
+       hole = list_act_reverse(exc(1,1,2))   !!!  a_a
+       part = list_act_reverse(exc(1,2,2))   !!!  a^{\dagger}_{b}
+       ispin =  2
+    endif
+    delta_ij(idet,idx(jdet),i_state) += effective_fock_operator_1h2p(hole,part,ispin,i_state) * phase
+    accu(i_state) += effective_fock_operator_1h2p(hole,part,ispin,i_state) * phase * psi_coef(idet,i_state) * psi_coef(idx(jdet),i_state)
+   enddo
   enddo
+  print*, '1h2p =',accu(i_state)
  enddo
- second_order_pt_new_2h1p(i_state) = accu(i_state) 
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!QQcall H_apply_mrpt_2h1p(delta_ij_tmp,N_det)  very old way to do it
+!!!QQcall give_2h1p_contrib(delta_ij_tmp)   old way to do it 
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ integer(bit_kind) :: key_tmp(N_int,2)
+ accu = 0.d0
+ do i_state = 1, N_states
+  do idet = 1, N_det
+   !!! Diagonal element 
+   do i = 1, N_int
+    key_tmp(i,1) = xor(psi_active(i,1,idet),cas_bitmask_small(i,1))
+    key_tmp(i,2) = xor(psi_active(i,2,idet),cas_bitmask_small(i,2))
+   enddo
+   call bitstring_to_list_ab(key_tmp, occ, n_elec_tmp, N_int)
+   do ispin = 1, 2
+    do i = 1, n_elec_tmp(ispin)
+     iorb_a = list_act_reverse(occ(i,ispin))
+     delta_ij(idet,idet,i_state) += effective_fock_operator_2h1p(iorb_a,iorb_a,ispin,i_state)
+     accu(i_state) += effective_fock_operator_2h1p(iorb_a,iorb_a,ispin,i_state)* psi_coef(idet,i_state)**2
+    enddo
+   enddo
+   !!! Extra diagonal elements 
+   call get_excitation_degree_vector_mono(psi_det,psi_det(1,1,idet),degree,N_int,N_det,idx)
+   do jdet = 1, idx(0)
+    if(idx(jdet)==idet)cycle
+    call get_mono_excitation(psi_det(1,1,idet),psi_det(1,1,idx(jdet)),exc,phase,N_int)
+    if (exc(0,1,1) == 1) then
+       ! Mono alpha
+       hole = list_act_reverse(exc(1,1,1))   !!!  a_a
+       part = list_act_reverse(exc(1,2,1))   !!!  a^{\dagger}_{b}
+       ispin =  1
+    else
+       ! Mono beta
+       hole = list_act_reverse(exc(1,1,2))   !!!  a_a
+       part = list_act_reverse(exc(1,2,2))   !!!  a^{\dagger}_{b}
+       ispin =  2
+    endif
+    delta_ij(idet,idx(jdet),i_state) += - effective_fock_operator_2h1p(hole,part,ispin,i_state) * phase !! the "-" sign comes from the a_a a^{\dagger}_b
+    accu(i_state) += - effective_fock_operator_2h1p(hole,part,ispin,i_state) * phase * psi_coef(idet,i_state) * psi_coef(idx(jdet),i_state)!! the "-" sign comes from the a_a a^{\dagger}_b
+   enddo
+  enddo
  enddo
  print*, '2h1p = ',accu
 
- ! 2h2p   
-!delta_ij_tmp = 0.d0
-!call H_apply_mrpt_2h2p(delta_ij_tmp,N_det)
-!accu = 0.d0
-!do i_state = 1, N_states
-!do i = 1, N_det
-! do j = 1, N_det
-!  accu(i_state) += delta_ij_tmp(j,i,i_state) * psi_coef(i,i_state) * psi_coef(j,i_state)
-!  delta_ij(j,i,i_state) += delta_ij_tmp(j,i,i_state)
-! enddo
-!enddo
-!second_order_pt_new_2h2p(i_state) = accu(i_state) 
-!enddo
-!print*, '2h2p = ',accu
 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  double precision :: contrib_2h2p(N_states)
  call give_2h2p(contrib_2h2p)
  do i_state = 1, N_states
@@ -204,8 +279,11 @@
  second_order_pt_new_2h2p(i_state) = contrib_2h2p(i_state) 
  enddo
  print*, '2h2p = ',contrib_2h2p(1) 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  
 
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  ! total  
  
  print*, 'Hamiltonian dressing'
