@@ -26,8 +26,14 @@
 
  ! 1h 
  delta_ij_tmp = 0.d0
- call H_apply_mrpt_1h(delta_ij_tmp,N_det)
  accu = 0.d0
+ if(orbital_ordered)then
+  call set_bitmask_for_1h
+ else 
+  call set_bitmask_particl_as_input(reunion_of_bitmask)
+  call set_bitmask_hole_as_input(reunion_of_bitmask)
+ endif
+ call H_apply_mrpt_1h(delta_ij_tmp,N_det)
  do i_state = 1, N_states
  do i = 1, N_det
   do j = 1, N_det
@@ -38,9 +44,16 @@
    second_order_pt_new_1h(i_state) = accu(i_state) 
  enddo
  print*, '1h   = ',accu
- 
+ ! 1h 
+
  ! 1p 
  delta_ij_tmp = 0.d0
+ if(orbital_ordered)then
+  call set_bitmask_for_1p
+ else 
+  call set_bitmask_particl_as_input(reunion_of_bitmask)
+  call set_bitmask_hole_as_input(reunion_of_bitmask)
+ endif
  call H_apply_mrpt_1p(delta_ij_tmp,N_det)
  accu = 0.d0
  do i_state = 1, N_states
@@ -56,6 +69,12 @@
 
  ! 1h1p 
  delta_ij_tmp = 0.d0
+ if(orbital_ordered)then
+  call set_bitmask_for_1h1p
+ else 
+  call set_bitmask_particl_as_input(reunion_of_bitmask)
+  call set_bitmask_hole_as_input(reunion_of_bitmask)
+ endif
  call H_apply_mrpt_1h1p(delta_ij_tmp,N_det)
  double precision :: e_corr_from_1h1p_singles(N_states)
  accu = 0.d0
@@ -89,6 +108,12 @@
 
  ! 2h   
  delta_ij_tmp = 0.d0
+ if(orbital_ordered)then
+  call set_bitmask_for_2h
+ else 
+  call set_bitmask_particl_as_input(reunion_of_bitmask)
+  call set_bitmask_hole_as_input(reunion_of_bitmask)
+ endif
  call H_apply_mrpt_2h(delta_ij_tmp,N_det)
  accu = 0.d0
  do i_state = 1, N_states
@@ -104,6 +129,12 @@
 
  ! 2p   
  delta_ij_tmp = 0.d0
+ if(orbital_ordered)then
+  call set_bitmask_for_2p
+ else 
+  call set_bitmask_particl_as_input(reunion_of_bitmask)
+  call set_bitmask_hole_as_input(reunion_of_bitmask)
+ endif
  call H_apply_mrpt_2p(delta_ij_tmp,N_det)
  accu = 0.d0
  do i_state = 1, N_states
@@ -120,7 +151,7 @@
  ! 1h2p   
  delta_ij_tmp = 0.d0
  call give_1h2p_contrib(delta_ij_tmp)
- call H_apply_mrpt_1h2p(delta_ij_tmp,N_det)
+!call H_apply_mrpt_1h2p(delta_ij_tmp,N_det)
  accu = 0.d0
  do i_state = 1, N_states
  do i = 1, N_det
@@ -136,7 +167,7 @@
  ! 2h1p   
  delta_ij_tmp = 0.d0
  call give_2h1p_contrib(delta_ij_tmp)
- call H_apply_mrpt_2h1p(delta_ij_tmp,N_det)
+!call H_apply_mrpt_2h1p(delta_ij_tmp,N_det)
  accu = 0.d0
  do i_state = 1, N_states
  do i = 1, N_det
@@ -176,10 +207,12 @@
  
 
  ! total  
+ 
+ print*, 'Hamiltonian dressing'
  accu = 0.d0
  do i_state = 1, N_states
  do i = 1, N_det
-! write(*,'(1000(F16.10,x))')delta_ij(i,:,:)
+  write(*,'(1000(F16.10,x))')delta_ij(i,:,:)
   do j = i_state, N_det
    accu(i_state) += delta_ij(j,i,i_state) * psi_coef(i,i_state) * psi_coef(j,i_state)
   enddo
@@ -202,6 +235,10 @@ END_PROVIDER
     Hmatrix_dressed_pt2_new(j,i,i_state) = H_matrix_all_dets(j,i) + delta_ij(j,i,i_state)
    enddo
   enddo
+ enddo
+ print*, 'Total dressed matrix '
+ do i = 1, N_det
+  write(*,'(1000(F16.10,x))')Hmatrix_dressed_pt2_new(i,:,:)
  enddo
  END_PROVIDER 
 

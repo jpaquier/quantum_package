@@ -14,13 +14,13 @@ subroutine $subroutine_diexc(key_in, key_prev, hole_1,particl_1, hole_2, particl
   
   $declarations
   
-!   print *, "bbbbbbbbbbbbbbb"
-!   call debug_det(key_in, N_int)
-!   call debug_det(hole_1, N_int)
-!   call debug_det(hole_2, N_int)
-!   call debug_det(particl_1, N_int)
-!   call debug_det(particl_2, N_int)
-!   print *, "eeeeeeeeeeeeeeee"
+   !print *, "bbbbbbbbbbbbbbb"
+   !call debug_det(key_in, N_int)
+   !call debug_det(hole_1, N_int)
+   !call debug_det(hole_2, N_int)
+   !call debug_det(particl_1, N_int)
+   !call debug_det(particl_2, N_int)
+   !print *, "eeeeeeeeeeeeeeee"
   
   highest = 0
   do k=1,N_int*bit_kind_size
@@ -177,6 +177,7 @@ subroutine $subroutine_diexcOrg(key_in,key_mask,hole_1,particl_1,hole_2, particl
   
   logical :: check_double_excitation 
   logical :: is_a_1h1p
+  logical :: is_a_1h1p_spin_flip
   logical :: is_a_1h2p
   logical :: is_a_1h
   logical :: is_a_1p
@@ -311,6 +312,8 @@ subroutine $subroutine_diexcOrg(key_in,key_mask,hole_1,particl_1,hole_2, particl
           key(k,other_spin) = ibset(key(k,other_spin),l)
           $filter2h2p_double
           $filter_only_1h1p_double
+          $filter_only_1h1p_spin_flip_double
+          $filter_1h1p_spin_flip_double
           $filter_only_1h2p_double
           $filter_only_2h2p_double
           $only_2p_double
@@ -366,6 +369,8 @@ subroutine $subroutine_diexcOrg(key_in,key_mask,hole_1,particl_1,hole_2, particl
         key(k,ispin) = ibset(key(k,ispin),l)
         $filter2h2p_double
         $filter_only_1h1p_double
+        $filter_only_1h1p_spin_flip_double
+        $filter_1h1p_spin_flip_double
         $filter_only_1h2p_double
         $filter_only_2h2p_double
         $only_2p_double
@@ -442,6 +447,7 @@ subroutine $subroutine_monoexc(key_in, hole_1,particl_1,fock_diag_tmp,i_generato
   logical :: is_a_2h1p
   logical :: is_a_2h
   logical :: is_a_1h1p
+  logical :: is_a_1h1p_spin_flip
   logical :: is_a_1h2p
   logical :: is_a_1h
   logical :: is_a_1p
@@ -525,6 +531,8 @@ subroutine $subroutine_monoexc(key_in, hole_1,particl_1,fock_diag_tmp,i_generato
       $filter2p
       $filter2h2p_single
       $filter_only_1h1p_single
+      $filter_only_1h1p_spin_flip_single
+      $filter_1h1p_spin_flip_single
       $filter_only_1h2p_single
       $filter_only_2h2p_single
       key_idx += 1

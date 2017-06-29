@@ -37,9 +37,6 @@ subroutine reorder_active_orb
    accu(j) = -dabs(accu(j))
   enddo
   call dsort(accu,iorder,mo_tot_num)
-  do j = 1, mo_tot_num
-   print*, accu(j),iorder(j)
-  enddo
   index_active_orb(i) = iorder(1) 
  enddo
 

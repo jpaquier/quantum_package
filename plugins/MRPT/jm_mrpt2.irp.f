@@ -20,6 +20,10 @@ subroutine routine_3
  print *,  'E+PT2    = ', CI_energy(1)+second_order_pt_new(1)
  print *,'****** DIAGONALIZATION OF DRESSED MATRIX ******'
  print *,  'E dressed= ', CI_dressed_pt2_new_energy(1)
+ integer :: i
+ do i = 1, N_det
+  write(*, '(2(F10.7,X))')psi_coef(i,1),CI_dressed_pt2_new_eigenvectors(i,1)
+ enddo
 
 end
 

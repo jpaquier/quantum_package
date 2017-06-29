@@ -8,7 +8,7 @@ program foboscf
  no_oa_or_av_opt = .True.
  touch no_oa_or_av_opt
  call initialize_mo_coef_begin_iteration
- call run_prepare
+!call run_prepare
  call reorder_active_orb
  call routine_fobo_scf
  call save_mos

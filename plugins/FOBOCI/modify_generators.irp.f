@@ -6,7 +6,6 @@ subroutine set_generators_to_psi_det
  END_DOC
  N_det_generators = N_det
  integer :: i,k 
- print*,'N_det = ',N_det
  do i=1,N_det_generators
    do k=1,N_int
      psi_det_generators(k,1,i) = psi_det(k,1,i)
@@ -94,9 +93,6 @@ subroutine set_psi_det_to_generators
    psi_coef(i,k) = 0.d0
   enddo
  enddo
- print*, '*******8'
- print*, '*******8'
- print*, 'set_psi_det_to_generators'
  do i=1,N_det_generators
    do k=1,N_int
      psi_det(k,1,i) =  psi_det_generators(k,1,i)
@@ -105,10 +101,7 @@ subroutine set_psi_det_to_generators
   do k = 1, N_states
    psi_coef(i,k) = psi_coef_generators(i,k)
   enddo
-  call debug_det(psi_det(1,1,i),N_int)
  enddo
- print*, '*******8'
- print*, '*******8'
 
  touch N_det psi_coef psi_det
 
@@ -124,9 +117,6 @@ subroutine set_generators_to_generators_restart
  END_DOC
  N_det_generators = N_det_generators_restart
  integer :: i,k 
- print*, '********'
- print*, '********'
- print*, 'set_generators_to_generators_restart'
  do i=1,N_det_generators
    do k=1,N_int
      psi_det_generators(k,1,i) = psi_det_generators_restart(k,1,i)
@@ -135,10 +125,7 @@ subroutine set_generators_to_generators_restart
   do k = 1, N_states
    psi_coef_generators(i,k) = psi_coef_generators_restart(i,k)
   enddo
-  call debug_det(psi_det_generators(1,1,i),N_int)
  enddo
- print*, '********'
- print*, '********'
 
  touch N_det_generators psi_coef_generators psi_det_generators
 

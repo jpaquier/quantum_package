@@ -304,7 +304,8 @@ BEGIN_PROVIDER [ integer, N_cas_bitmask ]
 
 END_PROVIDER
 
-BEGIN_PROVIDER [ integer(bit_kind), cas_bitmask, (N_int,2,N_cas_bitmask) ]
+ BEGIN_PROVIDER [ integer(bit_kind), cas_bitmask, (N_int,2,N_cas_bitmask) ]
+&BEGIN_PROVIDER [ integer(bit_kind), cas_bitmask_small, (N_int,2) ]
  implicit none
  BEGIN_DOC
  ! Bitmasks for CAS reference determinants. (N_int, alpha/beta, CAS reference)
@@ -344,6 +345,10 @@ BEGIN_PROVIDER [ integer(bit_kind), cas_bitmask, (N_int,2,N_cas_bitmask) ]
        cas_bitmask(k,j,i) = iand(cas_bitmask(k,j,i),full_ijkl_bitmask(k))
      enddo
    enddo
+ enddo
+ do k = 1, N_int
+  cas_bitmask_small(k,1) = cas_bitmask(k,1,1)
+  cas_bitmask_small(k,2) = cas_bitmask(k,2,1)
  enddo
 
 END_PROVIDER
@@ -506,6 +511,67 @@ END_PROVIDER
  do i = 1, n_core_inact_act_orb
   list_core_inact_act(i) = occ_inact(i)
   list_core_inact_act_reverse(occ_inact(i)) = i
+ enddo
+END_PROVIDER
+
+
+ BEGIN_PROVIDER [integer(bit_kind), reunion_of_inact_act_bitmask, (N_int,2)]
+&BEGIN_PROVIDER [ integer, n_inact_act_orb ]
+ implicit none
+ BEGIN_DOC
+ ! Reunion of the inactive and active bitmasks
+ END_DOC
+ integer :: i,j
+
+ n_inact_act_orb = 0
+ do i = 1, N_int
+  reunion_of_inact_act_bitmask(i,1) = ior(inact_bitmask(i,1),cas_bitmask(i,1,1))
+  reunion_of_inact_act_bitmask(i,2) = ior(inact_bitmask(i,2),cas_bitmask(i,1,1))
+  n_inact_act_orb +=popcnt(reunion_of_inact_act_bitmask(i,1))
+ enddo
+ END_PROVIDER
+ BEGIN_PROVIDER [ integer, list_inact_act, (n_inact_act_orb)]
+&BEGIN_PROVIDER [ integer, list_inact_act_reverse, (mo_tot_num)]
+  implicit none
+ integer :: occ_inact(N_int*bit_kind_size)
+ integer :: itest,i
+ occ_inact = 0
+ call bitstring_to_list(reunion_of_inact_act_bitmask(1,1), occ_inact(1), itest, N_int)
+ list_inact_reverse = 0
+ do i = 1, n_inact_act_orb
+  list_inact_act(i) = occ_inact(i)
+  list_inact_act_reverse(occ_inact(i)) = i
+ enddo
+END_PROVIDER
+
+
+
+ BEGIN_PROVIDER [integer(bit_kind), reunion_of_virt_act_bitmask, (N_int,2)]
+&BEGIN_PROVIDER [ integer, n_virt_act_orb ]
+ implicit none
+ BEGIN_DOC
+ ! Reunion of the virtive and active bitmasks
+ END_DOC
+ integer :: i,j
+
+ n_virt_act_orb = 0
+ do i = 1, N_int
+  reunion_of_virt_act_bitmask(i,1) = ior(virt_bitmask(i,1),cas_bitmask(i,1,1))
+  reunion_of_virt_act_bitmask(i,2) = ior(virt_bitmask(i,2),cas_bitmask(i,1,1))
+  n_virt_act_orb +=popcnt(reunion_of_virt_act_bitmask(i,1))
+ enddo
+ END_PROVIDER
+ BEGIN_PROVIDER [ integer, list_virt_act, (n_virt_act_orb)]
+&BEGIN_PROVIDER [ integer, list_virt_act_reverse, (mo_tot_num)]
+  implicit none
+ integer :: occ_virt(N_int*bit_kind_size)
+ integer :: itest,i
+ occ_virt = 0
+ call bitstring_to_list(reunion_of_virt_act_bitmask(1,1), occ_virt(1), itest, N_int)
+ list_virt_reverse = 0
+ do i = 1, n_virt_act_orb
+  list_virt_act(i) = occ_virt(i)
+  list_virt_act_reverse(occ_virt(i)) = i
  enddo
 END_PROVIDER
 

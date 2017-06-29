@@ -27,15 +27,17 @@ only_1p_double
 only_2h1p_single
 only_2h1p_double
 filter_only_1h1p_single
+filter_only_1h1p_spin_flip_single
+filter_1h1p_spin_flip_single
 filter_only_1h1p_double
+filter_only_1h1p_spin_flip_double
+filter_1h1p_spin_flip_double
 filter_only_1h2p_single
 filter_only_1h2p_double
 filter_only_2h2p_single
 filter_only_2h2p_double
 filterhole
 filter_integrals
-filter_only_1h1p_double
-filter_only_1h1p_single
 filterparticle
 filter_vvvv_excitation
 finalization
@@ -267,6 +269,30 @@ class H_apply(object):
 !    ! DIR$ FORCEINLINE
      if (is_a_1h1p(key).eqv..False.) cycle
     """
+
+  def filter_only_1h1p_spin_flip(self):
+    self["filter_only_1h1p_spin_flip_single"] = """
+!    ! DIR$ FORCEINLINE
+     if (is_a_1h1p_spin_flip(hole).eqv..False.) cycle
+    """
+    self["filter_only_1h1p_spin_flip_double"] = """
+!    ! DIR$ FORCEINLINE
+     if (is_a_1h1p_spin_flip(key).eqv..False.) cycle
+    """
+
+  def filter_1h1p_spin_flip(self):
+    self["filter_1h1p_spin_flip_single"] = """
+!    ! DIR$ FORCEINLINE
+     if (is_a_1h1p(hole).eqv..False.) cycle
+     if (is_a_1h1p_spin_flip(hole)) cycle
+    """
+    self["filter_1h1p_spin_flip_double"] = """
+!    ! DIR$ FORCEINLINE
+     if (is_a_1h1p(key).eqv..False.) cycle
+     if (is_a_1h1p_spin_flip(key)) cycle
+    """
+
+
 
   def filter_only_2h2p(self):
     self["filter_only_2h2p_single"] = """

@@ -259,8 +259,8 @@ subroutine remove_duplicates_in_psi_det(found_duplicates)
         psi_det(:,:,k) = psi_det_sorted_bit (:,:,i)
         psi_coef(k,:)  = psi_coef_sorted_bit(i,:)
       else
-        call debug_det(psi_det_sorted_bit(1,1,i),N_int)
-        stop 'duplicates in psi_det'
+!       call debug_det(psi_det_sorted_bit(1,1,i),N_int)
+!       stop 'duplicates in psi_det'
       endif
     enddo
     N_det = k

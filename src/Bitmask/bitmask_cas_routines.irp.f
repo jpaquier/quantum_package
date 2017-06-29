@@ -474,6 +474,32 @@ logical function is_a_1h1p(key_in)
 
 end
 
+logical function is_a_1h1p_spin_flip(key_in)
+ implicit none
+ integer(bit_kind), intent(in) :: key_in(N_int,2)
+ integer :: number_of_particles, number_of_holes
+ integer :: n_elec_inact(2),n_elec_virt(2)
+ integer :: k
+ is_a_1h1p_spin_flip = .False.
+ if(number_of_holes(key_in).eq.1 .and. number_of_particles(key_in).eq.1)then
+  n_elec_inact = 0
+  n_elec_virt  = 0
+  do k = 1, N_int
+   n_elec_inact(1) += popcnt(iand(key_in(k,1),inact_bitmask(k,1)))
+   n_elec_inact(2) += popcnt(iand(key_in(k,2),inact_bitmask(k,2)))
+   n_elec_virt(1) += popcnt(iand(key_in(k,1),virt_bitmask(k,1)))
+   n_elec_virt(2) += popcnt(iand(key_in(k,2),virt_bitmask(k,2)))
+  enddo
+  if(n_elec_inact(1) .ne. n_inact_orb .and. n_elec_virt(2) .eq. 1)then 
+    is_a_1h1p_spin_flip = .True.
+  else if (n_elec_inact(2) .ne. n_inact_orb .and. n_elec_virt(1) .eq. 1 )then 
+    is_a_1h1p_spin_flip = .True.
+  endif
+ endif
+
+end
+
+
 logical function is_a_1h2p(key_in)
  implicit none
  integer(bit_kind), intent(in) :: key_in(N_int,2)

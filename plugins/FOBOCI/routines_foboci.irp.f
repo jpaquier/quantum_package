@@ -44,6 +44,7 @@ subroutine set_intermediate_normalization_lmct_old(norm,i_hole)
   if(is_a_ref_det(i))cycle
   n_h = number_of_holes(psi_det(1,1,i))
   n_p = number_of_particles(psi_det(1,1,i))
+! print*, n_h,n_p
   if(n_h == 1 .and. n_p == 0)then
    if(is_the_hole_in_det(psi_det(1,1,i),1,i_hole).or.is_the_hole_in_det(psi_det(1,1,i),2,i_hole))then  
     n_good_hole +=1
@@ -215,9 +216,9 @@ subroutine update_density_matrix_osoci
   do j = 1, mo_tot_num
    one_body_dm_mo_alpha_osoci(i,j) = one_body_dm_mo_alpha_osoci(i,j) + (one_body_dm_mo_alpha_average(i,j) - one_body_dm_mo_alpha_generators_restart(i,j))
    one_body_dm_mo_beta_osoci(i,j) = one_body_dm_mo_beta_osoci(i,j) + (one_body_dm_mo_beta_average(i,j) - one_body_dm_mo_beta_generators_restart(i,j))
-!  if (i.ne.j)then
+!  if (i.eq.35)then
 !   print*, i,j
-!   print*, (one_body_dm_mo_alpha_average(i,j) - one_body_dm_mo_alpha_generators_restart(i,j)),one_body_dm_mo_alpha_average(i,j) , one_body_dm_mo_alpha_generators_restart(i,j)
+!   print*, (one_body_dm_mo_beta_average(i,j) - one_body_dm_mo_beta_generators_restart(i,j)),one_body_dm_mo_beta_average(i,j) , one_body_dm_mo_beta_generators_restart(i,j)
 !  endif
   enddo
  enddo

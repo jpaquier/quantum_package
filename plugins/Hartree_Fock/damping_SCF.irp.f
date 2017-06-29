@@ -61,9 +61,16 @@ subroutine damping_SCF
     write(output_hartree_fock,'(I4,1X,F16.10, 1X, F16.10, 1X, F16.10, 3X, A )')  &
       k, E, delta_E, delta_D, save_char
     
+    if(no_oa_or_av_opt)then
+     call initialize_mo_coef_begin_iteration
+    endif
     D_alpha = HF_density_matrix_ao_alpha
     D_beta  = HF_density_matrix_ao_beta 
     mo_coef = eigenvectors_fock_matrix_mo
+    if(no_oa_or_av_opt)then
+     call reorder_active_orb
+     call initialize_mo_coef_begin_iteration
+    endif
     TOUCH mo_coef
     
     D_new_alpha = HF_density_matrix_ao_alpha
@@ -81,6 +88,10 @@ subroutine damping_SCF
       HF_density_matrix_ao_beta  = D_beta  + lambda * delta_beta
       TOUCH HF_density_matrix_ao_alpha HF_density_matrix_ao_beta
       mo_coef = eigenvectors_fock_matrix_mo
+      if(no_oa_or_av_opt)then
+       call reorder_active_orb
+       call initialize_mo_coef_begin_iteration
+      endif
       TOUCH mo_coef
       E_half = HF_energy
       if ((E_half > E).and.(E_new < E)) then
@@ -112,6 +123,10 @@ subroutine damping_SCF
     HF_density_matrix_ao_beta  = D_beta
     TOUCH HF_density_matrix_ao_alpha HF_density_matrix_ao_beta
     mo_coef = eigenvectors_fock_matrix_mo
+    if(no_oa_or_av_opt)then
+     call reorder_active_orb
+     call initialize_mo_coef_begin_iteration
+    endif
     TOUCH mo_coef
 
 
