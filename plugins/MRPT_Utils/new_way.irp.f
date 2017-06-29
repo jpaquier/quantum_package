@@ -277,7 +277,12 @@ subroutine give_1h2p_contrib(matrix_1h2p)
          do jspin = 1, 2   ! spin of the couple a-a^dagger (aorb,vorb)
            do a = 1, n_act_orb      ! First active 
             aorb = list_act(a)
+
             if(ispin == jspin .and. vorb.le.rorb)cycle ! condition not to double count 
+!!!!!!!!!!!! TEST FOR THE SAME SPIN
+!!!!!!!!!!!!
+!           if(ispin == jspin)cycle ! condition not to double count 
+
             do inint = 1, N_int
              det_tmp(inint,1) = psi_det(inint,1,idet)
              det_tmp(inint,2) = psi_det(inint,2,idet)
@@ -360,6 +365,8 @@ subroutine give_1h2p_contrib(matrix_1h2p)
        integer :: kspin
        do jdet = 1, idx(0)
         if(idx(jdet).ne.idet)then
+ !!!!!!!!!! TEST DIAG 
+        cycle
         ! two determinants | Idet > and | Jdet > which are connected throw a mono excitation operator 
         ! are connected by the presence of the perturbers determinants |det_tmp>
          aorb  = index_orb_act_mono(idx(jdet),1)   !  a_{aorb}
@@ -370,7 +377,11 @@ subroutine give_1h2p_contrib(matrix_1h2p)
 
          do ispin = 1, 2  ! you loop on all possible spin for the excitation 
                           !  a^{\dagger}_r a_{i} (ispin)
+
           if(ispin == kspin .and. vorb.le.rorb)cycle ! condition not to double count 
+!!!!!!!!!!!! TEST FOR THE SAME SPIN
+!!!!!!!!!!!!
+!           if(ispin == jspin)cycle ! condition not to double count 
 
           ! | det_tmp > = a^{\dagger}_{rorb,ispin} a^{\dagger}_{vorb,kspin} a_{aorb,kspin} a_{iorb,ispin} | Idet > 
           do inint = 1, N_int
@@ -403,6 +414,9 @@ subroutine give_1h2p_contrib(matrix_1h2p)
            do a = 1, n_act_orb      ! First active 
             aorb = list_act(a)
             if(ispin == kspin .and. vorb.le.rorb)cycle ! condition not to double count 
+!!!!!!!!!!!! TEST FOR THE SAME SPIN
+!!!!!!!!!!!!
+!           if(ispin == jspin)cycle ! condition not to double count 
             do istate = 1, N_states
              matrix_1h2p_tmp(idet,idet,istate) += coef_perturb_from_idet(a,kspin,ispin,istate) * perturb_dets_hij(a,kspin,ispin) 
             enddo
