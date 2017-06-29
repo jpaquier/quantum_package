@@ -33,17 +33,11 @@ subroutine contrib_1h2p_dm_based(accu)
     enddo
     do i_a = 1, n_act_orb
      a = list_act(i_a)
-!!!!!! TEST DIAG 
-     i_b = i_a
-!    do i_b = 1, n_act_orb
+     do i_b = 1, n_act_orb
       b = list_act(i_b)
       do ispin = 1, 2 ! spin of (i --> r)
        do jspin = 1, 2 ! spin of (a --> v)
-!       if(ispin == jspin .and. r.le.v)cycle ! condition not to double count 
-!!!!!!!!!!!!!!!
-!!!!! TEST FOR THE SAME SPIN
-!!!!!!!!!!!!!!!
-        if(ispin == jspin)cycle ! condition not to double count 
+        if(ispin == jspin .and. r.le.v)cycle ! condition not to double count 
         do istate = 1, N_states
          if(ispin == jspin)then
           accu(istate) += (active_int(i_a,1) - active_int(i_a,2)) * one_body_dm_mo_spin_index(a,b,istate,ispin)   &
@@ -56,7 +50,7 @@ subroutine contrib_1h2p_dm_based(accu)
         enddo
        enddo
       enddo
-!    enddo
+     enddo
     enddo
    enddo
   enddo
@@ -76,8 +70,9 @@ subroutine matrix_1h2p_dm_based(matrix)
  double precision :: active_int(n_act_orb,2)
  double precision :: delta_e(n_act_orb,2,N_states)
  double precision :: get_mo_bielec_integral
- double precision accu(N_states)
+ double precision :: accu(N_states)
  accu = 0.d0
+ print*, 'in the matrix  ....'
  do i_i = 1, n_inact_orb
   i = list_inact(i_i)
   do i_r = 1, n_virt_orb
@@ -100,17 +95,11 @@ subroutine matrix_1h2p_dm_based(matrix)
     enddo
     do i_a = 1, n_act_orb
      a = list_act(i_a)
-!!!!! TEST DIAG 
-     i_b= i_a 
-!    do i_b = 1, n_act_orb
+     do i_b = 1, n_act_orb
       b = list_act(i_b)
       do ispin = 1, 2 ! spin of (i --> r)
        do jspin = 1, 2 ! spin of (a --> v)
-!       if(ispin == jspin .and. r.le.v)cycle ! condition not to double count 
-!!!!!!!!!!!!!!!
-!!!!! TEST FOR THE SAME SPIN
-!!!!!!!!!!!!!!!
-        if(ispin == jspin)cycle ! condition not to double count 
+        if(ispin == jspin .and. r.le.v)cycle ! condition not to double count 
         do istate = 1, N_states
          if(ispin == jspin)then
           accu(istate) += (active_int(i_a,1) - active_int(i_a,2)) * one_body_dm_mo_spin_index(a,b,istate,ispin)   &
@@ -123,18 +112,74 @@ subroutine matrix_1h2p_dm_based(matrix)
         enddo
        enddo
       enddo
-!    enddo
+     enddo
     enddo
    enddo
   enddo
  enddo
+ print*, 'accu1',accu
+
+ double precision :: accu_2(n_act_orb,n_act_orb,2,N_states)
+ accu_2 = 0.d0
+ do i_a = 1, n_act_orb
+  a = list_act(i_a)
+    do jspin=1, 2
+     do istate = 1, N_states
+      do i_i = 1, n_inact_orb
+       i = list_inact(i_i)
+       do i_r = 1, n_virt_orb
+        r = list_virt(i_r)
+        do i_v = 1, n_virt_orb
+         v = list_virt(i_v)
+         do i_b = 1, n_act_orb 
+          b = list_act(i_b)
+          active_int(i_b,1) = get_mo_bielec_integral(i,b,r,v,mo_integrals_map) ! direct
+          active_int(i_b,2) = get_mo_bielec_integral(i,b,v,r,mo_integrals_map) ! exchange
+         enddo
+          delta_e(i_a,jspin,istate) = one_anhil(i_a,jspin,istate)                        &
+                                    - fock_virt_total_spin_trace(r,istate)               & 
+                                    - fock_virt_total_spin_trace(v,istate)               & 
+                                    + fock_core_inactive_total_spin_trace(i,istate)        
+          delta_e(i_a,jspin,istate) = 1.d0/delta_e(i_a,jspin,istate)  
+         do i_b = 1, n_act_orb 
+          b = list_act(i_b)
+          do ispin = 1, 2 ! spin of (i --> r)
+           if(ispin == jspin .and. r.le.v)cycle ! condition not to double count 
+            if(ispin == jspin)then
+             accu_2(i_a,i_b,jspin,istate) += (active_int(i_a,1) - active_int(i_a,2)) * (active_int(i_b,1) - active_int(i_b,2)) * delta_e(i_a,jspin,istate)
+                                                             
+            else 
+             accu_2(i_a,i_b,jspin,istate) += active_int(i_a,1)   * delta_e(i_a,jspin,istate) * active_int(i_b,1)  
+            endif
+          enddo
+         enddo
+        enddo
+       enddo
+      enddo
+    enddo
+   enddo
+ enddo
+ accu = 0.d0
+ do istate = 1, N_states
+  do jspin = 1, 2 
+   do i_a = 1,n_act_orb
+    a = list_act(i_a)
+    do i_b = 1, n_act_orb 
+     b = list_act(i_b)
+     accu(istate) += accu_2(i_a,i_b,jspin,istate) * one_body_dm_mo_spin_index(a,b,istate,jspin)
+    enddo
+   enddo
+  enddo
+ enddo
+ print*, 'accu2',accu
+
 end
 
 
 
-BEGIN_PROVIDER [double precision, effective_fock_operator_1h2p, (n_act_orb,n_act_orb,2,N_states)]
+ BEGIN_PROVIDER [double precision, effective_fock_operator_1h2p, (n_act_orb,n_act_orb,2,N_states)]
+&BEGIN_PROVIDER [double precision, contribution_1h2p, (N_states)]
  implicit none
-  use bitmasks
  integer :: i_i,i_r,i_v,i_a,i_b
  integer :: i,r,v,a,b
  integer :: ispin,jspin
@@ -142,64 +187,60 @@ BEGIN_PROVIDER [double precision, effective_fock_operator_1h2p, (n_act_orb,n_act
  double precision :: active_int(n_act_orb,2)
  double precision :: delta_e(n_act_orb,2,N_states)
  double precision :: get_mo_bielec_integral
+
  effective_fock_operator_1h2p = 0.d0
- accu = 0.d0
- double precision :: accu_bis
  do i_a = 1, n_act_orb
   a = list_act(i_a)
-  i_b = i_a 
-  b = list_act(i_b)
-   do jspin = 1, 2 ! spin of (a --> v)
-      accu_bis = 0.d0
+    do jspin=1, 2
+     do istate = 1, N_states
       do i_i = 1, n_inact_orb
        i = list_inact(i_i)
        do i_r = 1, n_virt_orb
         r = list_virt(i_r)
         do i_v = 1, n_virt_orb
          v = list_virt(i_v)
-         active_int(i_a,1) = get_mo_bielec_integral(i,a,r,v,mo_integrals_map) ! direct
-         active_int(i_a,2) = get_mo_bielec_integral(i,a,v,r,mo_integrals_map) ! exchange
-         do istate = 1, N_states
-           delta_e(i_a,jspin,istate) = one_anhil(i_a,jspin,istate)                        &
-                                     - fock_virt_total_spin_trace(r,istate)               & 
-                                     - fock_virt_total_spin_trace(v,istate)               & 
-                                     + fock_core_inactive_total_spin_trace(i,istate)        
-           delta_e(i_a,jspin,istate) = 1.d0/delta_e(i_a,jspin,istate)  
+         do i_b = 1, n_act_orb 
+          b = list_act(i_b)
+          active_int(i_b,1) = get_mo_bielec_integral(i,b,r,v,mo_integrals_map) ! direct
+          active_int(i_b,2) = get_mo_bielec_integral(i,b,v,r,mo_integrals_map) ! exchange
+         enddo
+          delta_e(i_a,jspin,istate) = one_anhil(i_a,jspin,istate)                        &
+                                    - fock_virt_total_spin_trace(r,istate)               & 
+                                    - fock_virt_total_spin_trace(v,istate)               & 
+                                    + fock_core_inactive_total_spin_trace(i,istate)        
+          delta_e(i_a,jspin,istate) = 1.d0/delta_e(i_a,jspin,istate)  
+         do i_b = 1, n_act_orb 
+          b = list_act(i_b)
           do ispin = 1, 2 ! spin of (i --> r)
-!          if(ispin == jspin .and. r.le.v)cycle ! condition not to double count 
-           if(ispin == jspin)then
-            effective_fock_operator_1h2p(i_a,i_b,jspin,istate) += (active_int(i_a,1) - active_int(i_a,2)) * (active_int(i_b,1) - active_int(i_b,2)) * delta_e(i_a,jspin,istate) 
-            accu_bis += (active_int(i_a,1) - active_int(i_a,2)) * (active_int(i_b,1) - active_int(i_b,2)) * delta_e(i_a,jspin,istate) !& 
-!                       * one_body_dm_mo_spin_index(a,b,istate,ispin)
-           else 
-            effective_fock_operator_1h2p(i_a,i_b,jspin,istate) += active_int(i_a,1)  *  delta_e(i_a,ispin,istate) * active_int(i_b,1)   
-            accu_bis += active_int(i_a,1)  *  delta_e(i_a,ispin,istate) * active_int(i_b,1) !& 
-!                       * one_body_dm_mo_spin_index(a,b,istate,ispin)
-           endif
+           if(ispin == jspin .and. r.le.v)cycle ! condition not to double count 
+            if(ispin == jspin)then
+             effective_fock_operator_1h2p(i_a,i_b,jspin,istate) += (active_int(i_a,1) - active_int(i_a,2)) * (active_int(i_b,1) - active_int(i_b,2)) * delta_e(i_a,jspin,istate)
+                                                             
+            else 
+             effective_fock_operator_1h2p(i_a,i_b,jspin,istate) += active_int(i_a,1)   * delta_e(i_a,jspin,istate) * active_int(i_b,1)  
+            endif
           enddo
          enddo
         enddo
        enddo
       enddo
-!     print*, accu_bis
-      accu += accu_bis * one_body_dm_mo_spin_index(a,b,istate,jspin)
+    enddo
    enddo
  enddo
- print*, 'accu ',accu
-
-
- double precision :: accu
- accu = 0.d0
- do ispin = 1, 2
-  do i_a = 1, n_act_orb
-   a = list_act(i_a)
-   do i_b = 1, n_act_orb
-    b = list_act(i_b)
-    accu += effective_fock_operator_1h2p(i_a,i_b,ispin,1) * one_body_dm_mo_spin_index(a,b,istate,ispin)
+ contribution_1h2p = 0.d0
+ do istate = 1, N_states
+  do jspin = 1, 2 
+   do i_a = 1,n_act_orb
+    a = list_act(i_a)
+    do i_b = 1, n_act_orb 
+     b = list_act(i_b)
+     contribution_1h2p(istate) += effective_fock_operator_1h2p(i_a,i_b,jspin,istate) * one_body_dm_mo_spin_index(a,b,istate,jspin)
+    enddo
    enddo
   enddo
  enddo
- print*, 'accu = ',accu
+ print*, 'contribution_1h2p2',contribution_1h2p
+
 END_PROVIDER 
 
 
