@@ -1,4 +1,4 @@
- BEGIN_PROVIDER [ double precision, mo_coef_begin_iteration, (ao_num_align,mo_tot_num) ]
+BEGIN_PROVIDER [ double precision, mo_coef_begin_iteration, (ao_num_align,mo_tot_num) ]
    implicit none
    BEGIN_DOC
    ! Alpha and beta one-body density matrix that will be used for the 1h1p approach
@@ -8,7 +8,6 @@ END_PROVIDER
 subroutine initialize_mo_coef_begin_iteration
  implicit none
  mo_coef_begin_iteration = mo_coef
-
 end
 
 subroutine reorder_active_orb
@@ -21,11 +20,8 @@ subroutine reorder_active_orb
  allocate(accu(mo_tot_num),index_active_orb(n_act_orb),iorder(mo_tot_num))
  allocate(mo_coef_tmp(ao_num_align,mo_Tot_num))
  
- 
  do i = 1, n_act_orb
   iorb = list_act(i)
-! print*, '*********'
-! print*, 'i ===',i
   do j = 1, mo_tot_num
    accu(j) = 0.d0
    iorder(j) = j
@@ -53,6 +49,7 @@ subroutine reorder_active_orb
     mo_coef(i,i2) = x
   enddo
  enddo
+ call loc_cele_routine
  touch mo_coef
 
  deallocate(accu,index_active_orb, iorder)

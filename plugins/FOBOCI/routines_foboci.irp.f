@@ -417,6 +417,16 @@ subroutine save_osoci_natural_mos
 !! tmp(iorb,iorb) = accu/dble(n_act_orb)
 !!enddo
 
+print*, 'Diagonal part of the DM '
+print*, ''
+ tmp = tmp_bis
+ do i = 1, mo_tot_num
+  print*, 'i',tmp_bis(i,i)
+ enddo
+print*, ''
+print*, ''
+
+
  call bitstring_to_list(reunion_of_bitmask(1,1), occ(1,1), n_occ_alpha, N_int)
  double precision :: maxvaldm,imax,jmax
  maxvaldm = 0.d0
@@ -456,6 +466,7 @@ subroutine save_osoci_natural_mos
  label = "Natural"
  
  call mo_as_eigvectors_of_mo_matrix(tmp,size(tmp,1),size(tmp,2),label,1)
+ touch mo_coef
 !if(disk_access_ao_integrals == "None" .or. disk_access_ao_integrals == "Write" )then
 ! disk_access_ao_integrals = "Read"
 ! touch disk_access_ao_integrals
@@ -551,7 +562,14 @@ subroutine set_osoci_natural_mos
   enddo
  enddo
 
+print*, 'Diagonal part of the DM '
+print*, ''
  tmp = tmp_bis
+ do i = 1, mo_tot_num
+  print*, 'i',tmp_bis(i,i)
+ enddo
+print*, ''
+print*, ''
 
  call bitstring_to_list(reunion_of_bitmask(1,1), occ(1,1), n_occ_alpha, N_int)
  double precision :: maxvaldm,imax,jmax

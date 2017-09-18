@@ -45,7 +45,6 @@ subroutine FOBOCI_lmct_mlct_old_thr(iter)
    lmct = .True.
    integer :: i_hole_osoci
    i_hole_osoci = list_inact(i)
-!  if(i_hole_osoci.lt.49)cycle
    print*,'--------------------------'
    ! First set the current generators to the one of restart
    call check_symetry(i_hole_osoci,thr,test_sym)
@@ -280,7 +279,7 @@ subroutine FOBOCI_lmct_mlct_variational(iter)
    enddo
  enddo
 
- if(.True.)then
+ if(.False.)then
   print*,''
   print*,'DOING THEN THE MLCT !!'
   print*,'Threshold_mlct = ',threshold_mlct

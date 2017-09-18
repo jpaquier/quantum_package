@@ -30,7 +30,7 @@ subroutine routine_fobo_scf
  print*,''
  character*(64) :: label
  label = "Natural"
- do i = 1, 5
+ do i = 1, 10
   print*,'*******************************************************************************'
   print*,'*******************************************************************************'
   print*,'FOBO-SCF Iteration ',i
@@ -60,13 +60,15 @@ subroutine routine_fobo_scf
   call save_osoci_natural_mos
   call reorder_active_orb
   call initialize_mo_coef_begin_iteration
-  call damping_SCF
-  call reorder_active_orb
-  call initialize_mo_coef_begin_iteration
-  call diag_inactive_virt_and_update_mos
-  call reorder_active_orb
+! call damping_SCF
+! call reorder_active_orb
+! call initialize_mo_coef_begin_iteration
+! call diag_inactive_virt_and_update_mos
+! call reorder_active_orb
+
   call clear_mo_map
   call provide_properties
+  call save_mos 
  enddo
 
 
