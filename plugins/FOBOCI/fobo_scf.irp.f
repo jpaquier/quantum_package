@@ -29,6 +29,7 @@ end
 subroutine routine_fobo_scf
  implicit none
  integer :: i,j
+ double precision :: norm_total(N_States)
  print*,''
  print*,''
  character*(64) :: label
@@ -59,8 +60,8 @@ subroutine routine_fobo_scf
   endif
   call initialize_mo_coef_begin_iteration
   call print_mos(i)
-  call FOBOCI_lmct_mlct_old_thr(i)
-  call save_osoci_natural_mos
+  call FOBOCI_lmct_mlct_old_thr(i,norm_total)
+  call save_osoci_natural_mos(norm_total)
   call reorder_active_orb
   call initialize_mo_coef_begin_iteration
 ! call damping_SCF

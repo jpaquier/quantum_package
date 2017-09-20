@@ -21,28 +21,35 @@ END_PROVIDER
 
 
  BEGIN_PROVIDER [ integer(bit_kind), psi_det_generators_restart, (N_int,2,N_det_generators_restart) ]
-&BEGIN_PROVIDER [ integer(bit_kind), ref_generators_restart, (N_int,2) ]
+&BEGIN_PROVIDER [ integer(bit_kind), ref_generators_restart, (N_int,2,N_states) ]
 &BEGIN_PROVIDER [ double precision, psi_coef_generators_restart, (N_det_generators_restart,N_states) ]
  implicit none
  BEGIN_DOC
  ! read wf
  ! 
  END_DOC
- integer                        :: i, k
+ integer                        :: i,j, k
  integer, save :: ifirst = 0
  double precision, allocatable  :: psi_coef_read(:,:)
  print*, ' Providing psi_det_generators_restart'
  if(ifirst == 0)then
   call read_dets(psi_det_generators_restart,N_int,N_det_generators_restart)
-   do k = 1, N_int
-    ref_generators_restart(k,1) = psi_det_generators_restart(k,1,1)
-    ref_generators_restart(k,2) = psi_det_generators_restart(k,2,1)
-   enddo
    allocate (psi_coef_read(N_det_generators_restart,N_states))
    call ezfio_get_determinants_psi_coef(psi_coef_read)
    do k = 1, N_states
     do i = 1, N_det_generators_restart
      psi_coef_generators_restart(i,k) = psi_coef_read(i,k)
+    enddo
+   enddo
+   do j = 1, N_states
+    do i = 1, N_det_generators_restart
+     if(dabs(psi_coef_generators_restart(i,j)).gt.0.1d0)then
+     do k = 1, N_int
+      ref_generators_restart(k,1,j) = psi_det_generators_restart(k,1,i)
+      ref_generators_restart(k,2,j) = psi_det_generators_restart(k,2,i)
+     enddo
+     exit
+     endif
     enddo
    enddo
   ifirst = 1

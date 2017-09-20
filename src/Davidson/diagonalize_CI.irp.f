@@ -148,6 +148,9 @@ END_PROVIDER
      endif
      deallocate(eigenvectors,eigenvalues)
    endif
+   do i = 2, N_states
+    print*, ' Delta E = ',CI_electronic_energy(i) - CI_electronic_energy(1)
+   enddo
    
 END_PROVIDER
  
