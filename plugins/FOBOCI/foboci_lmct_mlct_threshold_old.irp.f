@@ -41,6 +41,9 @@ subroutine FOBOCI_lmct_mlct_old_thr(iter)
  double precision, allocatable :: psi_singles_coef(:,:)
  logical :: exit_loop
  allocate( zero_bitmask(N_int,2) )
+     do k = 1, mo_tot_num
+     print*, k,one_body_dm_mo_beta_osoci(k,k)+one_body_dm_mo_alpha_osoci(k,k)
+     enddo
   do i = 1, n_inact_orb
    lmct = .True.
    integer :: i_hole_osoci
@@ -113,7 +116,7 @@ subroutine FOBOCI_lmct_mlct_old_thr(iter)
    enddo
  enddo
 
- if(.True.)then
+ if(.False.)then
   print*,''
   print*,'DOING THEN THE MLCT !!'
   print*,'Threshold_mlct = ',threshold_mlct
@@ -193,7 +196,7 @@ subroutine FOBOCI_lmct_mlct_old_thr(iter)
    print*,'norm_total = ',norm_total
    norm_total = norm_generators_restart
    norm_total = 1.d0/norm_total
-!  call rescale_density_matrix_osoci(norm_total)
+   call rescale_density_matrix_osoci(norm_total)
    double precision :: accu
    accu = 0.d0
    do i = 1, mo_tot_num

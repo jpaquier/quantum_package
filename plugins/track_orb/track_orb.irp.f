@@ -33,6 +33,7 @@ subroutine reorder_active_orb
    accu(j) = -dabs(accu(j))
   enddo
   call dsort(accu,iorder,mo_tot_num)
+  print*, 'overlap = ',accu(1)
   index_active_orb(i) = iorder(1) 
  enddo
 
@@ -55,3 +56,192 @@ subroutine reorder_active_orb
  deallocate(accu,index_active_orb, iorder)
 end
 
+
+subroutine reorder_all_orb
+ implicit none
+ integer :: i,j,iorb
+ integer :: k,l
+ integer :: index_orb(mo_tot_num)
+ double precision :: mo_coef_tmp(ao_num_align,mo_tot_num)
+ integer :: i1,i2
+ 
+ mo_coef_tmp = mo_coef
+ 
+ call reorder_all_mos(mo_coef_begin_iteration,index_orb)
+
+ print*, 'swapping the MOs'
+ do i1 = 1, mo_tot_num
+  i2 = index_orb(i1)
+  print*, i1,i2
+  do i=1,ao_num_align
+    mo_coef(i,i1) = mo_coef_tmp(i,i2)
+    mo_coef(i,i2) = mo_coef_tmp(i,i1)
+  enddo
+ enddo
+
+!call loc_cele_routine
+!touch mo_coef
+
+end
+
+subroutine reorder_set_of_mos(mo_coef_before,list_orb,n_orb,index_orb)
+ implicit none
+ integer, intent(in) :: n_orb
+ integer, intent(in) :: list_orb(n_orb)
+ double precision, intent(in) :: mo_coef_before(ao_num_align, mo_tot_num)
+ integer, intent(out) :: index_orb(mo_tot_num)
+
+ double precision :: mo_coef_tmp
+ double precision :: accu(mo_tot_num)
+ logical          :: is_chosen(mo_tot_num)
+ integer          :: iorder(mo_tot_num)
+ integer          :: i,j,k,l
+ 
+ integer :: iorb
+ 
+ accu = 0.d0
+ is_chosen = .False.
+ do i = 1, n_orb
+  iorb = list_orb(i)
+  accu = 0.d0
+  if(.not.is_chosen(iorb))then
+  do j = 1, mo_tot_num
+   accu(j) = 0.d0
+   iorder(j) = j
+   if(.not.is_chosen(j))then
+    do k = 1, ao_num
+     do l = 1, ao_num
+      accu(j) += mo_coef_before(k,iorb) * mo_coef(l,j) * ao_overlap(k,l)
+     enddo
+    enddo
+   endif
+   accu(j) = -dabs(accu(j))
+  enddo
+   call dsort(accu,iorder,mo_tot_num)
+   is_chosen(iorder(1)) = .True.
+   is_chosen(iorb) = .True.
+   index_orb(iorb) = iorder(1) 
+   index_orb(iorder(1)) = iorb
+  endif
+ enddo
+
+
+end
+
+subroutine reorder_all_mos(mo_coef_before,index_orb)
+ implicit none
+ double precision, intent(in) :: mo_coef_before(ao_num_align, mo_tot_num)
+ integer, intent(out) :: index_orb(mo_tot_num)
+
+ double precision :: mo_coef_tmp
+ double precision :: accu(mo_tot_num)
+ logical          :: is_chosen(mo_tot_num)
+ integer          :: iorder(mo_tot_num)
+ integer          :: i,j,k,l
+ 
+ integer :: iorb
+ 
+ accu = 0.d0
+ is_chosen = .False.
+
+
+ do i = 1, n_core_orb
+  iorb = list_core(i)
+  accu = 0.d0
+  if(.not.is_chosen(iorb))then
+  do j = 1, mo_tot_num
+   accu(j) = 0.d0
+   iorder(j) = j
+   if(.not.is_chosen(j))then
+    do k = 1, ao_num
+     do l = 1, ao_num
+      accu(j) += mo_coef_before(k,iorb) * mo_coef(l,j) * ao_overlap(k,l)
+     enddo
+    enddo
+   endif
+   accu(j) = -dabs(accu(j))
+  enddo
+   call dsort(accu,iorder,mo_tot_num)
+   is_chosen(iorder(1)) = .True.
+   is_chosen(iorb) = .True.
+   index_orb(iorb) = iorder(1) 
+   index_orb(iorder(1)) = iorb
+  endif
+ enddo
+
+
+ do i = 1, n_inact_orb
+  iorb = list_inact(i)
+  accu = 0.d0
+  if(.not.is_chosen(iorb))then
+  do j = 1, mo_tot_num
+   accu(j) = 0.d0
+   iorder(j) = j
+   if(.not.is_chosen(j))then
+    do k = 1, ao_num
+     do l = 1, ao_num
+      accu(j) += mo_coef_before(k,iorb) * mo_coef(l,j) * ao_overlap(k,l)
+     enddo
+    enddo
+   endif
+   accu(j) = -dabs(accu(j))
+  enddo
+   call dsort(accu,iorder,mo_tot_num)
+   is_chosen(iorder(1)) = .True.
+   is_chosen(iorb) = .True.
+   index_orb(iorb) = iorder(1) 
+   index_orb(iorder(1)) = iorb
+  endif
+ enddo
+
+ do i = 1, n_act_orb
+  iorb = list_act(i)
+  accu = 0.d0
+  if(.not.is_chosen(iorb))then
+  do j = 1, mo_tot_num
+   accu(j) = 0.d0
+   iorder(j) = j
+   if(.not.is_chosen(j))then
+    do k = 1, ao_num
+     do l = 1, ao_num
+      accu(j) += mo_coef_before(k,iorb) * mo_coef(l,j) * ao_overlap(k,l)
+     enddo
+    enddo
+   endif
+   accu(j) = -dabs(accu(j))
+  enddo
+   call dsort(accu,iorder,mo_tot_num)
+   is_chosen(iorder(1)) = .True.
+   is_chosen(iorb) = .True.
+   index_orb(iorb) = iorder(1) 
+   index_orb(iorder(1)) = iorb
+  endif
+ enddo
+
+ do i = 1, n_virt_orb
+  iorb = list_virt(i)
+  accu = 0.d0
+  if(.not.is_chosen(iorb))then
+  do j = 1, mo_tot_num
+   accu(j) = 0.d0
+   iorder(j) = j
+   if(.not.is_chosen(j))then
+    do k = 1, ao_num
+     do l = 1, ao_num
+      accu(j) += mo_coef_before(k,iorb) * mo_coef(l,j) * ao_overlap(k,l)
+     enddo
+    enddo
+   endif
+   accu(j) = -dabs(accu(j))
+  enddo
+   call dsort(accu,iorder,mo_tot_num)
+   is_chosen(iorder(1)) = .True.
+   is_chosen(iorb) = .True.
+   index_orb(iorb) = iorder(1) 
+   index_orb(iorder(1)) = iorb
+  endif
+ enddo
+
+
+
+end

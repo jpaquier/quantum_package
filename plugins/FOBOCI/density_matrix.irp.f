@@ -24,14 +24,16 @@
     if(degree == 0)then
      index_ref_generators_restart = i
      inv_coef_ref_generators_restart = 1.d0/psi_coef_generators_restart(i,1)
+     print*, psi_coef_generators_restart(i,1)
+     print*, inv_coef_ref_generators_restart
      exit
     endif
    enddo
    norm_generators_restart = 0.d0
-   do i = 1, N_det_generators_restart
-    psi_coef_generators_restart(i,1) = psi_coef_generators_restart(i,1) * inv_coef_ref_generators_restart
-    norm_generators_restart += psi_coef_generators_restart(i,1)**2
-   enddo
+!  do i = 1, N_det_generators_restart
+!   psi_coef_generators_restart(i,1) = psi_coef_generators_restart(i,1) * inv_coef_ref_generators_restart
+!   norm_generators_restart += psi_coef_generators_restart(i,1)**2
+!  enddo
 
 
      one_body_dm_mo_alpha_generators_restart = 0.d0

@@ -391,7 +391,7 @@ END_PROVIDER
      !$OMP PARALLEL DEFAULT(NONE)                                         &
         !$OMP PRIVATE(j,k,l,m,occ,ck, cl, ckl,phase,h1,h2,p1,p2,s1,s2, degree,exc, &
         !$OMP  tmp_a, tmp_b, n_occ)&
-        !$OMP SHARED(psi_det,psi_coef,N_int,N_states,elec_alpha_num,&
+        !$OMP SHARED(psi_det,psi_coef,N_int,N_states,elec_alpha_num,state_average_weight,&
         !$OMP  elec_beta_num,one_body_dm_mo_alpha_old,one_body_dm_mo_beta_old,N_det,mo_tot_num_align,&
         !$OMP  mo_tot_num)
      allocate(tmp_a(mo_tot_num_align,mo_tot_num,N_states), tmp_b(mo_tot_num_align,mo_tot_num,N_states) )

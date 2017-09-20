@@ -8,7 +8,7 @@ program foboscf
  no_oa_or_av_opt = .True.
  touch no_oa_or_av_opt
  call initialize_mo_coef_begin_iteration
-!call run_prepare
+ call run_prepare
  call reorder_active_orb
  call routine_fobo_scf
  call save_mos
@@ -19,8 +19,11 @@ subroutine run_prepare
  implicit none
 ! no_oa_or_av_opt = .False.
 ! touch no_oa_or_av_opt
-  call damping_SCF
-  call diag_inactive_virt_and_update_mos
+! call damping_SCF
+! call reorder_active_orb
+! call diag_inactive_virt_and_update_mos
+  call reorder_active_orb
+  call save_mos 
 end
 
 subroutine routine_fobo_scf
@@ -30,7 +33,7 @@ subroutine routine_fobo_scf
  print*,''
  character*(64) :: label
  label = "Natural"
- do i = 1, 10
+ do i = 1, 5
   print*,'*******************************************************************************'
   print*,'*******************************************************************************'
   print*,'FOBO-SCF Iteration ',i
@@ -61,10 +64,10 @@ subroutine routine_fobo_scf
   call reorder_active_orb
   call initialize_mo_coef_begin_iteration
 ! call damping_SCF
-! call reorder_active_orb
+ call reorder_active_orb
 ! call initialize_mo_coef_begin_iteration
 ! call diag_inactive_virt_and_update_mos
-! call reorder_active_orb
+  call reorder_active_orb
 
   call clear_mo_map
   call provide_properties

@@ -28,6 +28,7 @@ subroutine set_intermediate_normalization_lmct_old(norm,i_hole)
   if(degree == 0)then
    index_ref_generators_restart = i
    do k = 1, N_states
+    print*, 'psi_coef(i,k)',psi_coef(i,k)
     inv_coef_ref_generators_restart(k) = 1.d0/psi_coef(i,k)
    enddo
 !  cycle
@@ -74,25 +75,36 @@ subroutine set_intermediate_normalization_lmct_old(norm,i_hole)
   enddo
   print*,''
  enddo
- norm = 0.d0
 
  ! Set the wave function to the intermediate normalization
- do k = 1, N_states
-  do i = 1, N_det
-   psi_coef(i,k) = psi_coef(i,k) * inv_coef_ref_generators_restart(k)
-  enddo
- enddo
+!do k = 1, N_states
+! do i = 1, N_det
+!  psi_coef(i,k) = psi_coef(i,k) * inv_coef_ref_generators_restart(k)
+! enddo
+!enddo
+ double precision :: norm_ref(N_States)
+ norm_ref = 0.d0
+ norm = 0.d0
  do k = 1,N_states
   print*,'state ',k
   do i = 1, N_det
 !!  print*,'psi_coef(i_ref) = ',psi_coef(i,1)
    if (is_a_ref_det(i))then
     print*,'i,psi_coef_ref = ',psi_coef(i,k)
+    norm_ref(k) += psi_coef(i,k) * psi_coef(i,k)
     cycle
    endif
+!  print*, 'i',psi_coef(i,k) 
    norm(k) += psi_coef(i,k) * psi_coef(i,k)
   enddo
   print*,'norm = ',norm(k)
+  norm_ref(k) = 1.d0/dsqrt(norm_ref(k))
+ enddo
+ ! Set the wave function to the intermediate normalization
+ do k = 1, N_states
+  do i = 1, N_det
+   psi_coef(i,k) = psi_coef(i,k) * norm_ref(k)
+  enddo
  enddo
  deallocate(index_one_hole,index_one_hole_one_p,index_two_hole_one_p,index_two_hole,index_one_p,is_a_ref_det)
  soft_touch psi_coef
@@ -181,24 +193,31 @@ subroutine set_intermediate_normalization_mlct_old(norm,i_particl)
  enddo
 
 
- ! Set the wave function to the intermediate normalization
- do k = 1, N_states
-  do i = 1, N_det
-   psi_coef(i,k) = psi_coef(i,k) * inv_coef_ref_generators_restart(k)
-  enddo
- enddo
+ double precision :: norm_ref(N_States)
+ norm_ref = 0.d0
  do k = 1, N_states
   print*,'state ',k
   do i = 1, N_det
 !! print*,'i = ',i, psi_coef(i,1)
    if (is_a_ref_det(i))then
     print*,'i,psi_coef_ref = ',psi_coef(i,k)
+    norm_ref(k) += psi_coef(i,k) * psi_coef(i,k)
     cycle
    endif
    norm(k) += psi_coef(i,k) * psi_coef(i,k)
   enddo
   print*,'norm = ',norm
+  norm_ref(k) = 1.d0/dsqrt(norm_ref(k))
  enddo
+
+ ! Set the wave function to the intermediate normalization
+ do k = 1, N_states
+  do i = 1, N_det
+   psi_coef(i,k) = psi_coef(i,k) * norm_ref(k)
+  enddo
+ enddo
+
+
  soft_touch psi_coef
  deallocate(index_one_hole,index_one_hole_one_p,index_two_hole_one_p,index_two_hole,index_one_p,is_a_ref_det)
 end
@@ -216,10 +235,6 @@ subroutine update_density_matrix_osoci
   do j = 1, mo_tot_num
    one_body_dm_mo_alpha_osoci(i,j) = one_body_dm_mo_alpha_osoci(i,j) + (one_body_dm_mo_alpha_average(i,j) - one_body_dm_mo_alpha_generators_restart(i,j))
    one_body_dm_mo_beta_osoci(i,j) = one_body_dm_mo_beta_osoci(i,j) + (one_body_dm_mo_beta_average(i,j) - one_body_dm_mo_beta_generators_restart(i,j))
-!  if (i.eq.35)then
-!   print*, i,j
-!   print*, (one_body_dm_mo_beta_average(i,j) - one_body_dm_mo_beta_generators_restart(i,j)),one_body_dm_mo_beta_average(i,j) , one_body_dm_mo_beta_generators_restart(i,j)
-!  endif
   enddo
  enddo
 
@@ -462,6 +477,24 @@ print*, ''
    endif
   enddo
  enddo
+!integer, allocatable :: list_inact_act_virt_orb(:)
+!integer :: n_orb_inact_act_virt
+!n_orb_inact_act_virt = n_inact_orb + n_act_orb + n_virt_orb
+!allocate (list_inact_act_virt_orb(n_orb_inact_act_virt))
+!j=0
+!do i = 1, n_inact_orb
+! j+=1 
+! list_inact_act_virt_orb(j) = list_inact(i)
+!enddo
+!do i = 1, n_act_orb
+! j+=1 
+! list_inact_act_virt_orb(j) = list_act(i)
+!enddo
+!do i = 1, n_virt_orb
+! j+=1 
+! list_inact_act_virt_orb(j) = list_virt(i)
+!enddo
+!call diag_matrix_mo(tmp, mo_tot_num, list_inact_act_virt_orb, n_orb_inact_act_virt, size(mo_coef,1),mo_coef)
 
  label = "Natural"
  

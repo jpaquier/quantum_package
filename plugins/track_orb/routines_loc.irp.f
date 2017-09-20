@@ -11,20 +11,14 @@ subroutine loc_cele_routine
      integer n,i,j,k,l,nmo(8),isym,nsym,idum,nrot(8),irot(id1,8)
      integer ipiv(id1),info,lwork
      logical *1 z54
-     print*,'passed the first copy'
      z54=.false.
      !Read the name of the RasOrb file
-     print*,'Entering in the loc '
-     !     read(5,*) z54
-     print*,'before = '
      accu_norm = 0.d0
      do i =1,mo_tot_num
        accu_norm += dabs(mo_overlap(i,i))
      enddo
-     print*,'accu_norm = ',accu_norm
      nsym = 1
      nmo(1) = mo_tot_num
-     print*,'nmo(1) = ',nmo(1)
      cmo = 0.d0
      do isym=1,nsym
        do i=1,nmo(isym)
@@ -33,7 +27,6 @@ subroutine loc_cele_routine
          enddo
        enddo
      enddo
-     print*,'passed the first copy'
      do isym=1,nsym
        do j=1,mo_tot_num
          do i=1,ao_num
@@ -41,7 +34,6 @@ subroutine loc_cele_routine
          enddo
        enddo
      enddo
-     print*,'passed the copy'
      nrot(1) = n_act_orb   ! number of orbitals to be localized
      
      
@@ -67,7 +59,6 @@ subroutine loc_cele_routine
      
      
      
-     print*,'passed the definition of the referent vectors '
      do i = 1, ao_num
        do j =1, ao_num
          s(i,j,1) =  ao_overlap(i,j)
@@ -80,29 +71,6 @@ subroutine loc_cele_routine
      do isym=1,nsym
        
        if (nrot(isym).eq.0) cycle
-       
-       
-       
-       write (6,*)
-       
-       write (6,*)
-       
-       write (6,*)
-       
-       write (6,*) 'WORKING ON SYMMETRY',isym
-       
-       write (6,*)
-       
-       
-       
-       
-       
-       !Compute the overlap matrix <ref|vec>
-       
-       
-       
-       
-       
        do j=1,nrot(isym)
          do i=1,ao_num
            ddum(i,j)=0.d0
@@ -115,28 +83,14 @@ subroutine loc_cele_routine
        
        
        do i=1,nrot(isym)
-         
          do j=1,nrot(isym)
-           
            ovl(i,j)=0.d0
-           
            do k=1,ao_num
-             !     do k=1,mo_tot_num
-             
              ovl(i,j)=ovl(i,j)+cmoref(k,i,isym)*ddum(k,j)
-             
            enddo
-           
          enddo
-         
        enddo
-       
-       
-       
        call maxovl(nrot(isym),nrot(isym),ovl,t,wi)
-       
-       
-       
        do i=1,nrot(isym)
          do j=1,ao_num
            !         write (6,*) 'isym,',isym,nrot(isym),nmo(isym)
