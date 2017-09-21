@@ -7,7 +7,7 @@ subroutine diag_inactive_virt_and_update_mos
  tmp = 0.d0
  do i = 1, mo_tot_num
   do j = 1, mo_tot_num
-   tmp(i,j) = Fock_matrix_restart_mo(i,j)
+   tmp(i,j) = Fock_matrix_mo(i,j)
   enddo
 ! write(*,'(100(F10.5,X))')Fock_matrix_restart_mo(i,:)
  enddo
@@ -65,8 +65,8 @@ subroutine diag_inactive_virt_new_and_update_mos
     accu += get_mo_bielec_integral(i_inact,k_act,j_inact,k_act,mo_integrals_map)
     accu -= get_mo_bielec_integral(i_inact,k_act,k_act,j_inact,mo_integrals_map)
    enddo
-   tmp(i_inact,j_inact) = Fock_matrix_restart_mo(i_inact,j_inact) + accu
-   tmp(j_inact,i_inact) = Fock_matrix_restart_mo(j_inact,i_inact) + accu
+   tmp(i_inact,j_inact) = Fock_matrix_mo(i_inact,j_inact) + accu
+   tmp(j_inact,i_inact) = Fock_matrix_mo(j_inact,i_inact) + accu
   enddo
  enddo
 
@@ -79,8 +79,8 @@ subroutine diag_inactive_virt_new_and_update_mos
     k_act = list_act(k)
     accu += get_mo_bielec_integral(i_virt,k_act,j_virt,k_act,mo_integrals_map)
    enddo
-   tmp(i_virt,j_virt) = Fock_matrix_restart_mo(i_virt,j_virt) - accu
-   tmp(j_virt,i_virt) = Fock_matrix_restart_mo(j_virt,i_virt) - accu
+   tmp(i_virt,j_virt) = Fock_matrix_mo(i_virt,j_virt) - accu
+   tmp(j_virt,i_virt) = Fock_matrix_mo(j_virt,i_virt) - accu
   enddo
  enddo
 

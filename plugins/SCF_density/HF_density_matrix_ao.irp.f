@@ -61,6 +61,10 @@ BEGIN_PROVIDER [ double precision, HF_density_matrix_ao, (ao_num_align,ao_num) ]
      ASSERT (size(HF_density_matrix_ao,1) == size(HF_density_matrix_ao_beta ,1))
      HF_density_matrix_ao = HF_density_matrix_ao_alpha + HF_density_matrix_ao_beta
    endif
+   integer :: i
+   do i = 1, ao_num
+    write(33,'(1000(F16.10,X))') HF_density_matrix_ao(i,:)
+   enddo
    
 END_PROVIDER
  

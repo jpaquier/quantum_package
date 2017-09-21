@@ -392,8 +392,8 @@ BEGIN_PROVIDER [ double precision, HF_energy ]
  do j=1,ao_num
    do i=1,ao_num
      HF_energy += 0.5d0 * (                                          &
-         (ao_mono_elec_integral(i,j) + Fock_matrix_restart_alpha_ao(i,j) ) *  generators_restart_density_matrix_ao_alpha(i,j) +&
-         (ao_mono_elec_integral(i,j) + Fock_matrix_restart_beta_ao (i,j) ) *  generators_restart_density_matrix_ao_beta (i,j) )
+         (ao_mono_elec_integral(i,j) + Fock_matrix_alpha_ao(i,j) ) *  HF_density_matrix_ao_alpha(i,j) +&
+         (ao_mono_elec_integral(i,j) + Fock_matrix_beta_ao (i,j) ) *  HF_density_matrix_ao_beta(i,j) )
    enddo
  enddo
   

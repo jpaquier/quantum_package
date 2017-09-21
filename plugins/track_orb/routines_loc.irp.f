@@ -52,9 +52,9 @@ subroutine loc_cele_routine
      
      
      
-     do i = 1, nrot(1)
-       print*,'irot(i,1) = ',irot(i,1)
-     enddo
+!    do i = 1, nrot(1)
+!      print*,'irot(i,1) = ',irot(i,1)
+!    enddo
      
      
      
@@ -123,12 +123,12 @@ subroutine loc_cele_routine
      ! depends on mo_coef must not be reprovided
      double precision               :: accu_norm
      touch mo_coef
-     print*,'after  = '
+!    print*,'after  = '
      accu_norm = 0.d0
      do i =1,mo_tot_num
        accu_norm += dabs(mo_overlap(i,i))
      enddo
-     print*,'accu_norm = ',accu_norm
+!    print*,'accu_norm = ',accu_norm
      ! We call the routine that saves mo_coef in the ezfio format
      call save_mos
      
