@@ -52,7 +52,7 @@ subroutine diag_inactive_virt_new_and_update_mos
  character*(64) :: label
  tmp = 0.d0
  do i = 1, mo_tot_num
-  tmp(i,i) = Fock_matrix_restart_mo(i,i)
+  tmp(i,i) = Fock_matrix_mo(i,i)
  enddo
  
  do i = 1, n_inact_orb

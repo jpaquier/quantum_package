@@ -90,7 +90,7 @@ subroutine loc_cele_routine
            enddo
          enddo
        enddo
-       call maxovl(nrot(isym),nrot(isym),ovl,t,wi)
+       call maxovl_no_print(nrot(isym),nrot(isym),ovl,t,wi)
        do i=1,nrot(isym)
          do j=1,ao_num
            !         write (6,*) 'isym,',isym,nrot(isym),nmo(isym)

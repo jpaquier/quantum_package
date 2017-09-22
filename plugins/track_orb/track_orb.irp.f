@@ -33,7 +33,6 @@ subroutine reorder_active_orb
    accu(j) = -dabs(accu(j))
   enddo
   call dsort(accu,iorder,mo_tot_num)
-  print*, 'overlap = ',accu(1)
   index_active_orb(i) = iorder(1) 
  enddo
 

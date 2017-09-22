@@ -197,6 +197,7 @@ subroutine get_ao_bielec_integrals(j,k,l,sze,out_val)
   BEGIN_DOC
   ! Gets multiple AO bi-electronic integral from the AO map .
   ! All i are retrieved for j,k,l fixed.
+  ! j,l = r1, k,: = r2
   END_DOC
   implicit none
   integer, intent(in)            :: j,k,l, sze

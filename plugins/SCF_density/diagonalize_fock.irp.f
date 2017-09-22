@@ -92,6 +92,10 @@
          0.d0, eigenvectors_Fock_matrix_mo, size(eigenvectors_Fock_matrix_mo,1))
        deallocate(work, iwork, F)
 
+     if(no_oa_or_av_opt)then
+      call reorder_active_orb
+      call initialize_mo_coef_begin_iteration
+     endif
 
 !  endif
 

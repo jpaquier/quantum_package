@@ -17,62 +17,75 @@
    !
    END_DOC
    integer                        :: i,j,n
-   if (elec_alpha_num == elec_beta_num) then
-     Fock_matrix_mo = Fock_matrix_alpha_mo
-   else
+!  if (elec_alpha_num == elec_beta_num) then
+!    Fock_matrix_mo = Fock_matrix_alpha_mo
+!  else
      
-     do j=1,elec_beta_num
+     integer :: iorb,jorb
+     do j=1,n_core_inact_orb
+       jorb = list_core_inact(j)
        ! F-K
-       do i=1,elec_beta_num
-         Fock_matrix_mo(i,j) = 0.5d0*(Fock_matrix_alpha_mo(i,j)+Fock_matrix_beta_mo(i,j))&
-             - (Fock_matrix_beta_mo(i,j) - Fock_matrix_alpha_mo(i,j))
+       do i=1,n_core_inact_orb
+         iorb = list_core_inact(i)
+         Fock_matrix_mo(iorb,jorb) = 0.5d0*(Fock_matrix_alpha_mo(iorb,jorb)+Fock_matrix_beta_mo(iorb,jorb))&
+             - (Fock_matrix_beta_mo(iorb,jorb) - Fock_matrix_alpha_mo(iorb,jorb))
        enddo
        ! F+K/2
-       do i=elec_beta_num+1,elec_alpha_num
-         Fock_matrix_mo(i,j) = 0.5d0*(Fock_matrix_alpha_mo(i,j)+Fock_matrix_beta_mo(i,j))&
-             + 0.5d0*(Fock_matrix_beta_mo(i,j) - Fock_matrix_alpha_mo(i,j))
+       do i=1,n_act_orb
+         iorb = list_act(i)
+         Fock_matrix_mo(iorb,jorb) = 0.5d0*(Fock_matrix_alpha_mo(iorb,jorb)+Fock_matrix_beta_mo(iorb,jorb))&
+             + 0.5d0*(Fock_matrix_beta_mo(iorb,jorb) - Fock_matrix_alpha_mo(iorb,jorb))
        enddo
        ! F
-       do i=elec_alpha_num+1, mo_tot_num
-         Fock_matrix_mo(i,j) = 0.5d0*(Fock_matrix_alpha_mo(i,j)+Fock_matrix_beta_mo(i,j))
+       do i=1,n_virt_orb
+         iorb = list_virt(i)
+         Fock_matrix_mo(iorb,jorb) = 0.5d0*(Fock_matrix_alpha_mo(iorb,jorb)+Fock_matrix_beta_mo(iorb,jorb))
        enddo
      enddo
 
-     do j=elec_beta_num+1,elec_alpha_num
+     do j=1,n_act_orb
+       jorb = list_act(j)
        ! F+K/2
-       do i=1,elec_beta_num
-         Fock_matrix_mo(i,j) = 0.5d0*(Fock_matrix_alpha_mo(i,j)+Fock_matrix_beta_mo(i,j))&
-             + 0.5d0*(Fock_matrix_beta_mo(i,j) - Fock_matrix_alpha_mo(i,j))
+       do i=1,n_core_inact_orb
+         iorb = list_core_inact(i)
+         Fock_matrix_mo(iorb,jorb) = 0.5d0*(Fock_matrix_alpha_mo(iorb,jorb)+Fock_matrix_beta_mo(iorb,jorb))&
+             + 0.5d0*(Fock_matrix_beta_mo(iorb,jorb) - Fock_matrix_alpha_mo(iorb,jorb))
        enddo
        ! F
-       do i=elec_beta_num+1,elec_alpha_num
-         Fock_matrix_mo(i,j) = 0.5d0*(Fock_matrix_alpha_mo(i,j)+Fock_matrix_beta_mo(i,j))
+       do i=1,n_act_orb
+         iorb = list_act(i)
+         Fock_matrix_mo(iorb,jorb) = 0.5d0*(Fock_matrix_alpha_mo(iorb,jorb)+Fock_matrix_beta_mo(iorb,jorb))
        enddo
        ! F-K/2
-       do i=elec_alpha_num+1, mo_tot_num
-         Fock_matrix_mo(i,j) = 0.5d0*(Fock_matrix_alpha_mo(i,j)+Fock_matrix_beta_mo(i,j))&
-             - 0.5d0*(Fock_matrix_beta_mo(i,j) - Fock_matrix_alpha_mo(i,j))
+       do i=1,n_virt_orb
+         iorb = list_virt(i)
+         Fock_matrix_mo(iorb,jorb) = 0.5d0*(Fock_matrix_alpha_mo(iorb,jorb)+Fock_matrix_beta_mo(iorb,jorb))&
+             - 0.5d0*(Fock_matrix_beta_mo(iorb,jorb) - Fock_matrix_alpha_mo(iorb,jorb))
        enddo
      enddo
 
-     do j=elec_alpha_num+1, mo_tot_num
+     do j=1,n_virt_orb
        ! F
-       do i=1,elec_beta_num
-         Fock_matrix_mo(i,j) = 0.5d0*(Fock_matrix_alpha_mo(i,j)+Fock_matrix_beta_mo(i,j))
+       jorb = list_virt(j)
+       do i=1,n_core_inact_orb
+         iorb = list_core_inact(i)
+         Fock_matrix_mo(iorb,jorb) = 0.5d0*(Fock_matrix_alpha_mo(iorb,jorb)+Fock_matrix_beta_mo(iorb,jorb))
        enddo
        ! F-K/2
-       do i=elec_beta_num+1,elec_alpha_num
-         Fock_matrix_mo(i,j) = 0.5d0*(Fock_matrix_alpha_mo(i,j)+Fock_matrix_beta_mo(i,j))&
-             - 0.5d0*(Fock_matrix_beta_mo(i,j) - Fock_matrix_alpha_mo(i,j))
+       do i=1,n_act_orb
+         iorb = list_act(i)
+         Fock_matrix_mo(iorb,jorb) = 0.5d0*(Fock_matrix_alpha_mo(iorb,jorb)+Fock_matrix_beta_mo(iorb,jorb))&
+             - 0.5d0*(Fock_matrix_beta_mo(iorb,jorb) - Fock_matrix_alpha_mo(iorb,jorb))
        enddo
        ! F+K
-       do i=elec_alpha_num+1,mo_tot_num
-         Fock_matrix_mo(i,j) = 0.5d0*(Fock_matrix_alpha_mo(i,j)+Fock_matrix_beta_mo(i,j)) &
-             + (Fock_matrix_beta_mo(i,j) - Fock_matrix_alpha_mo(i,j))
+       do i=1,n_virt_orb
+         iorb = list_virt(i)
+         Fock_matrix_mo(iorb,jorb) = 0.5d0*(Fock_matrix_alpha_mo(iorb,jorb)+Fock_matrix_beta_mo(iorb,jorb)) &
+             + (Fock_matrix_beta_mo(iorb,jorb) - Fock_matrix_alpha_mo(iorb,jorb))
        enddo
      enddo
      
-   endif
+!  endif
 
    do i = 1, mo_tot_num
      Fock_matrix_diag_mo(i) = Fock_matrix_mo(i,i) 
@@ -80,7 +93,7 @@
 END_PROVIDER
  
  
- 
+
  BEGIN_PROVIDER [ double precision, Fock_matrix_alpha_ao, (ao_num_align, ao_num) ]
 &BEGIN_PROVIDER [ double precision, Fock_matrix_beta_ao,  (ao_num_align, ao_num) ]
  implicit none
@@ -320,6 +333,7 @@ BEGIN_PROVIDER [ double precision, HF_energy ]
          (ao_mono_elec_integral(i,j) + Fock_matrix_beta_ao (i,j) ) *  HF_density_matrix_ao_beta (i,j) )
    enddo
  enddo
+ print*, 'HF_energy ',HF_energy
   
 END_PROVIDER
 

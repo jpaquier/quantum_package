@@ -299,7 +299,7 @@ subroutine add_integrals_to_map(mask_ijkl)
       !DEC$ VECTOR ALIGNED
       bielec_tmp_2 = 0.d0
       do j1 = 1,ao_num
-        call get_ao_bielec_integrals(j1,k1,l1,ao_num,bielec_tmp_0(1,j1))
+        call get_ao_bielec_integrals(j1,k1,l1,ao_num,bielec_tmp_0(1,j1)) ! all integrals for a given l1, k1
         ! call compute_ao_bielec_integrals(j1,k1,l1,ao_num,bielec_tmp_0(1,j1))
       enddo
       do j1 = 1,ao_num
@@ -321,6 +321,7 @@ subroutine add_integrals_to_map(mask_ijkl)
         !DEC$ VECTOR ALIGNED
         bielec_tmp_1 = 0.d0
         ii1=1
+        ! sum_m c_m^i (m)
         do ii1 = 1,kmax-4,4
           i1 = bielec_tmp_0_idx(ii1)
           i2 = bielec_tmp_0_idx(ii1+1)
