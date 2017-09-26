@@ -51,37 +51,88 @@ END_PROVIDER
 END_PROVIDER 
 
 
- BEGIN_PROVIDER [real(integral_kind), semi_transformed_occ_virt, (ao_num,ao_num,n_core_inact_orb,n_virt_orb)]
-&BEGIN_PROVIDER [real(integral_kind), semi_transformed_occ_virt_bis, (ao_num,ao_num,n_core_inact_orb,n_virt_orb)]
+BEGIN_PROVIDER [real(integral_kind), semi_transformed_occ_virt, (ao_num,ao_num,n_core_inact_orb,n_virt_orb)]
   use map_module
  implicit none
  semi_transformed_occ_virt = 0.d0
 
- semi_transformed_occ_virt_bis = 0.d0
 
- integer :: i,j,k,l,iorb,jorb,korb,lorb,m,n
+ integer :: i,j,k,l,iorb,jorb,korb,lorb,m,n,p,q
  double precision :: c
  real(integral_kind), allocatable :: bielec_tmp_0(:,:),matrix_tmp_1(:,:),matrix_final(:,:)
  real(integral_kind) :: integral,ao_bielec_integral
 
  allocate(bielec_tmp_0(ao_num,ao_num),matrix_tmp_1(n_core_inact_orb,ao_num),matrix_final(n_core_inact_orb,n_virt_orb))
 
- do k = 1,ao_num
-   do l = 1,ao_num
+ do p = 1,ao_num
+   do q = 1,ao_num
     matrix_tmp_1 = 0.d0
     matrix_final = 0.d0
     do m = 1, ao_num
-     call get_ao_bielec_integrals(k,m,l,ao_num,bielec_tmp_0(1,m)) ! k,l :: r1, m :: r2
+     call get_ao_bielec_integrals(p,m,q,ao_num,bielec_tmp_0(1,m)) ! k,l :: r1, m :: r2
     enddo
     call dgemm('N','N',n_core_inact_orb,ao_num,ao_num,1.d0,mo_coef_core_inact_transp,n_core_inact_orb,bielec_tmp_0,ao_num,0.d0,matrix_tmp_1,n_core_inact_orb)
     call dgemm('N','N',n_core_inact_orb,n_virt_orb,ao_num,1.d0,matrix_tmp_1,n_core_inact_orb,mo_coef_virt,ao_num,0.d0,matrix_final,n_core_inact_orb)
     do j = 1, n_virt_orb
      do i = 1, n_core_inact_orb
-      semi_transformed_occ_virt(k,l,i,j) = matrix_final(i,j)
+      semi_transformed_occ_virt(p,q,i,j) = matrix_final(i,j)
      enddo
     enddo
    enddo
   enddo
+ 
+END_PROVIDER 
+
+ BEGIN_PROVIDER [real(integral_kind), transformed_occ_virt, (n_core_inact_orb,n_virt_orb,n_core_inact_orb,n_virt_orb)]
+  use map_module
+ implicit none
+ transformed_occ_virt = 0.d0
+
+ integer :: i,j,k,l,iorb,jorb,korb,lorb,m,n,p,q
+ double precision :: c
+ real(integral_kind), allocatable :: bielec_tmp_0(:,:),matrix_tmp_1(:,:),matrix_final(:,:),matrix_tmp_2(:,:)
+ real(integral_kind) :: integral,ao_bielec_integral
+ real(integral_kind), allocatable :: transformed_occ_virt_tmp(:,:,:,:)
+ real(integral_kind) :: thr
+
+  !$OMP PARALLEL DEFAULT(NONE)             &
+  !$OMP PRIVATE(p,q,matrix_tmp_1,matrix_final,m,bielec_tmp_0,matrix_tmp_2,i,j,transformed_occ_virt_tmp,thr) & 
+  !$OMP SHARED(ao_num,ao_overlap_abs,ao_integrals_threshold,ao_bielec_integral_schwartz,n_core_inact_orb,mo_coef_core_inact_transp,mo_coef_virt, &
+  !$OMP         mo_coef_virt_transp,n_virt_orb,transformed_occ_virt)
+ 
+  thr = dsqrt(ao_integrals_threshold)
+  allocate(bielec_tmp_0(ao_num,ao_num),matrix_tmp_1(n_core_inact_orb,ao_num),matrix_final(n_core_inact_orb,n_virt_orb))
+  allocate(matrix_tmp_2(n_core_inact_orb,n_virt_orb),transformed_occ_virt_tmp(n_core_inact_orb,n_virt_orb,n_core_inact_orb,n_virt_orb))
+  !$OMP DO SCHEDULE(guided)
+ do p = 1,ao_num
+   do q = 1,ao_num
+    if(ao_overlap_abs(p,q).le.thr)cycle
+    if(ao_bielec_integral_schwartz(p,q).lt.thr) cycle
+    matrix_tmp_1 = 0.d0
+    matrix_final = 0.d0
+    do m = 1, ao_num
+     call get_ao_bielec_integrals(p,m,q,ao_num,bielec_tmp_0(1,m)) ! k,l :: r1, m :: r2
+    enddo
+    call dgemm('N','N',n_core_inact_orb,ao_num,ao_num,1.d0,mo_coef_core_inact_transp,n_core_inact_orb,bielec_tmp_0,ao_num,0.d0,matrix_tmp_1,n_core_inact_orb)
+    call dgemm('N','N',n_core_inact_orb,n_virt_orb,ao_num,1.d0,matrix_tmp_1,n_core_inact_orb,mo_coef_virt,ao_num,0.d0,matrix_final,n_core_inact_orb)
+
+    matrix_tmp_2 = 0.d0
+    call dger(n_core_inact_orb,n_virt_orb,1.d0,mo_coef_core_inact_transp(1,p),1,mo_coef_virt_transp(1,q),1,matrix_tmp_2,n_core_inact_orb)
+
+    do j =1, n_virt_orb
+     do i = 1, n_core_inact_orb
+       if(dabs(matrix_final(i,j)).lt.thr)cycle
+       transformed_occ_virt_tmp(1:n_core_inact_orb,1:n_virt_orb,i,j) += matrix_tmp_2(1:n_core_inact_orb,1:n_virt_orb) * matrix_final(i,j)
+     enddo
+    enddo
+   enddo
+  enddo
+  !$OMP END DO NOWAIT
+  !$OMP CRITICAL
+  transformed_occ_virt = transformed_occ_virt + transformed_occ_virt_tmp
+  !$OMP END CRITICAL
+  deallocate(transformed_occ_virt_tmp)
+  !$OMP END PARALLEL
  
 END_PROVIDER 
 

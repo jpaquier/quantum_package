@@ -87,6 +87,27 @@ subroutine routine1
    enddo
   enddo
  enddo
+
+
+ do i = 1, n_core_inact_orb
+  iorb = list_core_inact(i)
+  do j = 1, n_virt_orb
+   jorb = list_virt(j)
+   do k = 1, n_core_inact_orb
+    korb = list_core_inact(k)
+    do l = 1, n_virt_orb
+     lorb = list_virt(l)
+     integral = get_mo_bielec_integral(iorb,korb,jorb,lorb,mo_integrals_map)
+     if(dabs(transformed_occ_virt(k,l,i,j) - integral ).gt.1.d-10)then
+      print*, 'pb in fully transformed'
+      print*, iorb,jorb,korb,lorb
+      print*, integral,transformed_occ_virt(k,l,i,j),dabs(transformed_occ_virt(k,l,i,j) - integral )
+     endif
+    enddo
+   enddo
+  enddo
+ enddo
+
 end
 
 subroutine routine2
