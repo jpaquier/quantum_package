@@ -24,19 +24,21 @@ subroutine iteration_scf
   print*, k,n_orb_rot
  endif
  SCI_matrix = 0.d0
- ! Diagonal and Brillouin matrix elements 
  do i = 1, n_core_inact_orb
   iorb = list_core_inact(i)
   do j = 1, n_virt_orb
    jorb = list_virt(j)
+   ! Diagonal and Brillouin matrix elements 
    SCI_matrix(index_rotation_CI(i,j),index_rotation_CI(i,j)) = - Fock_matrix_mo(iorb,iorb) + Fock_matrix_mo(jorb,jorb)
    SCI_matrix(1,index_rotation_CI(i,j)) = Fock_matrix_mo(iorb,jorb)
    SCI_matrix(index_rotation_CI(i,j),1) = Fock_matrix_mo(jorb,iorb)
+   ! Interaction through the virt-virt Fock operator
    do k = j+1, n_virt_orb
     korb = list_virt(k)
     SCI_matrix(index_rotation_CI(i,j),index_rotation_CI(i,k)) = Fock_matrix_mo(jorb,korb)
     SCI_matrix(index_rotation_CI(i,k),index_rotation_CI(i,j)) = Fock_matrix_mo(jorb,korb)
    enddo
+   ! Interaction through the core-core Fock operator
    do k = i+1, n_core_inact_orb
     korb = list_core_inact(k)
     SCI_matrix(index_rotation_CI(i,j),index_rotation_CI(k,j)) = Fock_matrix_mo(iorb,korb)
