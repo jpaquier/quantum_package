@@ -76,7 +76,7 @@
   !$OMP PRIVATE(i,j,k,m,bielec_tmp_0,matrix_tmp_1) &
   !$OMP SHARED(n_core_inact_orb,ao_num,semi_transformed_occ_occ,n_virt_orb,mo_coef_virt_transp,transformed_virt1_occ2_occ2)
  
-  allocate(bielec_tmp_0(ao_num,ao_num),matrix_tmp_1(n_core_inact_orb,ao_num))
+  allocate(bielec_tmp_0(ao_num,ao_num),matrix_tmp_1(n_virt_orb,ao_num))
   !$OMP DO SCHEDULE(guided)
  do i = 1, n_core_inact_orb
   do j = 1, n_core_inact_orb

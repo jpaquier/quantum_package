@@ -52,6 +52,7 @@ subroutine check_virt1_core2_core2
     enddo
    enddo
   enddo
+ print*, 'passed check_virt1_core2_core2'
 
 end
 
@@ -65,8 +66,8 @@ subroutine check_core1_core2_virt2
   iorb = list_core_inact(i)
   do j = 1, n_virt_orb
    jorb = list_virt(j)
-   do k = 1, n_virt_orb
-    korb = list_virt(k)
+   do k = 1, n_core_inact_orb
+    korb = list_core_inact(k)
      integral = get_mo_bielec_integral(iorb,korb,jorb,korb,mo_integrals_map)
      if(dabs(transformed_occ1_occ2_virt2(k,i,j) - integral ).gt.1.d-10)then
       print*, 'pb in fully transformed'
@@ -76,6 +77,7 @@ subroutine check_core1_core2_virt2
     enddo
    enddo
   enddo
+ print*, 'passed check_core1_core2_virt2'
 
 end
 
@@ -97,11 +99,13 @@ subroutine check_core1_virt1_core2_virt2
      if(dabs(transformed_occ1_virt1_occ2_virt2(k,l,i,j) - integral ).gt.1.d-10)then
       print*, 'pb in fully transformed'
       print*, iorb,jorb,korb
-      print*, integral,transformed_occ1_virt1_occ2_virt2(k,l,i,j),dabs(transformed_occ1_occ2_virt2(k,l,i,j) - integral )
+      print*, integral,transformed_occ1_virt1_occ2_virt2(k,l,i,j),dabs(transformed_occ1_virt1_occ2_virt2(k,l,i,j) - integral )
      endif
     enddo
    enddo
   enddo
  enddo
+ 
+ print*, 'passed check_core1_virt1_core2_virt2'
 
 end
