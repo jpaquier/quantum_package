@@ -119,7 +119,6 @@ subroutine apply_H_superci_to_vector(u0,u1)
      do k = 1, i-1
       index_j = index_rotation_CI(k,l)
       u1(index_i) += u0(index_j) * ( 2.d0 * transformed_occ1_virt1_occ2_virt2(k,l,i,j) - transformed_virt1_virt1_occ2_occ2(l,j,k,i) )
-      superci_matrix(index_rotation_CI(i,j),index_rotation_CI(k,l)) = 2.d0 * transformed_occ1_virt1_occ2_virt2(k,l,i,j) - transformed_virt1_virt1_occ2_occ2(l,j,k,i)
      enddo
     enddo
 
