@@ -2,14 +2,16 @@ program pouet
  implicit none
  read_wf = .True.
  touch read_wf
- call test_H_superci
+!call test_guess_superci 
+ call test_fock 
+!call test_H_superci
 end 
 
 subroutine test_fock
  implicit none
  integer :: i,j
  print*, 'Reference energy = ',reference_energy_superci+nuclear_repulsion
-  print*, eigenvalues_sci_brutal(1),eigenvalues_sci(1)
+! print*, eigenvalues_sci_brutal(1),eigenvalues_sci(1)
  do i = 1, size_super_ci
   do j = 1, size_super_ci 
    if(dabs(superci_matrix(i,j)-total_matrix_superci_brutal(i,j)).gt.1.d-10.and.i.ne.1)then
@@ -89,5 +91,12 @@ subroutine test_H_superci
  deallocate(u1,u0,v0,v1)
 
 
+
+end
+
+
+subroutine test_guess_superci
+ implicit none
+ provide eigenvalues_sci 
 
 end

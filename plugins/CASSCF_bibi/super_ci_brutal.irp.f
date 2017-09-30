@@ -96,7 +96,6 @@ END_PROVIDER
  BEGIN_PROVIDER [double precision, diagonal_matrix_superci_brutal, (size_super_ci)]
 &BEGIN_PROVIDER [double precision,brillouin_matrix_superci_brutal, (size_super_ci)]
 &BEGIN_PROVIDER [double precision,total_matrix_superci_brutal, (size_super_ci,size_super_ci)]
-&BEGIN_PROVIDER [double precision,reference_energy_superci ]
  use bitmasks
  implicit none
  integer :: i,j,k,l,idet
@@ -108,7 +107,6 @@ END_PROVIDER
  i = 1 
  diagonal_matrix_superci_brutal(1) = 0.d0
  total_matrix_superci_brutal(1,1) = 0.d0 
- reference_energy_superci = psi_energy(1)
  do i = 2, size_super_ci
   allocate(psi_1(N_int,2,psi_superci_size(1,i)+psi_superci_size(2,i)),psi_1_coef(psi_superci_size(1,i)+psi_superci_size(2,i)))
   do j = 1, N_det

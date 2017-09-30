@@ -91,6 +91,11 @@ BEGIN_PROVIDER [double precision, diagonal_superci_matrix, (size_super_ci)]
     diagonal_superci_matrix(index_rotation_CI(i,j)) = - Fock_matrix_alpha_beta_average_mo(iorb,iorb) + Fock_matrix_alpha_beta_average_mo(jorb,jorb) & 
                                                       - transformed_occ1_virt2_virt2(i,j,j)          + 2.d0 * transformed_occ1_virt1_occ2_virt2(i,j,i,j)
    endif
+   if (dabs(superci_matrix(index_rotation_CI(i,j),index_rotation_CI(i,j)) - diagonal_superci_matrix(index_rotation_CI(i,j))).gt.1.d-10)then
+    print*, i,j
+    print*, superci_matrix(index_rotation_CI(i,j),index_rotation_CI(i,j)),diagonal_superci_matrix(index_rotation_CI(i,j))
+    stop
+   endif
   enddo
  enddo
 
@@ -214,159 +219,27 @@ BEGIN_PROVIDER [double precision, superci_matrix, (size_super_ci,size_super_ci)]
 END_PROVIDER 
 
 
-
  BEGIN_PROVIDER [double precision, eigenvectors_sci, (size_super_ci,size_super_ci)]
 &BEGIN_PROVIDER [double precision, eigenvalues_sci, (size_super_ci)]
  implicit none
  integer :: i,j
+ double precision :: e_guess
+ double precision, allocatable :: grd_st_eigenvec(:)
 
+ provide superci_matrix
  call lapack_diag(eigenvalues_sci,eigenvectors_sci,superci_matrix,size_super_ci,size_super_ci)
+ print*, 'e_guess = ',eigenvalues_sci(1)
+
+
+!allocate(grd_st_eigenvec(size_super_ci))
+!call create_guess_super_ci(grd_st_eigenvec,e_guess)
+!print*, 'e_guess = ',e_guess
+!call davidson_diag_general(grd_st_eigenvec,e_guess,size_super_ci,size_super_ci,1,N_states_diag,N_int,output_determinants)
+!pause
+!deallocate(grd_st_eigenvec)
 END_PROVIDER 
 
-subroutine apply_H_superci_to_vector(u0,u1)
- implicit none
- double precision, intent(in) :: u0(size_super_ci)
- double precision, intent(out) :: u1(size_super_ci)
-
- integer :: i,iorb,j,jorb,k,korb,l,lorb
- integer :: index_i,index_j
- double precision :: dsqrt_2
- dsqrt_2 = dsqrt(2.d0)
-
- u1 = 0.d0
- 
- if(type_of_superci == 0)then
-   do j = 1, n_virt_orb
-    jorb = list_virt(j)
-    do i = 1, n_core_inact_orb
-     iorb = list_core_inact(i)
-     index_i = index_rotation_CI(i,j) 
-     ! Diagonal and Brillouin matrix elements 
-     u1(1) += u0(index_i) * dsqrt_2 * Fock_matrix_alpha_beta_average_mo(iorb,jorb)
-     u1(index_i) += u0(1) * dsqrt_2 * Fock_matrix_alpha_beta_average_mo(iorb,jorb)
-     u1(index_i) += u0(index_i) * diagonal_superci_matrix(index_i)
-     ! Interaction through the virt-virt Fock operator
-     do k = j+1, n_virt_orb
-      korb = list_virt(k)
-      index_j = index_rotation_CI(i,k)
-      u1(index_i) += u0(index_j) * Fock_matrix_alpha_beta_average_mo(jorb,korb)
-      u1(index_j) += u0(index_i) * Fock_matrix_alpha_beta_average_mo(jorb,korb)
-     enddo
-     ! Interaction through the core-core Fock operator
-     do k = i+1, n_core_inact_orb
-      korb = list_core_inact(k)
-      index_j = index_rotation_CI(k,j)
-      u1(index_i) -= u0(index_j) *  Fock_matrix_alpha_beta_average_mo(iorb,korb)
-      u1(index_j) -= u0(index_i) *  Fock_matrix_alpha_beta_average_mo(iorb,korb)
-     enddo
-    enddo
-   enddo
-
- else if(type_of_superci == 1)then
-
-  do i = 1, n_core_inact_orb
-   iorb = list_core_inact(i)
-   do j = 1, n_virt_orb
-    jorb = list_virt(j)
-    index_i = index_rotation_CI(i,j) 
-    ! Diagonal and Brillouin matrix elements 
-    u1(1) += u0(index_i) * dsqrt_2 * Fock_matrix_alpha_beta_average_mo(iorb,jorb)
-    u1(index_i) += u0(1) * dsqrt_2 * Fock_matrix_alpha_beta_average_mo(iorb,jorb)
-    u1(index_i) += u0(index_i) * diagonal_superci_matrix(index_i)
-    ! Interaction through the virt-virt Fock operator
-    do k = j+1, n_virt_orb
-     korb = list_virt(k)
-     index_j = index_rotation_CI(i,k)
-     u1(index_i) += u0(index_j) * (Fock_matrix_alpha_beta_average_mo(jorb,korb) &
-                                                                   - transformed_occ1_virt2_virt2(i,k,j) + 2.d0 * transformed_occ1_virt1_occ2_virt2(i,k,i,j))
-     u1(index_j) += u0(index_i) * (Fock_matrix_alpha_beta_average_mo(jorb,korb) & 
-                                                                   - transformed_occ1_virt2_virt2(i,k,j) + 2.d0 * transformed_occ1_virt1_occ2_virt2(i,k,i,j))
-    enddo
-    ! Interaction through the core-core Fock operator
-    do k = i+1, n_core_inact_orb
-     korb = list_core_inact(k)
-     index_j = index_rotation_CI(k,j)
-     u1(index_i) -= u0(index_j) *  (Fock_matrix_alpha_beta_average_mo(iorb,korb) & 
-                                                                     - transformed_virt1_occ2_occ2(j,k,i) + 2.d0 * transformed_occ1_virt1_occ2_virt2(i,j,k,j))
-     u1(index_j) -= u0(index_i) *  (Fock_matrix_alpha_beta_average_mo(iorb,korb) & 
-                                                                     - transformed_virt1_occ2_occ2(j,k,i) + 2.d0 * transformed_occ1_virt1_occ2_virt2(i,j,k,j))
-    enddo
-    
-   enddo
-  enddo
-
- else if(type_of_superci == 2)then
-
-  do i = 1, n_core_inact_orb
-   iorb = list_core_inact(i)
-   do j = 1, n_virt_orb
-    jorb = list_virt(j)
-    index_i = index_rotation_CI(i,j) 
-    ! Diagonal and Brillouin matrix elements 
-    u1(1) += u0(index_i) * dsqrt_2 * Fock_matrix_alpha_beta_average_mo(iorb,jorb)
-    u1(index_i) += u0(1) * dsqrt_2 * Fock_matrix_alpha_beta_average_mo(iorb,jorb)
-    u1(index_i) += u0(index_i) * diagonal_superci_matrix(index_i)
-    ! Interaction through the virt-virt Fock operator
-    do k = j+1, n_virt_orb
-     korb = list_virt(k)
-     index_j = index_rotation_CI(i,k)
-     u1(index_i) += u0(index_j) * (Fock_matrix_alpha_beta_average_mo(jorb,korb) &
-                                                                   - transformed_occ1_virt2_virt2(i,k,j) + 2.d0 * transformed_occ1_virt1_occ2_virt2(i,k,i,j))
-     u1(index_j) += u0(index_i) * (Fock_matrix_alpha_beta_average_mo(jorb,korb) & 
-                                                                   - transformed_occ1_virt2_virt2(i,k,j) + 2.d0 * transformed_occ1_virt1_occ2_virt2(i,k,i,j))
-    enddo
-    ! Interaction through the core-core Fock operator
-    do k = i+1, n_core_inact_orb
-     korb = list_core_inact(k)
-     index_j = index_rotation_CI(k,j)
-     u1(index_i) -= u0(index_j) *  (Fock_matrix_alpha_beta_average_mo(iorb,korb) & 
-                                                                     - transformed_virt1_occ2_occ2(j,k,i) + 2.d0 * transformed_occ1_virt1_occ2_virt2(i,j,k,j))
-     u1(index_j) -= u0(index_i) *  (Fock_matrix_alpha_beta_average_mo(iorb,korb) & 
-                                                                     - transformed_virt1_occ2_occ2(j,k,i) + 2.d0 * transformed_occ1_virt1_occ2_virt2(i,j,k,j))
-    enddo
-    ! Hole-particle interaction 
-    do l = 1, j-1
-     do k = 1, i-1
-      index_j = index_rotation_CI(k,l)
-      u1(index_i) += u0(index_j) * ( 2.d0 * transformed_occ1_virt1_occ2_virt2(k,l,i,j) - transformed_virt1_virt1_occ2_occ2(l,j,k,i) )
-     enddo
-    enddo
-
-    do l = 1, j-1
-     do k = i+1, n_core_inact_orb
-      index_j = index_rotation_CI(k,l)
-      u1(index_i) += u0(index_j) * ( 2.d0 * transformed_occ1_virt1_occ2_virt2(k,l,i,j) - transformed_virt1_virt1_occ2_occ2(l,j,k,i) )
-     enddo
-    enddo
-
-    do l = j+1, n_virt_orb
-     do k = 1, i-1
-      index_j = index_rotation_CI(k,l)
-      u1(index_i) += u0(index_j) * ( 2.d0 * transformed_occ1_virt1_occ2_virt2(k,l,i,j) - transformed_virt1_virt1_occ2_occ2(l,j,k,i) )
-      superci_matrix(index_rotation_CI(i,j),index_rotation_CI(k,l)) = 2.d0 * transformed_occ1_virt1_occ2_virt2(k,l,i,j) - transformed_virt1_virt1_occ2_occ2(l,j,k,i)
-     enddo
-    enddo
-
-    do l = j+1, n_virt_orb
-     do k = i+1, n_core_inact_orb
-      index_j = index_rotation_CI(k,l)
-      u1(index_i) += u0(index_j) * ( 2.d0 * transformed_occ1_virt1_occ2_virt2(k,l,i,j) - transformed_virt1_virt1_occ2_occ2(l,j,k,i) )
-     enddo
-    enddo
-    
-   enddo
-  enddo
-
- endif
-
-end 
-
-
-
- BEGIN_PROVIDER [double precision, eigenvectors_sci, (size_super_ci,size_super_ci)]
-&BEGIN_PROVIDER [double precision, eigenvalues_sci, (size_super_ci)]
- implicit none
- integer :: i,j
- call lapack_diag(eigenvalues_sci,eigenvectors_sci,superci_matrix,size_super_ci,size_super_ci)
+BEGIN_PROVIDER [double precision,reference_energy_superci ]
+implicit none
+reference_energy_superci = psi_energy(1)
 END_PROVIDER 
-
