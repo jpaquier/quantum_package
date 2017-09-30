@@ -1,3 +1,77 @@
+double precision function i_H_SCI_j(i,j)
+ implicit none
+ integer, intent(in) :: i,j
+ integer :: ihole,jpart
+ integer :: iorb,jorb
+ integer :: khole,lpart
+ integer :: korb,lorb
+ double precision :: dsqrt_2
+ dsqrt_2 = dsqrt(2.d0)
+ i_H_SCI_j = 0.d0
+
+ if(i==j)then
+  i_H_SCI_j = diagonal_superci_matrix(i)
+  return
+ endif
+
+ if(i==1.or.j==1)then
+  if (i==1.and.j.ne.1)then
+   khole = index_rotation_CI_reverse(j,1)
+   korb = list_core_inact(khole)
+   lpart = index_rotation_CI_reverse(j,2)
+   lorb = list_virt(lpart)
+   i_H_SCI_j = dsqrt_2 * Fock_matrix_alpha_beta_average_mo(korb,lorb) 
+   return
+  endif
+ 
+  if (j==1.and.i.ne.1)then
+   ihole = index_rotation_CI_reverse(i,1)
+   iorb = list_core_inact(ihole)
+   jpart = index_rotation_CI_reverse(i,2)
+   jorb = list_virt(jpart)
+   i_H_SCI_j = dsqrt_2 * Fock_matrix_alpha_beta_average_mo(iorb,jorb) 
+   return
+  endif
+ endif
+
+ ihole = index_rotation_CI_reverse(i,1)
+ iorb = list_core_inact(ihole)
+ jpart = index_rotation_CI_reverse(i,2)
+ jorb = list_virt(jpart)
+
+ khole = index_rotation_CI_reverse(j,1)
+ korb = list_core_inact(khole)
+ lpart = index_rotation_CI_reverse(j,2)
+ lorb = list_virt(lpart)
+ 
+
+
+  if(ihole==khole)then 
+   if(type_of_superci==0)then
+    i_H_SCI_j = Fock_matrix_alpha_beta_average_mo(jorb,lorb)
+   else if (type_of_superci==1.or.type_of_superci==2)then
+    i_H_SCI_j = Fock_matrix_alpha_beta_average_mo(jorb,lorb) - transformed_occ1_virt2_virt2(ihole,jpart,lpart) + 2.d0 * transformed_occ1_virt1_occ2_virt2(ihole,jpart,ihole,lpart)
+                                                              
+   endif
+  else if (jpart==lpart)then
+   if(type_of_superci==0)then
+    i_H_SCI_j = - Fock_matrix_alpha_beta_average_mo(iorb,korb)
+   else if (type_of_superci==1.or.type_of_superci==2)then
+    i_H_SCI_j = - Fock_matrix_alpha_beta_average_mo(iorb,korb)- transformed_virt1_occ2_occ2(jpart,khole,ihole) + 2.d0 * transformed_occ1_virt1_occ2_virt2(ihole,jpart,khole,jpart)
+   endif
+  else  
+   if(type_of_superci==2)then
+    i_H_SCI_j =  2.d0 * transformed_occ1_virt1_occ2_virt2(khole,lpart,ihole,jpart) - transformed_virt1_virt1_occ2_occ2(lpart,jpart,khole,ihole) 
+   endif
+  endif
+
+
+
+
+
+end
+
+
 
 subroutine apply_H_superci_to_vector(u0,u1)
  implicit none
@@ -135,57 +209,6 @@ subroutine apply_H_superci_to_vector(u0,u1)
 end 
 
 
-
-subroutine create_guess_super_ci(u_guess,e_guess)
- implicit none
- integer :: i,j
- double precision, intent(out) :: u_guess(size_super_ci),e_guess
- double precision, allocatable :: u0(:),u1(:),u2(:)
- allocate(u0(size_super_ci),u1(size_super_ci),u2(size_super_ci))
- u0 = 0.d0
- u0(1) = 1.d0 
- call apply_H_superci_to_vector(u0,u1)
- double precision :: interaction,e1,u_dot_v,delta_e,c1
- double precision :: norm
- norm = u_dot_v(u0,u1,size_super_ci)
- u1 = u1 - norm * u0 
-
- norm = u_dot_v(u1,u1,size_super_ci)
- norm = 1.d0/dsqrt(norm)
- u1 = u1 * norm
- call apply_H_superci_to_vector(u1,u2)
- interaction = u_dot_v(u0,u2,size_super_ci)
- e1 = u_dot_v(u2,u1,size_super_ci)
- delta_e = e1 
- if(delta_e > 0.d0)then
-  e_guess =  0.5d0 * (delta_e - dsqrt(delta_e * delta_e + 4.d0 * interaction **2 ))
- else 
-  e_guess =  0.5d0 * (delta_e + dsqrt(delta_e * delta_e + 4.d0 * interaction **2 ))
- endif
- if(interaction.gt.1.d-10)then
-  c1 = e_guess/interaction 
- else 
-  c1 = 0.d0
- endif
-
- u_guess = u0 + c1 * u1
- norm = u_dot_v(u_guess,u_guess,size_super_ci)
- norm = 1.d0/dsqrt(norm)
- u_guess = u_guess * norm
-
- double precision :: e0
- call apply_H_superci_to_vector(u_guess,u1)
- e0 = u_dot_v(u_guess,u1,size_super_ci) 
- if(dabs(e0 - e_guess).gt.1.d-10)then
-  print*, 'PB in create_guess_super_ci'
-  print*, e0,e_guess
- stop
- endif
- deallocate(u1,u0)
-
-end
-
-
 subroutine davidson_diag_general(u_in,energies,dim_in,sze,N_st,N_st_diag,Nint,iunit)
   use bitmasks
   implicit none
@@ -210,27 +233,28 @@ subroutine davidson_diag_general(u_in,energies,dim_in,sze,N_st,N_st_diag,Nint,iu
   double precision, intent(out)  :: energies(N_st)
   double precision, allocatable  :: H_jj(:)
   
+  double precision               :: diag_h_mat_elem
   integer                        :: i
   ASSERT (N_st > 0)
   ASSERT (sze > 0)
   ASSERT (Nint > 0)
   ASSERT (Nint == N_int)
-  PROVIDE mo_bielec_integrals_in_map
   allocate(H_jj(sze))
   
   do i=1,sze
     H_jj(i) = diagonal_superci_matrix(i)
-    print*, H_jj(i),u_in(i,1)
   enddo
 
-  call davidson_diag_hjj_general(u_in,H_jj,energies,dim_in,sze,N_st,N_st_diag,Nint,iunit)
+  call davidson_diag_general_hjj(u_in,H_jj,energies,dim_in,sze,N_st,N_st_diag,Nint,iunit)
   deallocate (H_jj)
 end
 
 
 
 
-subroutine davidson_diag_hjj_general(u_in,H_jj,energies,dim_in,sze,N_st,N_st_diag,Nint,iunit)
+
+subroutine davidson_diag_general_Hjj(u_in,H_jj,energies,dim_in,sze,N_st,N_st_diag,Nint,iunit)
+  use bitmasks
   implicit none
   BEGIN_DOC
   ! Davidson diagonalization with specific diagonal elements of the H matrix
@@ -272,6 +296,7 @@ subroutine davidson_diag_hjj_general(u_in,H_jj,energies,dim_in,sze,N_st,N_st_dia
   double precision, allocatable  :: W(:,:,:),  U(:,:,:), R(:,:)
   double precision, allocatable  :: y(:,:,:,:), h(:,:,:,:), lambda(:)
   double precision, allocatable  :: c(:), H_small(:,:)
+  double precision               :: diag_h_mat_elem
   double precision, allocatable  :: residual_norm(:)
   character*(16384)              :: write_buffer
   double precision               :: to_print(2,N_st)
@@ -281,7 +306,6 @@ subroutine davidson_diag_hjj_general(u_in,H_jj,energies,dim_in,sze,N_st,N_st_dia
 
   !DIR$ ATTRIBUTES ALIGN : $IRP_ALIGN :: U, W, R, y, h, lambda
 
-  PROVIDE nuclear_repulsion
 
   call write_time(iunit)
   call wall_time(wall)
@@ -292,7 +316,7 @@ subroutine davidson_diag_hjj_general(u_in,H_jj,energies,dim_in,sze,N_st,N_st_dia
   write(iunit,'(A)') ''
   call write_int(iunit,N_st,'Number of states')
   call write_int(iunit,N_st_diag,'Number of states in diagonalization')
-  call write_int(iunit,sze,'Number of components ')
+  call write_int(iunit,sze,'Number of determinants')
   write(iunit,'(A)') ''
   write_buffer = '===== '
   do i=1,N_st
@@ -336,25 +360,25 @@ subroutine davidson_diag_hjj_general(u_in,H_jj,energies,dim_in,sze,N_st,N_st_dia
   
   converged = .False.
   
- !do k=1,N_st_diag
+  do k=1,N_st_diag
 
- ! !if (k > N_st) then
- ! !  do i=1,sze
- ! !    double precision               :: r1, r2
- ! !    call random_number(r1)
- ! !    call random_number(r2)
- ! !    u_in(i,k) = dsqrt(-2.d0*dlog(r1))*dcos(dtwo_pi*r2)
- ! !  enddo
- ! !endif
- !  
- ! !! Gram-Schmidt
- ! !! ------------
- ! !call dgemv('T',sze,k-1,1.d0,u_in,size(u_in,1),                   &
- ! !    u_in(1,k),1,0.d0,c,1)
- ! !call dgemv('N',sze,k-1,-1.d0,u_in,size(u_in,1),                  &
- ! !    c,1,1.d0,u_in(1,k),1)
- ! !call normalize(u_in(1,k),sze)
- !enddo
+    if (k > N_st) then
+      do i=1,sze
+        double precision               :: r1, r2
+        call random_number(r1)
+        call random_number(r2)
+        u_in(i,k) = dsqrt(-2.d0*dlog(r1))*dcos(dtwo_pi*r2)
+      enddo
+    endif
+    
+    ! Gram-Schmidt
+    ! ------------
+    call dgemv('T',sze,k-1,1.d0,u_in,size(u_in,1),                   &
+        u_in(1,k),1,0.d0,c,1)
+    call dgemv('N',sze,k-1,-1.d0,u_in,size(u_in,1),                  &
+        c,1,1.d0,u_in(1,k),1)
+    call normalize(u_in(1,k),sze)
+  enddo
 
 
   
@@ -372,6 +396,10 @@ subroutine davidson_diag_hjj_general(u_in,H_jj,energies,dim_in,sze,N_st,N_st_dia
       ! -----------------------------------------
       
       call apply_H_superci_to_vector(U(1,1,iter),W(1,1,iter))
+      print*, u_dot_v(U(1,1,iter),W(1,1,iter),sze)
+      
+      ! Compute h_kl = <u_k | W_l> = <u_k| H |u_l>
+      ! -------------------------------------------
 
       call dgemm('T','N', N_st_diag*iter, N_st_diag, sze,            &
           1.d0, U, size(U,1), W(1,1,iter), size(W,1),                &
@@ -390,7 +418,6 @@ subroutine davidson_diag_hjj_general(u_in,H_jj,energies,dim_in,sze,N_st,N_st_dia
           W(i,k,iter+1) = 0.d0
         enddo
       enddo
-!
 !
       call dgemm('N','N', sze, N_st_diag, N_st_diag*iter,            &
           1.d0, U, size(U,1), y, size(y,1)*size(y,2), 0.d0, U(1,1,iter+1), size(U,1))
@@ -485,4 +512,5 @@ subroutine davidson_diag_hjj_general(u_in,H_jj,energies,dim_in,sze,N_st,N_st_dia
       lambda                                                         &
       )
 end
+
 

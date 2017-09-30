@@ -52,6 +52,7 @@ END_PROVIDER
  implicit none
  n_occ_virt_rotations = n_core_inact_orb*n_virt_orb
  size_super_ci = n_occ_virt_rotations + 1
+ print*, 'size_super_ci = ',size_super_ci
 
 END_PROVIDER 
 
@@ -80,7 +81,8 @@ END_PROVIDER
 BEGIN_PROVIDER [double precision, diagonal_superci_matrix, (size_super_ci)]
  implicit none
  integer :: i,iorb,j,jorb,k,korb,l,lorb
- diagonal_superci_matrix(1) = 0.d0
+ diagonal_superci_matrix = 0.d0
+ print*, 'type_of_superci ',type_of_superci
  do i = 1, n_core_inact_orb
   iorb = list_core_inact(i)
   do j = 1, n_virt_orb
@@ -102,11 +104,21 @@ BEGIN_PROVIDER [double precision, diagonal_superci_matrix, (size_super_ci)]
 
 END_PROVIDER 
 
+
+BEGIN_PROVIDER [integer, type_of_superci]
+ implicit none
+ type_of_superci = 2
+
+
+END_PROVIDER 
+
 BEGIN_PROVIDER [double precision, superci_matrix, (size_super_ci,size_super_ci)]
  implicit none
  integer :: i,iorb,j,jorb,k,korb,l,lorb
  double precision :: dsqrt_2
  dsqrt_2 = dsqrt(2.d0)
+ superci_matrix = 0.d0
+ print*, 'type_of_superci ',type_of_superci
  
  if(type_of_superci == 0)then
    do i = 1, n_core_inact_orb
@@ -225,18 +237,24 @@ END_PROVIDER
  integer :: i,j
  double precision :: e_guess
  double precision, allocatable :: grd_st_eigenvec(:)
+ double precision :: u_dot_v
 
  provide superci_matrix
  call lapack_diag(eigenvalues_sci,eigenvectors_sci,superci_matrix,size_super_ci,size_super_ci)
+ 
  print*, 'e_guess = ',eigenvalues_sci(1)
+ allocate(grd_st_eigenvec(size_super_ci))
+ call apply_H_superci_to_vector(eigenvectors_sci(1,1),grd_st_eigenvec)
+ print*, u_dot_v(eigenvectors_sci(1,1),grd_st_eigenvec,size_super_ci)
+ pause
 
 
-!allocate(grd_st_eigenvec(size_super_ci))
-!call create_guess_super_ci(grd_st_eigenvec,e_guess)
-!print*, 'e_guess = ',e_guess
-!call davidson_diag_general(grd_st_eigenvec,e_guess,size_super_ci,size_super_ci,1,N_states_diag,N_int,output_determinants)
-!pause
-!deallocate(grd_st_eigenvec)
+ call create_good_guess(grd_st_eigenvec,e_guess)
+ print*, 'e_guess = ',e_guess
+!call davidson_diag_general_bis(grd_st_eigenvec,size_super_ci,e_guess,size_super_ci,1,N_states_diag,N_int,output_determinants)
+ call davidson_diag_general(grd_st_eigenvec,e_guess,size_super_ci,size_super_ci,1,N_states_diag,N_int,output_determinants)
+ pause
+ deallocate(grd_st_eigenvec)
 END_PROVIDER 
 
 BEGIN_PROVIDER [double precision,reference_energy_superci ]
