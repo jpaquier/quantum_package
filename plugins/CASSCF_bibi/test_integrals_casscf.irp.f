@@ -126,10 +126,10 @@ subroutine check_core1_core1_virt2_virt2
     do l = 1, n_virt_orb
      lorb = list_virt(l)
      integral = get_mo_bielec_integral(iorb,korb,jorb,lorb,mo_integrals_map)
-     if(dabs(transformed_occ1_occ1_virt2_virt2(k,l,i,j) - integral ).gt.1.d-10)then
+     if(dabs(transformed_virt1_virt1_occ2_occ2(k,l,i,j) - integral ).gt.1.d-10)then
       print*, 'pb in fully transformed'
       print*, iorb,jorb,korb
-      print*, integral,transformed_occ1_occ1_virt2_virt2(k,l,i,j),dabs(transformed_occ1_occ1_virt2_virt2(k,l,i,j) - integral )
+      print*, integral,transformed_virt1_virt1_occ2_occ2(k,l,i,j),dabs(transformed_virt1_virt1_occ2_occ2(k,l,i,j) - integral )
      endif
     enddo
    enddo

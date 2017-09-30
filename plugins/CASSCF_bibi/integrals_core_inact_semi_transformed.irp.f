@@ -1,56 +1,5 @@
 
   use map_module
-BEGIN_PROVIDER [integer, n_couple_ao_ao ]
- implicit none
- n_couple_ao_ao = ao_num * (ao_num  + 1) /2 
-END_PROVIDER 
-
- BEGIN_PROVIDER [integer, index_ao_ao, (ao_num, ao_num)]
-&BEGIN_PROVIDER [integer, index_ao_ao_reverse, (n_couple_ao_ao,2)]
- implicit none
- integer :: i,j,n_couple
- n_couple = 0
- do i = 1, ao_num
-  do j = i, ao_num
-   n_couple +=1 
-   index_ao_ao(i,j) = n_couple
-   index_ao_ao(j,i) = n_couple
-   index_ao_ao_reverse(n_couple,1) = i
-   index_ao_ao_reverse(n_couple,2) = j
-  enddo
- enddo
- if(n_couple .ne.n_couple_ao_ao)then
-  print*, 'PB !!! n_couple .ne.n_couple_ao_ao' 
- endif
- 
-END_PROVIDER 
-
-BEGIN_PROVIDER [integer, n_couple_core_inact_virt]
- implicit none
- n_couple_core_inact_virt = n_core_inact_orb * n_virt_orb
-END_PROVIDER 
-
- BEGIN_PROVIDER [integer, index_core_inact_virt, (n_core_orb, n_virt_orb)]
-&BEGIN_PROVIDER [integer, index_core_inact_virt_reverse, (n_couple_core_inact_virt,2)]
- implicit none
- integer :: i,j,n_couple
- n_couple = 0
- do i = 1, n_core_orb
-  do j = 1, n_virt_orb 
-   n_couple +=1 
-   index_core_inact_virt(i,j) = n_couple
-   index_core_inact_virt(j,i) = n_couple
-   index_ao_ao_reverse(n_couple,1) = i
-   index_ao_ao_reverse(n_couple,2) = j
-  enddo
- enddo
- if(n_couple .ne.n_couple_core_inact_virt)then
-  print*, 'PB !!! n_couple .ne.n_couple_core_inact_virt' 
- endif
- 
-END_PROVIDER 
-
-
  BEGIN_PROVIDER [real(integral_kind), semi_transformed_occ_virt, (n_core_inact_orb,n_virt_orb,ao_num,ao_num)]
   use map_module
  implicit none

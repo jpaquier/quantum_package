@@ -33,13 +33,17 @@ BEGIN_PROVIDER [double precision, Fock_mo_core_virt_from_core_inact, (mo_tot_num
 
 END_PROVIDER 
 
- BEGIN_PROVIDER [double precision, Fock_matrix_ao, (ao_num_align, ao_num)]
+ BEGIN_PROVIDER [double precision, Fock_matrix_alpha_ao, (ao_num_align, ao_num)]
+&BEGIN_PROVIDER [double precision, Fock_matrix_beta_ao, (ao_num_align, ao_num)]
  implicit none
  integer                        :: i,j
+ double precision :: inv_dsq2
  do j=1,ao_num
    !DIR$ VECTOR ALIGNED
    do i=1,ao_num
-     Fock_matrix_ao(i,j) = ao_mono_elec_integral(i,j) + ao_bi_elec_integral_alpha_core_inact(i,j)  + ao_bi_elec_integral_act(i,j)
+     Fock_matrix_alpha_ao(i,j) = ao_mono_elec_integral(i,j) + ao_bi_elec_integral_alpha_core_inact(i,j)  
+     Fock_matrix_beta_ao(i,j) = ao_mono_elec_integral(i,j) + ao_bi_elec_integral_beta_core_inact(i,j)  
+!    Fock_matrix_ao(i,j) = ao_mono_elec_integral(i,j) + ao_bi_elec_integral_alpha_core_inact(i,j)  + ao_bi_elec_integral_act(i,j)
    enddo
  enddo
 
