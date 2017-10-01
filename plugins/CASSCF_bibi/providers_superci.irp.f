@@ -231,30 +231,29 @@ BEGIN_PROVIDER [double precision, superci_matrix, (size_super_ci,size_super_ci)]
 END_PROVIDER 
 
 
- BEGIN_PROVIDER [double precision, eigenvectors_sci, (size_super_ci,size_super_ci)]
-&BEGIN_PROVIDER [double precision, eigenvalues_sci, (size_super_ci)]
+ BEGIN_PROVIDER [double precision, eigenvectors_sci, (size_super_ci,1)]
+&BEGIN_PROVIDER [double precision, eigenvalues_sci, (1)]
  implicit none
  integer :: i,j
  double precision :: e_guess
- double precision, allocatable :: grd_st_eigenvec(:)
+ double precision, allocatable :: grd_st_eigenvec(:),eigenvectors(:,:),eigenvalues(:)
  double precision :: u_dot_v
 
- provide superci_matrix
- call lapack_diag(eigenvalues_sci,eigenvectors_sci,superci_matrix,size_super_ci,size_super_ci)
- 
- print*, 'e_guess = ',eigenvalues_sci(1)
- allocate(grd_st_eigenvec(size_super_ci))
- call apply_H_superci_to_vector(eigenvectors_sci(1,1),grd_st_eigenvec)
- print*, u_dot_v(eigenvectors_sci(1,1),grd_st_eigenvec,size_super_ci)
- pause
-
-
- call create_good_guess(grd_st_eigenvec,e_guess)
- print*, 'e_guess = ',e_guess
-!call davidson_diag_general_bis(grd_st_eigenvec,size_super_ci,e_guess,size_super_ci,1,N_states_diag,N_int,output_determinants)
- call davidson_diag_general(grd_st_eigenvec,e_guess,size_super_ci,size_super_ci,1,N_states_diag,N_int,output_determinants)
- pause
- deallocate(grd_st_eigenvec)
+ if (size_super_ci.le.n_det_max_jacobi)then
+  provide superci_matrix
+  allocate(eigenvectors(size_super_ci,size_super_ci),eigenvalues(size_super_ci))
+  call lapack_diag(eigenvalues,eigenvectors,superci_matrix,size_super_ci,size_super_ci)
+  eigenvectors_sci(:,1) = eigenvectors(:,1)
+  eigenvalues_sci(1) = eigenvalues(1)
+ else 
+  allocate(grd_st_eigenvec(size_super_ci))
+  call create_good_guess(grd_st_eigenvec,e_guess)
+  print*, 'e_guess = ',e_guess
+  call davidson_diag_general(grd_st_eigenvec,e_guess,size_super_ci,size_super_ci,1,1,N_int,output_determinants)
+  eigenvectors_sci(:,1) = grd_st_eigenvec(:)
+  eigenvalues_sci(1) = e_guess
+  deallocate(grd_st_eigenvec)
+ endif
 END_PROVIDER 
 
 BEGIN_PROVIDER [double precision,reference_energy_superci ]

@@ -136,9 +136,9 @@ subroutine apply_H_superci_to_vector(u0,u1)
     do k = i+1, n_core_inact_orb
      korb = list_core_inact(k)
      index_j = index_rotation_CI(k,j)
-     u1(index_i) -= u0(index_j) *  (Fock_matrix_alpha_beta_average_mo(iorb,korb) & 
+     u1(index_i) += u0(index_j) *  (- Fock_matrix_alpha_beta_average_mo(iorb,korb) & 
                                                                      - transformed_virt1_occ2_occ2(j,k,i) + 2.d0 * transformed_occ1_virt1_occ2_virt2(i,j,k,j))
-     u1(index_j) -= u0(index_i) *  (Fock_matrix_alpha_beta_average_mo(iorb,korb) & 
+     u1(index_j) += u0(index_i) *  (- Fock_matrix_alpha_beta_average_mo(iorb,korb) & 
                                                                      - transformed_virt1_occ2_occ2(j,k,i) + 2.d0 * transformed_occ1_virt1_occ2_virt2(i,j,k,j))
     enddo
     
@@ -169,9 +169,9 @@ subroutine apply_H_superci_to_vector(u0,u1)
     do k = i+1, n_core_inact_orb
      korb = list_core_inact(k)
      index_j = index_rotation_CI(k,j)
-     u1(index_i) -= u0(index_j) *  (Fock_matrix_alpha_beta_average_mo(iorb,korb) & 
+     u1(index_i) += u0(index_j) *  (- Fock_matrix_alpha_beta_average_mo(iorb,korb) & 
                                                                      - transformed_virt1_occ2_occ2(j,k,i) + 2.d0 * transformed_occ1_virt1_occ2_virt2(i,j,k,j))
-     u1(index_j) -= u0(index_i) *  (Fock_matrix_alpha_beta_average_mo(iorb,korb) & 
+     u1(index_j) += u0(index_i) *  (- Fock_matrix_alpha_beta_average_mo(iorb,korb) & 
                                                                      - transformed_virt1_occ2_occ2(j,k,i) + 2.d0 * transformed_occ1_virt1_occ2_virt2(i,j,k,j))
     enddo
     ! Hole-particle interaction 
@@ -396,7 +396,6 @@ subroutine davidson_diag_general_Hjj(u_in,H_jj,energies,dim_in,sze,N_st,N_st_dia
       ! -----------------------------------------
       
       call apply_H_superci_to_vector(U(1,1,iter),W(1,1,iter))
-      print*, u_dot_v(U(1,1,iter),W(1,1,iter),sze)
       
       ! Compute h_kl = <u_k | W_l> = <u_k| H |u_l>
       ! -------------------------------------------
@@ -434,7 +433,7 @@ subroutine davidson_diag_general_Hjj(u_in,H_jj,energies,dim_in,sze,N_st,N_st_dia
         enddo
         if (k <= N_st) then
           residual_norm(k) = u_dot_u(R(1,k),sze)
-          to_print(1,k) = lambda(k) + nuclear_repulsion
+          to_print(1,k) = lambda(k)  + nuclear_repulsion + reference_energy_superci
           to_print(2,k) = residual_norm(k)
         endif
       enddo
