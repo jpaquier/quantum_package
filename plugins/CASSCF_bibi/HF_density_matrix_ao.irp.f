@@ -1,5 +1,8 @@
 BEGIN_PROVIDER [ double precision, HF_density_matrix_ao_alpha_core_inact, (ao_num_align,ao_num) ]
    implicit none
+  BEGIN_DOC
+ ! HF_density_matrix_ao_alpha_core_inact(i,j) = \sum_{k = 1, n_core_inact_orb} mo_coef(i,k) * mo_coef(j,k)
+  END_DOC
    call dgemm('N','T',ao_num,ao_num,n_core_inact_orb,1.d0, &
         mo_coef, size(mo_coef,1), &
         mo_coef, size(mo_coef,1), 0.d0, &
@@ -8,29 +11,42 @@ END_PROVIDER
 
 BEGIN_PROVIDER [ double precision, HF_density_matrix_ao_beta_core_inact,  (ao_num_align,ao_num) ]
    implicit none
+  BEGIN_DOC
+ ! HF_density_matrix_ao_beta_core_inact(i,j) = \sum_{k = 1, n_core_inact_orb} mo_coef(i,k) * mo_coef(j,k)
+  END_DOC
    call dgemm('N','T',ao_num,ao_num,n_core_inact_orb,1.d0, &
         mo_coef, size(mo_coef,1), &
         mo_coef, size(mo_coef,1), 0.d0, &
         HF_density_matrix_ao_beta_core_inact, size(HF_density_matrix_ao_beta,1))
 END_PROVIDER
 
-BEGIN_PROVIDER [ double precision, HF_density_matrix_ao_act, (ao_num_align,ao_num) ]
+ BEGIN_PROVIDER [ double precision, HF_density_matrix_ao_act_alpha, (ao_num_align,ao_num) ]
+&BEGIN_PROVIDER [ double precision, HF_density_matrix_ao_act_beta, (ao_num_align,ao_num) ]
+&BEGIN_PROVIDER [ double precision, HF_density_matrix_ao_act, (ao_num_align,ao_num) ]
    implicit none
+  BEGIN_DOC
+ ! HF_density_matrix_ao_act_alpha(i,j) = \sum_{k_act,l_act = 1, n_act_orb} mo_coef(i,l_act) * mo_coef(j,k_act) * one_body_dm_mo_alpha_average(l_act,k_act)
+ ! HF_density_matrix_ao_act_beta(i,j) = \sum_{k_act,l_act = 1, n_act_orb} mo_coef(i,l_act) * mo_coef(j,k_act) * one_body_dm_mo_beta_average(l_act,k_act)
+  END_DOC
    integer :: i,j,k,l,korb,lorb
-   HF_density_matrix_ao_act = 0.d0
+   HF_density_matrix_ao_act_alpha = 0.d0
+   HF_density_matrix_ao_act_beta = 0.d0
    do k = 1, n_act_orb
     korb = list_act(k)
     do l = 1, n_act_orb
      lorb = list_act(l)
      do i = 1, ao_num
       do j = 1, ao_num
-        HF_density_matrix_ao_act(i,j) += mo_coef(i,korb) * mo_coef(k,lorb) * (one_body_dm_mo_alpha_average(korb,lorb)+ one_body_dm_mo_alpha_average(korb,lorb))
+        HF_density_matrix_ao_act_alpha(i,j) += mo_coef(i,korb) * mo_coef(j,lorb) * one_body_dm_mo_alpha_average(korb,lorb)
+        HF_density_matrix_ao_act_beta(i,j) += mo_coef(i,korb) * mo_coef(j,lorb) * one_body_dm_mo_beta_average(korb,lorb)
       enddo
      enddo
     enddo
    enddo
+  HF_density_matrix_ao_act = HF_density_matrix_ao_act_beta + HF_density_matrix_ao_act_alpha
+
 END_PROVIDER
- 
+
 BEGIN_PROVIDER [ double precision, HF_density_matrix_ao, (ao_num_align,ao_num) ]
    implicit none
    BEGIN_DOC

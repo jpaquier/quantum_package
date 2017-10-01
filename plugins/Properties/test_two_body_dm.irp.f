@@ -25,7 +25,10 @@ subroutine routine
   h1 = list_act(i)
   do j = 1, n_act_orb
    h2 = list_act(j)
-   accu += two_body_dm_ab_diag_act(j,i) * mo_bielec_integral_jj(h1,h2)
+   accu += two_body_dm_aa_diag_act(j,i) * mo_bielec_integral_jj(h2,h1)
+   accu += two_body_dm_bb_diag_act(j,i) * mo_bielec_integral_jj(h2,h1)
+   accu += two_body_dm_bb_diag_exchange_act(j,i) * mo_bielec_integral_jj_exchange(h2,h1)
+   accu += two_body_dm_aa_diag_exchange_act(j,i) * mo_bielec_integral_jj_exchange(h2,h1)
   enddo
  enddo
 

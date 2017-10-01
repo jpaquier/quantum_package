@@ -287,6 +287,15 @@ subroutine set_natural_mos
  character*(64) :: label
  double precision, allocatable :: tmp(:,:)
 
+ 
+ integer ::i 
+ print*, ''
+ print*, ''
+ print*, 'NORMAL DM'
+ print*, ''
+ do i = 1, mo_tot_num
+  write(*,'(100(F10.7,X))')one_body_dm_mo(i,:)
+ enddo
  label = "Natural"
  call mo_as_svd_vectors_of_mo_matrix(one_body_dm_mo,size(one_body_dm_mo,1),mo_tot_num,mo_tot_num,label)
 

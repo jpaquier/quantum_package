@@ -2,7 +2,9 @@ program pouet
  implicit none
  read_wf = .True.
  touch read_wf
- call test_guess_superci 
+ call test_natural_orbitals 
+!call test_ref_energy
+!call test_guess_superci 
 !call test_fock 
 !call test_H_superci
 end 
@@ -90,14 +92,33 @@ subroutine test_H_superci
  enddo
 
  deallocate(u1,u0,v0,v1)
-
-
-
 end
 
 
 subroutine test_guess_superci
  implicit none
  provide eigenvalues_sci 
+end
+
+subroutine test_ref_energy
+ implicit none
+ print*,ref_energy_act_act,reference_energy_superci
+end 
+
+subroutine test_natural_orbitals
+ implicit none
+ character*(64) :: label
+ label = "Natural"
+ integer :: i
+ 
+ print*, ''
+ print*, ''
+ print*, 'SUPER CI DM'
+ print*, ''
+ do i = 1, mo_tot_num
+  write(*,'(100(F10.7,X))')super_ci_density_matrix_mo(i,:)
+ enddo
+ call mo_as_svd_vectors_of_mo_matrix(super_ci_density_matrix_mo,size(super_ci_density_matrix_mo,1),mo_tot_num,mo_tot_num,label)
+
 
 end

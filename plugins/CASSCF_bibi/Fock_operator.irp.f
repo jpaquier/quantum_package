@@ -43,7 +43,6 @@ END_PROVIDER
    do i=1,ao_num
      Fock_matrix_alpha_ao(i,j) = ao_mono_elec_integral(i,j) + ao_bi_elec_integral_alpha_core_inact(i,j)  
      Fock_matrix_beta_ao(i,j) = ao_mono_elec_integral(i,j) + ao_bi_elec_integral_beta_core_inact(i,j)  
-!    Fock_matrix_ao(i,j) = ao_mono_elec_integral(i,j) + ao_bi_elec_integral_alpha_core_inact(i,j)  + ao_bi_elec_integral_act(i,j)
    enddo
  enddo
 

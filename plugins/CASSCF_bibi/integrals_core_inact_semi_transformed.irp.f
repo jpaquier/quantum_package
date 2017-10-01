@@ -96,6 +96,8 @@ END_PROVIDER
 END_PROVIDER 
 
 
+
+
  BEGIN_PROVIDER [real(integral_kind), semi_transformed_occ_occ, (n_core_inact_orb,n_core_inact_orb,ao_num,ao_num)]
   use map_module
  implicit none
@@ -142,6 +144,54 @@ END_PROVIDER
  print*, 'Time to do the semi transformation core_inact - core_inact : ',cpu1-cpu0
  
 END_PROVIDER 
+
+ BEGIN_PROVIDER [real(integral_kind), semi_transformed_act_act, (n_act_orb,n_act_orb,ao_num,ao_num)]
+  use map_module
+ implicit none
+ semi_transformed_act_act = 0.d0
+
+
+ integer :: i,j,k,l,iorb,jorb,korb,lorb,m,n,p,q
+ double precision :: c
+ real(integral_kind), allocatable :: bielec_tmp_0(:,:),matrix_tmp_1(:,:),matrix_final(:,:)
+ real(integral_kind) :: integral,ao_bielec_integral,thr
+
+ double precision :: cpu0,cpu1
+ 
+ provide ao_bielec_integral_schwartz ao_bielec_integrals_in_map ao_overlap_abs mo_coef_act_transp mo_coef_act 
+ thr = 0.001d0 * dsqrt(ao_integrals_threshold)
+ call cpu_time(cpu0) 
+
+ !$OMP PARALLEL DEFAULT(NONE)             &
+ !$OMP PRIVATE(i,j,p,q,bielec_tmp_0,matrix_tmp_1,matrix_final) &
+ !$OMP SHARED(n_act_orb,ao_num,semi_transformed_act_act,mo_coef_act_transp,mo_coef_act,thr, &
+ !$OMP        ao_overlap_abs,ao_bielec_integral_schwartz)
+
+ allocate(bielec_tmp_0(ao_num,ao_num),matrix_tmp_1(n_act_orb,ao_num),matrix_final(n_act_orb,n_act_orb))
+
+  !$OMP DO SCHEDULE(guided)
+ do p = 1,ao_num
+   do q = 1,ao_num
+    if(ao_overlap_abs(p,q).le.thr)cycle
+    if(ao_bielec_integral_schwartz(p,q).lt.thr) cycle
+    matrix_tmp_1 = 0.d0
+    matrix_final = 0.d0
+    do m = 1, ao_num
+     call get_ao_bielec_integrals(p,m,q,ao_num,bielec_tmp_0(1,m)) ! k,l :: r1, m :: r2
+    enddo
+    call dgemm('N','N',n_act_orb,ao_num,ao_num,1.d0,mo_coef_act_transp,n_act_orb,bielec_tmp_0,ao_num,0.d0,matrix_tmp_1,n_act_orb)
+    call dgemm('N','N',n_act_orb,n_act_orb,ao_num,1.d0,matrix_tmp_1,n_act_orb,mo_coef_act,ao_num,0.d0,matrix_final,n_act_orb)
+
+    semi_transformed_act_act(1:n_act_orb,1:n_act_orb,p,q) = matrix_final(1:n_act_orb,1:n_act_orb)
+   enddo
+  enddo
+  !$OMP END PARALLEL
+
+ call cpu_time(cpu1) 
+ print*, 'Time to do the semi transformation  act - act  : ',cpu1-cpu0
+ 
+END_PROVIDER 
+
 
 
 
@@ -236,6 +286,22 @@ END_PROVIDER
  enddo
 
 END_PROVIDER 
+
+
+ BEGIN_PROVIDER [double precision, mo_coef_act, (ao_num, n_act_orb)]
+&BEGIN_PROVIDER [double precision, mo_coef_act_transp, (n_act_orb,ao_num)]
+ implicit none
+ integer :: i,j,k,iorb,jorb
+ do i = 1, n_act_orb
+  iorb = list_act(i) 
+  do k = 1, ao_num
+   mo_coef_act(k,i) = mo_coef(k,iorb)
+   mo_coef_act_transp(i,k) = mo_coef(k,iorb)
+  enddo
+ enddo
+
+END_PROVIDER 
+
 
 subroutine get_all_core_inact_virt_integrals(iorb,vorb,matrix_integrals)
   use map_module
