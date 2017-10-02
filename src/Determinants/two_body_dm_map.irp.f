@@ -255,8 +255,8 @@ end
     k = occ(j,2)
     do l = 1, elec_alpha_num
      m = occ(l,1)
-     two_body_dm_ab_diag_all(k,m) += 0.5d0 * contrib
-     two_body_dm_ab_diag_all(m,k) += 0.5d0 * contrib
+     two_body_dm_ab_diag_all(k,m) +=  contrib
+     two_body_dm_ab_diag_all(m,k) +=  contrib
     enddo
    enddo
 
@@ -272,17 +272,21 @@ end
    call bitstring_to_list_ab(key_tmp_act, occ_act, n_occ_ab_act, N_int)
    do j = 1,n_occ_ab_act(2)
     k = list_act_reverse(occ_act(j,2))
-    do l = 1, n_occ_ab_act(1)
-     m = list_act_reverse(occ_act(l,1))
-     two_body_dm_ab_diag_act(k,m) += 0.5d0 * contrib
-     two_body_dm_ab_diag_act(m,k) += 0.5d0 * contrib
-    enddo
+     do l = 1, n_occ_ab_act(1)
+      m = list_act_reverse(occ_act(l,1))
+      two_body_dm_ab_diag_act(k,m) +=  contrib
+      two_body_dm_ab_diag_act(m,k) +=  contrib
+     enddo
+   enddo
+   contrib = contrib * 0.5d0 
+   do j = 1,n_occ_ab_act(2)
+    k = list_act_reverse(occ_act(j,2))
     do l = 1, n_occ_ab_act(2)
      m = list_act_reverse(occ_act(l,2))
-     two_body_dm_bb_diag_act(k,m) += 0.5d0 * contrib
-     two_body_dm_bb_diag_act(m,k) += 0.5d0 * contrib
-     two_body_dm_bb_diag_exchange_act(k,m) -= 0.5d0 * contrib
-     two_body_dm_bb_diag_exchange_act(m,k) -= 0.5d0 * contrib
+     two_body_dm_bb_diag_act(k,m) +=  contrib
+     two_body_dm_bb_diag_act(m,k) +=  contrib
+     two_body_dm_bb_diag_exchange_act(k,m) -=   contrib
+     two_body_dm_bb_diag_exchange_act(m,k) -=   contrib
     enddo
    enddo
 
@@ -290,10 +294,10 @@ end
     k = list_act_reverse(occ_act(j,1))
     do l = 1, n_occ_ab_act(1)
      m = list_act_reverse(occ_act(l,1))
-     two_body_dm_aa_diag_act(k,m) += 0.5d0 * contrib
-     two_body_dm_aa_diag_act(m,k) += 0.5d0 * contrib
-     two_body_dm_aa_diag_exchange_act(k,m) -= 0.5d0 * contrib
-     two_body_dm_aa_diag_exchange_act(m,k) -= 0.5d0 * contrib
+     two_body_dm_aa_diag_act(k,m) += contrib
+     two_body_dm_aa_diag_act(m,k) += contrib
+     two_body_dm_aa_diag_exchange_act(k,m) -=  contrib
+     two_body_dm_aa_diag_exchange_act(m,k) -=  contrib
     enddo
    enddo
 
@@ -311,8 +315,8 @@ end
     k = list_core_reverse(occ_core(j,2))
     do l = 1, n_occ_ab_core(1)
      m = list_core_reverse(occ_core(l,1))
-     two_body_dm_ab_diag_core(k,m) += 0.5d0 * contrib
-     two_body_dm_ab_diag_core(m,k) += 0.5d0 * contrib
+     two_body_dm_ab_diag_core(k,m) +=  contrib
+     two_body_dm_ab_diag_core(m,k) +=  contrib
     enddo
    enddo
 
@@ -372,6 +376,8 @@ END_PROVIDER
  integer(bit_kind) :: key_tmp_j(N_int,2)
  two_body_dm_ab_big_array_act = 0.d0
  two_body_dm_ab_big_array_core_act = 0.d0
+ two_body_dm_aa_big_array_act = 0.d0
+ two_body_dm_bb_big_array_act = 0.d0
  BEGIN_DOC
 ! two_body_dm_ab_big_array_act = Purely active part of the two body density matrix 
 ! two_body_dm_ab_big_array_act_core takes only into account the single excitation 
@@ -420,7 +426,7 @@ END_PROVIDER
    ! if it is the case, then compute the hamiltonian matrix element with the proper phase 
    call get_excitation(psi_det(1,1,i),psi_det(1,1,j),exc,degree,phase,N_int)
    call decode_exc(exc,degree,h1,p1,h2,p2,s1,s2)
-   contrib = 0.5d0 * psi_coef(i,1) * psi_coef(j,1) * phase
+   contrib =  psi_coef(i,1) * psi_coef(j,1) * phase
    if(degree==2)then  ! case of the DOUBLE EXCITATIONS  ************************************
      h1 = list_act_reverse(h1)
      h2 = list_act_reverse(h2)
@@ -431,6 +437,8 @@ END_PROVIDER
       call insert_into_two_body_dm_big_array( two_body_dm_aa_big_array_act,n_act_orb,n_act_orb,n_act_orb,n_act_orb,contrib,h1,p1,h2,p2)
       call insert_into_two_body_dm_big_array( two_body_dm_aa_big_array_act,n_act_orb,n_act_orb,n_act_orb,n_act_orb,-contrib,h1,p2,h2,p1)
      else
+!     print*, h1,p1,h2,p2
+!     print*, 'contrib',contrib,phase
       call insert_into_two_body_dm_big_array( two_body_dm_bb_big_array_act,n_act_orb,n_act_orb,n_act_orb,n_act_orb,contrib,h1,p1,h2,p2)
       call insert_into_two_body_dm_big_array( two_body_dm_bb_big_array_act,n_act_orb,n_act_orb,n_act_orb,n_act_orb,-contrib,h1,p2,h2,p1)
      endif
@@ -463,8 +471,8 @@ END_PROVIDER
      do k = 1, n_occ_ab_core(2)
       m = list_core_reverse(occ_core(k,2))
       ! <J| a^{\dagger}_{p1 \alpha} \hat{n}_{m \beta} a_{h1 \alpha} |I> * c_I * c_J
-      two_body_dm_ab_big_array_core_act(m,h1,p1) += 2.d0 * contrib 
-      two_body_dm_ab_big_array_core_act(m,p1,h1) += 2.d0 * contrib 
+      two_body_dm_ab_big_array_core_act(m,h1,p1) +=  contrib 
+      two_body_dm_ab_big_array_core_act(m,p1,h1) +=  contrib 
      enddo
     else  ! Mono Beta : 
      ! purely active part of the extra diagonal two body dm 
@@ -485,8 +493,8 @@ END_PROVIDER
      do k = 1, n_occ_ab_core(1)
       m = list_core_reverse(occ_core(k,1))
       ! <J| a^{\dagger}_{p1 \alpha} \hat{n}_{m \beta} a_{h1 \alpha} |I> * c_I * c_J
-      two_body_dm_ab_big_array_core_act(m,h1,p1) += 2.d0 * contrib 
-      two_body_dm_ab_big_array_core_act(m,p1,h1) += 2.d0 * contrib 
+      two_body_dm_ab_big_array_core_act(m,h1,p1) +=  contrib 
+      two_body_dm_ab_big_array_core_act(m,p1,h1) +=  contrib 
      enddo
     endif
 
