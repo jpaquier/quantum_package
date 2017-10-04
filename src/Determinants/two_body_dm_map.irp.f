@@ -437,8 +437,6 @@ END_PROVIDER
       call insert_into_two_body_dm_big_array( two_body_dm_aa_big_array_act,n_act_orb,n_act_orb,n_act_orb,n_act_orb,contrib,h1,p1,h2,p2)
       call insert_into_two_body_dm_big_array( two_body_dm_aa_big_array_act,n_act_orb,n_act_orb,n_act_orb,n_act_orb,-contrib,h1,p2,h2,p1)
      else
-!     print*, h1,p1,h2,p2
-!     print*, 'contrib',contrib,phase
       call insert_into_two_body_dm_big_array( two_body_dm_bb_big_array_act,n_act_orb,n_act_orb,n_act_orb,n_act_orb,contrib,h1,p1,h2,p2)
       call insert_into_two_body_dm_big_array( two_body_dm_bb_big_array_act,n_act_orb,n_act_orb,n_act_orb,n_act_orb,-contrib,h1,p2,h2,p1)
      endif

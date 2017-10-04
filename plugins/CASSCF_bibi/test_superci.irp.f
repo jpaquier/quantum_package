@@ -2,8 +2,8 @@ program pouet
  implicit none
  read_wf = .True.
  touch read_wf
- call test_natural_orbitals 
-!call test_ref_energy
+!call test_natural_orbitals 
+ call test_ref_energy
 !call test_guess_superci 
 !call test_fock 
 !call test_H_superci
@@ -102,7 +102,8 @@ end
 
 subroutine test_ref_energy
  implicit none
- print*,ref_energy_act_act,reference_energy_superci
+ provide exch_energy_core_act_mo_beta
+ print*,psi_energy(1)+nuclear_repulsion,reference_energy_superci
 end 
 
 subroutine test_natural_orbitals

@@ -52,6 +52,7 @@ END_PROVIDER
  BEGIN_PROVIDER [ double precision, ao_bi_elec_integral_alpha_core_inact, (ao_num_align, ao_num) ]
 &BEGIN_PROVIDER [ double precision, ao_bi_elec_integral_beta_core_inact ,  (ao_num_align, ao_num) ]
 &BEGIN_PROVIDER [ double precision, ao_bi_elec_integral_act,  (ao_num_align, ao_num) ]
+&BEGIN_PROVIDER [ double precision, repulsion_elec_core_core ]
  use map_module
  implicit none
  BEGIN_DOC
@@ -66,6 +67,7 @@ END_PROVIDER
  double precision, allocatable  :: ao_bi_elec_integral_alpha_core_inact_tmp(:,:)
  double precision, allocatable  :: ao_bi_elec_integral_beta_core_inact_tmp(:,:)
  double precision, allocatable  :: ao_bi_elec_integral_act_tmp(:,:)
+ double precision :: repulsion_elec_core_core_tmp
  !DIR$ ATTRIBUTES ALIGN : $IRP_ALIGN :: ao_bi_elec_integral_beta_core_inact_tmp
  !DIR$ ATTRIBUTES ALIGN : $IRP_ALIGN :: ao_bi_elec_integral_alpha_core_inact_tmp
  !DIR$ ATTRIBUTES ALIGN : $IRP_ALIGN :: ao_bi_elec_integral_act_tmp
@@ -83,10 +85,10 @@ END_PROVIDER
    double precision, allocatable  :: values(:)
 
    !$OMP PARALLEL DEFAULT(NONE)                                      &
-       !$OMP PRIVATE(i,j,l,k1,k,integral,ii,jj,kk,ll,i8,keys,values,n_elements_max, &
-       !$OMP  n_elements,ao_bi_elec_integral_alpha_core_inact_tmp,ao_bi_elec_integral_beta_core_inact_tmp,ao_bi_elec_integral_act_tmp)&
-       !$OMP SHARED(ao_num,ao_num_align,HF_density_matrix_ao_alpha_core_inact,HF_density_matrix_ao_beta_core_inact,&
-       !$OMP  ao_integrals_map, ao_bi_elec_integral_alpha_core_inact, ao_bi_elec_integral_beta_core_inact, ao_bi_elec_integral_act,HF_density_matrix_ao_act) 
+   !$OMP PRIVATE(i,j,l,k1,k,integral,ii,jj,kk,ll,i8,keys,values,n_elements_max, &
+   !$OMP  n_elements,ao_bi_elec_integral_alpha_core_inact_tmp,ao_bi_elec_integral_beta_core_inact_tmp,ao_bi_elec_integral_act_tmp,repulsion_elec_core_core_tmp)&
+   !$OMP SHARED(ao_num,ao_num_align,HF_density_matrix_ao_alpha_core_inact,HF_density_matrix_ao_beta_core_inact,&
+   !$OMP  ao_integrals_map, ao_bi_elec_integral_alpha_core_inact, ao_bi_elec_integral_beta_core_inact, ao_bi_elec_integral_act,density_matrix_ao_act,repulsion_elec_core_core) 
 
    call get_cache_map_n_elements_max(ao_integrals_map,n_elements_max)
    allocate(keys(n_elements_max), values(n_elements_max))
@@ -96,6 +98,7 @@ END_PROVIDER
    ao_bi_elec_integral_beta_core_inact_tmp  = 0.d0
    allocate(ao_bi_elec_integral_act_tmp(ao_num_align,ao_num))
    ao_bi_elec_integral_act_tmp  = 0.d0
+   repulsion_elec_core_core_tmp = 0.d0
 
    !$OMP DO SCHEDULE(dynamic)
    !DIR$ NOVECTOR
@@ -114,16 +117,18 @@ END_PROVIDER
          k = kk(k2)
          l = ll(k2)
          integral = (HF_density_matrix_ao_alpha_core_inact(k,l)+HF_density_matrix_ao_beta_core_inact(k,l)) * values(k1)
+         repulsion_elec_core_core_tmp += integral * HF_density_matrix_ao_alpha_core_inact(i,j)
          ao_bi_elec_integral_alpha_core_inact_tmp(i,j) += integral
          ao_bi_elec_integral_beta_core_inact_tmp (i,j) += integral
          integral = values(k1)
+         repulsion_elec_core_core_tmp -= integral * HF_density_matrix_ao_alpha_core_inact(k,i) * HF_density_matrix_ao_alpha_core_inact(j,l)
          ao_bi_elec_integral_alpha_core_inact_tmp(l,j) -= HF_density_matrix_ao_alpha_core_inact(k,i) * integral
          ao_bi_elec_integral_beta_core_inact_tmp (l,j) -= HF_density_matrix_ao_beta_core_inact (k,i) * integral
 
-         integral = HF_density_matrix_ao_act(k,l) * values(k1)
+         integral = density_matrix_ao_act(k,l) * values(k1)
          ao_bi_elec_integral_act_tmp(i,j) += integral
          integral = values(k1)
-         ao_bi_elec_integral_act_tmp(l,j) -= HF_density_matrix_ao_act(k,i) * integral
+         ao_bi_elec_integral_act_tmp(l,j) -= density_matrix_ao_act(k,i) * integral
        enddo
      enddo
    enddo
@@ -138,8 +143,11 @@ END_PROVIDER
    !$OMP CRITICAL
    ao_bi_elec_integral_act  += ao_bi_elec_integral_act_tmp
    !$OMP END CRITICAL
+
+   !$OMP CRITICAL
+   repulsion_elec_core_core += repulsion_elec_core_core_tmp
+   !$OMP END CRITICAL
    deallocate(keys,values,ao_bi_elec_integral_alpha_core_inact_tmp,ao_bi_elec_integral_beta_core_inact_tmp)
-   deallocate(values,ao_bi_elec_integral_act_tmp)
    !$OMP END PARALLEL
 
 

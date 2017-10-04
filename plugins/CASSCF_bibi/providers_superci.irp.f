@@ -256,7 +256,3 @@ END_PROVIDER
  endif
 END_PROVIDER 
 
-BEGIN_PROVIDER [double precision,reference_energy_superci ]
-implicit none
-reference_energy_superci = psi_energy(1)
-END_PROVIDER 
