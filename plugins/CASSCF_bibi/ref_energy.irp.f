@@ -146,13 +146,6 @@ END_PROVIDER
  coulomb_energy_core_act_mo_total = coulomb_energy_core_act_mo_aa + coulomb_energy_core_act_mo_bb + coulomb_energy_core_act_mo_ab
  
  
-!print*, '*********'
-!print*, core_energy_from_core,accu,repulsion_elec_core_core
-!print*, coulomb_energy_core_act_mo_total+1.0d0*(exch_energy_core_act_mo_alpha+exch_energy_core_act_mo_beta)+ mono_elec_core_energy + repulsion_elec_core_core+ ref_energy_act_mono + ref_energy_act_act + nuclear_repulsion
-!print*,coulomb_core_energy_from_act_total +alpha_exch_core_energy_from_act + beta_exch_core_energy_from_act + mono_elec_core_energy + repulsion_elec_core_core+ ref_energy_act_mono + ref_energy_act_act + nuclear_repulsion
-!print*, '*********'
-
-
 END_PROVIDER 
 
 
@@ -211,8 +204,12 @@ END_PROVIDER
 
 BEGIN_PROVIDER [double precision,reference_energy_superci ]
 implicit none
-reference_energy_superci = ref_energy_act_mono + ref_energy_act_act + ref_energy_core_core_and_core_act 
-reference_energy_superci = coulomb_core_energy_from_act_total +alpha_exch_core_energy_from_act + beta_exch_core_energy_from_act + & 
-                           mono_elec_core_energy + repulsion_elec_core_core+ ref_energy_act_mono + ref_energy_act_act + nuclear_repulsion
+ if(n_act_orb.gt.0)then
+  reference_energy_superci = coulomb_core_energy_from_act_total +alpha_exch_core_energy_from_act + beta_exch_core_energy_from_act + & 
+                             mono_elec_core_energy + repulsion_elec_core_core+ ref_energy_act_mono + ref_energy_act_act + nuclear_repulsion
+ else
+  reference_energy_superci = mono_elec_core_energy + repulsion_elec_core_core+  nuclear_repulsion
+ endif
+
 END_PROVIDER 
 

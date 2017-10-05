@@ -70,11 +70,13 @@ END_PROVIDER
  double precision, allocatable  :: ao_bi_elec_integral_alpha_act_tmp(:,:)
  double precision, allocatable  :: ao_bi_elec_integral_beta_act_tmp(:,:)
  double precision :: repulsion_elec_core_core_tmp
+ print*, 'PROVIDING THE FOCK MATRIX ...'
  !DIR$ ATTRIBUTES ALIGN : $IRP_ALIGN :: ao_bi_elec_integral_beta_core_inact_tmp
  !DIR$ ATTRIBUTES ALIGN : $IRP_ALIGN :: ao_bi_elec_integral_alpha_core_inact_tmp
  !DIR$ ATTRIBUTES ALIGN : $IRP_ALIGN :: ao_bi_elec_integral_alpha_act_tmp
  !DIR$ ATTRIBUTES ALIGN : $IRP_ALIGN :: ao_bi_elec_integral_beta_act_tmp
 
+ repulsion_elec_core_core = 0.d0
  ao_bi_elec_integral_alpha_core_inact = 0.d0
  ao_bi_elec_integral_beta_core_inact  = 0.d0
  ao_bi_elec_integral_alpha_act = 0.d0

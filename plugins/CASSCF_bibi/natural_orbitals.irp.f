@@ -57,26 +57,6 @@ BEGIN_PROVIDER [double precision, super_ci_density_matrix_mo, (mo_tot_num,mo_tot
   enddo 
  enddo
 
-!! OCC - VIRT PART FROM INTERACTIONS WITHIN THE SINGLES 
-!do i = 1, n_core_inact_orb 
-! iorb = list_core_inact(i) ! first hole 
-! do j = 1, n_virt_orb
-!  jorb = list_virt(j)      ! firt particle 
-!  index_ci = index_rotation_CI(i,j)
-!  do k = 1, n_core_inact_orb
-!   korb = list_core_inact(k)  ! second hole 
-!   if(k==i)cycle 
-!   do l = 1, n_virt_orb
-!    lorb = list_virt(l)       ! second particle
-!    index_cj = index_rotation_CI(k,l)
-!    if(l==j)cycle
-!    super_ci_density_matrix_mo(iorb,jorb) += eigenvectors_sci(index_ci,1) * eigenvectors_sci(index_cj,1)
-!    super_ci_density_matrix_mo(jorb,iorb) += eigenvectors_sci(index_ci,1) * eigenvectors_sci(index_cj,1)
-!   enddo
-!  enddo
-! enddo
-!enddo
-
  ! ACTIVE PART OF THE DENSITY MATRIX
  do i = 1, n_act_orb
   iorb = list_act(i)
@@ -87,3 +67,15 @@ BEGIN_PROVIDER [double precision, super_ci_density_matrix_mo, (mo_tot_num,mo_tot
  enddo
 
 END_PROVIDER 
+
+subroutine set_superci_natural_mos
+ implicit none
+ BEGIN_DOC
+ ! Set natural orbitals, obtained by diagonalization of the one-body density matrix in the MO basis of the SUPERCI wave function
+ END_DOC
+ character*(64) :: label
+ 
+ label = "Natural"
+ call mo_as_svd_vectors_of_mo_matrix(super_ci_density_matrix_mo,size(one_body_dm_mo,1),mo_tot_num,mo_tot_num,label)
+
+end
