@@ -229,17 +229,59 @@ END_PROVIDER
  BEGIN_PROVIDER [double precision, eigenvectors_sci, (size_super_ci,1)]
 &BEGIN_PROVIDER [double precision, eigenvalues_sci, (1)]
  implicit none
- integer :: i,j
+ integer :: i,j,iter
  double precision :: e_guess
- double precision, allocatable :: grd_st_eigenvec(:),eigenvectors(:,:),eigenvalues(:)
+ double precision, allocatable :: grd_st_eigenvec(:),eigenvectors(:,:),eigenvalues(:),matrix_tmp(:,:)
  double precision :: u_dot_v
+ double precision, allocatable :: delta_H_array(:)
+ allocate(delta_H_array(size_super_ci))
 
  if(size_super_ci.le.n_det_max_jacobi)then
-  provide superci_matrix
-  allocate(eigenvectors(size_super_ci,size_super_ci),eigenvalues(size_super_ci))
-  call lapack_diag(eigenvalues,eigenvectors,superci_matrix,size_super_ci,size_super_ci)
+  allocate(eigenvectors(size_super_ci,size_super_ci),eigenvalues(size_super_ci),matrix_tmp(size_super_ci,size_super_ci))
+  matrix_tmp = superci_matrix
+  call lapack_diag(eigenvalues,eigenvectors,matrix_tmp,size_super_ci,size_super_ci)
   eigenvectors_sci(:,1) = eigenvectors(:,1)
   eigenvalues_sci(1) = eigenvalues(1)
+  print*, 'SCI eigenvalue = ',eigenvalues_sci(1)
+
+!!!!!!!!!!! SC2 loop 
+  logical :: do_sc2
+  do_sc2 = .True.
+  double precision :: amplitude_max
+  integer :: imax
+  integer, allocatable :: iorder(:)
+  double precision, allocatable :: vec_tmp(:)
+  allocate(vec_tmp(size_super_ci),iorder(size_super_ci))
+  print*, '***'
+  do i = 1, size_super_ci
+   vec_tmp(i) = -dabs(eigenvectors(i,1)/eigenvectors(1,1))
+   iorder(i) = i
+  enddo
+  call dsort(vec_tmp,iorder,size_super_ci)
+  if(iorder(1).ne.1)then
+   do_sc2 = .False.
+  endif
+  if(dabs(vec_tmp(2)).gt.0.4d0)then
+   do_sc2 = .False.
+  endif
+  if (.not. do_sc2)then
+   print*, 'THE SUPERCI WAVE FUNCTION IS TOO MULTI-REFERENCE TO DO SC2 ...'
+  endif
+  if (do_sc2)then
+   print*, 'DOING a few SC2 iterations ...'
+   do iter = 1, 5
+    call give_superci_sc2_dressing(delta_H_array,eigenvectors(1,1))
+    do i = 1, size_super_ci
+      matrix_tmp(i,i) = diagonal_superci_matrix(i) + delta_H_array(i)  
+    enddo
+    call lapack_diag(eigenvalues,eigenvectors,matrix_tmp,size_super_ci,size_super_ci)
+    eigenvectors_sci(:,1) = eigenvectors(:,1)
+    eigenvalues_sci(1) = eigenvalues(1)
+    print*, 'SCI(SC)2 energy= ',eigenvalues_sci(1)
+   enddo
+  endif
+
+!!!!!!!!!!!!!  
  else 
   allocate(grd_st_eigenvec(size_super_ci))
   call create_good_guess(grd_st_eigenvec,e_guess)
@@ -249,5 +291,35 @@ END_PROVIDER
   eigenvalues_sci(1) = e_guess
   deallocate(grd_st_eigenvec)
  endif
+ 
+ deallocate(delta_H_array)
 END_PROVIDER 
 
+subroutine give_superci_sc2_dressing(delta_H_array,eigenvector)
+ implicit none
+ double precision, intent(in)  :: eigenvector(size_super_ci)
+ double precision, intent(out) :: delta_H_array(size_super_ci)
+ integer :: i
+ integer :: iorb,jorb,aorb,borb,j,b,index_cj
+ double precision :: dsqrt_2,inv_c0,coef_i
+ dsqrt_2 = dsqrt(2.d0)
+ inv_c0 = 1.d0/eigenvector(1)
+ delta_H_array = 0.d0
+ do i = 2, size_super_ci
+  iorb = index_rotation_CI_reverse(i,1)
+  aorb = index_rotation_CI_reverse(i,2)
+  coef_i = eigenvector(i) * inv_c0
+  do b = 1, n_virt_orb
+   if(b== aorb)cycle
+   borb = list_virt(b)
+   do j = 1, n_core_inact_orb
+    if(j== iorb)cycle
+    jorb = list_core_inact(j)
+    index_cj = index_rotation_CI(j,b)
+!   print*, dsqrt_2 * Fock_matrix_alpha_beta_average_mo(jorb,borb) * eigenvector(index_cj)*inv_c0
+    delta_H_array(i) += dsqrt_2 * Fock_matrix_alpha_beta_average_mo(jorb,borb) * eigenvector(index_cj)*inv_c0
+!   delta_H_array(1) += eigenvector(index_cj)*inv_c0 * coef_i * transformed_occ1_virt1_occ2_virt2(j,b,iorb,aorb)
+   enddo
+  enddo
+ enddo
+end 
