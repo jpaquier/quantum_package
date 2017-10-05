@@ -90,13 +90,18 @@ BEGIN_PROVIDER [double precision, diagonal_superci_matrix, (size_super_ci)]
    if(type_of_superci == 0)then
     diagonal_superci_matrix(index_rotation_CI(i,j)) = - Fock_matrix_alpha_beta_average_mo(iorb,iorb) + Fock_matrix_alpha_beta_average_mo(jorb,jorb) 
    else 
+!   print*, Fock_matrix_alpha_mo(iorb,iorb) , Fock_matrix_beta_mo(iorb,iorb) 
+!   print*, Fock_matrix_alpha_mo(jorb,jorb) , Fock_matrix_beta_mo(jorb,jorb) 
+!   print*, - Fock_matrix_alpha_mo(iorb,iorb)  + Fock_matrix_alpha_mo(jorb,jorb) -  transformed_occ1_virt2_virt2(i,j,j)
+!   print*, - Fock_matrix_beta_mo(iorb,iorb)  + Fock_matrix_beta_mo(jorb,jorb) -  transformed_occ1_virt2_virt2(i,j,j)
+!   stop
     diagonal_superci_matrix(index_rotation_CI(i,j)) = - Fock_matrix_alpha_beta_average_mo(iorb,iorb) + Fock_matrix_alpha_beta_average_mo(jorb,jorb) & 
                                                       - transformed_occ1_virt2_virt2(i,j,j)          + 2.d0 * transformed_occ1_virt1_occ2_virt2(i,j,i,j)
    endif
    if (dabs(superci_matrix(index_rotation_CI(i,j),index_rotation_CI(i,j)) - diagonal_superci_matrix(index_rotation_CI(i,j))).gt.1.d-10)then
     print*, i,j
     print*, superci_matrix(index_rotation_CI(i,j),index_rotation_CI(i,j)),diagonal_superci_matrix(index_rotation_CI(i,j))
-    stop
+!   stop
    endif
   enddo
  enddo

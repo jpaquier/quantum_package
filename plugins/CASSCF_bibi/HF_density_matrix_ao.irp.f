@@ -6,7 +6,7 @@ BEGIN_PROVIDER [ double precision, HF_density_matrix_ao_alpha_core_inact, (ao_nu
    call dgemm('N','T',ao_num,ao_num,n_core_inact_orb,1.d0, &
         mo_coef, size(mo_coef,1), &
         mo_coef, size(mo_coef,1), 0.d0, &
-        HF_density_matrix_ao_alpha_core_inact, size(HF_density_matrix_ao_alpha,1))
+        HF_density_matrix_ao_alpha_core_inact, size(HF_density_matrix_ao_alpha_core_inact,1))
 END_PROVIDER
 
 BEGIN_PROVIDER [ double precision, HF_density_matrix_ao_beta_core_inact,  (ao_num_align,ao_num) ]
@@ -17,7 +17,7 @@ BEGIN_PROVIDER [ double precision, HF_density_matrix_ao_beta_core_inact,  (ao_nu
    call dgemm('N','T',ao_num,ao_num,n_core_inact_orb,1.d0, &
         mo_coef, size(mo_coef,1), &
         mo_coef, size(mo_coef,1), 0.d0, &
-        HF_density_matrix_ao_beta_core_inact, size(HF_density_matrix_ao_beta,1))
+        HF_density_matrix_ao_beta_core_inact, size(HF_density_matrix_ao_beta_core_inact,1))
 END_PROVIDER
 
  BEGIN_PROVIDER [ double precision, density_matrix_ao_act_alpha, (ao_num_align,ao_num) ]
@@ -67,22 +67,18 @@ END_PROVIDER
 
 END_PROVIDER 
 
-BEGIN_PROVIDER [ double precision, HF_density_matrix_ao, (ao_num_align,ao_num) ]
+BEGIN_PROVIDER [ double precision, HF_density_matrix_ao_core_inact, (ao_num_align,ao_num) ]
    implicit none
    BEGIN_DOC
    ! S^-1 Density matrix in the AO basis S^-1
    END_DOC
-   ASSERT (size(HF_density_matrix_ao,1) == size(HF_density_matrix_ao_alpha,1))
+   ASSERT (size(HF_density_matrix_ao_core_inact,1) == size(HF_density_matrix_ao_alpha_core_inact,1))
    if (elec_alpha_num== elec_beta_num) then
-     HF_density_matrix_ao = HF_density_matrix_ao_alpha + HF_density_matrix_ao_alpha
+     HF_density_matrix_ao_core_inact = HF_density_matrix_ao_beta_core_inact + HF_density_matrix_ao_alpha_core_inact
    else
-     ASSERT (size(HF_density_matrix_ao,1) == size(HF_density_matrix_ao_beta ,1))
-     HF_density_matrix_ao = HF_density_matrix_ao_alpha + HF_density_matrix_ao_beta
+     ASSERT (size(HF_density_matrix_ao_core_inact,1) == size(HF_density_matrix_ao_core_inact,1))
+     HF_density_matrix_ao_core_inact = HF_density_matrix_ao_beta_core_inact + HF_density_matrix_ao_alpha_core_inact
    endif
-   integer :: i
-   do i = 1, ao_num
-    write(33,'(1000(F16.10,X))') HF_density_matrix_ao(i,:)
-   enddo
    
 END_PROVIDER
  

@@ -26,8 +26,10 @@
  integer :: i_core,i_hole
  integer :: j_virt,j_part
  integer :: i_ok
- double precision :: norm
+ double precision :: norm,phase
  integer :: Ndet
+ integer         :: exc(0:2,2,2)
+ integer         :: degree
  do i = 2, size_super_ci
   i_core = index_rotation_CI_reverse(i,1)
   i_hole = list_core_inact(i_core)
@@ -49,7 +51,8 @@
      psi_superci(k,2,j,1,i) = det_tmp(k,2)
     enddo
     psi_superci_size(1,i) += 1
-    contraction_coef_psi_superci(j,1,i) = psi_coef(j,1)
+    call get_excitation(det_tmp,psi_det(1,1,j),exc,degree,phase,N_int)
+    contraction_coef_psi_superci(j,1,i) = psi_coef(j,1) * phase
    else 
     do k = 1, N_int
      psi_superci(k,1,j,1,i) = 0_bit_kind
@@ -71,7 +74,8 @@
      psi_superci(k,2,j,2,i) = det_tmp(k,2)
     enddo
     psi_superci_size(2,i) += 1
-    contraction_coef_psi_superci(j,2,i) = psi_coef(j,1)
+    call get_excitation(det_tmp,psi_det(1,1,j),exc,degree,phase,N_int)
+    contraction_coef_psi_superci(j,2,i) = psi_coef(j,1) * phase 
    else 
     do k = 1, N_int
      psi_superci(k,1,j,2,i) = 0_bit_kind
@@ -109,8 +113,8 @@ END_PROVIDER
  total_matrix_superci_brutal(1,1) = 0.d0 
  do i = 2, size_super_ci
   allocate(psi_1(N_int,2,psi_superci_size(1,i)+psi_superci_size(2,i)),psi_1_coef(psi_superci_size(1,i)+psi_superci_size(2,i)))
+  idet = 0
   do j = 1, N_det
-   idet = 0
    if(psi_superci(1,1,j,1,i) == 0_bit_kind)cycle
     idet+=1
     do k = 1, N_int
@@ -155,8 +159,8 @@ END_PROVIDER
   integer :: jdet
   do l = i+1, size_super_ci
     allocate(psi_2(N_int,2,psi_superci_size(1,l)+psi_superci_size(2,l)),psi_2_coef(psi_superci_size(1,l)+psi_superci_size(2,l)))
+    jdet = 0
     do j = 1, N_det
-     jdet = 0
      if(psi_superci(1,1,j,1,l) == 0_bit_kind)cycle
       jdet+=1
       do k = 1, N_int
