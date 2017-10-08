@@ -12,7 +12,6 @@ subroutine loc_cele_routine
      integer ipiv(id1),info,lwork
      logical *1 z54
      z54=.false.
-     !Read the name of the RasOrb file
      accu_norm = 0.d0
      do i =1,mo_tot_num
        accu_norm += dabs(mo_overlap(i,i))
@@ -122,14 +121,15 @@ subroutine loc_cele_routine
      ! we say that it hase been touched, and valid and that everything that
      ! depends on mo_coef must not be reprovided
      double precision               :: accu_norm
-     touch mo_coef
+!    touch mo_coef
 !    print*,'after  = '
      accu_norm = 0.d0
      do i =1,mo_tot_num
        accu_norm += dabs(mo_overlap(i,i))
      enddo
+!    print*, 'accu_norm = ',accu_norm
 !    print*,'accu_norm = ',accu_norm
      ! We call the routine that saves mo_coef in the ezfio format
-     call save_mos
+!    call save_mos
      
 end

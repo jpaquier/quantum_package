@@ -186,7 +186,7 @@ END_PROVIDER
 
 
 
-subroutine set_superci_natural_mos
+subroutine set_superci_natural_mos_state_specific
  implicit none
  BEGIN_DOC
  ! Set natural orbitals, obtained by diagonalization of the one-body density matrix in the MO basis of the SUPERCI wave function
@@ -194,7 +194,19 @@ subroutine set_superci_natural_mos
  character*(64) :: label
  
  label = "Natural"
-!call mo_as_svd_vectors_of_mo_matrix(super_ci_state_average_density_matrix_mo,size(super_ci_state_average_density_matrix_mo,1),mo_tot_num,mo_tot_num,label)
  call mo_as_svd_vectors_of_mo_matrix(averaged_super_ci_state_specific_density_matrix_mo,size(averaged_super_ci_state_specific_density_matrix_mo,1),mo_tot_num,mo_tot_num,label)
 
 end
+
+subroutine set_superci_natural_mos_state_average
+ implicit none
+ BEGIN_DOC
+ ! Set natural orbitals, obtained by diagonalization of the one-body density matrix in the MO basis of the SUPERCI wave function
+ END_DOC
+ character*(64) :: label
+ 
+ label = "Natural"
+ call mo_as_svd_vectors_of_mo_matrix(super_ci_state_average_density_matrix_mo,size(super_ci_state_average_density_matrix_mo,1),mo_tot_num,mo_tot_num,label)
+
+end
+

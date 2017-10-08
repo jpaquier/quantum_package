@@ -34,6 +34,7 @@ subroutine reorder_active_orb
   enddo
   call dsort(accu,iorder,mo_tot_num)
   index_active_orb(i) = iorder(1) 
+! print*, i,iorder(1),accu(1)
  enddo
 
  double precision :: x
@@ -50,7 +51,6 @@ subroutine reorder_active_orb
   enddo
  enddo
  call loc_cele_routine
- touch mo_coef
 
  deallocate(accu,index_active_orb, iorder)
 end

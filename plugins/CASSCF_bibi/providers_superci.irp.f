@@ -252,6 +252,9 @@ END_PROVIDER
     eigenvectors_sci(:,m) = eigenvectors(:,1)
     eigenvalues_sci(m) = eigenvalues(1)
     print*, 'SCI eigenvalue = ',eigenvalues_sci(m)
+!   do i = 1, size_super_ci
+!    write(*,'(100(F16.10,X))')matrix_tmp(i,:)
+!   enddo
   
 !!!!!!!!!!!!! SC2 loop 
     logical :: do_sc2
@@ -343,20 +346,31 @@ end
 
 BEGIN_PROVIDER [double precision, diagonal_superci_matrix_state_average, (size_super_ci)]
  implicit none
- integer :: i
+ integer :: i,j
  diagonal_superci_matrix_state_average = 0.d0
  do i = 1, N_states
-  diagonal_superci_matrix_state_average(:) += diagonal_superci_matrix(:,i) * state_average_weight(i)
+  do j= 1, size_super_ci
+   diagonal_superci_matrix_state_average(j) += diagonal_superci_matrix(j,i) * state_average_weight(i)
+  enddo
  enddo
 
 END_PROVIDER 
 
 BEGIN_PROVIDER [double precision, superci_matrix_state_average, (size_super_ci,size_super_ci)]
  implicit none
- integer :: i
+ integer :: i,j,k
+ superci_matrix_state_average = 0.d0
+ print*, 'PROVIDING THE superci_matrix_state_average'
  do i = 1, N_states
-   superci_matrix_state_average(:,:) += superci_matrix(:,:,i)  * state_average_weight(i)
+   do j = 1, size_super_ci
+    do k = 1, size_super_ci
+     superci_matrix_state_average(k,j) += superci_matrix(k,j,i)  * state_average_weight(i)
+    enddo
+   enddo
  enddo
+ ! do k = 1, size_super_ci
+ !  write(*,'(100(F16.10,X))')superci_matrix_state_average(k,:)
+ ! enddo
 END_PROVIDER 
 
 
@@ -382,9 +396,9 @@ END_PROVIDER
     eigenvectors_sci_state_average(:) = eigenvectors(:,1)
     eigenvalues_sci_state_average = eigenvalues(1)
     print*, 'SCI eigenvalue = ',eigenvalues_sci_state_average
-      do i = 1, size_super_ci
-        write(*, '(100(F16.10,X))')matrix_tmp(i,:)
-      enddo
+ !  do i = 1, size_super_ci
+ !   write(*,'(100(F16.10,X))')matrix_tmp(i,:)
+ !  enddo
   
 !!!!!!!!!!!!! SC2 loop 
     logical :: do_sc2
@@ -416,11 +430,8 @@ END_PROVIDER
      do iter = 1, 5
       call give_superci_sc2_dressing_state_average(delta_H_array,eigenvectors_sci_state_average)
       do i = 1, size_super_ci
-        print*, diagonal_superci_matrix_state_average(i), delta_H_array(i),eigenvectors_sci_state_average(i)
+!       print*, diagonal_superci_matrix_state_average(i), delta_H_array(i),eigenvectors_sci_state_average(i)
         matrix_tmp(i,i) = diagonal_superci_matrix_state_average(i) + delta_H_array(i)  
-      enddo
-      do i = 1, size_super_ci
-        write(*, '(100(F16.10,X))')matrix_tmp(i,:)
       enddo
       call lapack_diag(eigenvalues,eigenvectors,matrix_tmp,size_super_ci,size_super_ci)
       eigenvectors_sci_state_average(:) = eigenvectors(:,1)
@@ -458,7 +469,7 @@ subroutine give_superci_sc2_dressing_state_average(delta_H_array,eigenvector)
   iorb = index_rotation_CI_reverse(i,1)
   aorb = index_rotation_CI_reverse(i,2)
   coef_i = eigenvector(i) * inv_c0
-  print*, Fock_matrix_spin_and_state_average_mo(list_core_inact(iorb),list_virt(aorb))
+! print*, Fock_matrix_spin_and_state_average_mo(list_core_inact(iorb),list_virt(aorb))
   do b = 1, n_virt_orb
    if(b== aorb)cycle
    borb = list_virt(b)

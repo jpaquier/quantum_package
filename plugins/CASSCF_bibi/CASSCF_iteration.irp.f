@@ -1,13 +1,24 @@
-subroutine iteration_scf(delta_e_sci)
+subroutine iteration_scf_state_average(delta_e_sci)
  implicit none
  double precision, intent(out) :: delta_e_sci
  call initialize_mo_coef_begin_iteration
  print*, 'Delta E SUPERCI  = ',eigenvalues_sci_state_average
  delta_e_sci = eigenvalues_sci_state_average
  
- call set_superci_natural_mos 
+ call set_superci_natural_mos_state_average
  call reorder_active_orb
- touch mo_coef
+end
+
+
+subroutine iteration_scf_state_specific(delta_e_sci)
+ implicit none
+ double precision, intent(out) :: delta_e_sci
+ call initialize_mo_coef_begin_iteration
+ print*, 'Delta E SUPERCI  = ',eigenvalues_sci(1)
+ delta_e_sci = eigenvalues_sci(1)
+ 
+ call set_superci_natural_mos_state_specific
+ call reorder_active_orb
 end
 
 
@@ -17,13 +28,18 @@ subroutine casscf_routine
  double precision :: energy(N_states),thresh_casscf,delta_e(N_states),delta_e_sci
  energy(1) = 0.d0
  thresh_casscf = 1.d-10
- do i = 1, 1
+ do i = 1, 100
   print*, 'Iteration  = ',i
   do m = 1, N_states
    print*, 'State ',m
    print*, 'Reference Energy = ',m,reference_energy_superci(m)
   enddo
-  call iteration_scf(delta_e_sci)
+
+! call iteration_scf_state_specific(delta_e_sci)
+  call iteration_scf_state_average(delta_e_sci)
+
+
+  touch mo_coef
   do m = 1, N_states
    delta_e(m) = reference_energy_superci(m) - energy(m)
   enddo
@@ -41,6 +57,7 @@ subroutine casscf_routine
  do m = 1, N_states
   print*,  'Final Energy     = ',reference_energy_superci(m)
  enddo
-!call save_mos
+
+ call save_mos
 
 end
