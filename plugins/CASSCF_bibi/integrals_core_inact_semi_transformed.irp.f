@@ -13,7 +13,7 @@
 
  double precision :: cpu0,cpu1
  
- provide ao_bielec_integral_schwartz ao_bielec_integrals_in_map ao_overlap_abs
+ provide ao_bielec_integral_schwartz ao_bielec_integrals_in_map ao_overlap_abs mo_coef_core_inact_transp mo_coef_virt
  thr = 0.001d0 * dsqrt(ao_integrals_threshold)
  call cpu_time(cpu0) 
 
@@ -61,7 +61,7 @@ END_PROVIDER
 
  double precision :: cpu0,cpu1
  
- provide ao_bielec_integral_schwartz ao_bielec_integrals_in_map ao_overlap_abs
+ provide ao_bielec_integral_schwartz ao_bielec_integrals_in_map ao_overlap_abs mo_coef_virt 
  thr = 0.001d0 * dsqrt(ao_integrals_threshold)
  call cpu_time(cpu0) 
 
@@ -111,7 +111,7 @@ END_PROVIDER
 
  double precision :: cpu0,cpu1
  
- provide ao_bielec_integral_schwartz ao_bielec_integrals_in_map ao_overlap_abs
+ provide ao_bielec_integral_schwartz ao_bielec_integrals_in_map ao_overlap_abs mo_coef_core_inact
  thr = 0.001d0 * dsqrt(ao_integrals_threshold)
  call cpu_time(cpu0) 
 

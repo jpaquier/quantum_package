@@ -32,7 +32,7 @@ double precision function compute_extra_diag_two_body_dm_ab_act(r1,r2)
    do j = 1, n_act_orb  ! p1 
     do i = 1,n_act_orb   ! h1 
      contrib_tmp = mos_array_r1(i) * mos_array_r1(j) * mos_array_r2(k) * mos_array_r2(l)
-     compute_extra_diag_two_body_dm_ab_act += two_body_dm_ab_big_array_act(i,j,k,l) * contrib_tmp
+     compute_extra_diag_two_body_dm_ab_act += two_body_dm_ab_big_array_act(i,j,k,l,1) * contrib_tmp
     enddo
    enddo
   enddo
@@ -67,7 +67,7 @@ double precision function compute_extra_diag_two_body_dm_ab_core_act(r1,r2)
      contrib_core_1 = mos_array_core_r1(k)  * mos_array_core_r1(k)
      contrib_core_2 = mos_array_core_r2(k)  * mos_array_core_r2(k)
      contrib_tmp = 0.5d0 * (contrib_act_1 * contrib_core_2 + contrib_act_2 * contrib_core_1)
-     compute_extra_diag_two_body_dm_ab_core_act += two_body_dm_ab_big_array_core_act(k,i,j) * contrib_tmp
+     compute_extra_diag_two_body_dm_ab_core_act += two_body_dm_ab_big_array_core_act(k,i,j,1) * contrib_tmp
     enddo
    enddo
   enddo
@@ -111,7 +111,7 @@ double precision function compute_diag_two_body_dm_ab_act(r1,r2)
   do k = 1, n_act_orb  ! 
     contrib_tmp = contrib * mos_array_r1(k)*mos_array_r1(k)
 !  if(dabs(contrib).lt.threshld_two_bod_dm)cycle
-     compute_diag_two_body_dm_ab_act += two_body_dm_ab_diag_act(k,l) * contrib_tmp
+     compute_diag_two_body_dm_ab_act += two_body_dm_ab_diag_act(k,l,1) * contrib_tmp
   enddo
  enddo
 end
@@ -139,7 +139,7 @@ double precision function compute_diag_two_body_dm_ab_core_act(r1,r2)
     do l = 1, n_core_orb  ! 
      contrib_core_1 = mos_array_core_r1(l) * mos_array_core_r1(l)
      contrib_core_2 = mos_array_core_r2(l) * mos_array_core_r2(l)
-     compute_diag_two_body_dm_ab_core_act += two_body_dm_diag_core_act(l,k) * contrib_tmp
+     compute_diag_two_body_dm_ab_core_act += two_body_dm_diag_core_act(l,k,1) * contrib_tmp
     enddo
  enddo
 end

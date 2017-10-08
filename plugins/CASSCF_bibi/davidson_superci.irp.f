@@ -1,6 +1,6 @@
-double precision function i_H_SCI_j(i,j)
+double precision function i_H_SCI_j(i,j,i_st)
  implicit none
- integer, intent(in) :: i,j
+ integer, intent(in) :: i,j,i_st
  integer :: ihole,jpart
  integer :: iorb,jorb
  integer :: khole,lpart
@@ -10,7 +10,7 @@ double precision function i_H_SCI_j(i,j)
  i_H_SCI_j = 0.d0
 
  if(i==j)then
-  i_H_SCI_j = diagonal_superci_matrix(i)
+  i_H_SCI_j = diagonal_superci_matrix(i,i_st)
   return
  endif
 
@@ -20,7 +20,7 @@ double precision function i_H_SCI_j(i,j)
    korb = list_core_inact(khole)
    lpart = index_rotation_CI_reverse(j,2)
    lorb = list_virt(lpart)
-   i_H_SCI_j = dsqrt_2 * Fock_matrix_alpha_beta_average_mo(korb,lorb) 
+   i_H_SCI_j = dsqrt_2 * Fock_matrix_alpha_beta_spin_average_mo(korb,lorb,i_st) 
    return
   endif
  
@@ -29,7 +29,7 @@ double precision function i_H_SCI_j(i,j)
    iorb = list_core_inact(ihole)
    jpart = index_rotation_CI_reverse(i,2)
    jorb = list_virt(jpart)
-   i_H_SCI_j = dsqrt_2 * Fock_matrix_alpha_beta_average_mo(iorb,jorb) 
+   i_H_SCI_j = dsqrt_2 * Fock_matrix_alpha_beta_spin_average_mo(iorb,jorb,i_st) 
    return
   endif
  endif
@@ -48,16 +48,16 @@ double precision function i_H_SCI_j(i,j)
 
   if(ihole==khole)then 
    if(type_of_superci==0)then
-    i_H_SCI_j = Fock_matrix_alpha_beta_average_mo(jorb,lorb)
+    i_H_SCI_j = Fock_matrix_alpha_beta_spin_average_mo(jorb,lorb,i_st)
    else if (type_of_superci==1.or.type_of_superci==2)then
-    i_H_SCI_j = Fock_matrix_alpha_beta_average_mo(jorb,lorb) - transformed_occ1_virt2_virt2(ihole,jpart,lpart) + 2.d0 * transformed_occ1_virt1_occ2_virt2(ihole,jpart,ihole,lpart)
+    i_H_SCI_j = Fock_matrix_alpha_beta_spin_average_mo(jorb,lorb,i_st) - transformed_occ1_virt2_virt2(ihole,jpart,lpart) + 2.d0 * transformed_occ1_virt1_occ2_virt2(ihole,jpart,ihole,lpart)
                                                               
    endif
   else if (jpart==lpart)then
    if(type_of_superci==0)then
-    i_H_SCI_j = - Fock_matrix_alpha_beta_average_mo(iorb,korb)
+    i_H_SCI_j = - Fock_matrix_alpha_beta_spin_average_mo(iorb,korb,i_st)
    else if (type_of_superci==1.or.type_of_superci==2)then
-    i_H_SCI_j = - Fock_matrix_alpha_beta_average_mo(iorb,korb)- transformed_virt1_occ2_occ2(jpart,khole,ihole) + 2.d0 * transformed_occ1_virt1_occ2_virt2(ihole,jpart,khole,jpart)
+    i_H_SCI_j = - Fock_matrix_alpha_beta_spin_average_mo(iorb,korb,i_st)- transformed_virt1_occ2_occ2(jpart,khole,ihole) + 2.d0 * transformed_occ1_virt1_occ2_virt2(ihole,jpart,khole,jpart)
    endif
   else  
    if(type_of_superci==2)then
@@ -73,8 +73,9 @@ end
 
 
 
-subroutine apply_H_superci_to_vector(u0,u1)
+subroutine apply_H_superci_to_vector(u0,u1,i_st)
  implicit none
+ integer, intent(in) :: i_st
  double precision, intent(in) :: u0(size_super_ci)
  double precision, intent(out) :: u1(size_super_ci)
 
@@ -84,6 +85,7 @@ subroutine apply_H_superci_to_vector(u0,u1)
  dsqrt_2 = dsqrt(2.d0)
 
  u1 = 0.d0
+ u1(1) += u0(1) * diagonal_superci_matrix(1,i_st)
  
  if(type_of_superci == 0)then
    do j = 1, n_virt_orb
@@ -92,22 +94,22 @@ subroutine apply_H_superci_to_vector(u0,u1)
      iorb = list_core_inact(i)
      index_i = index_rotation_CI(i,j) 
      ! Diagonal and Brillouin matrix elements 
-     u1(1) += u0(index_i) * dsqrt_2 * Fock_matrix_alpha_beta_average_mo(iorb,jorb)
-     u1(index_i) += u0(1) * dsqrt_2 * Fock_matrix_alpha_beta_average_mo(iorb,jorb)
-     u1(index_i) += u0(index_i) * diagonal_superci_matrix(index_i)
+     u1(index_i) += u0(index_i) * diagonal_superci_matrix(index_i,i_st)
+     u1(1) += u0(index_i) * dsqrt_2 * Fock_matrix_alpha_beta_spin_average_mo(iorb,jorb,i_st)
+     u1(index_i) += u0(1) * dsqrt_2 * Fock_matrix_alpha_beta_spin_average_mo(iorb,jorb,i_st)
      ! Interaction through the virt-virt Fock operator
      do k = j+1, n_virt_orb
       korb = list_virt(k)
       index_j = index_rotation_CI(i,k)
-      u1(index_i) += u0(index_j) * Fock_matrix_alpha_beta_average_mo(jorb,korb)
-      u1(index_j) += u0(index_i) * Fock_matrix_alpha_beta_average_mo(jorb,korb)
+      u1(index_i) += u0(index_j) * Fock_matrix_alpha_beta_spin_average_mo(jorb,korb,i_st)
+      u1(index_j) += u0(index_i) * Fock_matrix_alpha_beta_spin_average_mo(jorb,korb,i_st)
      enddo
      ! Interaction through the core-core Fock operator
      do k = i+1, n_core_inact_orb
       korb = list_core_inact(k)
       index_j = index_rotation_CI(k,j)
-      u1(index_i) -= u0(index_j) *  Fock_matrix_alpha_beta_average_mo(iorb,korb)
-      u1(index_j) -= u0(index_i) *  Fock_matrix_alpha_beta_average_mo(iorb,korb)
+      u1(index_i) -= u0(index_j) *  Fock_matrix_alpha_beta_spin_average_mo(iorb,korb,i_st)
+      u1(index_j) -= u0(index_i) *  Fock_matrix_alpha_beta_spin_average_mo(iorb,korb,i_st)
      enddo
     enddo
    enddo
@@ -120,25 +122,25 @@ subroutine apply_H_superci_to_vector(u0,u1)
     jorb = list_virt(j)
     index_i = index_rotation_CI(i,j) 
     ! Diagonal and Brillouin matrix elements 
-    u1(1) += u0(index_i) * dsqrt_2 * Fock_matrix_alpha_beta_average_mo(iorb,jorb)
-    u1(index_i) += u0(1) * dsqrt_2 * Fock_matrix_alpha_beta_average_mo(iorb,jorb)
-    u1(index_i) += u0(index_i) * diagonal_superci_matrix(index_i)
+    u1(1) += u0(index_i) * dsqrt_2 * Fock_matrix_alpha_beta_spin_average_mo(iorb,jorb,i_st)
+    u1(index_i) += u0(1) * dsqrt_2 * Fock_matrix_alpha_beta_spin_average_mo(iorb,jorb,i_st)
+    u1(index_i) += u0(index_i) * diagonal_superci_matrix(index_i,i_st)
     ! Interaction through the virt-virt Fock operator
     do k = j+1, n_virt_orb
      korb = list_virt(k)
      index_j = index_rotation_CI(i,k)
-     u1(index_i) += u0(index_j) * (Fock_matrix_alpha_beta_average_mo(jorb,korb) &
+     u1(index_i) += u0(index_j) * (Fock_matrix_alpha_beta_spin_average_mo(jorb,korb,i_st) &
                                                                    - transformed_occ1_virt2_virt2(i,k,j) + 2.d0 * transformed_occ1_virt1_occ2_virt2(i,k,i,j))
-     u1(index_j) += u0(index_i) * (Fock_matrix_alpha_beta_average_mo(jorb,korb) & 
+     u1(index_j) += u0(index_i) * (Fock_matrix_alpha_beta_spin_average_mo(jorb,korb,i_st) & 
                                                                    - transformed_occ1_virt2_virt2(i,k,j) + 2.d0 * transformed_occ1_virt1_occ2_virt2(i,k,i,j))
     enddo
     ! Interaction through the core-core Fock operator
     do k = i+1, n_core_inact_orb
      korb = list_core_inact(k)
      index_j = index_rotation_CI(k,j)
-     u1(index_i) += u0(index_j) *  (- Fock_matrix_alpha_beta_average_mo(iorb,korb) & 
+     u1(index_i) += u0(index_j) *  (- Fock_matrix_alpha_beta_spin_average_mo(iorb,korb,i_st) & 
                                                                      - transformed_virt1_occ2_occ2(j,k,i) + 2.d0 * transformed_occ1_virt1_occ2_virt2(i,j,k,j))
-     u1(index_j) += u0(index_i) *  (- Fock_matrix_alpha_beta_average_mo(iorb,korb) & 
+     u1(index_j) += u0(index_i) *  (- Fock_matrix_alpha_beta_spin_average_mo(iorb,korb,i_st) & 
                                                                      - transformed_virt1_occ2_occ2(j,k,i) + 2.d0 * transformed_occ1_virt1_occ2_virt2(i,j,k,j))
     enddo
     
@@ -153,25 +155,25 @@ subroutine apply_H_superci_to_vector(u0,u1)
     jorb = list_virt(j)
     index_i = index_rotation_CI(i,j) 
     ! Diagonal and Brillouin matrix elements 
-    u1(1) += u0(index_i) * dsqrt_2 * Fock_matrix_alpha_beta_average_mo(iorb,jorb)
-    u1(index_i) += u0(1) * dsqrt_2 * Fock_matrix_alpha_beta_average_mo(iorb,jorb)
-    u1(index_i) += u0(index_i) * diagonal_superci_matrix(index_i)
+    u1(1) += u0(index_i) * dsqrt_2 * Fock_matrix_alpha_beta_spin_average_mo(iorb,jorb,i_st)
+    u1(index_i) += u0(1) * dsqrt_2 * Fock_matrix_alpha_beta_spin_average_mo(iorb,jorb,i_st)
+    u1(index_i) += u0(index_i) * diagonal_superci_matrix(index_i,i_st)
     ! Interaction through the virt-virt Fock operator
     do k = j+1, n_virt_orb
      korb = list_virt(k)
      index_j = index_rotation_CI(i,k)
-     u1(index_i) += u0(index_j) * (Fock_matrix_alpha_beta_average_mo(jorb,korb) &
+     u1(index_i) += u0(index_j) * (Fock_matrix_alpha_beta_spin_average_mo(jorb,korb,i_st) &
                                                                    - transformed_occ1_virt2_virt2(i,k,j) + 2.d0 * transformed_occ1_virt1_occ2_virt2(i,k,i,j))
-     u1(index_j) += u0(index_i) * (Fock_matrix_alpha_beta_average_mo(jorb,korb) & 
+     u1(index_j) += u0(index_i) * (Fock_matrix_alpha_beta_spin_average_mo(jorb,korb,i_st) & 
                                                                    - transformed_occ1_virt2_virt2(i,k,j) + 2.d0 * transformed_occ1_virt1_occ2_virt2(i,k,i,j))
     enddo
     ! Interaction through the core-core Fock operator
     do k = i+1, n_core_inact_orb
      korb = list_core_inact(k)
      index_j = index_rotation_CI(k,j)
-     u1(index_i) += u0(index_j) *  (- Fock_matrix_alpha_beta_average_mo(iorb,korb) & 
+     u1(index_i) += u0(index_j) *  (- Fock_matrix_alpha_beta_spin_average_mo(iorb,korb,i_st) & 
                                                                      - transformed_virt1_occ2_occ2(j,k,i) + 2.d0 * transformed_occ1_virt1_occ2_virt2(i,j,k,j))
-     u1(index_j) += u0(index_i) *  (- Fock_matrix_alpha_beta_average_mo(iorb,korb) & 
+     u1(index_j) += u0(index_i) *  (- Fock_matrix_alpha_beta_spin_average_mo(iorb,korb,i_st) & 
                                                                      - transformed_virt1_occ2_occ2(j,k,i) + 2.d0 * transformed_occ1_virt1_occ2_virt2(i,j,k,j))
     enddo
     ! Hole-particle interaction 
@@ -209,7 +211,7 @@ subroutine apply_H_superci_to_vector(u0,u1)
 end 
 
 
-subroutine davidson_diag_general(u_in,energies,dim_in,sze,N_st,N_st_diag,Nint,iunit)
+subroutine davidson_diag_general(u_in,energies,dim_in,sze,i_st,N_st_diag,Nint,iunit)
   use bitmasks
   implicit none
   BEGIN_DOC
@@ -222,15 +224,15 @@ subroutine davidson_diag_general(u_in,energies,dim_in,sze,N_st,N_st_diag,Nint,iu
   !
   ! sze : Number of determinants
   !
-  ! N_st : Number of eigenstates
+  ! i_st : index of the state you are targetting ::: needed for the SUPERCI Hamiltonian application
   !
   ! iunit : Unit number for the I/O
   !
   ! Initial guess vectors are not necessarily orthonormal
   END_DOC
-  integer, intent(in)            :: dim_in, sze, N_st, N_st_diag, Nint, iunit
+  integer, intent(in)            :: dim_in, sze, i_st, N_st_diag, Nint, iunit
   double precision, intent(inout) :: u_in(dim_in,N_st_diag)
-  double precision, intent(out)  :: energies(N_st)
+  double precision, intent(out)  :: energies
   double precision, allocatable  :: H_jj(:)
   
   double precision               :: diag_h_mat_elem
@@ -242,10 +244,10 @@ subroutine davidson_diag_general(u_in,energies,dim_in,sze,N_st,N_st_diag,Nint,iu
   allocate(H_jj(sze))
   
   do i=1,sze
-    H_jj(i) = diagonal_superci_matrix(i)
+    H_jj(i) = diagonal_superci_matrix(i,i_st)
   enddo
 
-  call davidson_diag_general_hjj(u_in,H_jj,energies,dim_in,sze,N_st,N_st_diag,Nint,iunit)
+  call davidson_diag_general_hjj(u_in,H_jj,energies,dim_in,sze,i_st,N_st_diag,Nint,iunit)
   deallocate (H_jj)
 end
 
@@ -253,7 +255,7 @@ end
 
 
 
-subroutine davidson_diag_general_Hjj(u_in,H_jj,energies,dim_in,sze,N_st,N_st_diag,Nint,iunit)
+subroutine davidson_diag_general_Hjj(u_in,H_jj,energies,dim_in,sze,i_st,N_st_diag,Nint,iunit)
   use bitmasks
   implicit none
   BEGIN_DOC
@@ -268,7 +270,7 @@ subroutine davidson_diag_general_Hjj(u_in,H_jj,energies,dim_in,sze,N_st,N_st_dia
   !
   ! sze : Number of determinants
   !
-  ! N_st : Number of eigenstates
+  ! N_st : index_of the state you want ::: needed for the SUPERCI Hamiltonian application
   ! 
   ! N_st_diag : Number of states in which H is diagonalized
   !
@@ -276,7 +278,7 @@ subroutine davidson_diag_general_Hjj(u_in,H_jj,energies,dim_in,sze,N_st,N_st_dia
   !
   ! Initial guess vectors are not necessarily orthonormal
   END_DOC
-  integer, intent(in)            :: dim_in, sze, N_st, N_st_diag, Nint
+  integer, intent(in)            :: dim_in, sze, i_st, N_st_diag, Nint
   double precision,  intent(in)  :: H_jj(sze)
   integer,  intent(in)  :: iunit
   double precision, intent(inout) :: u_in(dim_in,N_st_diag)
@@ -299,7 +301,7 @@ subroutine davidson_diag_general_Hjj(u_in,H_jj,energies,dim_in,sze,N_st,N_st_dia
   double precision               :: diag_h_mat_elem
   double precision, allocatable  :: residual_norm(:)
   character*(16384)              :: write_buffer
-  double precision               :: to_print(2,N_st)
+  double precision               :: to_print(2)
   double precision               :: cpu, wall
   include 'constants.include.F'
   
@@ -314,24 +316,15 @@ subroutine davidson_diag_general_Hjj(u_in,H_jj,energies,dim_in,sze,N_st,N_st_dia
   write(iunit,'(A)') 'Davidson Diagonalization'
   write(iunit,'(A)') '------------------------'
   write(iunit,'(A)') ''
-  call write_int(iunit,N_st,'Number of states')
-  call write_int(iunit,N_st_diag,'Number of states in diagonalization')
   call write_int(iunit,sze,'Number of determinants')
   write(iunit,'(A)') ''
   write_buffer = '===== '
-  do i=1,N_st
-    write_buffer = trim(write_buffer)//' ================ ================'
-  enddo
   write(iunit,'(A)') trim(write_buffer)
   write_buffer = ' Iter'
-  do i=1,N_st
-    write_buffer = trim(write_buffer)//'            Energy           Residual'
-  enddo
+  write_buffer = trim(write_buffer)//'            Energy           Residual'
   write(iunit,'(A)') trim(write_buffer)
   write_buffer = '===== '
-  do i=1,N_st
-    write_buffer = trim(write_buffer)//' ================ ================'
-  enddo
+  write_buffer = trim(write_buffer)//' ================ ================'
   write(iunit,'(A)') trim(write_buffer)
 
   integer, external :: align_double
@@ -349,7 +342,6 @@ subroutine davidson_diag_general_Hjj(u_in,H_jj,energies,dim_in,sze,N_st,N_st_dia
       H_small(N_st_diag,N_st_diag),                                  &
       lambda(N_st_diag*davidson_sze_max))
   
-  ASSERT (N_st > 0)
   ASSERT (N_st_diag >= N_st)
   ASSERT (sze > 0)
   ASSERT (Nint > 0)
@@ -362,15 +354,6 @@ subroutine davidson_diag_general_Hjj(u_in,H_jj,energies,dim_in,sze,N_st,N_st_dia
   
   do k=1,N_st_diag
 
-    if (k > N_st) then
-      do i=1,sze
-        double precision               :: r1, r2
-        call random_number(r1)
-        call random_number(r2)
-        u_in(i,k) = dsqrt(-2.d0*dlog(r1))*dcos(dtwo_pi*r2)
-      enddo
-    endif
-    
     ! Gram-Schmidt
     ! ------------
     call dgemv('T',sze,k-1,1.d0,u_in,size(u_in,1),                   &
@@ -395,7 +378,7 @@ subroutine davidson_diag_general_Hjj(u_in,H_jj,energies,dim_in,sze,N_st,N_st_dia
       ! Compute |W_k> = \sum_i |i><i|H|u_k>
       ! -----------------------------------------
       
-      call apply_H_superci_to_vector(U(1,1,iter),W(1,1,iter))
+      call apply_H_superci_to_vector(U(1,1,iter),W(1,1,iter),i_st)
       
       ! Compute h_kl = <u_k | W_l> = <u_k| H |u_l>
       ! -------------------------------------------
@@ -431,15 +414,13 @@ subroutine davidson_diag_general_Hjj(u_in,H_jj,energies,dim_in,sze,N_st,N_st_dia
         do i=1,sze
           R(i,k) = lambda(k) * U(i,k,iter+1) - W(i,k,iter+1)
         enddo
-        if (k <= N_st) then
-          residual_norm(k) = u_dot_u(R(1,k),sze)
-          to_print(1,k) = lambda(k)  + nuclear_repulsion + reference_energy_superci
-          to_print(2,k) = residual_norm(k)
-        endif
+        residual_norm(k) = u_dot_u(R(1,k),sze)
+        to_print(1) = lambda(k)  + nuclear_repulsion + reference_energy_superci(i_st)
+        to_print(2) = residual_norm(k)
       enddo
       
-      write(iunit,'(1X,I3,1X,100(1X,F16.10,1X,E16.6))')  iter, to_print(:,1:N_st)
-      call davidson_converged(lambda,residual_norm,wall,iter,cpu,N_st,converged)
+      write(iunit,'(1X,I3,1X,100(1X,F16.10,1X,E16.6))')  iter, to_print(:)
+      call davidson_converged(lambda,residual_norm,wall,iter,cpu,1,converged)
       if (converged) then
         exit
       endif
@@ -494,9 +475,7 @@ subroutine davidson_diag_general_Hjj(u_in,H_jj,energies,dim_in,sze,N_st,N_st_dia
   enddo
 
   write_buffer = '===== '
-  do i=1,N_st
-    write_buffer = trim(write_buffer)//' ================ ================'
-  enddo
+  write_buffer = trim(write_buffer)//' ================ ================'
   write(iunit,'(A)') trim(write_buffer)
   write(iunit,'(A)') ''
   call write_time(iunit)

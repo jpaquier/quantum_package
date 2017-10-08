@@ -33,17 +33,18 @@ BEGIN_PROVIDER [double precision, Fock_mo_core_virt_from_core_inact, (mo_tot_num
 
 END_PROVIDER 
 
- BEGIN_PROVIDER [double precision, Fock_matrix_alpha_ao, (ao_num_align, ao_num)]
-&BEGIN_PROVIDER [double precision, Fock_matrix_beta_ao, (ao_num_align, ao_num)]
+ BEGIN_PROVIDER [double precision, Fock_matrix_alpha_ao, (ao_num_align, ao_num,N_states)]
+&BEGIN_PROVIDER [double precision, Fock_matrix_beta_ao, (ao_num_align, ao_num,N_states)]
  implicit none
- integer                        :: i,j
- double precision :: inv_dsq2
- do j=1,ao_num
-   !DIR$ VECTOR ALIGNED
-   do i=1,ao_num
-     Fock_matrix_alpha_ao(i,j) = ao_mono_elec_integral(i,j) + ao_bi_elec_integral_alpha_core_inact(i,j) + ao_bi_elec_integral_alpha_act(i,j) 
-     Fock_matrix_beta_ao(i,j) = ao_mono_elec_integral(i,j) + ao_bi_elec_integral_beta_core_inact(i,j) + ao_bi_elec_integral_beta_act(i,j)
-   enddo
+ integer                        :: i,j,k
+ do k = 1, N_states
+  do j=1,ao_num
+    !DIR$ VECTOR ALIGNED
+    do i=1,ao_num
+      Fock_matrix_alpha_ao(i,j,k) = ao_mono_elec_integral(i,j) + ao_bi_elec_integral_alpha_core_inact(i,j) + ao_bi_elec_integral_alpha_act(i,j,k) 
+      Fock_matrix_beta_ao(i,j,k) = ao_mono_elec_integral(i,j) + ao_bi_elec_integral_beta_core_inact(i,j) + ao_bi_elec_integral_beta_act(i,j,k)
+    enddo
+  enddo
  enddo
 
 
@@ -51,8 +52,8 @@ END_PROVIDER
 
  BEGIN_PROVIDER [ double precision, ao_bi_elec_integral_alpha_core_inact, (ao_num_align, ao_num) ]
 &BEGIN_PROVIDER [ double precision, ao_bi_elec_integral_beta_core_inact ,  (ao_num_align, ao_num) ]
-&BEGIN_PROVIDER [ double precision, ao_bi_elec_integral_alpha_act,  (ao_num_align, ao_num) ]
-&BEGIN_PROVIDER [ double precision, ao_bi_elec_integral_beta_act,  (ao_num_align, ao_num) ]
+&BEGIN_PROVIDER [ double precision, ao_bi_elec_integral_alpha_act,  (ao_num_align, ao_num,N_states) ]
+&BEGIN_PROVIDER [ double precision, ao_bi_elec_integral_beta_act,  (ao_num_align, ao_num,N_states) ]
 &BEGIN_PROVIDER [ double precision, repulsion_elec_core_core ]
  use map_module
  implicit none
@@ -67,8 +68,8 @@ END_PROVIDER
  double precision               :: ao_bielec_integral, local_threshold
  double precision, allocatable  :: ao_bi_elec_integral_alpha_core_inact_tmp(:,:)
  double precision, allocatable  :: ao_bi_elec_integral_beta_core_inact_tmp(:,:)
- double precision, allocatable  :: ao_bi_elec_integral_alpha_act_tmp(:,:)
- double precision, allocatable  :: ao_bi_elec_integral_beta_act_tmp(:,:)
+ double precision, allocatable  :: ao_bi_elec_integral_alpha_act_tmp(:,:,:)
+ double precision, allocatable  :: ao_bi_elec_integral_beta_act_tmp(:,:,:)
  double precision :: repulsion_elec_core_core_tmp
  print*, 'PROVIDING THE FOCK MATRIX ...'
  !DIR$ ATTRIBUTES ALIGN : $IRP_ALIGN :: ao_bi_elec_integral_beta_core_inact_tmp
@@ -85,16 +86,16 @@ END_PROVIDER
            
    integer(omp_lock_kind) :: lck(ao_num)
    integer*8                      :: i8
-   integer                        :: ii(8), jj(8), kk(8), ll(8), k2
+   integer                        :: ii(8), jj(8), kk(8), ll(8), k2,m
    integer(cache_map_size_kind)   :: n_elements_max, n_elements
    integer(key_kind), allocatable :: keys(:)
    double precision, allocatable  :: values(:)
 
    !$OMP PARALLEL DEFAULT(NONE)                                      &
-   !$OMP PRIVATE(i,j,l,k1,k,integral,ii,jj,kk,ll,i8,keys,values,n_elements_max, &
+   !$OMP PRIVATE(i,j,l,k1,k,integral,ii,jj,kk,ll,i8,keys,values,n_elements_max,m, &
    !$OMP  n_elements,ao_bi_elec_integral_alpha_core_inact_tmp,ao_bi_elec_integral_beta_core_inact_tmp,ao_bi_elec_integral_alpha_act_tmp,ao_bi_elec_integral_beta_act_tmp,repulsion_elec_core_core_tmp)&
    !$OMP SHARED(ao_num,ao_num_align,HF_density_matrix_ao_alpha_core_inact,HF_density_matrix_ao_beta_core_inact,&
-   !$OMP  ao_integrals_map, ao_bi_elec_integral_alpha_core_inact, ao_bi_elec_integral_beta_core_inact, ao_bi_elec_integral_alpha_act, ao_bi_elec_integral_beta_act,density_matrix_ao_act_alpha,density_matrix_ao_act_beta,repulsion_elec_core_core,density_matrix_ao_act) 
+   !$OMP  ao_integrals_map, ao_bi_elec_integral_alpha_core_inact, ao_bi_elec_integral_beta_core_inact, ao_bi_elec_integral_alpha_act, ao_bi_elec_integral_beta_act,density_matrix_ao_act_alpha,density_matrix_ao_act_beta,repulsion_elec_core_core,density_matrix_ao_act,N_states) 
 
    call get_cache_map_n_elements_max(ao_integrals_map,n_elements_max)
    allocate(keys(n_elements_max), values(n_elements_max))
@@ -102,8 +103,8 @@ END_PROVIDER
             ao_bi_elec_integral_beta_core_inact_tmp(ao_num_align,ao_num))
    ao_bi_elec_integral_alpha_core_inact_tmp = 0.d0
    ao_bi_elec_integral_beta_core_inact_tmp  = 0.d0
-   allocate(ao_bi_elec_integral_alpha_act_tmp(ao_num_align,ao_num))
-   allocate(ao_bi_elec_integral_beta_act_tmp(ao_num_align,ao_num))
+   allocate(ao_bi_elec_integral_alpha_act_tmp(ao_num_align,ao_num,N_states))
+   allocate(ao_bi_elec_integral_beta_act_tmp(ao_num_align,ao_num,N_states))
    ao_bi_elec_integral_alpha_act_tmp  = 0.d0
    ao_bi_elec_integral_beta_act_tmp  = 0.d0
    repulsion_elec_core_core_tmp = 0.d0
@@ -133,12 +134,14 @@ END_PROVIDER
          ao_bi_elec_integral_alpha_core_inact_tmp(l,j) -= HF_density_matrix_ao_alpha_core_inact(k,i) * integral
          ao_bi_elec_integral_beta_core_inact_tmp (l,j) -= HF_density_matrix_ao_beta_core_inact (k,i) * integral
 
-         integral = density_matrix_ao_act(k,l) * values(k1)
-         ao_bi_elec_integral_alpha_act_tmp(i,j) += integral
-         ao_bi_elec_integral_beta_act_tmp(i,j) += integral
-         integral = values(k1)
-         ao_bi_elec_integral_alpha_act_tmp(l,j) -= density_matrix_ao_act_alpha(k,i) * integral
-         ao_bi_elec_integral_beta_act_tmp(l,j) -= density_matrix_ao_act_beta(k,i) * integral
+         do m = 1, N_states
+          integral = density_matrix_ao_act(k,l,m) * values(k1)
+          ao_bi_elec_integral_alpha_act_tmp(i,j,m) += integral
+          ao_bi_elec_integral_beta_act_tmp(i,j,m) += integral
+          integral = values(k1)
+          ao_bi_elec_integral_alpha_act_tmp(l,j,m) -= density_matrix_ao_act_alpha(k,i,m) * integral
+          ao_bi_elec_integral_beta_act_tmp(l,j,m) -= density_matrix_ao_act_beta(k,i,m) * integral
+         enddo
        enddo
      enddo
    enddo
@@ -168,25 +171,26 @@ END_PROVIDER
 
 END_PROVIDER
 
- BEGIN_PROVIDER [double precision, Fock_matrix_alpha_from_act_mo_bis, (mo_tot_num, mo_tot_num)]
+ BEGIN_PROVIDER [double precision, Fock_matrix_alpha_from_act_mo_bis, (mo_tot_num, mo_tot_num,N_states)]
  implicit none
- integer :: i,j,k,l,korb,lorb
+ integer :: i,j,k,l,korb,lorb,m
  double precision :: integral,get_mo_bielec_integral
  Fock_matrix_alpha_from_act_mo_bis = 0.d0
- do i = 1, mo_tot_num
-  do j = 1, mo_tot_num
-   do k = 1, n_act_orb
-    korb = list_act(k)
-    do l = 1, n_act_orb
-     lorb = list_act(l)
-     integral = get_mo_bielec_integral(i,korb,j,lorb,mo_integrals_map)
-     Fock_matrix_alpha_from_act_mo_bis(j,i) += integral * density_matrix_mo_act(korb,lorb)
-     integral = get_mo_bielec_integral(i,j,korb,lorb,mo_integrals_map)
-     Fock_matrix_alpha_from_act_mo_bis(j,i) -= integral * density_matrix_mo_act_beta(korb,lorb)
+ do m = 1, N_states
+  do i = 1, mo_tot_num
+   do j = 1, mo_tot_num
+    do k = 1, n_act_orb
+     korb = list_act(k)
+     do l = 1, n_act_orb
+      lorb = list_act(l)
+      integral = get_mo_bielec_integral(i,korb,j,lorb,mo_integrals_map)
+      Fock_matrix_alpha_from_act_mo_bis(j,i,m) += integral * density_matrix_mo_act(korb,lorb,m)
+      integral = get_mo_bielec_integral(i,j,korb,lorb,mo_integrals_map)
+      Fock_matrix_alpha_from_act_mo_bis(j,i,m) -= integral * density_matrix_mo_act_beta(korb,lorb,m)
+     enddo
     enddo
    enddo
   enddo
  enddo
- print*, 'passed '
 
  END_PROVIDER 

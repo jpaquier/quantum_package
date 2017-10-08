@@ -193,17 +193,12 @@ subroutine add_values_to_two_body_dm_map(mask_ijkl)
 
 end
 
- BEGIN_PROVIDER [double precision, two_body_dm_ab_diag_act, (n_act_orb, n_act_orb)]
-&BEGIN_PROVIDER [double precision, two_body_dm_bb_diag_act, (n_act_orb, n_act_orb)]
-&BEGIN_PROVIDER [double precision, two_body_dm_aa_diag_act, (n_act_orb, n_act_orb)]
-&BEGIN_PROVIDER [double precision, two_body_dm_bb_diag_exchange_act, (n_act_orb, n_act_orb)]
-&BEGIN_PROVIDER [double precision, two_body_dm_aa_diag_exchange_act, (n_act_orb, n_act_orb)]
-&BEGIN_PROVIDER [double precision, two_body_dm_ab_diag_inact, (n_inact_orb_allocate, n_inact_orb_allocate)]
+ BEGIN_PROVIDER [double precision, two_body_dm_ab_diag_inact, (n_inact_orb_allocate, n_inact_orb_allocate)]
 &BEGIN_PROVIDER [double precision, two_body_dm_ab_diag_core, (n_core_orb_allocate, n_core_orb_allocate)]
-&BEGIN_PROVIDER [double precision, two_body_dm_ab_diag_all, (mo_tot_num, mo_tot_num)]
-&BEGIN_PROVIDER [double precision, two_body_dm_diag_core_a_act_b, (n_core_orb_allocate,n_act_orb)]
-&BEGIN_PROVIDER [double precision, two_body_dm_diag_core_b_act_a, (n_core_orb_allocate,n_act_orb)]
-&BEGIN_PROVIDER [double precision, two_body_dm_diag_core_act, (n_core_orb_allocate,n_act_orb)]
+&BEGIN_PROVIDER [double precision, two_body_dm_ab_diag_all, (mo_tot_num, mo_tot_num,N_states)]
+&BEGIN_PROVIDER [double precision, two_body_dm_diag_core_a_act_b, (n_core_orb_allocate,n_act_orb,N_states)]
+&BEGIN_PROVIDER [double precision, two_body_dm_diag_core_b_act_a, (n_core_orb_allocate,n_act_orb,N_states)]
+&BEGIN_PROVIDER [double precision, two_body_dm_diag_core_act, (n_core_orb_allocate,n_act_orb,N_states)]
  implicit none
  use bitmasks
  integer :: i,j,k,l,m
@@ -213,7 +208,8 @@ end
  integer                        :: n_occ_ab_act(2)
  integer                        :: occ_core(N_int*bit_kind_size,2)
  integer                        :: n_occ_ab_core(2)
- double precision :: contrib
+ double precision :: contrib(N_states)
+ integer :: i_state
  BEGIN_DOC 
  ! two_body_dm_ab_diag_all(k,m) = <\Psi | n_(k\alpha) n_(m\beta) | \Psi>
  ! two_body_dm_ab_diag_act(k,m) is restricted to the active orbitals : 
@@ -237,69 +233,29 @@ end
  integer(bit_kind) :: key_tmp_act(N_int,2)
 
  two_body_dm_ab_diag_all = 0.d0
- two_body_dm_ab_diag_act = 0.d0
- two_body_dm_aa_diag_act = 0.d0
- two_body_dm_bb_diag_act = 0.d0
- two_body_dm_aa_diag_exchange_act = 0.d0
- two_body_dm_bb_diag_exchange_act = 0.d0
  two_body_dm_ab_diag_core = 0.d0
  two_body_dm_ab_diag_inact = 0.d0
  two_body_dm_diag_core_a_act_b = 0.d0
  two_body_dm_diag_core_b_act_a = 0.d0
  two_body_dm_diag_core_act = 0.d0
+ 
   do i = 1, N_det ! i == |I>
    ! Full diagonal part of the two body dm
-   contrib = psi_coef(i,1)**2
+   do i_state = 1, N_states
+    contrib(i_state) = psi_coef(i,i_state)**2
+   enddo
    call bitstring_to_list_ab(psi_det(1,1,i), occ, n_occ_ab, N_int)
    do j = 1, elec_beta_num  
     k = occ(j,2)
     do l = 1, elec_alpha_num
      m = occ(l,1)
-     two_body_dm_ab_diag_all(k,m) +=  contrib
-     two_body_dm_ab_diag_all(m,k) +=  contrib
-    enddo
-   enddo
-
-   ! ACTIVE PART of the diagonal part of the two body dm
-   do j = 1, N_int
-    key_tmp_act(j,1) = psi_det(j,1,i)
-    key_tmp_act(j,2) = psi_det(j,2,i)
-   enddo
-   do j = 1, N_int
-    key_tmp_act(j,1) = iand(key_tmp_act(j,1),cas_bitmask(j,1,1))
-    key_tmp_act(j,2) = iand(key_tmp_act(j,2),cas_bitmask(j,1,1))
-   enddo
-   call bitstring_to_list_ab(key_tmp_act, occ_act, n_occ_ab_act, N_int)
-   do j = 1,n_occ_ab_act(2)
-    k = list_act_reverse(occ_act(j,2))
-     do l = 1, n_occ_ab_act(1)
-      m = list_act_reverse(occ_act(l,1))
-      two_body_dm_ab_diag_act(k,m) +=  contrib
-      two_body_dm_ab_diag_act(m,k) +=  contrib
+     do i_state = 1, N_states
+      two_body_dm_ab_diag_all(k,m,i_state) +=  contrib(i_state)
+      two_body_dm_ab_diag_all(m,k,i_state) +=  contrib(i_state)
      enddo
-   enddo
-   contrib = contrib * 0.5d0 
-   do j = 1,n_occ_ab_act(2)
-    k = list_act_reverse(occ_act(j,2))
-    do l = 1, n_occ_ab_act(2)
-     m = list_act_reverse(occ_act(l,2))
-     two_body_dm_bb_diag_act(k,m) +=  contrib
-     two_body_dm_bb_diag_act(m,k) +=  contrib
-     two_body_dm_bb_diag_exchange_act(k,m) -=   contrib
-     two_body_dm_bb_diag_exchange_act(m,k) -=   contrib
     enddo
    enddo
 
-   do j = 1,n_occ_ab_act(1)
-    k = list_act_reverse(occ_act(j,1))
-    do l = 1, n_occ_ab_act(1)
-     m = list_act_reverse(occ_act(l,1))
-     two_body_dm_aa_diag_act(k,m) += contrib
-     two_body_dm_aa_diag_act(m,k) += contrib
-     two_body_dm_aa_diag_exchange_act(k,m) -=  contrib
-     two_body_dm_aa_diag_exchange_act(m,k) -=  contrib
-    enddo
-   enddo
 
    ! CORE PART of the diagonal part of the two body dm
    do j = 1, N_int
@@ -315,8 +271,8 @@ end
     k = list_core_reverse(occ_core(j,2))
     do l = 1, n_occ_ab_core(1)
      m = list_core_reverse(occ_core(l,1))
-     two_body_dm_ab_diag_core(k,m) +=  contrib
-     two_body_dm_ab_diag_core(m,k) +=  contrib
+     two_body_dm_ab_diag_core(k,m) +=  contrib(1)
+     two_body_dm_ab_diag_core(m,k) +=  contrib(1)
     enddo
    enddo
 
@@ -330,7 +286,9 @@ end
      ! The fact that you have 1 * contrib and not 0.5 * contrib 
      ! takes into account the following symmetry : 
      ! 0.5 * <n_k n_m> + 0.5 * <n_m n_k>
-     two_body_dm_diag_core_b_act_a(m,k) += contrib 
+     do i_state = 1, N_states
+      two_body_dm_diag_core_b_act_a(m,k,i_state) += contrib(i_state) 
+     enddo
     enddo
    enddo
    ! beta electron in active space 
@@ -342,22 +300,121 @@ end
      ! The fact that you have 1 * contrib and not 0.5 * contrib 
      ! takes into account the following symmetry : 
      ! 0.5 * <n_k n_m> + 0.5 * <n_m n_k>
-     two_body_dm_diag_core_a_act_b(m,k) += contrib 
+     do i_state = 1, N_states
+      two_body_dm_diag_core_a_act_b(m,k,i_state) += contrib(i_state) 
+     enddo
     enddo
    enddo
   enddo
 
+ do i_state = 1, N_states
   do j = 1, n_core_orb 
    do l = 1, n_act_orb
-    two_body_dm_diag_core_act(j,l) = two_body_dm_diag_core_b_act_a(j,l) + two_body_dm_diag_core_a_act_b(j,l)
+    two_body_dm_diag_core_act(j,l,i_state) = two_body_dm_diag_core_b_act_a(j,l,i_state) + two_body_dm_diag_core_a_act_b(j,l,i_state)
    enddo
   enddo
+ enddo
 END_PROVIDER 
 
- BEGIN_PROVIDER [double precision, two_body_dm_ab_big_array_act, (n_act_orb,n_act_orb,n_act_orb,n_act_orb)]
-&BEGIN_PROVIDER [double precision, two_body_dm_aa_big_array_act, (n_act_orb,n_act_orb,n_act_orb,n_act_orb)]
-&BEGIN_PROVIDER [double precision, two_body_dm_bb_big_array_act, (n_act_orb,n_act_orb,n_act_orb,n_act_orb)]
-&BEGIN_PROVIDER [double precision, two_body_dm_ab_big_array_core_act, (n_core_orb_allocate,n_act_orb,n_act_orb)]
+
+ BEGIN_PROVIDER [double precision, two_body_dm_ab_diag_act, (n_act_orb, n_act_orb,N_states)]
+&BEGIN_PROVIDER [double precision, two_body_dm_bb_diag_act, (n_act_orb, n_act_orb,N_states)]
+&BEGIN_PROVIDER [double precision, two_body_dm_aa_diag_act, (n_act_orb, n_act_orb,N_states)]
+&BEGIN_PROVIDER [double precision, two_body_dm_bb_diag_exchange_act, (n_act_orb, n_act_orb,N_states)]
+&BEGIN_PROVIDER [double precision, two_body_dm_aa_diag_exchange_act, (n_act_orb, n_act_orb,N_States)]
+ implicit none
+ use bitmasks
+ integer :: i,j,k,l,m
+ integer                        :: occ(N_int*bit_kind_size,2)
+ integer                        :: n_occ_ab(2)
+ integer                        :: occ_act(N_int*bit_kind_size,2)
+ integer                        :: n_occ_ab_act(2)
+ integer                        :: occ_core(N_int*bit_kind_size,2)
+ integer                        :: n_occ_ab_core(2)
+ double precision :: contrib(N_states)
+ BEGIN_DOC 
+ ! two_body_dm_ab_diag_all(k,m) = <\Psi | n_(k\alpha) n_(m\beta) | \Psi>
+ ! two_body_dm_ab_diag_act(k,m) is restricted to the active orbitals : 
+ ! orbital k = list_act(k)
+ ! two_body_dm_ab_diag_inact(k,m) is restricted to the inactive orbitals : 
+ ! orbital k = list_inact(k)
+ ! two_body_dm_ab_diag_core(k,m) is restricted to the core orbitals : 
+ ! orbital k = list_core(k)
+ ! two_body_dm_ab_diag_core_b_act_a(k,m) represents the core beta <-> active alpha part of the two body dm
+ ! orbital k = list_core(k)
+ ! orbital m = list_act(m)
+ ! two_body_dm_ab_diag_core_a_act_b(k,m) represents the core alpha <-> active beta part of the two body dm
+ ! orbital k = list_core(k)
+ ! orbital m = list_act(m)
+ ! two_body_dm_ab_diag_core_act(k,m) represents the core<->active part of the diagonal two body dm 
+ ! when we traced on the spin 
+ ! orbital k = list_core(k)
+ ! orbital m = list_act(m)
+ END_DOC
+ integer(bit_kind) :: key_tmp_core(N_int,2)
+ integer(bit_kind) :: key_tmp_act(N_int,2)
+
+ two_body_dm_ab_diag_act = 0.d0
+ two_body_dm_aa_diag_act = 0.d0
+ two_body_dm_bb_diag_act = 0.d0
+ two_body_dm_aa_diag_exchange_act = 0.d0
+ two_body_dm_bb_diag_exchange_act = 0.d0
+ 
+  integer :: i_state
+ do i_state = 1, N_states
+  do i = 1, N_det ! i == |I>
+   contrib(i_state) = psi_coef(i,i_state)**2
+   ! ACTIVE PART of the diagonal part of the two body dm
+   do j = 1, N_int
+    key_tmp_act(j,1) = psi_det(j,1,i)
+    key_tmp_act(j,2) = psi_det(j,2,i)
+   enddo
+   do j = 1, N_int
+    key_tmp_act(j,1) = iand(key_tmp_act(j,1),cas_bitmask(j,1,1))
+    key_tmp_act(j,2) = iand(key_tmp_act(j,2),cas_bitmask(j,1,1))
+   enddo
+   call bitstring_to_list_ab(key_tmp_act, occ_act, n_occ_ab_act, N_int)
+   do j = 1,n_occ_ab_act(2)
+    k = list_act_reverse(occ_act(j,2))
+     do l = 1, n_occ_ab_act(1)
+      m = list_act_reverse(occ_act(l,1))
+      two_body_dm_ab_diag_act(k,m,i_state) +=  contrib(i_state)
+      two_body_dm_ab_diag_act(m,k,i_state) +=  contrib(i_state)
+     enddo
+   enddo
+   contrib = contrib * 0.5d0 
+   do j = 1,n_occ_ab_act(2)
+    k = list_act_reverse(occ_act(j,2))
+    do l = 1, n_occ_ab_act(2)
+     m = list_act_reverse(occ_act(l,2))
+     two_body_dm_bb_diag_act(k,m,i_state) +=  contrib(i_state)
+     two_body_dm_bb_diag_act(m,k,i_state) +=  contrib(i_state)
+     two_body_dm_bb_diag_exchange_act(k,m,i_state) -=   contrib(i_state)
+     two_body_dm_bb_diag_exchange_act(m,k,i_state) -=   contrib(i_state)
+    enddo
+   enddo
+
+   do j = 1,n_occ_ab_act(1)
+    k = list_act_reverse(occ_act(j,1))
+    do l = 1, n_occ_ab_act(1)
+     m = list_act_reverse(occ_act(l,1))
+     two_body_dm_aa_diag_act(k,m,i_state) += contrib(i_state)
+     two_body_dm_aa_diag_act(m,k,i_state) += contrib(i_state)
+     two_body_dm_aa_diag_exchange_act(k,m,i_state) -=  contrib(i_state)
+     two_body_dm_aa_diag_exchange_act(m,k,i_state) -=  contrib(i_state)
+    enddo
+   enddo
+
+  enddo
+
+ enddo
+END_PROVIDER 
+
+
+ BEGIN_PROVIDER [double precision, two_body_dm_ab_big_array_act, (n_act_orb,n_act_orb,n_act_orb,n_act_orb,N_states)]
+&BEGIN_PROVIDER [double precision, two_body_dm_aa_big_array_act, (n_act_orb,n_act_orb,n_act_orb,n_act_orb,N_states)]
+&BEGIN_PROVIDER [double precision, two_body_dm_bb_big_array_act, (n_act_orb,n_act_orb,n_act_orb,n_act_orb,N_states)]
+&BEGIN_PROVIDER [double precision, two_body_dm_ab_big_array_core_act, (n_core_orb_allocate,n_act_orb,n_act_orb,N_states)]
  implicit none
  use bitmasks
  integer :: i,j,k,l,m
@@ -366,7 +423,7 @@ END_PROVIDER
  integer                        :: exc(0:2,2,2)
  integer                        :: h1,h2,p1,p2,s1,s2
  double precision               :: phase
- double precision               :: contrib
+ double precision               :: contrib(N_states)
  integer                        :: occ(N_int*bit_kind_size,2)
  integer                        :: n_occ_ab(2)
  integer                        :: occ_core(N_int*bit_kind_size,2)
@@ -378,6 +435,7 @@ END_PROVIDER
  two_body_dm_ab_big_array_core_act = 0.d0
  two_body_dm_aa_big_array_act = 0.d0
  two_body_dm_bb_big_array_act = 0.d0
+ integer :: i_state
  BEGIN_DOC
 ! two_body_dm_ab_big_array_act = Purely active part of the two body density matrix 
 ! two_body_dm_ab_big_array_act_core takes only into account the single excitation 
@@ -426,7 +484,9 @@ END_PROVIDER
    ! if it is the case, then compute the hamiltonian matrix element with the proper phase 
    call get_excitation(psi_det(1,1,i),psi_det(1,1,j),exc,degree,phase,N_int)
    call decode_exc(exc,degree,h1,p1,h2,p2,s1,s2)
-   contrib =  psi_coef(i,1) * psi_coef(j,1) * phase
+   do i_state = 1, N_states
+    contrib(i_state) =  psi_coef(i,i_state) * psi_coef(j,i_state) * phase
+   enddo
    if(degree==2)then  ! case of the DOUBLE EXCITATIONS  ************************************
      h1 = list_act_reverse(h1)
      h2 = list_act_reverse(h2)
@@ -469,8 +529,10 @@ END_PROVIDER
      do k = 1, n_occ_ab_core(2)
       m = list_core_reverse(occ_core(k,2))
       ! <J| a^{\dagger}_{p1 \alpha} \hat{n}_{m \beta} a_{h1 \alpha} |I> * c_I * c_J
-      two_body_dm_ab_big_array_core_act(m,h1,p1) +=  contrib 
-      two_body_dm_ab_big_array_core_act(m,p1,h1) +=  contrib 
+      do i_state = 1, N_states
+       two_body_dm_ab_big_array_core_act(m,h1,p1,i_state) +=  contrib(i_state)
+       two_body_dm_ab_big_array_core_act(m,p1,h1,i_state) +=  contrib(i_state)
+      enddo
      enddo
     else  ! Mono Beta : 
      ! purely active part of the extra diagonal two body dm 
@@ -491,8 +553,10 @@ END_PROVIDER
      do k = 1, n_occ_ab_core(1)
       m = list_core_reverse(occ_core(k,1))
       ! <J| a^{\dagger}_{p1 \alpha} \hat{n}_{m \beta} a_{h1 \alpha} |I> * c_I * c_J
-      two_body_dm_ab_big_array_core_act(m,h1,p1) +=  contrib 
-      two_body_dm_ab_big_array_core_act(m,p1,h1) +=  contrib 
+      do i_state = 1, N_states
+       two_body_dm_ab_big_array_core_act(m,h1,p1,i_state) +=  contrib(i_state)
+       two_body_dm_ab_big_array_core_act(m,p1,h1,i_state) +=  contrib(i_state) 
+      enddo
      enddo
     endif
 
@@ -507,14 +571,17 @@ subroutine insert_into_two_body_dm_big_array(big_array,dim1,dim2,dim3,dim4,contr
  implicit none
  integer, intent(in) :: h1,p1,h2,p2
  integer, intent(in) :: dim1,dim2,dim3,dim4
- double precision, intent(inout) :: big_array(dim1,dim2,dim3,dim4)
- double precision :: contrib
- ! Two spin symmetry
- big_array(h1,p1,h2,p2) +=  contrib  
- big_array(h2,p2,h1,p1) +=  contrib  
- ! Hermicity : hole-particle symmetry
- big_array(p1,h1,p2,h2) +=  contrib  
- big_array(p2,h2,p1,h1) +=  contrib  
+ double precision, intent(inout) :: big_array(dim1,dim2,dim3,dim4,N_states)
+ double precision :: contrib(N_states)
+ integer :: i_state
+ do i_state = 1, N_states
+  ! Two spin symmetry
+  big_array(h1,p1,h2,p2,i_state) +=  contrib(i_state)
+  big_array(h2,p2,h1,p1,i_state) +=  contrib(i_state) 
+  ! Hermicity : hole-particle symmetry
+  big_array(p1,h1,p2,h2,i_state) +=  contrib(i_state)
+  big_array(p2,h2,p1,h1,i_state) +=  contrib(i_state) 
+ enddo
 
  
 end

@@ -2,7 +2,7 @@
 &BEGIN_PROVIDER [ double precision, one_body_dm_mo_beta_average, (mo_tot_num_align,mo_tot_num) ]
    implicit none
    BEGIN_DOC
-   ! Alpha and beta one-body density matrix for each state
+   ! Alpha and beta one-body density matrix averaged by all sates
    END_DOC
 
    integer                        :: i

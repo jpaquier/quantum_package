@@ -1,5 +1,6 @@
-subroutine create_good_guess(u,e)
+subroutine create_good_guess(u,e,i_st)
  implicit none
+ integer, intent(in)  :: i_st
  double precision, intent(out) :: u(size_super_ci),e
  integer :: i,j
  double precision :: coef_pert,i_H_SCI_j
@@ -16,7 +17,7 @@ subroutine create_good_guess(u,e)
   iorb = list_core_inact(ihole)
   jpart = index_rotation_CI_reverse(i,2)
   jorb = list_virt(jpart)
-  coef_pert = dabs(dsqrt_2 * Fock_matrix_alpha_beta_average_mo(iorb,jorb) / diagonal_superci_matrix(i))
+  coef_pert = dabs(dsqrt_2 * Fock_matrix_alpha_beta_spin_average_mo(iorb,jorb,i_st) / diagonal_superci_matrix(i,i_st))
 ! if(diagonal_superci_matrix(i).lt.0.d0.or.coef_pert.gt.0.3d0.and.n_good.lt.10000)then
   if(coef_pert.gt.0.003d0.and.n_good.lt.10000)then
    n_good += 1 
@@ -28,11 +29,7 @@ subroutine create_good_guess(u,e)
  allocate(matrix(n_good,n_good),eigenvectors(n_good,n_good),eigenvalues(n_good))
  do i = 1, n_good
   do j = 1, n_good
-   matrix(i,j) = i_H_SCI_j(list_good(i),list_good(j))
-   if(dabs(matrix(i,j) - superci_matrix(list_good(i),list_good(j))).gt.1.d-10)then
-    print*, i,j
-    print*,matrix(i,j),superci_matrix(list_good(i),list_good(j))
-   endif
+   matrix(i,j) = i_H_SCI_j(list_good(i),list_good(j),i_st)
   enddo
  enddo
 
