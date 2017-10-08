@@ -102,18 +102,6 @@ BEGIN_PROVIDER [double precision, diagonal_superci_matrix, (size_super_ci,N_stat
 END_PROVIDER 
 
 
-BEGIN_PROVIDER [double precision, diagonal_superci_matrix_state_average, (size_super_ci)]
- implicit none
- integer :: i
- diagonal_superci_matrix_state_average = 0.d0
- do i = 1, N_states
-  diagonal_superci_matrix_state_average(:) += diagonal_superci_matrix(:,i) * state_average_weight(i)
- enddo
-END_PROVIDER 
-
-
-
-
 
 BEGIN_PROVIDER [double precision, superci_matrix, (size_super_ci,size_super_ci,N_states)]
  implicit none
@@ -239,18 +227,9 @@ BEGIN_PROVIDER [double precision, superci_matrix, (size_super_ci,size_super_ci,N
 
 END_PROVIDER 
 
-BEGIN_PROVIDER [double precision, superci_matrix_state_average, (size_super_ci, size_super_ci)]
- implicit none
- integer :: i
- superci_matrix_state_average = 0.d0
- do i = 1, N
-  superci_matrix_state_average(:,:) += superci_matrix(:,:,i) * state_average_weight(i) 
- enddo
-END_PROVIDER 
 
-
- BEGIN_PROVIDER [double precision, eigenvectors_sci_state_specific, (size_super_ci,N_states)]
-&BEGIN_PROVIDER [double precision, eigenvalues_sci_state_specific, (N_states)]
+ BEGIN_PROVIDER [double precision, eigenvectors_sci, (size_super_ci,N_states)]
+&BEGIN_PROVIDER [double precision, eigenvalues_sci, (N_states)]
  implicit none
  integer :: i,j,iter,m
  double precision :: e_guess
@@ -270,9 +249,9 @@ END_PROVIDER
     print*, 'DIAGONALIZING THE SUPER CI MATRIX FOR STATE ',m
     matrix_tmp(:,:) = superci_matrix(:,:,m)
     call lapack_diag(eigenvalues,eigenvectors,matrix_tmp,size_super_ci,size_super_ci)
-    eigenvectors_sci_state_specific(:,m) = eigenvectors(:,1)
-    eigenvalues_sci_state_specific(m) = eigenvalues(1)
-    print*, 'SCI eigenvalue = ',eigenvalues_sci_state_specific(m)
+    eigenvectors_sci(:,m) = eigenvectors(:,1)
+    eigenvalues_sci(m) = eigenvalues(1)
+    print*, 'SCI eigenvalue = ',eigenvalues_sci(m)
   
 !!!!!!!!!!!!! SC2 loop 
     logical :: do_sc2
@@ -300,17 +279,17 @@ END_PROVIDER
     if (do_sc2)then
      print*, 'DOING a few SC2 iterations ...'
      double precision :: e_before
-     e_before = eigenvalues_sci_state_specific(m)
+     e_before = eigenvalues_sci(m)
      do iter = 1, 5
-      call give_superci_sc2_dressing(delta_H_array,eigenvectors_sci_state_specific(1,m),m)
+      call give_superci_sc2_dressing(delta_H_array,eigenvectors_sci(1,m),m)
       do i = 1, size_super_ci
         matrix_tmp(i,i) = diagonal_superci_matrix(i,m) + delta_H_array(i)  
       enddo
       call lapack_diag(eigenvalues,eigenvectors,matrix_tmp,size_super_ci,size_super_ci)
-      eigenvectors_sci_state_specific(:,m) = eigenvectors(:,1)
-      eigenvalues_sci_state_specific(m) = eigenvalues(1)
-      print*, 'SCI(SC)2 energy= ',eigenvalues_sci_state_specific(m)
-      if(dabs(eigenvalues_sci_state_specific(m) - e_before).lt.1.d-5)then
+      eigenvectors_sci(:,m) = eigenvectors(:,1)
+      eigenvalues_sci(m) = eigenvalues(1)
+      print*, 'SCI(SC)2 energy= ',eigenvalues_sci(m)
+      if(dabs(eigenvalues_sci(m) - e_before).lt.1.d-5)then
        exit
       endif 
      enddo
@@ -323,93 +302,14 @@ END_PROVIDER
   do m = 1, N_states
     call create_good_guess(grd_st_eigenvec,e_guess,m)
     call davidson_diag_general_state_specific(grd_st_eigenvec,e_guess,size_super_ci,size_super_ci,m,1,N_int,output_determinants)
-    eigenvectors_sci_state_specific(:,m) = grd_st_eigenvec(:)
-    eigenvalues_sci_state_specific(m) = e_guess
+    eigenvectors_sci(:,m) = grd_st_eigenvec(:)
+    eigenvalues_sci(m) = e_guess
   enddo
   deallocate(grd_st_eigenvec)
  endif
+ 
  deallocate(delta_H_array)
 END_PROVIDER 
-
-
-
- BEGIN_PROVIDER [double precision, eigenvectors_sci_state_average, (size_super_ci)]
-&BEGIN_PROVIDER [double precision, eigenvalues_sci_state_average]
- implicit none
- integer :: i,j,iter
- double precision :: e_guess
- double precision, allocatable :: grd_st_eigenvec(:),eigenvectors(:,:),eigenvalues(:),matrix_tmp(:,:)
- double precision :: u_dot_v
- double precision, allocatable :: delta_H_array(:)
- allocate(delta_H_array(size_super_ci))
-
- if(size_super_ci.le.n_det_max_jacobi)then
-  allocate(eigenvectors(size_super_ci,size_super_ci),eigenvalues(size_super_ci),matrix_tmp(size_super_ci,size_super_ci))
-  allocate(vec_tmp(size_super_ci),iorder(size_super_ci))
-    print*, ''
-    print*, '\\\\\\\\\\\\\\\\\ SUPERCI DIAGONALIZATION /////////////////'
-    print*, ''
-    matrix_tmp(:,:) = superci_matrix_state_average(:,:)
-    call lapack_diag(eigenvalues,eigenvectors,matrix_tmp,size_super_ci,size_super_ci)
-    eigenvectors_sci_state_average(:) = eigenvectors(:,1)
-    eigenvalues_sci_state_average = eigenvalues(1)
-    print*, 'SCI eigenvalue = ',eigenvalues_sci_state_average
-  
-!!!!!!!!!!!!! SC2 loop 
-    logical :: do_sc2
-    do_sc2 = .True.
-    double precision :: amplitude_max
-    integer :: imax
-    integer, allocatable :: iorder(:)
-    double precision, allocatable :: vec_tmp(:)
-    print*, '***'
-    do i = 1, size_super_ci
-     vec_tmp(i) = -dabs(eigenvectors(i,1)/eigenvectors(1,1))
-     iorder(i) = i
-    enddo
-    call dsort(vec_tmp,iorder,size_super_ci)
-    write(*,'(A20,2X,F10.5)')'Largest amplitude = ',vec_tmp(2)
-    if(iorder(1).ne.1)then
-     do_sc2 = .False.
-    endif
-    if(dabs(vec_tmp(2)).gt.0.4d0)then
-     do_sc2 = .False.
-    endif
-    if (.not. do_sc2)then
-     print*, 'THE SUPERCI WAVE FUNCTION IS TOO MULTI-REFERENCE TO DO SC2 ...'
-    endif
-    if (do_sc2)then
-     print*, 'DOING a few SC2 iterations ...'
-     double precision :: e_before
-     e_before = eigenvalues_sci_state_average(m)
-     do iter = 1, 5
-      call give_superci_sc2_dressing_state_average(delta_H_array,eigenvectors_sci_state_average)
-      do i = 1, size_super_ci
-        matrix_tmp(i,i) = diagonal_superci_matrix_state_average(i) + delta_H_array(i)  
-      enddo
-      call lapack_diag(eigenvalues,eigenvectors,matrix_tmp,size_super_ci,size_super_ci)
-      eigenvectors_sci_state_average(:) = eigenvectors(:,1)
-      eigenvalues_sci_state_average = eigenvalues(1)
-      print*, 'SCI(SC)2 energy= ',eigenvalues_sci_state_average
-      if(dabs(eigenvalues_sci_state_average - e_before).lt.1.d-5)then
-       exit
-      endif 
-     enddo
-    endif
-
-!!!!!!!!!!!!!  
- else 
-  allocate(grd_st_eigenvec(size_super_ci))
-   call create_good_guess_state_average(grd_st_eigenvec,e_guess)
-   call davidson_diag_general_state_average(grd_st_eigenvec,e_guess,size_super_ci,size_super_ci,1,N_int,output_determinants)
-   eigenvectors_sci_state_average(:) = grd_st_eigenvec(:)
-   eigenvalues_sci_state_average = e_guess
-  deallocate(grd_st_eigenvec)
- endif
- deallocate(delta_H_array)
-END_PROVIDER 
-
-
 
 subroutine give_superci_sc2_dressing(delta_H_array,eigenvector,i_state)
  implicit none
@@ -440,6 +340,110 @@ subroutine give_superci_sc2_dressing(delta_H_array,eigenvector,i_state)
  enddo
 end 
 
+
+BEGIN_PROVIDER [double precision, diagonal_superci_matrix_state_average, (size_super_ci)]
+ implicit none
+ integer :: i
+ diagonal_superci_matrix_state_average = 0.d0
+ do i = 1, N_states
+  diagonal_superci_matrix_state_average(:) += diagonal_superci_matrix(:,i) * state_average_weight(i)
+ enddo
+
+END_PROVIDER 
+
+BEGIN_PROVIDER [double precision, superci_matrix_state_average, (size_super_ci,size_super_ci)]
+ implicit none
+ integer :: i
+ do i = 1, N_states
+   superci_matrix_state_average(:,:) += superci_matrix(:,:,i)  * state_average_weight(i)
+ enddo
+END_PROVIDER 
+
+
+ BEGIN_PROVIDER [double precision, eigenvectors_sci_state_average, (size_super_ci)]
+&BEGIN_PROVIDER [double precision, eigenvalues_sci_state_average]
+ implicit none
+ integer :: i,j,iter
+ double precision :: e_guess
+ double precision, allocatable :: grd_st_eigenvec(:),eigenvectors(:,:),eigenvalues(:),matrix_tmp(:,:)
+ double precision :: u_dot_v
+ double precision, allocatable :: delta_H_array(:)
+ allocate(delta_H_array(size_super_ci))
+
+ if(size_super_ci.le.n_det_max_jacobi)then
+  allocate(eigenvectors(size_super_ci,size_super_ci),eigenvalues(size_super_ci),matrix_tmp(size_super_ci,size_super_ci))
+  allocate(vec_tmp(size_super_ci),iorder(size_super_ci))
+    print*, ''
+    print*, '\\\\\\\\\\\\\\\\\ SUPERCI DIAGONALIZATION /////////////////'
+    print*, ''
+    print*, ''
+    matrix_tmp(:,:) = superci_matrix_state_average(:,:)
+    call lapack_diag(eigenvalues,eigenvectors,matrix_tmp,size_super_ci,size_super_ci)
+    eigenvectors_sci_state_average(:) = eigenvectors(:,1)
+    eigenvalues_sci_state_average = eigenvalues(1)
+    print*, 'SCI eigenvalue = ',eigenvalues_sci_state_average
+      do i = 1, size_super_ci
+        write(*, '(100(F16.10,X))')matrix_tmp(i,:)
+      enddo
+  
+!!!!!!!!!!!!! SC2 loop 
+    logical :: do_sc2
+    do_sc2 = .True.
+    double precision :: amplitude_max
+    integer :: imax
+    integer, allocatable :: iorder(:)
+    double precision, allocatable :: vec_tmp(:)
+    print*, '***'
+    do i = 1, size_super_ci
+     vec_tmp(i) = -dabs(eigenvectors(i,1)/eigenvectors(1,1))
+     iorder(i) = i
+    enddo
+    call dsort(vec_tmp,iorder,size_super_ci)
+    write(*,'(A20,2X,F10.5)')'Largest amplitude = ',vec_tmp(2)
+    if(iorder(1).ne.1)then
+     do_sc2 = .False.
+    endif
+    if(dabs(vec_tmp(2)).gt.0.4d0)then
+     do_sc2 = .False.
+    endif
+    if (.not. do_sc2)then
+     print*, 'THE SUPERCI WAVE FUNCTION IS TOO MULTI-REFERENCE TO DO SC2 ...'
+    endif
+    if (do_sc2)then
+     print*, 'DOING a few SC2 iterations ...'
+     double precision :: e_before
+     e_before = eigenvalues_sci_state_average
+     do iter = 1, 5
+      call give_superci_sc2_dressing_state_average(delta_H_array,eigenvectors_sci_state_average)
+      do i = 1, size_super_ci
+        print*, diagonal_superci_matrix_state_average(i), delta_H_array(i),eigenvectors_sci_state_average(i)
+        matrix_tmp(i,i) = diagonal_superci_matrix_state_average(i) + delta_H_array(i)  
+      enddo
+      do i = 1, size_super_ci
+        write(*, '(100(F16.10,X))')matrix_tmp(i,:)
+      enddo
+      call lapack_diag(eigenvalues,eigenvectors,matrix_tmp,size_super_ci,size_super_ci)
+      eigenvectors_sci_state_average(:) = eigenvectors(:,1)
+      eigenvalues_sci_state_average = eigenvalues(1)
+      print*, 'SCI(SC)2 energy= ',eigenvalues_sci_state_average
+      if(dabs(eigenvalues_sci_state_average - e_before).lt.1.d-5)then
+       exit
+      endif 
+     enddo
+    endif
+!!!!!!!!!!!!!  
+ else 
+  allocate(grd_st_eigenvec(size_super_ci))
+    call create_good_guess_state_average(grd_st_eigenvec,e_guess)
+    call davidson_diag_general_state_average(grd_st_eigenvec,e_guess,size_super_ci,size_super_ci,1,N_int,output_determinants)
+    eigenvectors_sci_state_average(:) = grd_st_eigenvec(:)
+    eigenvalues_sci_state_average = e_guess
+  deallocate(grd_st_eigenvec)
+ endif
+ 
+ deallocate(delta_H_array)
+END_PROVIDER 
+
 subroutine give_superci_sc2_dressing_state_average(delta_H_array,eigenvector)
  implicit none
  double precision, intent(in)  :: eigenvector(size_super_ci)
@@ -454,6 +458,7 @@ subroutine give_superci_sc2_dressing_state_average(delta_H_array,eigenvector)
   iorb = index_rotation_CI_reverse(i,1)
   aorb = index_rotation_CI_reverse(i,2)
   coef_i = eigenvector(i) * inv_c0
+  print*, Fock_matrix_spin_and_state_average_mo(list_core_inact(iorb),list_virt(aorb))
   do b = 1, n_virt_orb
    if(b== aorb)cycle
    borb = list_virt(b)
@@ -462,6 +467,7 @@ subroutine give_superci_sc2_dressing_state_average(delta_H_array,eigenvector)
     jorb = list_core_inact(j)
     index_cj = index_rotation_CI(j,b)
     delta_H_array(i) += dsqrt_2 * Fock_matrix_spin_and_state_average_mo(jorb,borb) * eigenvector(index_cj)*inv_c0
+!   delta_H_array(1) += eigenvector(index_cj)*inv_c0 * eigenvector(i) * inv_c0 * transformed_occ1_virt1_occ2_virt2(j,b,iorb,aorb)
    enddo
   enddo
  enddo

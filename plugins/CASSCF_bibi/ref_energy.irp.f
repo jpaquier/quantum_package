@@ -209,11 +209,12 @@ implicit none
 
 END_PROVIDER 
 
+
 BEGIN_PROVIDER [double precision, reference_energy_superci_state_average]
  implicit none
+ integer :: m
  reference_energy_superci_state_average = 0.d0
  do m = 1, N_states
-  reference_energy_superci_state_average += reference_energy_superci(i) * state_average_weight(i)
+  reference_energy_superci_state_average += reference_energy_superci(m) * state_average_weight(m)
  enddo
-
 END_PROVIDER 

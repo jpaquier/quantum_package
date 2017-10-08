@@ -48,7 +48,6 @@ end
 
 subroutine create_good_guess_state_average(u,e)
  implicit none
- integer, intent(in)  :: i_st
  double precision, intent(out) :: u(size_super_ci),e
  integer :: i,j
  double precision :: coef_pert,i_H_SCI_j_state_average
@@ -65,7 +64,7 @@ subroutine create_good_guess_state_average(u,e)
   iorb = list_core_inact(ihole)
   jpart = index_rotation_CI_reverse(i,2)
   jorb = list_virt(jpart)
-  coef_pert = dabs(dsqrt_2 * Fock_matrix_alpha_beta_spin_average_mo(iorb,jorb) / diagonal_superci_matrix_state_average(i))
+  coef_pert = dabs(dsqrt_2 * Fock_matrix_spin_and_state_average_mo(iorb,jorb) / diagonal_superci_matrix_state_average(i))
 ! if(diagonal_superci_matrix(i).lt.0.d0.or.coef_pert.gt.0.3d0.and.n_good.lt.10000)then
   if(coef_pert.gt.0.003d0.and.n_good.lt.10000)then
    n_good += 1 

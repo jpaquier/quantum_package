@@ -78,7 +78,7 @@ double precision function i_H_SCI_j_state_average(i,j)
  i_H_SCI_j_state_average = 0.d0
 
  if(i==j)then
-  i_H_SCI_j_state_average = diagonal_superci_matrix(i,i_st)
+  i_H_SCI_j_state_average = diagonal_superci_matrix_state_average(i)
   return
  endif
 
@@ -605,7 +605,7 @@ subroutine apply_H_superci_state_average_to_vector(u0,u1)
     ! Diagonal and Brillouin matrix elements 
     u1(1) += u0(index_i) * dsqrt_2 * Fock_matrix_spin_and_state_average_mo(iorb,jorb)
     u1(index_i) += u0(1) * dsqrt_2 * Fock_matrix_spin_and_state_average_mo(iorb,jorb)
-    u1(index_i) += u0(index_i) * diagonal_superci_matrix(index_i,i_st)
+    u1(index_i) += u0(index_i) * diagonal_superci_matrix_state_average(index_i)
     ! Interaction through the virt-virt Fock operator
     do k = j+1, n_virt_orb
      korb = list_virt(k)
@@ -638,7 +638,7 @@ subroutine apply_H_superci_state_average_to_vector(u0,u1)
     ! Diagonal and Brillouin matrix elements 
     u1(1) += u0(index_i) * dsqrt_2 * Fock_matrix_spin_and_state_average_mo(iorb,jorb)
     u1(index_i) += u0(1) * dsqrt_2 * Fock_matrix_spin_and_state_average_mo(iorb,jorb)
-    u1(index_i) += u0(index_i) * diagonal_superci_matrix(index_i,i_st)
+    u1(index_i) += u0(index_i) * diagonal_superci_matrix_state_average(index_i)
     ! Interaction through the virt-virt Fock operator
     do k = j+1, n_virt_orb
      korb = list_virt(k)

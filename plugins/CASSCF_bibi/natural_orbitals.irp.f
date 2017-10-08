@@ -14,10 +14,10 @@ BEGIN_PROVIDER [double precision, super_ci_state_specific_density_matrix_mo, (mo
      jorb = list_virt(j)
      index_ci = index_rotation_CI(i,j)
     ! DIAGONAL PART OF THE OCCUPIED 
-     super_ci_state_specific_density_matrix_mo(iorb,iorb,m) -= eigenvectors_sci_state_specific(index_ci,m) **2 
+     super_ci_state_specific_density_matrix_mo(iorb,iorb,m) -= eigenvectors_sci(index_ci,m) **2 
     ! OCC-VIRT PART
-     super_ci_state_specific_density_matrix_mo(iorb,jorb,m) += eigenvectors_sci_state_specific(1,m) * eigenvectors_sci_state_specific(index_ci,m) * dsqrt_2
-     super_ci_state_specific_density_matrix_mo(jorb,iorb,m) += eigenvectors_sci_state_specific(1,m) * eigenvectors_sci_state_specific(index_ci,m) * dsqrt_2
+     super_ci_state_specific_density_matrix_mo(iorb,jorb,m) += eigenvectors_sci(1,m) * eigenvectors_sci(index_ci,m) * dsqrt_2
+     super_ci_state_specific_density_matrix_mo(jorb,iorb,m) += eigenvectors_sci(1,m) * eigenvectors_sci(index_ci,m) * dsqrt_2
     enddo
    enddo
   
@@ -26,7 +26,7 @@ BEGIN_PROVIDER [double precision, super_ci_state_specific_density_matrix_mo, (mo
     iorb = list_virt(i)
     do j = 1, n_core_inact_orb
      index_ci = index_rotation_CI(j,i)
-     super_ci_state_specific_density_matrix_mo(iorb,iorb,m) += eigenvectors_sci_state_specific(index_ci,m) **2
+     super_ci_state_specific_density_matrix_mo(iorb,iorb,m) += eigenvectors_sci(index_ci,m) **2
     enddo
    enddo
   
@@ -38,8 +38,8 @@ BEGIN_PROVIDER [double precision, super_ci_state_specific_density_matrix_mo, (mo
      do k = 1, n_virt_orb
       index_ci = index_rotation_CI(i,k)
       index_cj = index_rotation_CI(j,k)
-      super_ci_state_specific_density_matrix_mo(iorb,jorb,m) -= eigenvectors_sci_state_specific(index_ci,m) * eigenvectors_sci_state_specific(index_cj,m)
-      super_ci_state_specific_density_matrix_mo(jorb,iorb,m) -= eigenvectors_sci_state_specific(index_ci,m) * eigenvectors_sci_state_specific(index_cj,m)
+      super_ci_state_specific_density_matrix_mo(iorb,jorb,m) -= eigenvectors_sci(index_ci,m) * eigenvectors_sci(index_cj,m)
+      super_ci_state_specific_density_matrix_mo(jorb,iorb,m) -= eigenvectors_sci(index_ci,m) * eigenvectors_sci(index_cj,m)
      enddo
     enddo
    enddo
@@ -52,8 +52,8 @@ BEGIN_PROVIDER [double precision, super_ci_state_specific_density_matrix_mo, (mo
      do k = 1, n_core_inact_orb
       index_ci = index_rotation_CI(k,i)
       index_cj = index_rotation_CI(k,j)
-      super_ci_state_specific_density_matrix_mo(iorb,jorb,m) += eigenvectors_sci_state_specific(index_ci,m) * eigenvectors_sci_state_specific(index_cj,m)
-      super_ci_state_specific_density_matrix_mo(jorb,iorb,m) += eigenvectors_sci_state_specific(index_ci,m) * eigenvectors_sci_state_specific(index_cj,m)
+      super_ci_state_specific_density_matrix_mo(iorb,jorb,m) += eigenvectors_sci(index_ci,m) * eigenvectors_sci(index_cj,m)
+      super_ci_state_specific_density_matrix_mo(jorb,iorb,m) += eigenvectors_sci(index_ci,m) * eigenvectors_sci(index_cj,m)
      enddo
     enddo 
    enddo
@@ -77,10 +77,14 @@ BEGIN_PROVIDER [double precision, averaged_super_ci_state_specific_density_matri
   integer                        :: i
   double precision :: n_elec_states(N_states)
   double precision :: n_elec_average
-  integer :: j
+  integer :: j,k
   averaged_super_ci_state_specific_density_matrix_mo = 0.d0
   do i = 1, N_states
-   averaged_super_ci_state_specific_density_matrix_mo += super_ci_density_matrix_mo(:,:,i) * state_average_weight(i)
+   do j = 1, mo_tot_num
+    do k = 1, mo_tot_num
+     averaged_super_ci_state_specific_density_matrix_mo(k,j) += super_ci_state_specific_density_matrix_mo(k,j,i) * state_average_weight(i)
+    enddo
+   enddo
   enddo
   n_elec_states = 0.d0
   n_elec_average = 0.d0
@@ -117,10 +121,10 @@ BEGIN_PROVIDER [double precision, super_ci_state_average_density_matrix_mo, (mo_
      jorb = list_virt(j)
      index_ci = index_rotation_CI(i,j)
     ! DIAGONAL PART OF THE OCCUPIED 
-     super_ci_state_average_density_matrix_mo(iorb,iorb) -= eigenvectors_sci_state_specific(index_ci) **2 
+     super_ci_state_average_density_matrix_mo(iorb,iorb) -= eigenvectors_sci_state_average(index_ci) **2 
     ! OCC-VIRT PART
-     super_ci_state_average_density_matrix_mo(iorb,jorb) += eigenvectors_sci_state_specific(1) * eigenvectors_sci_state_specific(index_ci) * dsqrt_2
-     super_ci_state_average_density_matrix_mo(jorb,iorb) += eigenvectors_sci_state_specific(1) * eigenvectors_sci_state_specific(index_ci) * dsqrt_2
+     super_ci_state_average_density_matrix_mo(iorb,jorb) += eigenvectors_sci_state_average(1) * eigenvectors_sci_state_average(index_ci) * dsqrt_2
+     super_ci_state_average_density_matrix_mo(jorb,iorb) += eigenvectors_sci_state_average(1) * eigenvectors_sci_state_average(index_ci) * dsqrt_2
     enddo
    enddo
   
@@ -129,7 +133,7 @@ BEGIN_PROVIDER [double precision, super_ci_state_average_density_matrix_mo, (mo_
     iorb = list_virt(i)
     do j = 1, n_core_inact_orb
      index_ci = index_rotation_CI(j,i)
-     super_ci_state_average_density_matrix_mo(iorb,iorb) += eigenvectors_sci_state_specific(index_ci) **2
+     super_ci_state_average_density_matrix_mo(iorb,iorb) += eigenvectors_sci_state_average(index_ci) **2
     enddo
    enddo
   
@@ -141,8 +145,8 @@ BEGIN_PROVIDER [double precision, super_ci_state_average_density_matrix_mo, (mo_
      do k = 1, n_virt_orb
       index_ci = index_rotation_CI(i,k)
       index_cj = index_rotation_CI(j,k)
-      super_ci_state_average_density_matrix_mo(iorb,jorb) -= eigenvectors_sci_state_specific(index_ci) * eigenvectors_sci_state_specific(index_cj)
-      super_ci_state_average_density_matrix_mo(jorb,iorb) -= eigenvectors_sci_state_specific(index_ci) * eigenvectors_sci_state_specific(index_cj)
+      super_ci_state_average_density_matrix_mo(iorb,jorb) -= eigenvectors_sci_state_average(index_ci) * eigenvectors_sci_state_average(index_cj)
+      super_ci_state_average_density_matrix_mo(jorb,iorb) -= eigenvectors_sci_state_average(index_ci) * eigenvectors_sci_state_average(index_cj)
      enddo
     enddo
    enddo
@@ -155,8 +159,8 @@ BEGIN_PROVIDER [double precision, super_ci_state_average_density_matrix_mo, (mo_
      do k = 1, n_core_inact_orb
       index_ci = index_rotation_CI(k,i)
       index_cj = index_rotation_CI(k,j)
-      super_ci_state_average_density_matrix_mo(iorb,jorb) += eigenvectors_sci_state_specific(index_ci) * eigenvectors_sci_state_specific(index_cj)
-      super_ci_state_average_density_matrix_mo(jorb,iorb) += eigenvectors_sci_state_specific(index_ci) * eigenvectors_sci_state_specific(index_cj)
+      super_ci_state_average_density_matrix_mo(iorb,jorb) += eigenvectors_sci_state_average(index_ci) * eigenvectors_sci_state_average(index_cj)
+      super_ci_state_average_density_matrix_mo(jorb,iorb) += eigenvectors_sci_state_average(index_ci) * eigenvectors_sci_state_average(index_cj)
      enddo
     enddo 
    enddo
@@ -190,6 +194,7 @@ subroutine set_superci_natural_mos
  character*(64) :: label
  
  label = "Natural"
- call mo_as_svd_vectors_of_mo_matrix(super_ci_state_average_density_matrix_mo,size(super_ci_state_average_density_matrix_mo,1),mo_tot_num,mo_tot_num,label)
+!call mo_as_svd_vectors_of_mo_matrix(super_ci_state_average_density_matrix_mo,size(super_ci_state_average_density_matrix_mo,1),mo_tot_num,mo_tot_num,label)
+ call mo_as_svd_vectors_of_mo_matrix(averaged_super_ci_state_specific_density_matrix_mo,size(averaged_super_ci_state_specific_density_matrix_mo,1),mo_tot_num,mo_tot_num,label)
 
 end

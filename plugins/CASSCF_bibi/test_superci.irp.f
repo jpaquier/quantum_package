@@ -77,7 +77,7 @@ subroutine test_H_superci
    enddo
    
   
-   call apply_H_superci_to_vector(v0,v1,m)
+   call apply_H_superci_state_specific_to_vector(v0,v1,m)
    
    do i = 1, size_super_ci
     if(dabs(v1(i) - u1(i)).gt.1.d-12)then
@@ -103,7 +103,7 @@ subroutine test_H_superci
    enddo
    
   
-   call apply_H_superci_to_vector(v0,v1,m)
+   call apply_H_superci_state_specific_to_vector(v0,v1,m)
    
    do i = 1, size_super_ci
     if(dabs(v1(i) - u1(i)).gt.1.d-12)then

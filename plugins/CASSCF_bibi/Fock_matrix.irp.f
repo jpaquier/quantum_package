@@ -55,7 +55,7 @@ BEGIN_PROVIDER [ double precision, Fock_matrix_alpha_beta_spin_average_mo, (mo_t
 
 END_PROVIDER 
 
-BEGIN_PROVIDER [double precision, Fock_matrix_spin_and_state_average_mo, (mo_tot_num_align,mo_tot_num,N_states)]
+BEGIN_PROVIDER [double precision, Fock_matrix_spin_and_state_average_mo, (mo_tot_num_align,mo_tot_num)]
   implicit none
   integer :: i
   BEGIN_DOC
