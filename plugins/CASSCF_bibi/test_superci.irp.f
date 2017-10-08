@@ -4,7 +4,7 @@ program pouet
  touch read_wf
 !call test_Fock_matrix_alpha_mo
 !call test_superci_eigenvectors
- call test_natural_orbitals 
+!call test_natural_orbitals 
 !call test_ref_energy
 !call test_guess_superci 
 !call test_fock_spin_average
