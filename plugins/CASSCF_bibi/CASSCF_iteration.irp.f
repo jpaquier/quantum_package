@@ -42,6 +42,7 @@ subroutine casscf_routine
   touch mo_coef
   do m = 1, N_states
    delta_e(m) = reference_energy_superci(m) - energy(m)
+   print*, 'delta_e(m) ',delta_e(m),reference_energy_superci(m),energy(m)
   enddo
    if (dabs(delta_e(1)).lt.thresh_casscf)then
     exit

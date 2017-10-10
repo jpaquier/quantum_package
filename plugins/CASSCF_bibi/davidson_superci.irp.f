@@ -478,7 +478,7 @@ subroutine davidson_diag_general_Hjj_state_specific(u_in,H_jj,energies,dim_in,sz
           R(i,k) = lambda(k) * U(i,k,iter+1) - W(i,k,iter+1)
         enddo
         residual_norm(k) = u_dot_u(R(1,k),sze)
-        to_print(1) = lambda(k)  + nuclear_repulsion + reference_energy_superci(i_st)
+        to_print(1) = lambda(k)  + reference_energy_superci(i_st)
         to_print(2) = residual_norm(k)
       enddo
       
@@ -894,7 +894,7 @@ subroutine davidson_diag_general_Hjj_state_average(u_in,H_jj,energies,dim_in,sze
           R(i,k) = lambda(k) * U(i,k,iter+1) - W(i,k,iter+1)
         enddo
         residual_norm(k) = u_dot_u(R(1,k),sze)
-        to_print(1) = lambda(k)  + nuclear_repulsion + reference_energy_superci_state_average
+        to_print(1) = lambda(k)  + reference_energy_superci_state_average
         to_print(2) = residual_norm(k)
       enddo
       

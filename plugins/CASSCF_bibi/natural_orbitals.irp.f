@@ -174,6 +174,7 @@ BEGIN_PROVIDER [double precision, super_ci_state_average_density_matrix_mo, (mo_
     enddo
    enddo
 
+  n_elec_average = 0.d0
   do i = 1, mo_tot_num
    n_elec_average += super_ci_state_average_density_matrix_mo(i,i)
   enddo

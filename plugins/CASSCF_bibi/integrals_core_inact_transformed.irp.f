@@ -23,6 +23,7 @@
  provide semi_transformed_virt_virt 
  call cpu_time(cpu0) 
  thr = 0.001d0 * dsqrt(ao_integrals_threshold)
+ thr = 0.d0
 
   !$OMP PARALLEL DEFAULT(NONE)             &
   !$OMP PRIVATE(i,j,k,m,bielec_tmp_0,matrix_tmp_1) &
@@ -33,6 +34,7 @@
  do i = 1, n_virt_orb
   do j = 1, n_virt_orb
    bielec_tmp_0(1:ao_num,1:ao_num) = semi_transformed_virt_virt(j,i,1:ao_num,1:ao_num)
+   matrix_tmp_1 = 0.d0
    call dgemm('N','N',n_core_inact_orb,ao_num,ao_num,1.d0,mo_coef_core_inact_transp,n_core_inact_orb,bielec_tmp_0,ao_num,0.d0,matrix_tmp_1,n_core_inact_orb)
    do m = 1, ao_num
     do k = 1, n_core_inact_orb

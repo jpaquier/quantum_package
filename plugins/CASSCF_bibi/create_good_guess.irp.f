@@ -8,21 +8,30 @@ subroutine create_good_guess(u,e,i_st)
  integer :: n_good
  integer :: ihole, jpart,iorb,jorb
  double precision :: dsqrt_2
- dsqrt_2 = dsqrt(2.d0)
+
  u = 0.d0
- n_good = 1
- list_good(n_good) = 1
+
+ integer, allocatable :: iorder(:)
+ double precision, allocatable :: vec_tmp(:)
+ allocate(vec_tmp(size_super_ci),iorder(size_super_ci))
+ vec_tmp(1) = -1.d10
+ iorder(1) = 1
+ dsqrt_2 = dsqrt(2.d0)
  do i = 2, size_super_ci
   ihole = index_rotation_CI_reverse(i,1)
   iorb = list_core_inact(ihole)
   jpart = index_rotation_CI_reverse(i,2)
   jorb = list_virt(jpart)
-  coef_pert = dabs(dsqrt_2 * Fock_matrix_alpha_beta_spin_average_mo(iorb,jorb,i_st) / diagonal_superci_matrix(i,i_st))
-! if(diagonal_superci_matrix(i).lt.0.d0.or.coef_pert.gt.0.3d0.and.n_good.lt.10000)then
-  if(coef_pert.gt.0.003d0.and.n_good.lt.10000)then
-   n_good += 1 
-   list_good(n_good) = i
-  endif
+  vec_tmp(i) = -dabs(dsqrt_2 * Fock_matrix_alpha_beta_spin_average_mo(iorb,jorb,i_st) / diagonal_superci_matrix(i,i_st))
+  iorder(i) = i
+ enddo
+ call dsort(vec_tmp,iorder,size_super_ci)
+
+ n_good = 1
+ list_good(n_good) = 1
+ do i = 2, min(size_super_ci,n_det_max_jacobi)
+  n_good += 1 
+  list_good(n_good) = iorder(i)
  enddo
  print*, 'n_good = ',n_good
  double precision, allocatable :: matrix(:,:),eigenvectors(:,:),eigenvalues(:)
@@ -42,7 +51,8 @@ subroutine create_good_guess(u,e,i_st)
   print*, list_good(i),eigenvectors(i,1)
  enddo
  
- deallocate(matrix,eigenvectors,eigenvalues)
+ deallocate(matrix,eigenvectors,eigenvalues,vec_tmp, iorder)
+
 
 end
 
@@ -55,21 +65,30 @@ subroutine create_good_guess_state_average(u,e)
  integer :: n_good
  integer :: ihole, jpart,iorb,jorb
  double precision :: dsqrt_2
- dsqrt_2 = dsqrt(2.d0)
+
  u = 0.d0
- n_good = 1
- list_good(n_good) = 1
+
+ integer, allocatable :: iorder(:)
+ double precision, allocatable :: vec_tmp(:)
+ allocate(vec_tmp(size_super_ci),iorder(size_super_ci))
+ vec_tmp(1) = -1.d10
+ iorder(1) = 1
+ dsqrt_2 = dsqrt(2.d0)
  do i = 2, size_super_ci
   ihole = index_rotation_CI_reverse(i,1)
   iorb = list_core_inact(ihole)
   jpart = index_rotation_CI_reverse(i,2)
   jorb = list_virt(jpart)
-  coef_pert = dabs(dsqrt_2 * Fock_matrix_spin_and_state_average_mo(iorb,jorb) / diagonal_superci_matrix_state_average(i))
-! if(diagonal_superci_matrix(i).lt.0.d0.or.coef_pert.gt.0.3d0.and.n_good.lt.10000)then
-  if(coef_pert.gt.0.003d0.and.n_good.lt.10000)then
-   n_good += 1 
-   list_good(n_good) = i
-  endif
+  vec_tmp(i) = -dabs(dsqrt_2 * Fock_matrix_spin_and_state_average_mo(iorb,jorb) / diagonal_superci_matrix_state_average(i))
+  iorder(i) = i
+ enddo
+ call dsort(vec_tmp,iorder,size_super_ci)
+
+ n_good = 1
+ list_good(n_good) = 1
+ do i = 2, min(size_super_ci,n_det_max_jacobi)
+  n_good += 1 
+  list_good(n_good) = iorder(i)
  enddo
  print*, 'n_good = ',n_good
  double precision, allocatable :: matrix(:,:),eigenvectors(:,:),eigenvalues(:)
@@ -86,10 +105,10 @@ subroutine create_good_guess_state_average(u,e)
  print*, 'e = ',e
  do i = 1, n_good
   u(list_good(i)) = eigenvectors(i,1)
-  print*, list_good(i),eigenvectors(i,1)
  enddo
  
- deallocate(matrix,eigenvectors,eigenvalues)
+ deallocate(matrix,eigenvectors,eigenvalues,vec_tmp, iorder)
+ 
 
 end
 

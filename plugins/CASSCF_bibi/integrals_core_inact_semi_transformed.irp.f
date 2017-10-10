@@ -61,7 +61,7 @@ END_PROVIDER
 
  double precision :: cpu0,cpu1
  
- provide ao_bielec_integral_schwartz ao_bielec_integrals_in_map ao_overlap_abs mo_coef_virt 
+ provide ao_bielec_integral_schwartz ao_bielec_integrals_in_map ao_overlap_abs mo_coef_virt  mo_coef_virt_transp
  thr = 0.001d0 * dsqrt(ao_integrals_threshold)
  call cpu_time(cpu0) 
 
