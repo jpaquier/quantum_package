@@ -48,7 +48,7 @@ subroutine FOBOCI_lmct_mlct_old_thr(iter,norm_total)
    lmct = .True.
    integer :: i_hole_osoci
    i_hole_osoci = list_inact(i)
-!  if(i_hole_osoci.ne.80)cycle
+!  if(i_hole_osoci.ne.71)cycle
    print*,'--------------------------'
    ! First set the current generators to the one of restart
    call check_symetry(i_hole_osoci,thr,test_sym)

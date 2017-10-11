@@ -27,7 +27,7 @@ subroutine casscf_routine
  integer :: i,niter,m,j
  double precision :: energy(N_states),thresh_casscf,delta_e(N_states),delta_e_sci
  energy(1) = 0.d0
- thresh_casscf = 1.d-10
+ thresh_casscf = 1.d-6
  do i = 1, 100
   print*, 'Iteration  = ',i
   do m = 1, N_states
@@ -58,7 +58,8 @@ subroutine casscf_routine
  do m = 1, N_states
   print*,  'Final Energy     = ',reference_energy_superci(m)
  enddo
+ call diag_inactive_virt_and_update_mos_MR_Fock
 
- call save_mos
+!call save_mos
 
 end

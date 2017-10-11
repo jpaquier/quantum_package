@@ -20,7 +20,7 @@ double precision function i_H_SCI_j_state_specific(i,j,i_st)
    korb = list_core_inact(khole)
    lpart = index_rotation_CI_reverse(j,2)
    lorb = list_virt(lpart)
-   i_H_SCI_j_state_specific = dsqrt_2 * Fock_matrix_alpha_beta_spin_average_mo(korb,lorb,i_st) 
+   i_H_SCI_j_state_specific = dsqrt_2 * MR_Fock_matrix_alpha_beta_spin_average_mo(korb,lorb,i_st) 
    return
   endif
  
@@ -29,7 +29,7 @@ double precision function i_H_SCI_j_state_specific(i,j,i_st)
    iorb = list_core_inact(ihole)
    jpart = index_rotation_CI_reverse(i,2)
    jorb = list_virt(jpart)
-   i_H_SCI_j_state_specific = dsqrt_2 * Fock_matrix_alpha_beta_spin_average_mo(iorb,jorb,i_st) 
+   i_H_SCI_j_state_specific = dsqrt_2 * MR_Fock_matrix_alpha_beta_spin_average_mo(iorb,jorb,i_st) 
    return
   endif
  endif
@@ -48,16 +48,16 @@ double precision function i_H_SCI_j_state_specific(i,j,i_st)
 
   if(ihole==khole)then 
    if(type_of_superci==0)then
-    i_H_SCI_j_state_specific = Fock_matrix_alpha_beta_spin_average_mo(jorb,lorb,i_st)
+    i_H_SCI_j_state_specific = MR_Fock_matrix_alpha_beta_spin_average_mo(jorb,lorb,i_st)
    else if (type_of_superci==1.or.type_of_superci==2)then
-    i_H_SCI_j_state_specific = Fock_matrix_alpha_beta_spin_average_mo(jorb,lorb,i_st) - transformed_occ1_virt2_virt2(ihole,jpart,lpart) + 2.d0 * transformed_occ1_virt1_occ2_virt2(ihole,jpart,ihole,lpart)
+    i_H_SCI_j_state_specific = MR_Fock_matrix_alpha_beta_spin_average_mo(jorb,lorb,i_st) - transformed_occ1_virt2_virt2(ihole,jpart,lpart) + 2.d0 * transformed_occ1_virt1_occ2_virt2(ihole,jpart,ihole,lpart)
                                                               
    endif
   else if (jpart==lpart)then
    if(type_of_superci==0)then
-    i_H_SCI_j_state_specific = - Fock_matrix_alpha_beta_spin_average_mo(iorb,korb,i_st)
+    i_H_SCI_j_state_specific = - MR_Fock_matrix_alpha_beta_spin_average_mo(iorb,korb,i_st)
    else if (type_of_superci==1.or.type_of_superci==2)then
-    i_H_SCI_j_state_specific = - Fock_matrix_alpha_beta_spin_average_mo(iorb,korb,i_st)- transformed_virt1_occ2_occ2(jpart,khole,ihole) + 2.d0 * transformed_occ1_virt1_occ2_virt2(ihole,jpart,khole,jpart)
+    i_H_SCI_j_state_specific = - MR_Fock_matrix_alpha_beta_spin_average_mo(iorb,korb,i_st)- transformed_virt1_occ2_occ2(jpart,khole,ihole) + 2.d0 * transformed_occ1_virt1_occ2_virt2(ihole,jpart,khole,jpart)
    endif
   else  
    if(type_of_superci==2)then
@@ -88,7 +88,7 @@ double precision function i_H_SCI_j_state_average(i,j)
    korb = list_core_inact(khole)
    lpart = index_rotation_CI_reverse(j,2)
    lorb = list_virt(lpart)
-   i_H_SCI_j_state_average = dsqrt_2 * Fock_matrix_spin_and_state_average_mo(korb,lorb) 
+   i_H_SCI_j_state_average = dsqrt_2 * MR_Fock_matrix_spin_and_state_average_mo(korb,lorb) 
    return
   endif
  
@@ -97,7 +97,7 @@ double precision function i_H_SCI_j_state_average(i,j)
    iorb = list_core_inact(ihole)
    jpart = index_rotation_CI_reverse(i,2)
    jorb = list_virt(jpart)
-   i_H_SCI_j_state_average = dsqrt_2 * Fock_matrix_spin_and_state_average_mo(iorb,jorb) 
+   i_H_SCI_j_state_average = dsqrt_2 * MR_Fock_matrix_spin_and_state_average_mo(iorb,jorb) 
    return
   endif
  endif
@@ -116,16 +116,16 @@ double precision function i_H_SCI_j_state_average(i,j)
 
   if(ihole==khole)then 
    if(type_of_superci==0)then
-    i_H_SCI_j_state_average = Fock_matrix_spin_and_state_average_mo(jorb,lorb)
+    i_H_SCI_j_state_average = MR_Fock_matrix_spin_and_state_average_mo(jorb,lorb)
    else if (type_of_superci==1.or.type_of_superci==2)then
-    i_H_SCI_j_state_average = Fock_matrix_spin_and_state_average_mo(jorb,lorb) - transformed_occ1_virt2_virt2(ihole,jpart,lpart) + 2.d0 * transformed_occ1_virt1_occ2_virt2(ihole,jpart,ihole,lpart)
+    i_H_SCI_j_state_average = MR_Fock_matrix_spin_and_state_average_mo(jorb,lorb) - transformed_occ1_virt2_virt2(ihole,jpart,lpart) + 2.d0 * transformed_occ1_virt1_occ2_virt2(ihole,jpart,ihole,lpart)
                                                               
    endif
   else if (jpart==lpart)then
    if(type_of_superci==0)then
-    i_H_SCI_j_state_average = - Fock_matrix_spin_and_state_average_mo(iorb,korb)
+    i_H_SCI_j_state_average = - MR_Fock_matrix_spin_and_state_average_mo(iorb,korb)
    else if (type_of_superci==1.or.type_of_superci==2)then
-    i_H_SCI_j_state_average = - Fock_matrix_spin_and_state_average_mo(iorb,korb)- transformed_virt1_occ2_occ2(jpart,khole,ihole) + 2.d0 * transformed_occ1_virt1_occ2_virt2(ihole,jpart,khole,jpart)
+    i_H_SCI_j_state_average = - MR_Fock_matrix_spin_and_state_average_mo(iorb,korb)- transformed_virt1_occ2_occ2(jpart,khole,ihole) + 2.d0 * transformed_occ1_virt1_occ2_virt2(ihole,jpart,khole,jpart)
    endif
   else  
    if(type_of_superci==2)then
@@ -158,21 +158,21 @@ subroutine apply_H_superci_state_specific_to_vector(u0,u1,i_st)
      index_i = index_rotation_CI(i,j) 
      ! Diagonal and Brillouin matrix elements 
      u1(index_i) += u0(index_i) * diagonal_superci_matrix(index_i,i_st)
-     u1(1) += u0(index_i) * dsqrt_2 * Fock_matrix_alpha_beta_spin_average_mo(iorb,jorb,i_st)
-     u1(index_i) += u0(1) * dsqrt_2 * Fock_matrix_alpha_beta_spin_average_mo(iorb,jorb,i_st)
-     ! Interaction through the virt-virt Fock operator
+     u1(1) += u0(index_i) * dsqrt_2 * MR_Fock_matrix_alpha_beta_spin_average_mo(iorb,jorb,i_st)
+     u1(index_i) += u0(1) * dsqrt_2 * MR_Fock_matrix_alpha_beta_spin_average_mo(iorb,jorb,i_st)
+     ! Interaction through the virt-virt MR_Fock operator
      do k = j+1, n_virt_orb
       korb = list_virt(k)
       index_j = index_rotation_CI(i,k)
-      u1(index_i) += u0(index_j) * Fock_matrix_alpha_beta_spin_average_mo(jorb,korb,i_st)
-      u1(index_j) += u0(index_i) * Fock_matrix_alpha_beta_spin_average_mo(jorb,korb,i_st)
+      u1(index_i) += u0(index_j) * MR_Fock_matrix_alpha_beta_spin_average_mo(jorb,korb,i_st)
+      u1(index_j) += u0(index_i) * MR_Fock_matrix_alpha_beta_spin_average_mo(jorb,korb,i_st)
      enddo
-     ! Interaction through the core-core Fock operator
+     ! Interaction through the core-core MR_Fock operator
      do k = i+1, n_core_inact_orb
       korb = list_core_inact(k)
       index_j = index_rotation_CI(k,j)
-      u1(index_i) -= u0(index_j) *  Fock_matrix_alpha_beta_spin_average_mo(iorb,korb,i_st)
-      u1(index_j) -= u0(index_i) *  Fock_matrix_alpha_beta_spin_average_mo(iorb,korb,i_st)
+      u1(index_i) -= u0(index_j) *  MR_Fock_matrix_alpha_beta_spin_average_mo(iorb,korb,i_st)
+      u1(index_j) -= u0(index_i) *  MR_Fock_matrix_alpha_beta_spin_average_mo(iorb,korb,i_st)
      enddo
     enddo
    enddo
@@ -185,25 +185,25 @@ subroutine apply_H_superci_state_specific_to_vector(u0,u1,i_st)
     jorb = list_virt(j)
     index_i = index_rotation_CI(i,j) 
     ! Diagonal and Brillouin matrix elements 
-    u1(1) += u0(index_i) * dsqrt_2 * Fock_matrix_alpha_beta_spin_average_mo(iorb,jorb,i_st)
-    u1(index_i) += u0(1) * dsqrt_2 * Fock_matrix_alpha_beta_spin_average_mo(iorb,jorb,i_st)
+    u1(1) += u0(index_i) * dsqrt_2 * MR_Fock_matrix_alpha_beta_spin_average_mo(iorb,jorb,i_st)
+    u1(index_i) += u0(1) * dsqrt_2 * MR_Fock_matrix_alpha_beta_spin_average_mo(iorb,jorb,i_st)
     u1(index_i) += u0(index_i) * diagonal_superci_matrix(index_i,i_st)
-    ! Interaction through the virt-virt Fock operator
+    ! Interaction through the virt-virt MR_Fock operator
     do k = j+1, n_virt_orb
      korb = list_virt(k)
      index_j = index_rotation_CI(i,k)
-     u1(index_i) += u0(index_j) * (Fock_matrix_alpha_beta_spin_average_mo(jorb,korb,i_st) &
+     u1(index_i) += u0(index_j) * (MR_Fock_matrix_alpha_beta_spin_average_mo(jorb,korb,i_st) &
                                                                    - transformed_occ1_virt2_virt2(i,k,j) + 2.d0 * transformed_occ1_virt1_occ2_virt2(i,k,i,j))
-     u1(index_j) += u0(index_i) * (Fock_matrix_alpha_beta_spin_average_mo(jorb,korb,i_st) & 
+     u1(index_j) += u0(index_i) * (MR_Fock_matrix_alpha_beta_spin_average_mo(jorb,korb,i_st) & 
                                                                    - transformed_occ1_virt2_virt2(i,k,j) + 2.d0 * transformed_occ1_virt1_occ2_virt2(i,k,i,j))
     enddo
-    ! Interaction through the core-core Fock operator
+    ! Interaction through the core-core MR_Fock operator
     do k = i+1, n_core_inact_orb
      korb = list_core_inact(k)
      index_j = index_rotation_CI(k,j)
-     u1(index_i) += u0(index_j) *  (- Fock_matrix_alpha_beta_spin_average_mo(iorb,korb,i_st) & 
+     u1(index_i) += u0(index_j) *  (- MR_Fock_matrix_alpha_beta_spin_average_mo(iorb,korb,i_st) & 
                                                                      - transformed_virt1_occ2_occ2(j,k,i) + 2.d0 * transformed_occ1_virt1_occ2_virt2(i,j,k,j))
-     u1(index_j) += u0(index_i) *  (- Fock_matrix_alpha_beta_spin_average_mo(iorb,korb,i_st) & 
+     u1(index_j) += u0(index_i) *  (- MR_Fock_matrix_alpha_beta_spin_average_mo(iorb,korb,i_st) & 
                                                                      - transformed_virt1_occ2_occ2(j,k,i) + 2.d0 * transformed_occ1_virt1_occ2_virt2(i,j,k,j))
     enddo
     
@@ -218,25 +218,25 @@ subroutine apply_H_superci_state_specific_to_vector(u0,u1,i_st)
     jorb = list_virt(j)
     index_i = index_rotation_CI(i,j) 
     ! Diagonal and Brillouin matrix elements 
-    u1(1) += u0(index_i) * dsqrt_2 * Fock_matrix_alpha_beta_spin_average_mo(iorb,jorb,i_st)
-    u1(index_i) += u0(1) * dsqrt_2 * Fock_matrix_alpha_beta_spin_average_mo(iorb,jorb,i_st)
+    u1(1) += u0(index_i) * dsqrt_2 * MR_Fock_matrix_alpha_beta_spin_average_mo(iorb,jorb,i_st)
+    u1(index_i) += u0(1) * dsqrt_2 * MR_Fock_matrix_alpha_beta_spin_average_mo(iorb,jorb,i_st)
     u1(index_i) += u0(index_i) * diagonal_superci_matrix(index_i,i_st)
-    ! Interaction through the virt-virt Fock operator
+    ! Interaction through the virt-virt MR_Fock operator
     do k = j+1, n_virt_orb
      korb = list_virt(k)
      index_j = index_rotation_CI(i,k)
-     u1(index_i) += u0(index_j) * (Fock_matrix_alpha_beta_spin_average_mo(jorb,korb,i_st) &
+     u1(index_i) += u0(index_j) * (MR_Fock_matrix_alpha_beta_spin_average_mo(jorb,korb,i_st) &
                                                                    - transformed_occ1_virt2_virt2(i,k,j) + 2.d0 * transformed_occ1_virt1_occ2_virt2(i,k,i,j))
-     u1(index_j) += u0(index_i) * (Fock_matrix_alpha_beta_spin_average_mo(jorb,korb,i_st) & 
+     u1(index_j) += u0(index_i) * (MR_Fock_matrix_alpha_beta_spin_average_mo(jorb,korb,i_st) & 
                                                                    - transformed_occ1_virt2_virt2(i,k,j) + 2.d0 * transformed_occ1_virt1_occ2_virt2(i,k,i,j))
     enddo
-    ! Interaction through the core-core Fock operator
+    ! Interaction through the core-core MR_Fock operator
     do k = i+1, n_core_inact_orb
      korb = list_core_inact(k)
      index_j = index_rotation_CI(k,j)
-     u1(index_i) += u0(index_j) *  (- Fock_matrix_alpha_beta_spin_average_mo(iorb,korb,i_st) & 
+     u1(index_i) += u0(index_j) *  (- MR_Fock_matrix_alpha_beta_spin_average_mo(iorb,korb,i_st) & 
                                                                      - transformed_virt1_occ2_occ2(j,k,i) + 2.d0 * transformed_occ1_virt1_occ2_virt2(i,j,k,j))
-     u1(index_j) += u0(index_i) *  (- Fock_matrix_alpha_beta_spin_average_mo(iorb,korb,i_st) & 
+     u1(index_j) += u0(index_i) *  (- MR_Fock_matrix_alpha_beta_spin_average_mo(iorb,korb,i_st) & 
                                                                      - transformed_virt1_occ2_occ2(j,k,i) + 2.d0 * transformed_occ1_virt1_occ2_virt2(i,j,k,j))
     enddo
     ! Hole-particle interaction 
@@ -576,21 +576,21 @@ subroutine apply_H_superci_state_average_to_vector(u0,u1)
      index_i = index_rotation_CI(i,j) 
      ! Diagonal and Brillouin matrix elements 
      u1(index_i) += u0(index_i) * diagonal_superci_matrix_state_average(index_i)
-     u1(1) += u0(index_i) * dsqrt_2 * Fock_matrix_spin_and_state_average_mo(iorb,jorb)
-     u1(index_i) += u0(1) * dsqrt_2 * Fock_matrix_spin_and_state_average_mo(iorb,jorb)
-     ! Interaction through the virt-virt Fock operator
+     u1(1) += u0(index_i) * dsqrt_2 * MR_Fock_matrix_spin_and_state_average_mo(iorb,jorb)
+     u1(index_i) += u0(1) * dsqrt_2 * MR_Fock_matrix_spin_and_state_average_mo(iorb,jorb)
+     ! Interaction through the virt-virt MR_Fock operator
      do k = j+1, n_virt_orb
       korb = list_virt(k)
       index_j = index_rotation_CI(i,k)
-      u1(index_i) += u0(index_j) * Fock_matrix_spin_and_state_average_mo(jorb,korb)
-      u1(index_j) += u0(index_i) * Fock_matrix_spin_and_state_average_mo(jorb,korb)
+      u1(index_i) += u0(index_j) * MR_Fock_matrix_spin_and_state_average_mo(jorb,korb)
+      u1(index_j) += u0(index_i) * MR_Fock_matrix_spin_and_state_average_mo(jorb,korb)
      enddo
-     ! Interaction through the core-core Fock operator
+     ! Interaction through the core-core MR_Fock operator
      do k = i+1, n_core_inact_orb
       korb = list_core_inact(k)
       index_j = index_rotation_CI(k,j)
-      u1(index_i) -= u0(index_j) *  Fock_matrix_spin_and_state_average_mo(iorb,korb)
-      u1(index_j) -= u0(index_i) *  Fock_matrix_spin_and_state_average_mo(iorb,korb)
+      u1(index_i) -= u0(index_j) *  MR_Fock_matrix_spin_and_state_average_mo(iorb,korb)
+      u1(index_j) -= u0(index_i) *  MR_Fock_matrix_spin_and_state_average_mo(iorb,korb)
      enddo
     enddo
    enddo
@@ -603,25 +603,25 @@ subroutine apply_H_superci_state_average_to_vector(u0,u1)
     jorb = list_virt(j)
     index_i = index_rotation_CI(i,j) 
     ! Diagonal and Brillouin matrix elements 
-    u1(1) += u0(index_i) * dsqrt_2 * Fock_matrix_spin_and_state_average_mo(iorb,jorb)
-    u1(index_i) += u0(1) * dsqrt_2 * Fock_matrix_spin_and_state_average_mo(iorb,jorb)
+    u1(1) += u0(index_i) * dsqrt_2 * MR_Fock_matrix_spin_and_state_average_mo(iorb,jorb)
+    u1(index_i) += u0(1) * dsqrt_2 * MR_Fock_matrix_spin_and_state_average_mo(iorb,jorb)
     u1(index_i) += u0(index_i) * diagonal_superci_matrix_state_average(index_i)
-    ! Interaction through the virt-virt Fock operator
+    ! Interaction through the virt-virt MR_Fock operator
     do k = j+1, n_virt_orb
      korb = list_virt(k)
      index_j = index_rotation_CI(i,k)
-     u1(index_i) += u0(index_j) * (Fock_matrix_spin_and_state_average_mo(jorb,korb) &
+     u1(index_i) += u0(index_j) * (MR_Fock_matrix_spin_and_state_average_mo(jorb,korb) &
                                                                    - transformed_occ1_virt2_virt2(i,k,j) + 2.d0 * transformed_occ1_virt1_occ2_virt2(i,k,i,j))
-     u1(index_j) += u0(index_i) * (Fock_matrix_spin_and_state_average_mo(jorb,korb) & 
+     u1(index_j) += u0(index_i) * (MR_Fock_matrix_spin_and_state_average_mo(jorb,korb) & 
                                                                    - transformed_occ1_virt2_virt2(i,k,j) + 2.d0 * transformed_occ1_virt1_occ2_virt2(i,k,i,j))
     enddo
-    ! Interaction through the core-core Fock operator
+    ! Interaction through the core-core MR_Fock operator
     do k = i+1, n_core_inact_orb
      korb = list_core_inact(k)
      index_j = index_rotation_CI(k,j)
-     u1(index_i) += u0(index_j) *  (- Fock_matrix_spin_and_state_average_mo(iorb,korb) & 
+     u1(index_i) += u0(index_j) *  (- MR_Fock_matrix_spin_and_state_average_mo(iorb,korb) & 
                                                                      - transformed_virt1_occ2_occ2(j,k,i) + 2.d0 * transformed_occ1_virt1_occ2_virt2(i,j,k,j))
-     u1(index_j) += u0(index_i) *  (- Fock_matrix_spin_and_state_average_mo(iorb,korb) & 
+     u1(index_j) += u0(index_i) *  (- MR_Fock_matrix_spin_and_state_average_mo(iorb,korb) & 
                                                                      - transformed_virt1_occ2_occ2(j,k,i) + 2.d0 * transformed_occ1_virt1_occ2_virt2(i,j,k,j))
     enddo
     
@@ -636,25 +636,25 @@ subroutine apply_H_superci_state_average_to_vector(u0,u1)
     jorb = list_virt(j)
     index_i = index_rotation_CI(i,j) 
     ! Diagonal and Brillouin matrix elements 
-    u1(1) += u0(index_i) * dsqrt_2 * Fock_matrix_spin_and_state_average_mo(iorb,jorb)
-    u1(index_i) += u0(1) * dsqrt_2 * Fock_matrix_spin_and_state_average_mo(iorb,jorb)
+    u1(1) += u0(index_i) * dsqrt_2 * MR_Fock_matrix_spin_and_state_average_mo(iorb,jorb)
+    u1(index_i) += u0(1) * dsqrt_2 * MR_Fock_matrix_spin_and_state_average_mo(iorb,jorb)
     u1(index_i) += u0(index_i) * diagonal_superci_matrix_state_average(index_i)
-    ! Interaction through the virt-virt Fock operator
+    ! Interaction through the virt-virt MR_Fock operator
     do k = j+1, n_virt_orb
      korb = list_virt(k)
      index_j = index_rotation_CI(i,k)
-     u1(index_i) += u0(index_j) * (Fock_matrix_spin_and_state_average_mo(jorb,korb) &
+     u1(index_i) += u0(index_j) * (MR_Fock_matrix_spin_and_state_average_mo(jorb,korb) &
                                                                    - transformed_occ1_virt2_virt2(i,k,j) + 2.d0 * transformed_occ1_virt1_occ2_virt2(i,k,i,j))
-     u1(index_j) += u0(index_i) * (Fock_matrix_spin_and_state_average_mo(jorb,korb) & 
+     u1(index_j) += u0(index_i) * (MR_Fock_matrix_spin_and_state_average_mo(jorb,korb) & 
                                                                    - transformed_occ1_virt2_virt2(i,k,j) + 2.d0 * transformed_occ1_virt1_occ2_virt2(i,k,i,j))
     enddo
-    ! Interaction through the core-core Fock operator
+    ! Interaction through the core-core MR_Fock operator
     do k = i+1, n_core_inact_orb
      korb = list_core_inact(k)
      index_j = index_rotation_CI(k,j)
-     u1(index_i) += u0(index_j) *  (- Fock_matrix_spin_and_state_average_mo(iorb,korb) & 
+     u1(index_i) += u0(index_j) *  (- MR_Fock_matrix_spin_and_state_average_mo(iorb,korb) & 
                                                                      - transformed_virt1_occ2_occ2(j,k,i) + 2.d0 * transformed_occ1_virt1_occ2_virt2(i,j,k,j))
-     u1(index_j) += u0(index_i) *  (- Fock_matrix_spin_and_state_average_mo(iorb,korb) & 
+     u1(index_j) += u0(index_i) *  (- MR_Fock_matrix_spin_and_state_average_mo(iorb,korb) & 
                                                                      - transformed_virt1_occ2_occ2(j,k,i) + 2.d0 * transformed_occ1_virt1_occ2_virt2(i,j,k,j))
     enddo
     ! Hole-particle interaction 

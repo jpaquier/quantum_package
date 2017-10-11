@@ -1,4 +1,4 @@
-subroutine diag_inactive_virt_and_update_mos
+subroutine diag_inactive_virt_and_update_mos_SR_Fock
  implicit none
  integer :: i,j,i_inact,j_inact,i_virt,j_virt
  double precision :: tmp(mo_tot_num_align,mo_tot_num)
@@ -9,7 +9,6 @@ subroutine diag_inactive_virt_and_update_mos
   do j = 1, mo_tot_num
    tmp(i,j) = Fock_matrix_mo(i,j)
   enddo
-! write(*,'(100(F10.5,X))')Fock_matrix_restart_mo(i,:)
  enddo
  
  do i = 1, n_act_orb
@@ -41,8 +40,6 @@ subroutine diag_inactive_virt_and_update_mos
  label = "Canonical"
 !call mo_as_eigvectors_of_mo_matrix(tmp,size(tmp,1),size(tmp,2),label,1)
  touch mo_coef
-
-
 end
 
 subroutine diag_inactive_virt_new_and_update_mos

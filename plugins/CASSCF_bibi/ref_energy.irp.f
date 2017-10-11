@@ -186,6 +186,7 @@ BEGIN_PROVIDER [double precision, ref_energy_act_mono, (N_states)]
  implicit none
  integer :: p,q,m
  ref_energy_act_mono = 0.d0
+ print*, density_matrix_ao_act(1,1,1)
  do m = 1, N_states
   do p = 1, ao_num
    do q = 1, ao_num
@@ -202,6 +203,7 @@ implicit none
    if(n_act_orb.gt.0)then
     reference_energy_superci(m) = coulomb_core_energy_from_act_total(m) +alpha_exch_core_energy_from_act(m) + beta_exch_core_energy_from_act(m) + & 
                                mono_elec_core_energy + repulsion_elec_core_core+ ref_energy_act_mono(m) + ref_energy_act_act(m) + nuclear_repulsion
+
    else
     reference_energy_superci(m) = mono_elec_core_energy + repulsion_elec_core_core+  nuclear_repulsion
    endif

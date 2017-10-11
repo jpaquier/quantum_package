@@ -7,9 +7,7 @@ program foboscf
 !print*, 'disk_access_ao_integrals',disk_access_ao_integrals
  no_oa_or_av_opt = .True.
  touch no_oa_or_av_opt
- call initialize_mo_coef_begin_iteration
  call run_prepare
- call reorder_active_orb
  call routine_fobo_scf
  call save_mos
 
@@ -17,13 +15,7 @@ end
 
 subroutine run_prepare
  implicit none
-! no_oa_or_av_opt = .False.
-! touch no_oa_or_av_opt
-! call damping_SCF
-! call reorder_active_orb
-! call diag_inactive_virt_and_update_mos
-  call reorder_active_orb
-  call save_mos 
+ call opt_orb
 end
 
 subroutine routine_fobo_scf
@@ -63,12 +55,8 @@ subroutine routine_fobo_scf
   call FOBOCI_lmct_mlct_old_thr(i,norm_total)
   call save_osoci_natural_mos(norm_total)
   call reorder_active_orb
-  call initialize_mo_coef_begin_iteration
-! call damping_SCF
- call reorder_active_orb
-! call initialize_mo_coef_begin_iteration
-! call diag_inactive_virt_and_update_mos
-  call reorder_active_orb
+! touch mo_coef
+  call opt_orb
 
   call clear_mo_map
   call provide_properties

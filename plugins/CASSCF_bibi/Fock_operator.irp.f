@@ -1,11 +1,11 @@
-BEGIN_PROVIDER [double precision, Fock_mo_core_virt_from_core_inact, (mo_tot_num,mo_tot_num)]
+BEGIN_PROVIDER [double precision, MR_Fock_mo_core_virt_from_core_inact, (mo_tot_num,mo_tot_num)]
  implicit none
  integer :: i,j,k,l,iorb,jorb,korb
  double precision :: get_mo_bielec_integral
- Fock_mo_core_virt_from_core_inact = 0.d0
+ MR_Fock_mo_core_virt_from_core_inact = 0.d0
  do i = 1, mo_tot_num
   do j = 1, mo_tot_num 
-   Fock_mo_core_virt_from_core_inact(i,j) = mo_mono_elec_integral(i,j)
+   MR_Fock_mo_core_virt_from_core_inact(i,j) = mo_mono_elec_integral(i,j)
   enddo
  enddo
 
@@ -15,34 +15,34 @@ BEGIN_PROVIDER [double precision, Fock_mo_core_virt_from_core_inact, (mo_tot_num
    iorb = list_core_inact(i)
    do j = 1, n_core_inact_orb
     jorb = list_core_inact(j)
-    Fock_mo_core_virt_from_core_inact(iorb,jorb) += 2.d0 * get_mo_bielec_integral(iorb,korb,jorb,korb) -  get_mo_bielec_integral(iorb,korb,korb,jorb) 
+    MR_Fock_mo_core_virt_from_core_inact(iorb,jorb) += 2.d0 * get_mo_bielec_integral(iorb,korb,jorb,korb) -  get_mo_bielec_integral(iorb,korb,korb,jorb) 
    enddo
    do j = 1, n_virt_orb
     jorb = list_virt(j)
-    Fock_mo_core_virt_from_core_inact(iorb,jorb) += 2.d0 * get_mo_bielec_integral(iorb,korb,jorb,korb) -  get_mo_bielec_integral(iorb,korb,korb,jorb) 
+    MR_Fock_mo_core_virt_from_core_inact(iorb,jorb) += 2.d0 * get_mo_bielec_integral(iorb,korb,jorb,korb) -  get_mo_bielec_integral(iorb,korb,korb,jorb) 
    enddo
   enddo
   do j = 1, n_virt_orb
    jorb = list_virt(j)
    do i = 1, n_virt_orb
     iorb = list_virt(i)
-    Fock_mo_core_virt_from_core_inact(iorb,jorb) += 2.d0 * get_mo_bielec_integral(iorb,korb,jorb,korb) -  get_mo_bielec_integral(iorb,korb,korb,jorb) 
+    MR_Fock_mo_core_virt_from_core_inact(iorb,jorb) += 2.d0 * get_mo_bielec_integral(iorb,korb,jorb,korb) -  get_mo_bielec_integral(iorb,korb,korb,jorb) 
    enddo
   enddo
  enddo
 
 END_PROVIDER 
 
- BEGIN_PROVIDER [double precision, Fock_matrix_alpha_ao, (ao_num_align, ao_num,N_states)]
-&BEGIN_PROVIDER [double precision, Fock_matrix_beta_ao, (ao_num_align, ao_num,N_states)]
+ BEGIN_PROVIDER [double precision, MR_Fock_matrix_alpha_ao, (ao_num_align, ao_num,N_states)]
+&BEGIN_PROVIDER [double precision, MR_Fock_matrix_beta_ao, (ao_num_align, ao_num,N_states)]
  implicit none
  integer                        :: i,j,k
  do k = 1, N_states
   do j=1,ao_num
     !DIR$ VECTOR ALIGNED
     do i=1,ao_num
-      Fock_matrix_alpha_ao(i,j,k) = ao_mono_elec_integral(i,j) + ao_bi_elec_integral_alpha_core_inact(i,j) + ao_bi_elec_integral_alpha_act(i,j,k) 
-      Fock_matrix_beta_ao(i,j,k) = ao_mono_elec_integral(i,j) + ao_bi_elec_integral_beta_core_inact(i,j) + ao_bi_elec_integral_beta_act(i,j,k)
+      MR_Fock_matrix_alpha_ao(i,j,k) = ao_mono_elec_integral(i,j) + ao_bi_elec_integral_alpha_core_inact(i,j) + ao_bi_elec_integral_alpha_act(i,j,k) 
+      MR_Fock_matrix_beta_ao(i,j,k) = ao_mono_elec_integral(i,j) + ao_bi_elec_integral_beta_core_inact(i,j) + ao_bi_elec_integral_beta_act(i,j,k)
     enddo
   enddo
  enddo
@@ -58,7 +58,7 @@ END_PROVIDER
  use map_module
  implicit none
  BEGIN_DOC
- ! Alpha Fock matrix in AO basis set
+ ! Alpha MR_Fock matrix in AO basis set
  END_DOC
  
  integer                        :: i,j,k,l,k1,r,s
@@ -171,11 +171,11 @@ END_PROVIDER
 
 END_PROVIDER
 
- BEGIN_PROVIDER [double precision, Fock_matrix_alpha_from_act_mo_bis, (mo_tot_num, mo_tot_num,N_states)]
+ BEGIN_PROVIDER [double precision, MR_Fock_matrix_alpha_from_act_mo_bis, (mo_tot_num, mo_tot_num,N_states)]
  implicit none
  integer :: i,j,k,l,korb,lorb,m
  double precision :: integral,get_mo_bielec_integral
- Fock_matrix_alpha_from_act_mo_bis = 0.d0
+ MR_Fock_matrix_alpha_from_act_mo_bis = 0.d0
  do m = 1, N_states
   do i = 1, mo_tot_num
    do j = 1, mo_tot_num
@@ -184,9 +184,9 @@ END_PROVIDER
      do l = 1, n_act_orb
       lorb = list_act(l)
       integral = get_mo_bielec_integral(i,korb,j,lorb,mo_integrals_map)
-      Fock_matrix_alpha_from_act_mo_bis(j,i,m) += integral * density_matrix_mo_act(korb,lorb,m)
+      MR_Fock_matrix_alpha_from_act_mo_bis(j,i,m) += integral * density_matrix_mo_act(korb,lorb,m)
       integral = get_mo_bielec_integral(i,j,korb,lorb,mo_integrals_map)
-      Fock_matrix_alpha_from_act_mo_bis(j,i,m) -= integral * density_matrix_mo_act_beta(korb,lorb,m)
+      MR_Fock_matrix_alpha_from_act_mo_bis(j,i,m) -= integral * density_matrix_mo_act_beta(korb,lorb,m)
      enddo
     enddo
    enddo

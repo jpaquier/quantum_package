@@ -34,7 +34,6 @@ subroutine diag_matrix_mo(matrix, ld_mo, list_orb, n_orb, ld_ao,mo_coef_new)
 
  do i = 1, n_orb
   iorb = list_orb(i)
-  print*, 'iorb',iorb
   do j = 1, ao_num
    mo_coef_tmp(j,i) = mo_coef_new(j,iorb)
   enddo

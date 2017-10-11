@@ -371,24 +371,6 @@ subroutine diag_H_matrix_from_psi_det_input(psi_det_generators_input,Ndet_genera
   i_good_state(k) = iorder(1)
   i_good_state(0) +=1 
  enddo
-! do i = 1, Ndet_generators
-!   ! State following
-!   do k = 1, N_states 
-!    accu = 0.d0
-!    do j =1, Ndet_generators
-!     print*,'',eigvectors(j,i) , psi_coef_ref(j,k)
-!     accu += eigvectors(j,i) * psi_coef_ref(j,k)
-!    enddo
-!    print*,'accu = ',accu
-!    if(dabs(accu).ge.0.72d0)then
-!     i_good_state(0) +=1
-!     i_good_state(i_good_state(0)) = i
-!    endif
-!   enddo
-!   if(i_good_state(0)==N_states)then
-!    exit
-!   endif
-! enddo
  do i = 1, N_states
   i_state(i) = i_good_state(i)
   E_ref(i) = eigvalues(i_good_state(i))
@@ -462,6 +444,14 @@ subroutine dress_H_matrix_from_psi_det_input(psi_det_generators_input,Ndet_gener
  double precision :: eigvalues(Ndet_generators), eigvectors(Ndet_generators,Ndet_generators),hij
  double precision :: psi_coef_ref(Ndet_generators,N_states),diag_h_mat_average,diag_h_mat_no_ref_average
  logical :: is_a_ref_det(Ndet_generators)
+
+
+ integer :: i_good_state(0:N_states)
+ double precision, allocatable :: overlap_psi(:)
+ integer, allocatable :: iorder(:)
+ logical, allocatable :: is_chosen(:)
+ allocate(iorder(Ndet_generators),overlap_psi(Ndet_generators),is_chosen(Ndet_generators))
+
  exit_loop = .False.
  
  is_a_ref_det = .False.
@@ -521,39 +511,63 @@ subroutine dress_H_matrix_from_psi_det_input(psi_det_generators_input,Ndet_gener
  enddo
 
  call lapack_diagd(eigvalues,eigvectors,dressed_H_matrix,Ndet_generators,Ndet_generators)  ! Diagonalize the Dressed_H_matrix
+
+  n_state_good = 0
+  if(s2_eig)then
+   call u_0_S2_u_0(s2,eigvectors,Ndet_generators,psi_det_generators_input,N_int,N_det_generators,size(eigvectors,1))
+   do i = 1, Ndet_generators
+     print*,'s2 = ',s2(i)
+     print*,dabs(s2(i)-expected_s2)
+     if(dabs(s2(i)-expected_s2).le.0.3d0)then
+      n_state_good +=1
+      i_good_state(n_state_good) = i
+      E_ref(n_state_good) = eigvalues(i)
+     endif
+     if(n_state_good==N_states)then
+      exit
+     endif
+   enddo
+  else 
+   do i = 1, N_states
+    i_good_state(i) = i
+    E_ref(i) = eigvalues(i)
+   enddo
+  endif
+
+
+!n_state_good = 0
+!do k = 1, N_states
+! print*, 'State = ',k
+! do j = 1, Ndet_generators
+!  iorder(j) = j 
+!  overlap_psi(j) = 0.d0
+!  if(.not.is_chosen(j))then
+!   do i = 1, Ndet_generators
+!    overlap_psi(j) += psi_coef_ref(i,k) * eigvectors(i,j)
+!   enddo
+!  endif
+!  overlap_psi(j) = -dabs(overlap_psi(j))
+! enddo
+! call dsort(overlap_psi,iorder,Ndet_generators)
+! print*, 'overlap_psi(1) = ',overlap_psi(1)
+! i_good_state(k) = iorder(1)
+! i_good_state(0) +=1 
+!enddo
+
+!do i = 1, N_states
+! E_ref(i) = eigvalues(i_good_state(i))
+!enddo
  
  double precision :: s2(N_det_generators),E_ref(N_states)
- integer :: i_state(N_states)
  integer :: n_state_good
- n_state_good = 0
- if(s2_eig)then
-  call u_0_S2_u_0(s2,eigvectors,Ndet_generators,psi_det_generators_input,N_int,N_det_generators,size(eigvectors,1))
-  do i = 1, Ndet_generators
-    print*,'s2 = ',s2(i)
-    print*,dabs(s2(i)-expected_s2)
-    if(dabs(s2(i)-expected_s2).le.0.3d0)then
-     n_state_good +=1
-     i_state(n_state_good) = i
-     E_ref(n_state_good) = eigvalues(i)
-    endif
-    if(n_state_good==N_states)then
-     exit
-    endif
-  enddo
- else 
-  do i = 1, N_states
-   i_state(i) = i
-   E_ref(i) = eigvalues(i)
-  enddo
- endif
  do i = 1,N_states
-  print*,'i_state = ',i_state(i)
+  print*,'i_good_state = ',i_good_state(i)
  enddo
  do k = 1, N_states
   print*,'state ',k
   do i = 1, Ndet_generators
-   psi_coef_diagonalized_tmp(i,k) = eigvectors(i,i_state(k)) / eigvectors(index_ref_generators_restart(k),i_state(k))
-   psi_coef_ref(i,k) = eigvectors(i,i_state(k))
+   psi_coef_diagonalized_tmp(i,k) = eigvectors(i,i_good_state(k)) / eigvectors(index_ref_generators_restart(k),i_good_state(k))
+   psi_coef_ref(i,k) = eigvectors(i,i_good_state(k))
    print*,'psi_coef_ref(i) = ',psi_coef_ref(i,k)
   enddo
  enddo
@@ -586,35 +600,41 @@ subroutine dress_H_matrix_from_psi_det_input(psi_det_generators_input,Ndet_gener
   enddo
  endif
  call lapack_diagd(eigvalues,eigvectors,dressed_H_matrix,Ndet_generators,Ndet_generators)  ! Diagonalize the Dressed_H_matrix
- integer :: i_good_state(0:N_states)
  i_good_state(0) = 0
-  do i = 1, Ndet_generators
-    ! State following
-    do k = 1, N_states 
-     accu = 0.d0
-     do j =1, Ndet_generators
-      print*,'',eigvectors(j,i) , psi_coef_ref(j,k)
-      accu += eigvectors(j,i) * psi_coef_ref(j,k)
-     enddo
-     print*,'accu = ',accu
-     if(dabs(accu).ge.0.72d0)then
-      i_good_state(0) +=1
-      i_good_state(i_good_state(0)) = i
-     endif
+ is_chosen = .False.
+ do k = 1, N_states
+! print*, 'State = ',k
+  do j = 1, Ndet_generators
+   iorder(j) = j 
+   overlap_psi(j) = 0.d0
+!  print*, 'j ',j
+   if(.not.is_chosen(j))then
+    do i = 1, Ndet_generators
+!    print*, 'eigvectors(i,j)',eigvectors(i,j)
+     overlap_psi(j) += psi_coef_ref(i,k) * eigvectors(i,j)
     enddo
-    if(i_good_state(0)==N_states)then
-     exit
-    endif
+   endif
+!  print*, 'overlap_psi(j)',overlap_psi(j)
+   overlap_psi(j) = -dabs(overlap_psi(j))
+!  print*, 'overlap_psi(j) = ',overlap_psi(j)
   enddo
+  call dsort(overlap_psi,iorder,Ndet_generators)
+! print*, 'overlap_psi(1) = ',overlap_psi(1)
+  i_good_state(k) = iorder(1)
+  i_good_state(0) +=1 
+ enddo
+
  do i = 1, N_states
-  i_state(i) = i_good_state(i)
   E_ref(i) = eigvalues(i_good_state(i))
  enddo
  double precision :: accu
  accu = 0.d0
  do k = 1, N_states
   do i = 1, Ndet_generators
-   psi_coef_diagonalized_tmp(i,k) = eigvectors(i,i_state(k)) / eigvectors(index_ref_generators_restart(k),i_state(k))
+   psi_coef_diagonalized_tmp(i,k) = eigvectors(i,i_good_state(k)) / eigvectors(index_ref_generators_restart(k),i_good_state(k))
+  !if(dabs(psi_coef_diagonalized_tmp(i,k).gt.10.d0))then
+  !  print
+  !endif
   enddo
  enddo
  if(verbose)then

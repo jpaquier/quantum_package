@@ -2,10 +2,10 @@ program pouet
  implicit none
  read_wf = .True.
  touch read_wf
-!call test_Fock_matrix_alpha_mo
- call test_superci_eigenvectors
+!call test_MR_Fock_matrix_alpha_mo
+!call test_superci_eigenvectors
 !call test_natural_orbitals 
-!call test_ref_energy
+ call test_ref_energy
 !call test_guess_superci 
 !call test_fock_spin_average
 !call test_H_superci
@@ -20,7 +20,7 @@ end
 
 subroutine test_fock_spin_average
  implicit none
-!provide Fock_matrix_alpha_beta_spin_average_mo
+!provide MR_Fock_matrix_alpha_beta_spin_average_mo
 !provide superci_matrix
  provide transformed_occ1_virt2_virt2
 
@@ -180,9 +180,9 @@ subroutine test_fock_from_act
    iorb = list_core_inact(i)
    do j = 1, n_virt_orb
     jorb = list_virt(j)
-    if(dabs(Fock_matrix_alpha_from_act_mo_bis(jorb,iorb,m) - Fock_matrix_beta_from_act_mo(iorb,jorb,m)).gt.1.d-10)then
+    if(dabs(MR_Fock_matrix_alpha_from_act_mo_bis(jorb,iorb,m) - MR_Fock_matrix_beta_from_act_mo(iorb,jorb,m)).gt.1.d-10)then
      print*, iorb,jorb
-     print*, Fock_matrix_alpha_from_act_mo_bis(jorb,iorb,m),Fock_matrix_beta_from_act_mo(iorb,jorb,m),dabs(Fock_matrix_alpha_from_act_mo_bis(jorb,iorb,m) - Fock_matrix_beta_from_act_mo(iorb,jorb,m))
+     print*, MR_Fock_matrix_alpha_from_act_mo_bis(jorb,iorb,m),MR_Fock_matrix_beta_from_act_mo(iorb,jorb,m),dabs(MR_Fock_matrix_alpha_from_act_mo_bis(jorb,iorb,m) - MR_Fock_matrix_beta_from_act_mo(iorb,jorb,m))
     endif
    enddo
   enddo
@@ -192,9 +192,9 @@ subroutine test_fock_from_act
 
 end
 
-subroutine test_Fock_matrix_alpha_mo
+subroutine test_MR_Fock_matrix_alpha_mo
  implicit none
- provide Fock_matrix_alpha_mo
+ provide MR_Fock_matrix_alpha_mo
 
 
 end

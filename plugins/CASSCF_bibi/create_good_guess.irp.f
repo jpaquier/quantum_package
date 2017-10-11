@@ -22,7 +22,7 @@ subroutine create_good_guess(u,e,i_st)
   iorb = list_core_inact(ihole)
   jpart = index_rotation_CI_reverse(i,2)
   jorb = list_virt(jpart)
-  vec_tmp(i) = -dabs(dsqrt_2 * Fock_matrix_alpha_beta_spin_average_mo(iorb,jorb,i_st) / diagonal_superci_matrix(i,i_st))
+  vec_tmp(i) = -dabs(dsqrt_2 * MR_Fock_matrix_alpha_beta_spin_average_mo(iorb,jorb,i_st) / diagonal_superci_matrix(i,i_st))
   iorder(i) = i
  enddo
  call dsort(vec_tmp,iorder,size_super_ci)
@@ -79,7 +79,7 @@ subroutine create_good_guess_state_average(u,e)
   iorb = list_core_inact(ihole)
   jpart = index_rotation_CI_reverse(i,2)
   jorb = list_virt(jpart)
-  vec_tmp(i) = -dabs(dsqrt_2 * Fock_matrix_spin_and_state_average_mo(iorb,jorb) / diagonal_superci_matrix_state_average(i))
+  vec_tmp(i) = -dabs(dsqrt_2 * MR_Fock_matrix_spin_and_state_average_mo(iorb,jorb) / diagonal_superci_matrix_state_average(i))
   iorder(i) = i
  enddo
  call dsort(vec_tmp,iorder,size_super_ci)

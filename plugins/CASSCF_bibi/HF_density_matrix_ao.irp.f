@@ -31,6 +31,7 @@ END_PROVIDER
    integer :: i,j,k,l,korb,lorb,m
    density_matrix_ao_act_alpha = 0.d0
    density_matrix_ao_act_beta = 0.d0
+   density_matrix_ao_act = 0.d0
   do m = 1, N_states
    do k = 1, n_act_orb
     korb = list_act(k)
