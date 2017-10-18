@@ -18,14 +18,15 @@ subroutine opt_orb
   enddo
   call set_psi_det_as_input_psi(N_det_generators_restart,psi_det_generators_restart,psi_coef_normalized)  
   touch psi_det psi_coef 
-! call diagonalize_CI 
+  call diagonalize_CI 
+  call clear_mo_map
   call casscf_routine
 ! call diag_inactive_virt_and_update_mos_MR_Fock  
+ deallocate(psi_coef_normalized)
  else 
   call damping_SCF
   print*, 'USING ROHF-LIKE  ORBITAL OPTIMIZATION'
   call diag_inactive_virt_and_update_mos_SR_Fock  
  endif
  call save_mos
- deallocate(psi_coef_normalized)
 end

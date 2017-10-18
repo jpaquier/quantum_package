@@ -1,6 +1,7 @@
  BEGIN_PROVIDER [ double precision, one_body_dm_mo_alpha_generators_restart, (mo_tot_num_align,mo_tot_num,N_states) ]
 &BEGIN_PROVIDER [ double precision, one_body_dm_mo_beta_generators_restart, (mo_tot_num_align,mo_tot_num,N_states) ]
 &BEGIN_PROVIDER [ double precision, norm_generators_restart, (N_states)]
+&BEGIN_PROVIDER [ double precision, inv_coef_ref_generators_restart_provider, (n_states)]
    implicit none
    BEGIN_DOC
    ! Alpha and beta one-body density matrix for the generators restart
@@ -15,7 +16,6 @@
    double precision, allocatable  :: tmp_a(:,:,:), tmp_b(:,:,:)
    integer :: degree_respect_to_HF_k
    integer :: degree_respect_to_HF_l,index_ref_generators_restart(N_states)
-   double precision :: inv_coef_ref_generators_restart(n_states)
    integer :: i
 
    do k = 1, N_states
@@ -24,9 +24,9 @@
      call get_excitation_degree(ref_generators_restart(1,1,k),psi_det_generators_restart(1,1,i),degree,N_int)   
      if(degree == 0)then
       index_ref_generators_restart(k) = i
-      inv_coef_ref_generators_restart(k) = 1.d0/psi_coef_generators_restart(i,k)
+      inv_coef_ref_generators_restart_provider(k) = 1.d0/psi_coef_generators_restart(i,k)
       print*, psi_coef_generators_restart(i,k)
-      print*, inv_coef_ref_generators_restart(k)
+      print*, inv_coef_ref_generators_restart_provider(k)
       exit
      endif
     enddo
@@ -34,7 +34,7 @@
    norm_generators_restart = 0.d0
    do i = 1, N_det_generators_restart
     do k = 1, n_states
-     psi_coef_generators_restart(i,k) = psi_coef_generators_restart(i,k) * inv_coef_ref_generators_restart(k)
+     psi_coef_generators_restart(i,k) = psi_coef_generators_restart(i,k) * inv_coef_ref_generators_restart_provider(k)
      norm_generators_restart(k) += psi_coef_generators_restart(i,k)**2
     enddo
    enddo

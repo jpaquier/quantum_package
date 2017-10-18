@@ -66,8 +66,6 @@ subroutine set_intermediate_normalization_lmct_old(norm,i_hole)
    if(is_the_hole_in_det(psi_det(1,1,i),1,i_hole).or.is_the_hole_in_det(psi_det(1,1,i),2,i_hole))then  
     n_good_hole +=1
     index_good_hole(n_good_hole) = i
-!   print*, 'hole',psi_coef(i,1),psi_coef(i,2)
-!   print*, psi_coef(index_ref_generators_restart(1),1),psi_coef(index_ref_generators_restart(2),2)
    else
     do k = 1, N_states
      psi_coef(i,k) = 0.d0
@@ -114,6 +112,7 @@ subroutine set_intermediate_normalization_lmct_old(norm,i_hole)
    enddo
    do j = 1, N_det_generators_restart
     psi_coef(index_ref_gen(j),k) = psi_coef_generators_restart(j,k)
+    inv_coef_ref_generators_restart(k) = inv_coef_ref_generators_restart_provider(k)
    enddo
   enddo
  else 
@@ -140,8 +139,8 @@ subroutine set_intermediate_normalization_lmct_old(norm,i_hole)
       ! Find the reference determinant for intermediate normalization
       call get_excitation_degree(ref_generators_restart(1,1,i),psi_det(1,1,j),degree,N_int)   
       if(degree == 0)then
-       call debug_det(psi_det(1,1,j),N_int)
-       print*, psi_coef(j,i)
+!      call debug_det(psi_det(1,1,j),N_int)
+!      print*, psi_coef(j,i)
        index_ref_generators_restart(i) = i
        inv_coef_ref_generators_restart(i) = 1.d0/psi_coef(j,i)
       endif
@@ -167,7 +166,6 @@ subroutine set_intermediate_normalization_lmct_old(norm,i_hole)
  enddo
  double precision :: norm_ref(N_States)
  norm_ref = 0.d0
- norm = 0.d0
  do k = 1,N_states
   print*,'state ',k
   do i = 1, N_det
@@ -308,6 +306,7 @@ subroutine set_intermediate_normalization_mlct_old(norm,i_particl)
    enddo
    do j = 1, N_det_generators_restart
     psi_coef(index_ref_gen(j),k) = psi_coef_generators_restart(j,k)
+    inv_coef_ref_generators_restart(k) = inv_coef_ref_generators_restart_provider(k)
    enddo
   enddo
  else 
@@ -328,14 +327,14 @@ subroutine set_intermediate_normalization_mlct_old(norm,i_particl)
      enddo
     enddo
     do i = 1, N_States
-     print*, 'Statae = ',i
+     print*, 'State = ',i
      do j = 1, N_det
       psi_coef(j,i) = psi_coef_tmp(j,i_good_state(i))
       ! Find the reference determinant for intermediate normalization
       call get_excitation_degree(ref_generators_restart(1,1,i),psi_det(1,1,j),degree,N_int)   
       if(degree == 0)then
-       call debug_det(psi_det(1,1,j),N_int)
-       print*, psi_coef(j,i)
+!      call debug_det(psi_det(1,1,j),N_int)
+!      print*, psi_coef(j,i)
        index_ref_generators_restart(i) = i
        inv_coef_ref_generators_restart(i) = 1.d0/psi_coef(j,i)
       endif
@@ -355,7 +354,12 @@ subroutine set_intermediate_normalization_mlct_old(norm,i_particl)
    print*,''
  enddo
 
-
+ ! Set the wave function to the intermediate normalization
+ do k = 1, N_states
+  do i = 1, N_det
+   psi_coef(i,k) = psi_coef(i,k) * inv_coef_ref_generators_restart(k)
+  enddo
+ enddo
  double precision :: norm_ref(N_States)
  norm_ref = 0.d0
  do k = 1, N_states
@@ -370,12 +374,6 @@ subroutine set_intermediate_normalization_mlct_old(norm,i_particl)
   enddo
   print*,'norm = ',norm
   norm_ref(k) = 1.d0/dsqrt(norm_ref(k))
- enddo
- ! Set the wave function to the intermediate normalization
- do k = 1, N_states
-  do i = 1, N_det
-   psi_coef(i,k) = psi_coef(i,k) * inv_coef_ref_generators_restart(k)
-  enddo
  enddo
 
 !! Set the wave function to the intermediate normalization

@@ -19,14 +19,14 @@ subroutine diag_matrix_mo(matrix, ld_mo, list_orb, n_orb, ld_ao,mo_coef_new)
      accu += mo_coef_new(l,iorb) * mo_coef_new(k,jorb) * ao_overlap(l,k)
     enddo
    enddo
-   if(iorb == jorb.and. dabs(accu-1.d0).gt.1.d-12)then
-    print*, 'Warning !! In diag_matrix_mo routine, the old MOs might not be orthogonal ! '
-    print*, iorb,jorb,accu
-   endif
-   if(iorb .ne. jorb.and. dabs(accu).gt.1.d-12)then
-    print*, 'Warning !! In diag_matrix_mo routine, the old MOs might not be orthogonal ! '
-    print*, iorb,jorb,accu
-   endif
+!  if(iorb == jorb.and. dabs(accu-1.d0).gt.1.d-12)then
+!   print*, 'Warning !! In diag_matrix_mo routine, the old MOs might not be orthogonal ! '
+!   print*, iorb,jorb,accu
+!  endif
+!  if(iorb .ne. jorb.and. dabs(accu).gt.1.d-12)then
+!   print*, 'Warning !! In diag_matrix_mo routine, the old MOs might not be orthogonal ! '
+!   print*, iorb,jorb,accu
+!  endif
   enddo
  
  enddo
@@ -66,18 +66,18 @@ subroutine diag_matrix_mo(matrix, ld_mo, list_orb, n_orb, ld_ao,mo_coef_new)
    do  k = 1, n_orb
      accu += eigvectors(k,i) * eigvectors(k,j)
    enddo
-   if(i==j)then
-    if(dabs(accu)-1.d0.gt.1.d-12)then
-     print*, 'Warning !! In diag_matrix_mo routine, the new eigenvectors might not be orthogonal ! '
-     print*, i,j,accu
-    endif
-   endif
-   if(i.ne.j)then
-    if(dabs(accu).gt.1.d-12)then
-     print*, 'Warning !! In diag_matrix_mo routine, the new eigenvectors might not be orthogonal ! '
-     print*, i,j,accu
-    endif
-   endif
+ ! if(i==j)then
+ !  if(dabs(accu)-1.d0.gt.1.d-12)then
+ !   print*, 'Warning !! In diag_matrix_mo routine, the new eigenvectors might not be orthogonal ! '
+ !   print*, i,j,accu
+ !  endif
+ ! endif
+ ! if(i.ne.j)then
+ !  if(dabs(accu).gt.1.d-12)then
+ !   print*, 'Warning !! In diag_matrix_mo routine, the new eigenvectors might not be orthogonal ! '
+ !   print*, i,j,accu
+ !  endif
+ ! endif
   enddo
  enddo
 
@@ -105,14 +105,14 @@ subroutine diag_matrix_mo(matrix, ld_mo, list_orb, n_orb, ld_ao,mo_coef_new)
      accu += mo_coef_new(l,iorb) * mo_coef_new(k,jorb) * ao_overlap(l,k)
     enddo
    enddo
-   if(iorb == jorb.and. dabs(accu-1.d0).gt.1.d-12)then
-    print*, 'Warning !! In diag_matrix_mo routine, the new MOs might not be orthogonal ! '
-    print*, iorb,jorb,accu
-   endif
-   if(iorb .ne. jorb.and. dabs(accu).gt.1.d-12)then
-    print*, 'Warning !! In diag_matrix_mo routine, the new MOs might not be orthogonal ! '
-    print*, iorb,jorb,accu
-   endif
+  !if(iorb == jorb.and. dabs(accu-1.d0).gt.1.d-12)then
+  ! print*, 'Warning !! In diag_matrix_mo routine, the new MOs might not be orthogonal ! '
+  ! print*, iorb,jorb,accu
+  !endif
+  !if(iorb .ne. jorb.and. dabs(accu).gt.1.d-12)then
+  ! print*, 'Warning !! In diag_matrix_mo routine, the new MOs might not be orthogonal ! '
+  ! print*, iorb,jorb,accu
+  !endif
   enddo
  
  enddo

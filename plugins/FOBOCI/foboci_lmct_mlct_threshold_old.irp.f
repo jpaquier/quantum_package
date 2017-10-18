@@ -45,10 +45,11 @@ subroutine FOBOCI_lmct_mlct_old_thr(iter,norm_total)
  norm_tmp = 0.d0
  allocate( zero_bitmask(N_int,2) )
   do i = 1, n_inact_orb
+!  cycle
    lmct = .True.
    integer :: i_hole_osoci
    i_hole_osoci = list_inact(i)
-!  if(i_hole_osoci.ne.71)cycle
+!  if(i_hole_osoci.ne.37)cycle
    print*,'--------------------------'
    ! First set the current generators to the one of restart
    call check_symetry(i_hole_osoci,thr,test_sym)
@@ -109,7 +110,7 @@ subroutine FOBOCI_lmct_mlct_old_thr(iter,norm_total)
       norm_total(k) += norm_tmp(k)
      enddo
     else  
-!    if(.not. is_ok_perturbative)cycle
+     if(.not. is_ok_perturbative)cycle
      call set_intermediate_normalization_lmct_old(norm_tmp,i_hole_osoci)
      call update_density_matrix_osoci
      do k = 1, N_states
@@ -121,7 +122,7 @@ subroutine FOBOCI_lmct_mlct_old_thr(iter,norm_total)
 
  enddo
 
- if(.False.)then
+ if(.True.)then
   print*,''
   print*,'DOING THEN THE MLCT !!'
   print*,'Threshold_mlct = ',threshold_mlct
@@ -129,6 +130,7 @@ subroutine FOBOCI_lmct_mlct_old_thr(iter,norm_total)
    do i = 1, n_virt_orb
     integer :: i_particl_osoci
     i_particl_osoci = list_virt(i)
+!   if(i_particl_osoci.ne.90)cycle
     print*,'--------------------------'
     ! First set the current generators to the one of restart
     call check_symetry(i_particl_osoci,thr,test_sym)
@@ -150,11 +152,6 @@ subroutine FOBOCI_lmct_mlct_old_thr(iter,norm_total)
     call set_bitmask_particl_as_input(reunion_of_bitmask)
     call set_bitmask_hole_as_input(reunion_of_bitmask)
 !!  ! so all the mono excitation on the new generators 
-    print*, 'psi_det = '
-    do k = 1, N_det
-     print*, k
-     call debug_det(psi_det(1,1,k),N_int)
-    enddo
     call is_a_good_candidate(threshold_mlct,is_ok,e_pt2,verbose,exit_loop,is_ok_perturbative)
     print*,'is_ok = ',is_ok
     if(is_ok)then
@@ -168,10 +165,9 @@ subroutine FOBOCI_lmct_mlct_old_thr(iter,norm_total)
        enddo
       enddo
       call all_single(e_pt2)
-!     call make_s2_eigenfunction_first_order
-!     threshold_davidson = 1.d-6
-!     soft_touch threshold_davidson davidson_criterion
-     
+      call make_s2_eigenfunction_first_order
+      threshold_davidson = 1.d-8
+      soft_touch threshold_davidson davidson_criterion
       call diagonalize_ci
       deallocate(dressing_matrix)
       call set_intermediate_normalization_mlct_old(norm_tmp,i_particl_osoci)
@@ -190,13 +186,16 @@ subroutine FOBOCI_lmct_mlct_old_thr(iter,norm_total)
       enddo
      endif
     else
+     if(.not. is_ok_perturbative)cycle
+     call set_intermediate_normalization_mlct_old(norm_tmp,i_hole_osoci)
+     call update_density_matrix_osoci
      if(exit_loop)then
       call set_generators_to_generators_restart
       call set_psi_det_to_generators
       exit
      endif
     endif
-    call update_density_matrix_osoci
+!   call update_density_matrix_osoci
   enddo
  endif
 
