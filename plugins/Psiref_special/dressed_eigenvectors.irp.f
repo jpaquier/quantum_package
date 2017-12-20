@@ -27,6 +27,7 @@
    do k = 1, n_det_ref_fobo 
     accu += eigvectors(k,j) * psi_coef_ref_fobo_tmp(k)
    enddo
+   print*, 'accu',accu
    if(dabs(accu).gt.0.9d0)then
     igoodstate = j
     exit

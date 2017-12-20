@@ -7,7 +7,7 @@ subroutine provide_all_stuffs
  implicit none
  provide ref_fobo_hamiltonian_matrix dressing_ref_fobo_hamiltonian
  integer :: i,j,istate
- double precision, allocatable :: psi_restart_ref_fobo_normalized(:),psi_ref_fobo_zeroth_order(:),psi_ref_fobo_dressed(:)
+ double precision, allocatable :: psi_restart_ref_fobo_normalized(:),psi_ref_fobo_zeroth_order(:)
  double precision, allocatable :: eigvalues(:),eigvectors(:,:)
  double precision, allocatable :: H_dressed(:,:)
  double precision, allocatable :: H_print(:,:)
@@ -18,7 +18,6 @@ subroutine provide_all_stuffs
  allocate (psi_restart_ref_fobo_normalized(N_det_ref_fobo))
  allocate (psi_ref_fobo_zeroth_order(N_det_ref_fobo))
  print*,'# nuclear_repulsion = ',nuclear_repulsion 
- allocate (psi_ref_fobo_dressed(N_det_ref_fobo))
  allocate (eigvalues(N_det_ref_fobo))
  allocate (array_print(N_det_ref_fobo))
  allocate (eigvectors(N_det_ref_fobo,N_det_ref_fobo))
@@ -97,6 +96,13 @@ subroutine provide_all_stuffs
   print*,''
   print*,'-------------------'
   print*,'-------------------'
+  call lapack_diagd(eigvalues,eigvectors,ref_fobo_hamiltonian_matrix,n_det_ref_fobo,n_det_ref_fobo)
+  do i = 1, N_det_ref_fobo
+   psi_ref_fobo_zeroth_order(i) = eigvectors(i,istate)
+  enddo
+
+
+
   do i = 1, N_det_ref_fobo
    do j = 1, N_det_ref_fobo
     H_dressed(j,i) = ref_fobo_hamiltonian_matrix(j,i) + dressing_ref_fobo_hamiltonian(j,i,istate)
@@ -117,32 +123,25 @@ subroutine provide_all_stuffs
   print*,''
  
  
-  call lapack_diagd(eigvalues,eigvectors,ref_fobo_hamiltonian_matrix,n_det_ref_fobo,n_det_ref_fobo)
-  do i = 1, N_det_ref_fobo
-   psi_ref_fobo_zeroth_order(i) = eigvectors(i,istate)
-  enddo
- 
-  
-  call lapack_diagd(eigvalues,eigvectors,H_dressed,n_det_ref_fobo,n_det_ref_fobo)
-  do i = 1, N_det_ref_fobo
-   psi_ref_fobo_dressed(i) = eigvectors(i,istate)
-  enddo
   print*, ''
   print*,'Ref determinant            = ',  nuclear_repulsion + ref_fobo_hamiltonian_matrix(1,1)
   print*,'Ref determinant + dressed  = ',H_print(1,1) +  nuclear_repulsion + ref_fobo_hamiltonian_matrix(1,1)
-  print*,'Dressed matrix eigenvalue  = ',eigvalues(istate) + nuclear_repulsion
+  print*,'Zeroth-order energy        = ',eigvalues(1) +  nuclear_repulsion 
+  print*,'Stabilization zeroth-order = ', eigvalues(1) - ref_fobo_hamiltonian_matrix(1,1)
+  print*,'Dressed matrix eigenvalue  = ',energies_ref_fobo_dressed(istate) + nuclear_repulsion
   print*,'Variational energy         = ',psi_energy(istate) + nuclear_repulsion
+  print*,'Stabilization second-order = ', energies_ref_fobo_dressed(1) - ref_fobo_hamiltonian_matrix(1,1)
   print*, ''
   print*, 'Composition of the WF '
   print*, ' Type      Number   Exact         Dressed       Naked'
   do i = 1, N_det_ref_fobo
    if(idx_ref_fobo_cas_lmct_mlct(i,1)==0)then ! CAS 
-!   write(*,'(A5,X,A3,3X,100(F10.7 ,4X))') ' CAS ',' 0 ',psi_ref_fobo_coef(i,istate)/psi_ref_fobo_coef(1,istate), psi_ref_fobo_dressed(i)/psi_ref_fobo_dressed(1),psi_ref_fobo_zeroth_order(i)/psi_ref_fobo_zeroth_order(1)
-    write(*,'(A5,X,A3,3X,2X,I3,3X,100(F10.7 ,4X))') ' CAS ',' 0 ',i,psi_ref_fobo_coef(i,istate)/psi_ref_fobo_coef(1,istate), psi_ref_fobo_dressed(i)/psi_ref_fobo_dressed(1),psi_ref_fobo_zeroth_order(i)/psi_ref_fobo_zeroth_order(1)
+!   write(*,'(A5,X,A3,3X,100(F10.7 ,4X))') ' CAS ',' 0 ',psi_ref_fobo_coef(i,istate)/psi_ref_fobo_coef(1,istate), psi_ref_fobo_coef_dressed(i)/psi_ref_fobo_coef_dressed(1),psi_ref_fobo_zeroth_order(i)/psi_ref_fobo_zeroth_order(1)
+    write(*,'(A5,X,A3,3X,2X,I3,3X,100(F10.7 ,4X))') ' CAS ',' 0 ',i,psi_ref_fobo_coef(i,istate)/psi_ref_fobo_coef(1,istate), psi_ref_fobo_coef_dressed(i,istate)/psi_ref_fobo_coef_dressed(1,istate),psi_ref_fobo_zeroth_order(i)/psi_ref_fobo_zeroth_order(1)
    else if (idx_ref_fobo_cas_lmct_mlct(i,1) == +1)then ! LMCT 
-    write(*,'(A5,X,I3,3X,2X,I3,3X,100(F10.7 ,4X))') ' LMCT',idx_ref_fobo_cas_lmct_mlct(i,2),i,psi_ref_fobo_coef(i,istate)/psi_ref_fobo_coef(1,istate), psi_ref_fobo_dressed(i)/psi_ref_fobo_dressed(1),psi_ref_fobo_zeroth_order(i)/psi_ref_fobo_zeroth_order(1)
+    write(*,'(A5,X,I3,3X,2X,I3,3X,100(F10.7 ,4X))') ' LMCT',idx_ref_fobo_cas_lmct_mlct(i,2),i,psi_ref_fobo_coef(i,istate)/psi_ref_fobo_coef(1,istate), psi_ref_fobo_coef_dressed(i,istate)/psi_ref_fobo_coef_dressed(1,istate),psi_ref_fobo_zeroth_order(i)/psi_ref_fobo_zeroth_order(1)
    else if (idx_ref_fobo_cas_lmct_mlct(i,1) == -1)then ! MLCT 
-    write(*,'(A5,X,I3,3X,2X,I3,3X,100(F10.7 ,4X))') ' MLCT',idx_ref_fobo_cas_lmct_mlct(i,2),i,psi_ref_fobo_coef(i,istate)/psi_ref_fobo_coef(1,istate), psi_ref_fobo_dressed(i)/psi_ref_fobo_dressed(1),psi_ref_fobo_zeroth_order(i)/psi_ref_fobo_zeroth_order(1)
+    write(*,'(A5,X,I3,3X,2X,I3,3X,100(F10.7 ,4X))') ' MLCT',idx_ref_fobo_cas_lmct_mlct(i,2),i,psi_ref_fobo_coef(i,istate)/psi_ref_fobo_coef(1,istate), psi_ref_fobo_coef_dressed(i,istate)/psi_ref_fobo_coef_dressed(1,istate),psi_ref_fobo_zeroth_order(i)/psi_ref_fobo_zeroth_order(1)
    endif
   enddo
  enddo
@@ -151,7 +150,6 @@ subroutine provide_all_stuffs
  deallocate (H_print)
  deallocate (psi_restart_ref_fobo_normalized)
  deallocate (psi_ref_fobo_zeroth_order)
- deallocate (psi_ref_fobo_dressed)
 
  deallocate (eigvalues,array_print)
  deallocate (eigvectors)

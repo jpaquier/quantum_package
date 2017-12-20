@@ -8,8 +8,8 @@ program foboscf
  no_oa_or_av_opt = .True.
  touch no_oa_or_av_opt
  call run_prepare
- call routine_fobo_scf
- call save_mos
+!call routine_fobo_scf
+!call save_mos
 
 end
 

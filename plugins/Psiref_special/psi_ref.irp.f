@@ -1,5 +1,15 @@
 use bitmasks
 
+ BEGIN_PROVIDER [double precision, thresh_coef_cas ]
+&BEGIN_PROVIDER [double precision, thresh_coef_lmct ]
+&BEGIN_PROVIDER [double precision, thresh_coef_mlct]
+ implicit none
+  thresh_coef_cas  = 0.0d0
+  thresh_coef_lmct = 0.02d0
+  thresh_coef_mlct = 0.05d0
+
+ END_PROVIDER 
+
  BEGIN_PROVIDER [ integer(bit_kind), psi_ref_fobo, (N_int,2,psi_det_size) ]
 &BEGIN_PROVIDER [ double precision, psi_ref_fobo_coef,  (psi_det_size,n_states) ]
 &BEGIN_PROVIDER [ integer, idx_ref_fobo_cas_lmct_mlct, (psi_det_size,2) ]
@@ -32,9 +42,6 @@ use bitmasks
   integer :: i_count_1h
   integer :: i_count_1p
   double precision :: coef_average
-  double precision :: thresh_coef_cas
-  double precision :: thresh_coef_lmct
-  double precision :: thresh_coef_mlct
 
   N_det_ref_fobo = 0
   N_det_ref_cas_fobo = 0
@@ -45,9 +52,6 @@ use bitmasks
   hole_particl_count = 0
   i_count_1h = 0
   i_count_1p = 0
-  thresh_coef_cas  = 0.5d0
-  thresh_coef_lmct = 0.005d0
-  thresh_coef_mlct = 0.005d0
   do j = 1, N_det
    n_h = number_of_holes(psi_det(1,1,j))
    n_p = number_of_particles(psi_det(1,1,j))
@@ -287,3 +291,91 @@ END_PROVIDER
    enddo
   enddo
  END_PROVIDER 
+
+BEGIN_PROVIDER [integer, n_list_lmct]
+ implicit none
+ 
+ integer :: i,n_h,n_p,number_of_holes,number_of_particles
+ n_list_lmct = 0
+ do i = 1, N_det
+  n_h = number_of_holes(psi_det(1,1,i))
+  n_p = number_of_particles(psi_det(1,1,i))
+  if(n_h==1.and.n_p==0.and.dabs(psi_coef(i,1)).gt.thresh_coef_lmct)then
+!  call debug_det(psi_det(1,1,i),N_int)
+   n_list_lmct+=1 
+   print*, n_h,n_p,dabs(psi_coef(i,1))
+  endif
+ enddo
+ print*, 'n_list_lmct = ',n_list_lmct
+
+END_PROVIDER 
+
+BEGIN_PROVIDER [integer, list_lmct, (n_list_lmct)]
+use bitmasks
+ implicit none
+ integer          :: exc(0:2,2,2), degree
+ integer :: h1,p1,h2,p2,s1,s2
+ double precision :: phase
+ 
+ integer :: i,n_h,n_p,number_of_holes,number_of_particles,j
+ j = 0
+ do i = 1, N_det
+  n_h = number_of_holes(psi_det(1,1,i))
+  n_p = number_of_particles(psi_det(1,1,i))
+  if(n_h==1.and.n_p==0.and.dabs(psi_coef(i,1)).gt.thresh_coef_lmct)then
+   j +=1 
+   call get_excitation(psi_det(1,1,1),psi_det(1,1,i),exc,degree,phase,N_int)
+   call decode_exc(exc,degree,h1,p1,h2,p2,s1,s2)
+   if(list_inact_reverse(h1).ne.0)then
+    list_lmct(j) = h1
+   else 
+    list_lmct(j) = h2
+   endif
+   print*, 'degree = ',degree
+   print*, 'h1,p1,h2,p2',h1,p1,h2,p2
+   print*, 'h1',list_lmct(j)
+  endif
+ enddo
+
+END_PROVIDER 
+
+
+BEGIN_PROVIDER [integer, n_list_mlct]
+ implicit none
+ 
+ integer :: i,n_h,n_p,number_of_holes,number_of_particles
+ n_list_mlct = 0
+ do i = 1, N_det
+  n_h = number_of_holes(psi_det(1,1,i))
+  n_p = number_of_particles(psi_det(1,1,i))
+  if(n_h==0.and.n_p==1.and.dabs(psi_coef(i,1)).gt.thresh_coef_mlct)then
+   n_list_mlct+=1 
+  endif
+ enddo
+
+END_PROVIDER 
+
+BEGIN_PROVIDER [integer, list_mlct, (n_list_mlct)]
+ implicit none
+ integer          :: exc(0:2,2,2), degree
+ integer :: h1,p1,h2,p2,s1,s2
+ double precision :: phase
+ 
+ integer :: i,n_h,n_p,number_of_holes,number_of_particles,j
+ j = 0
+ do i = 1, N_det
+  n_h = number_of_holes(psi_det(1,1,i))
+  n_p = number_of_particles(psi_det(1,1,i))
+  if(n_h==0.and.n_p==1.and.dabs(psi_coef(i,1)).gt.thresh_coef_mlct)then
+   j +=1 
+   call get_excitation(psi_det(1,1,1),psi_det(1,1,i),exc,degree,phase,N_int)
+   call decode_exc(exc,degree,h1,p1,h2,p2,s1,s2)
+   if(list_virt_reverse(p1).ne.0)then
+    list_mlct(j) = p1
+   else 
+    list_mlct(j) = p2
+   endif
+  endif
+ enddo
+
+END_PROVIDER 

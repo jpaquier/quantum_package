@@ -83,6 +83,7 @@ BEGIN_PROVIDER [ integer(bit_kind), HF_bitmask, (N_int,2)]
   call list_to_bitstring( HF_bitmask(1,1), occ, elec_alpha_num, N_int)
   ! elec_alpha_num <= elec_beta_num, so occ is already OK.
   call list_to_bitstring( HF_bitmask(1,2), occ, elec_beta_num, N_int)
+  call debug_det(HF_bitmask,N_int)
 
 END_PROVIDER
 

@@ -387,8 +387,7 @@ subroutine set_lmct_mlct_to_psi_det
  SOFT_TOUCH N_det psi_det psi_coef
  logical :: found_duplicates
  call remove_duplicates_in_psi_det(found_duplicates)
- 
-  call reorder_wf
+ call reorder_wf
 end
 
 subroutine set_1h1p_to_psi_det

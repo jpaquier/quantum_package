@@ -18,6 +18,9 @@ BEGIN_PROVIDER [double precision, core_fock_operator, (mo_tot_num,mo_tot_num)]
  implicit none
  integer :: i,j,k,l,m,n
  double precision :: get_mo_bielec_integral
+ BEGIN_DOC 
+! this is the contribution to the Fock operator from the core electrons
+ END_DOC
  core_fock_operator = 0.d0
  do i = 1, n_act_orb
   j = list_act(i)

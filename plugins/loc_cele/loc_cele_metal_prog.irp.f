@@ -33,8 +33,6 @@ program loc_rasorb
         
         logical *1 z54
         print*,'passed the first copy'
-        print*, index_ligand_orb_loc
-        stop
         
         z54=.false.
         
@@ -44,6 +42,8 @@ program loc_rasorb
         
         
         print*,'Entering in the loc program'
+!       provide index_ligand_orb_loc  
+!       stop
         
         !     read(5,*) z54
         print*,'before = '
@@ -94,7 +94,7 @@ program loc_rasorb
         
         
         
-        nrot(1) = 2   ! number of orbitals to be localized
+        nrot(1) = n_orb_loc   ! number of orbitals to be localized
         
         
         integer                        :: index_rot(1000,1)
@@ -103,68 +103,14 @@ program loc_rasorb
         cmoref = 0.d0
         irot = 0
         
-        irot(1,1) = 11
-        irot(2,1) = 12
-        cmoref(15,1,1)   = 1.d0   !
-        cmoref(14,2,1)   = 1.d0   !
-        
-        ! ESATRIENE with 3 bonding and anti bonding orbitals
-        ! First bonding orbital for esa
-        !      cmoref(7,1,1)   = 1.d0   !
-        !      cmoref(26,1,1)  = 1.d0   !
-        ! Second bonding orbital for esa
-        !      cmoref(45,2,1)  = 1.d0   !
-        !      cmoref(64,2,1)  = 1.d0   !
-        ! Third bonding orbital for esa
-        !      cmoref(83,3,1)  = 1.d0   !
-        !      cmoref(102,3,1) = 1.d0   !
-        
-        ! First anti bonding orbital for esa
-        !      cmoref(7,4,1)   = 1.d0   !
-        !      cmoref(26,4,1)  = -1.d0   !
-        ! Second anti bonding orbital for esa
-        !      cmoref(45,5,1)  = 1.d0   !
-        !      cmoref(64,5,1)  = -1.d0   !
-        ! Third anti bonding orbital for esa
-        !      cmoref(83,6,1)  = 1.d0   !
-        !      cmoref(102,6,1) = -1.d0   !
-        
-        ! ESATRIENE with 2 bonding and anti bonding orbitals
-        ! AND 2 radical orbitals
-        ! First radical orbital
-        !      cmoref(7,1,1)   = 1.d0   !
-        ! First bonding orbital
-        !      cmoref(26,2,1)  = 1.d0   !
-        !      cmoref(45,2,1)  = 1.d0   !
-        ! Second bonding orbital
-        !      cmoref(64,3,1)  = 1.d0   !
-        !      cmoref(83,3,1)  = 1.d0   !
-        ! Second radical orbital for esa
-        !      cmoref(102,4,1) = 1.d0   !
-        
-        ! First anti bonding orbital for esa
-        !      cmoref(26,5,1)  = 1.d0   !
-        !      cmoref(45,5,1)  =-1.d0   !
-        ! Second anti bonding orbital for esa
-        !      cmoref(64,6,1)  = 1.d0   !
-        !      cmoref(83,6,1)  =-1.d0   !
-        
-        ! ESATRIENE with 1 central bonding and anti bonding orbitals
-        ! AND 4 radical orbitals
-        ! First radical orbital
-        cmoref(7,1,1)   = 1.d0   !
-        ! Second radical orbital
-        cmoref(26,2,1)  = 1.d0   !
-        ! First bonding orbital
-        cmoref(45,3,1)  = 1.d0   !
-        cmoref(64,3,1)  = 1.d0   !
-        ! Third radical orbital for esa
-        cmoref(83,4,1)  = 1.d0   !
-        ! Fourth radical orbital for esa
-        cmoref(102,5,1) = 1.d0   !
-        ! First anti bonding orbital
-        cmoref(45,6,1)  = 1.d0   !
-        cmoref(64,6,1)  =-1.d0   !
+        do i = 1, n_orb_loc
+         irot(i,1) = index_loc_orb(i)
+        enddo
+        do i = 1, n_orb_loc
+         do j = 1, ao_num
+          cmoref(j,i,1)   = guess_loc_mos(j,i)
+         enddo
+        enddo
         
         
         do i = 1, nrot(1)
