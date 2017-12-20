@@ -33,8 +33,8 @@ BEGIN_PROVIDER [double precision, MR_Fock_mo_core_virt_from_core_inact, (mo_tot_
 
 END_PROVIDER 
 
- BEGIN_PROVIDER [double precision, MR_Fock_matrix_alpha_ao, (ao_num_align, ao_num,N_states)]
-&BEGIN_PROVIDER [double precision, MR_Fock_matrix_beta_ao, (ao_num_align, ao_num,N_states)]
+ BEGIN_PROVIDER [double precision, MR_Fock_matrix_alpha_ao, (ao_num, ao_num,N_states)]
+&BEGIN_PROVIDER [double precision, MR_Fock_matrix_beta_ao, (ao_num, ao_num,N_states)]
  implicit none
  integer                        :: i,j,k
  do k = 1, N_states
@@ -50,10 +50,10 @@ END_PROVIDER
 
  END_PROVIDER 
 
- BEGIN_PROVIDER [ double precision, ao_bi_elec_integral_alpha_core_inact, (ao_num_align, ao_num) ]
-&BEGIN_PROVIDER [ double precision, ao_bi_elec_integral_beta_core_inact ,  (ao_num_align, ao_num) ]
-&BEGIN_PROVIDER [ double precision, ao_bi_elec_integral_alpha_act,  (ao_num_align, ao_num,N_states) ]
-&BEGIN_PROVIDER [ double precision, ao_bi_elec_integral_beta_act,  (ao_num_align, ao_num,N_states) ]
+ BEGIN_PROVIDER [ double precision, ao_bi_elec_integral_alpha_core_inact, (ao_num, ao_num) ]
+&BEGIN_PROVIDER [ double precision, ao_bi_elec_integral_beta_core_inact ,  (ao_num, ao_num) ]
+&BEGIN_PROVIDER [ double precision, ao_bi_elec_integral_alpha_act,  (ao_num, ao_num,N_states) ]
+&BEGIN_PROVIDER [ double precision, ao_bi_elec_integral_beta_act,  (ao_num, ao_num,N_states) ]
 &BEGIN_PROVIDER [ double precision, repulsion_elec_core_core ]
  use map_module
  implicit none
@@ -94,17 +94,17 @@ END_PROVIDER
    !$OMP PARALLEL DEFAULT(NONE)                                      &
    !$OMP PRIVATE(i,j,l,k1,k,integral,ii,jj,kk,ll,i8,keys,values,n_elements_max,m, &
    !$OMP  n_elements,ao_bi_elec_integral_alpha_core_inact_tmp,ao_bi_elec_integral_beta_core_inact_tmp,ao_bi_elec_integral_alpha_act_tmp,ao_bi_elec_integral_beta_act_tmp,repulsion_elec_core_core_tmp)&
-   !$OMP SHARED(ao_num,ao_num_align,HF_density_matrix_ao_alpha_core_inact,HF_density_matrix_ao_beta_core_inact,&
+   !$OMP SHARED(ao_num,HF_density_matrix_ao_alpha_core_inact,HF_density_matrix_ao_beta_core_inact,&
    !$OMP  ao_integrals_map, ao_bi_elec_integral_alpha_core_inact, ao_bi_elec_integral_beta_core_inact, ao_bi_elec_integral_alpha_act, ao_bi_elec_integral_beta_act,density_matrix_ao_act_alpha,density_matrix_ao_act_beta,repulsion_elec_core_core,density_matrix_ao_act,N_states) 
 
    call get_cache_map_n_elements_max(ao_integrals_map,n_elements_max)
    allocate(keys(n_elements_max), values(n_elements_max))
-   allocate(ao_bi_elec_integral_alpha_core_inact_tmp(ao_num_align,ao_num), &
-            ao_bi_elec_integral_beta_core_inact_tmp(ao_num_align,ao_num))
+   allocate(ao_bi_elec_integral_alpha_core_inact_tmp(ao_num,ao_num), &
+            ao_bi_elec_integral_beta_core_inact_tmp(ao_num,ao_num))
    ao_bi_elec_integral_alpha_core_inact_tmp = 0.d0
    ao_bi_elec_integral_beta_core_inact_tmp  = 0.d0
-   allocate(ao_bi_elec_integral_alpha_act_tmp(ao_num_align,ao_num,N_states))
-   allocate(ao_bi_elec_integral_beta_act_tmp(ao_num_align,ao_num,N_states))
+   allocate(ao_bi_elec_integral_alpha_act_tmp(ao_num,ao_num,N_states))
+   allocate(ao_bi_elec_integral_beta_act_tmp(ao_num,ao_num,N_states))
    ao_bi_elec_integral_alpha_act_tmp  = 0.d0
    ao_bi_elec_integral_beta_act_tmp  = 0.d0
    repulsion_elec_core_core_tmp = 0.d0

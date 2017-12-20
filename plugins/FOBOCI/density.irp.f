@@ -1,4 +1,4 @@
-BEGIN_PROVIDER [double precision, mo_general_density_alpha, (mo_tot_num_align,mo_tot_num)]
+BEGIN_PROVIDER [double precision, mo_general_density_alpha, (mo_tot_num,mo_tot_num)]
  implicit none
  integer  :: i,j,k,l
  mo_general_density_alpha = 0.d0
@@ -13,7 +13,7 @@ BEGIN_PROVIDER [double precision, mo_general_density_alpha, (mo_tot_num_align,mo
 END_PROVIDER
 
 
-BEGIN_PROVIDER [double precision, mo_general_density_beta, (mo_tot_num_align,mo_tot_num)]
+BEGIN_PROVIDER [double precision, mo_general_density_beta, (mo_tot_num,mo_tot_num)]
  implicit none
  integer  :: i,j,k,l
  mo_general_density_beta = 0.d0

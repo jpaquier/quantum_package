@@ -19,7 +19,7 @@ BEGIN_PROVIDER [integer(bit_kind), ref_closed_shell_bitmask, (N_int,2)]
 END_PROVIDER
 
 
-BEGIN_PROVIDER [double precision, fock_operator_closed_shell_ref_bitmask, (mo_tot_num_align, mo_tot_num) ]
+BEGIN_PROVIDER [double precision, fock_operator_closed_shell_ref_bitmask, (mo_tot_num, mo_tot_num) ]
  implicit none
  integer :: i0,j0,i,j,k0,k
  integer :: n_occ_ab(2)
@@ -217,7 +217,7 @@ subroutine get_mono_excitation_from_fock_bielec(det_1,det_2,h,p,spin,phase,hij)
 end
 
 
-BEGIN_PROVIDER [double precision, fock_operator_bielec_closed_shell_ref_bitmask, (mo_tot_num_align, mo_tot_num) ]
+BEGIN_PROVIDER [double precision, fock_operator_bielec_closed_shell_ref_bitmask, (mo_tot_num, mo_tot_num) ]
  implicit none
  integer :: i0,j0,i,j,k0,k
  integer :: n_occ_ab(2)

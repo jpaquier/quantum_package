@@ -2,7 +2,7 @@
 subroutine diag_inactive_virt_and_update_mos_MR_Fock
  implicit none
  integer :: i,j,i_inact,j_inact,i_virt,j_virt
- double precision :: tmp(mo_tot_num_align,mo_tot_num)
+ double precision :: tmp(mo_tot_num,mo_tot_num)
  character*(64) :: label
  print*,'Diagonalizing the core, inact and virt Fock operator'
  tmp = 0.d0
@@ -28,10 +28,10 @@ subroutine diag_inactive_virt_and_update_mos_MR_Fock
  enddo
  
  if(n_core_inact_orb.gt.0)then
-  call diag_matrix_mo(tmp, mo_tot_num_align, list_core_inact, n_core_inact_orb, size(mo_coef,1),mo_coef)
+  call diag_matrix_mo(tmp, mo_tot_num, list_core_inact, n_core_inact_orb, size(mo_coef,1),mo_coef)
  endif
  if(n_virt_orb.gt.0)then
-  call diag_matrix_mo(tmp, mo_tot_num_align, list_virt, n_virt_orb, size(mo_coef,1),mo_coef)
+  call diag_matrix_mo(tmp, mo_tot_num, list_virt, n_virt_orb, size(mo_coef,1),mo_coef)
  endif
 
 

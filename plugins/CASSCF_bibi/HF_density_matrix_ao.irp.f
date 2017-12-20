@@ -1,4 +1,4 @@
-BEGIN_PROVIDER [ double precision, HF_density_matrix_ao_alpha_core_inact, (ao_num_align,ao_num) ]
+BEGIN_PROVIDER [ double precision, HF_density_matrix_ao_alpha_core_inact, (ao_num,ao_num) ]
    implicit none
   BEGIN_DOC
  ! HF_density_matrix_ao_alpha_core_inact(i,j) = \sum_{k = 1, n_core_inact_orb} mo_coef(i,k) * mo_coef(j,k)
@@ -9,7 +9,7 @@ BEGIN_PROVIDER [ double precision, HF_density_matrix_ao_alpha_core_inact, (ao_nu
         HF_density_matrix_ao_alpha_core_inact, size(HF_density_matrix_ao_alpha_core_inact,1))
 END_PROVIDER
 
-BEGIN_PROVIDER [ double precision, HF_density_matrix_ao_beta_core_inact,  (ao_num_align,ao_num) ]
+BEGIN_PROVIDER [ double precision, HF_density_matrix_ao_beta_core_inact,  (ao_num,ao_num) ]
    implicit none
   BEGIN_DOC
  ! HF_density_matrix_ao_beta_core_inact(i,j) = \sum_{k = 1, n_core_inact_orb} mo_coef(i,k) * mo_coef(j,k)
@@ -20,9 +20,9 @@ BEGIN_PROVIDER [ double precision, HF_density_matrix_ao_beta_core_inact,  (ao_nu
         HF_density_matrix_ao_beta_core_inact, size(HF_density_matrix_ao_beta_core_inact,1))
 END_PROVIDER
 
- BEGIN_PROVIDER [ double precision, density_matrix_ao_act_alpha, (ao_num_align,ao_num,N_states) ]
-&BEGIN_PROVIDER [ double precision, density_matrix_ao_act_beta, (ao_num_align,ao_num,N_States) ]
-&BEGIN_PROVIDER [ double precision, density_matrix_ao_act, (ao_num_align,ao_num,N_states) ]
+ BEGIN_PROVIDER [ double precision, density_matrix_ao_act_alpha, (ao_num,ao_num,N_states) ]
+&BEGIN_PROVIDER [ double precision, density_matrix_ao_act_beta, (ao_num,ao_num,N_States) ]
+&BEGIN_PROVIDER [ double precision, density_matrix_ao_act, (ao_num,ao_num,N_states) ]
    implicit none
   BEGIN_DOC
  ! density_matrix_ao_act_alpha(i,j) = \sum_{k_act,l_act = 1, n_act_orb} mo_coef(i,l_act) * mo_coef(j,k_act) * one_body_dm_mo_alpha_average(l_act,k_act)
@@ -72,7 +72,7 @@ END_PROVIDER
 
 END_PROVIDER 
 
-BEGIN_PROVIDER [ double precision, HF_density_matrix_ao_core_inact, (ao_num_align,ao_num) ]
+BEGIN_PROVIDER [ double precision, HF_density_matrix_ao_core_inact, (ao_num,ao_num) ]
    implicit none
    BEGIN_DOC
    ! S^-1 Density matrix in the AO basis S^-1

@@ -1,4 +1,4 @@
-BEGIN_PROVIDER [ double precision, mo_coef_begin_iteration, (ao_num_align,mo_tot_num) ]
+BEGIN_PROVIDER [ double precision, mo_coef_begin_iteration, (ao_num,mo_tot_num) ]
    implicit none
    BEGIN_DOC
    ! Alpha and beta one-body density matrix that will be used for the 1h1p approach
@@ -18,7 +18,7 @@ subroutine reorder_active_orb
  integer, allocatable :: index_active_orb(:),iorder(:)
  double precision, allocatable :: mo_coef_tmp(:,:)
  allocate(accu(mo_tot_num),index_active_orb(n_act_orb),iorder(mo_tot_num))
- allocate(mo_coef_tmp(ao_num_align,mo_Tot_num))
+ allocate(mo_coef_tmp(ao_num,mo_tot_num))
  
  do i = 1, n_act_orb
   iorb = list_act(i)
@@ -44,7 +44,7 @@ subroutine reorder_active_orb
   i1 = list_act(j)
   i2 = index_active_orb(j)
   print*, i1,i2
-  do i=1,ao_num_align
+  do i=1,ao_num
     x = mo_coef(i,i1)
     mo_coef(i,i1) = mo_coef(i,i2)
     mo_coef(i,i2) = x
@@ -61,7 +61,7 @@ subroutine reorder_all_orb
  integer :: i,j,iorb
  integer :: k,l
  integer :: index_orb(mo_tot_num)
- double precision :: mo_coef_tmp(ao_num_align,mo_tot_num)
+ double precision :: mo_coef_tmp(ao_num,mo_tot_num)
  integer :: i1,i2
  
  mo_coef_tmp = mo_coef
@@ -72,7 +72,7 @@ subroutine reorder_all_orb
  do i1 = 1, mo_tot_num
   i2 = index_orb(i1)
   print*, i1,i2
-  do i=1,ao_num_align
+  do i=1,ao_num
     mo_coef(i,i1) = mo_coef_tmp(i,i2)
     mo_coef(i,i2) = mo_coef_tmp(i,i1)
   enddo
@@ -87,7 +87,7 @@ subroutine reorder_set_of_mos(mo_coef_before,list_orb,n_orb,index_orb)
  implicit none
  integer, intent(in) :: n_orb
  integer, intent(in) :: list_orb(n_orb)
- double precision, intent(in) :: mo_coef_before(ao_num_align, mo_tot_num)
+ double precision, intent(in) :: mo_coef_before(ao_num, mo_tot_num)
  integer, intent(out) :: index_orb(mo_tot_num)
 
  double precision :: mo_coef_tmp
@@ -129,7 +129,7 @@ end
 
 subroutine reorder_all_mos(mo_coef_before,index_orb)
  implicit none
- double precision, intent(in) :: mo_coef_before(ao_num_align, mo_tot_num)
+ double precision, intent(in) :: mo_coef_before(ao_num, mo_tot_num)
  integer, intent(out) :: index_orb(mo_tot_num)
 
  double precision :: mo_coef_tmp

@@ -5,6 +5,9 @@ BEGIN_PROVIDER [ double precision, psi_energy, (N_states) ]
   END_DOC
   integer :: i,j
   call u_0_H_u_0(psi_energy,psi_coef,N_det,psi_det,N_int,N_states,psi_det_size)
+  do i=N_det+1,N_states
+    psi_energy(i) = 0.d0
+  enddo
 END_PROVIDER
 
 
@@ -135,8 +138,8 @@ subroutine H_S2_u_0_nstates_openmp_work_$N_int(v_t,s_t,u_t,N_st,sze,istart,iend,
   ! Prepare the array of all alpha single excitations
   ! -------------------------------------------------
 
-  PROVIDE N_int
-  !$OMP PARALLEL DEFAULT(NONE)                                       &
+  PROVIDE N_int nthreads_davidson
+  !$OMP PARALLEL DEFAULT(NONE) NUM_THREADS(nthreads_davidson)        &
       !$OMP   SHARED(psi_bilinear_matrix_rows, N_det,                &
       !$OMP          psi_bilinear_matrix_columns,                    &
       !$OMP          psi_det_alpha_unique, psi_det_beta_unique,      &

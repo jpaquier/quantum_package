@@ -1,5 +1,5 @@
- BEGIN_PROVIDER [ double precision, one_body_dm_mo_alpha_generators_restart, (mo_tot_num_align,mo_tot_num,N_states) ]
-&BEGIN_PROVIDER [ double precision, one_body_dm_mo_beta_generators_restart, (mo_tot_num_align,mo_tot_num,N_states) ]
+ BEGIN_PROVIDER [ double precision, one_body_dm_mo_alpha_generators_restart, (mo_tot_num,mo_tot_num,N_states) ]
+&BEGIN_PROVIDER [ double precision, one_body_dm_mo_beta_generators_restart, (mo_tot_num,mo_tot_num,N_states) ]
 &BEGIN_PROVIDER [ double precision, norm_generators_restart, (N_states)]
 &BEGIN_PROVIDER [ double precision, inv_coef_ref_generators_restart_provider, (n_states)]
    implicit none
@@ -46,9 +46,9 @@
         !$OMP PRIVATE(j,k,l,m,occ,ck, cl, ckl,phase,h1,h2,p1,p2,s1,s2, degree,exc, &
         !$OMP  tmp_a, tmp_b, n_occ_alpha)&
         !$OMP SHARED(psi_det_generators_restart,psi_coef_generators_restart,N_int,elec_alpha_num,&
-        !$OMP  elec_beta_num,one_body_dm_mo_alpha_generators_restart,one_body_dm_mo_beta_generators_restart,N_det_generators_restart,mo_tot_num_align,&
-        !$OMP  mo_tot_num,N_states)
-     allocate(tmp_a(mo_tot_num_align,mo_tot_num,N_states), tmp_b(mo_tot_num_align,mo_tot_num,N_states) )
+        !$OMP  elec_beta_num,one_body_dm_mo_alpha_generators_restart,one_body_dm_mo_beta_generators_restart,N_det_generators_restart,mo_tot_num,&
+        !$OMP  N_states)
+     allocate(tmp_a(mo_tot_num,mo_tot_num,N_states), tmp_b(mo_tot_num,mo_tot_num,N_states) )
      tmp_a = 0.d0
      tmp_b = 0.d0
      !$OMP DO SCHEDULE(dynamic)
@@ -107,7 +107,7 @@ END_PROVIDER
 
 
 
-BEGIN_PROVIDER [ double precision, one_body_dm_mo_generators_restart, (mo_tot_num_align,mo_tot_num,N_states) ]
+BEGIN_PROVIDER [ double precision, one_body_dm_mo_generators_restart, (mo_tot_num,mo_tot_num,N_states) ]
  implicit none
  BEGIN_DOC
  ! One-body density matrix for the generators_restart
@@ -115,7 +115,7 @@ BEGIN_PROVIDER [ double precision, one_body_dm_mo_generators_restart, (mo_tot_nu
  one_body_dm_mo_generators_restart = one_body_dm_mo_alpha_generators_restart + one_body_dm_mo_beta_generators_restart
 END_PROVIDER
 
-BEGIN_PROVIDER [ double precision, one_body_spin_density_mo_generators_restart, (mo_tot_num_align,mo_tot_num,N_states) ]
+BEGIN_PROVIDER [ double precision, one_body_spin_density_mo_generators_restart, (mo_tot_num,mo_tot_num,N_states) ]
  implicit none
  BEGIN_DOC
  ! rho(alpha) - rho(beta)
@@ -124,16 +124,16 @@ BEGIN_PROVIDER [ double precision, one_body_spin_density_mo_generators_restart, 
 END_PROVIDER
 
 
- BEGIN_PROVIDER [ double precision, one_body_dm_mo_alpha_osoci, (mo_tot_num_align,mo_tot_num,N_states) ]
-&BEGIN_PROVIDER [ double precision, one_body_dm_mo_beta_osoci, (mo_tot_num_align,mo_tot_num,N_states) ]
+ BEGIN_PROVIDER [ double precision, one_body_dm_mo_alpha_osoci, (mo_tot_num,mo_tot_num,N_states) ]
+&BEGIN_PROVIDER [ double precision, one_body_dm_mo_beta_osoci, (mo_tot_num,mo_tot_num,N_states) ]
    implicit none
    BEGIN_DOC
    ! Alpha and beta one-body density matrix that will be used for the OSOCI approach
    END_DOC
 END_PROVIDER
 
- BEGIN_PROVIDER [ double precision, one_body_dm_mo_alpha_1h1p, (mo_tot_num_align,mo_tot_num,N_states) ]
-&BEGIN_PROVIDER [ double precision, one_body_dm_mo_beta_1h1p, (mo_tot_num_align,mo_tot_num,N_states) ]
+ BEGIN_PROVIDER [ double precision, one_body_dm_mo_alpha_1h1p, (mo_tot_num,mo_tot_num,N_states) ]
+&BEGIN_PROVIDER [ double precision, one_body_dm_mo_beta_1h1p, (mo_tot_num,mo_tot_num,N_states) ]
    implicit none
    BEGIN_DOC
    ! Alpha and beta one-body density matrix that will be used for the 1h1p approach

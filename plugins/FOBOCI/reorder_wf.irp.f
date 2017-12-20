@@ -4,7 +4,7 @@ subroutine reorder_wf
  integer(bit_kind), allocatable :: psi_det_tmp(:,:,:)
  double precision, allocatable  :: psi_coef_tmp(:,:)
  integer :: i,j,k,l
- integer :: index_ref_generators_restart(N_states), degree,N_det_non_ref
+ integer :: index_ref_generators_restart(N_states), degree
  logical, allocatable :: is_a_ref_det(:) 
 
  allocate(psi_det_tmp(N_int,2,N_det), is_a_ref_det(N_det), psi_coef_tmp(N_det, N_states))

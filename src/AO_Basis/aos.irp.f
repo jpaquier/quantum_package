@@ -1,25 +1,12 @@
-BEGIN_PROVIDER [ integer, ao_num_align ]
-   implicit none
-   
-   BEGIN_DOC
-   ! Number of atomic orbitals align
-   END_DOC
-   
-   integer                        :: align_double
-   ao_num_align = align_double(ao_num)
-END_PROVIDER 
-
- BEGIN_PROVIDER [ integer, ao_prim_num_max ]
-&BEGIN_PROVIDER [ integer, ao_prim_num_max_align ]
+BEGIN_PROVIDER [ integer, ao_prim_num_max ]
  implicit none
- ao_prim_num_max = 0
- PROVIDE ezfio_filename
- call ezfio_get_ao_basis_ao_prim_num_max(ao_prim_num_max)
- integer :: align_double
- ao_prim_num_max_align = align_double(ao_prim_num_max)
+ BEGIN_DOC
+ ! max number of primitives
+ END_DOC
+ ao_prim_num_max = maxval(ao_prim_num)
 END_PROVIDER
 
- BEGIN_PROVIDER [ double precision, ao_coef_normalized, (ao_num_align,ao_prim_num_max) ]
+ BEGIN_PROVIDER [ double precision, ao_coef_normalized, (ao_num,ao_prim_num_max) ]
 &BEGIN_PROVIDER [ double precision, ao_coef_normalization_factor, (ao_num) ]
   implicit none
   BEGIN_DOC
@@ -89,8 +76,8 @@ BEGIN_PROVIDER [ double precision, ao_coef_normalization_libint_factor, (ao_num)
 END_PROVIDER
 
 
- BEGIN_PROVIDER [ double precision, ao_coef_normalized_ordered, (ao_num_align,ao_prim_num_max) ]
-&BEGIN_PROVIDER [ double precision, ao_expo_ordered, (ao_num_align,ao_prim_num_max) ]
+ BEGIN_PROVIDER [ double precision, ao_coef_normalized_ordered, (ao_num,ao_prim_num_max) ]
+&BEGIN_PROVIDER [ double precision, ao_expo_ordered, (ao_num,ao_prim_num_max) ]
    implicit none
    BEGIN_DOC
    ! Sorted primitives to accelerate 4 index MO transformation
@@ -115,7 +102,7 @@ END_PROVIDER
 END_PROVIDER
 
 
-BEGIN_PROVIDER [double precision, ao_expo_ordered_transp_per_nucl, (ao_prim_num_max_align,N_AOs_max,nucl_num) ]
+BEGIN_PROVIDER [double precision, ao_expo_ordered_transp_per_nucl, (ao_prim_num_max,N_AOs_max,nucl_num) ]
  implicit none
  integer :: i,j,k,l
  do i = 1, nucl_num
@@ -129,7 +116,7 @@ BEGIN_PROVIDER [double precision, ao_expo_ordered_transp_per_nucl, (ao_prim_num_
 
 END_PROVIDER 
 
-BEGIN_PROVIDER [ double precision, ao_coef_normalized_ordered_transp_per_nucl, (ao_prim_num_max_align,N_AOs_max,nucl_num) ]
+BEGIN_PROVIDER [ double precision, ao_coef_normalized_ordered_transp_per_nucl, (ao_prim_num_max,N_AOs_max,nucl_num) ]
  implicit none
  integer :: i,j,k,l
  do i = 1, nucl_num
@@ -157,7 +144,7 @@ BEGIN_PROVIDER [ double precision, ao_power_ordered_transp_per_nucl, (3,N_AOs_ma
 
 END_PROVIDER 
 
-BEGIN_PROVIDER [ double precision, ao_coef_normalized_ordered_transp, (ao_prim_num_max_align,ao_num) ]
+BEGIN_PROVIDER [ double precision, ao_coef_normalized_ordered_transp, (ao_prim_num_max,ao_num) ]
   implicit none
   BEGIN_DOC
   ! Transposed ao_coef_normalized_ordered
@@ -171,7 +158,7 @@ BEGIN_PROVIDER [ double precision, ao_coef_normalized_ordered_transp, (ao_prim_n
   
 END_PROVIDER
 
-BEGIN_PROVIDER [ double precision, ao_expo_ordered_transp, (ao_prim_num_max_align,ao_num) ]
+BEGIN_PROVIDER [ double precision, ao_expo_ordered_transp, (ao_prim_num_max,ao_num) ]
   implicit none
   BEGIN_DOC
   ! Transposed ao_expo_ordered
@@ -198,16 +185,6 @@ END_PROVIDER
    ao_l_char(i) = l_to_charater(ao_l(i))
  enddo
  ao_l_max = maxval(ao_l)
-END_PROVIDER
-
-BEGIN_PROVIDER [ integer, ao_prim_num_max_align ]
- implicit none
- BEGIN_DOC
-! Number of primitives per atomic orbital aligned
- END_DOC
-
- integer :: align_double
- ao_prim_num_max_align = align_double(ao_prim_num_max)
 END_PROVIDER
 
 integer function ao_power_index(nx,ny,nz)

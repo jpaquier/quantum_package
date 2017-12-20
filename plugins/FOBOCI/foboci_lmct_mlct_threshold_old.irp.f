@@ -122,7 +122,7 @@ subroutine FOBOCI_lmct_mlct_old_thr(iter,norm_total)
 
  enddo
 
- if(.True.)then
+ if(.False.)then
   print*,''
   print*,'DOING THEN THE MLCT !!'
   print*,'Threshold_mlct = ',threshold_mlct
