@@ -6,8 +6,8 @@ subroutine give_active_part_determinant(det_in,det_out)
  integer(bit_kind),intent(out) :: det_out(N_int,2)
  integer :: i
  do i = 1,N_int
-  det_out(i,1) = iand(det_in(i,1),cas_bitmask(i,1,1))
-  det_out(i,2) = iand(det_in(i,2),cas_bitmask(i,1,1))
+  det_out(i,1) = iand(det_in(i,1),act_bitmask(i,1))
+  det_out(i,2) = iand(det_in(i,2),act_bitmask(i,1))
  enddo
 end
 

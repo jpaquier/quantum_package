@@ -5,7 +5,7 @@ program scf
 ! output: hartree_fock.energy
 ! optional: mo_basis.mo_coef
   END_DOC
-! call create_guess
+  call create_guess
   call orthonormalize_mos
   call run
 end

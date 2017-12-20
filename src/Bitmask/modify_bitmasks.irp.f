@@ -154,7 +154,7 @@ subroutine set_bitmask_for_1h
   do ispin=1,2
    do j = 1, N_int
     generators_bitmask(j,ispin,s_hole,k) =  inact_bitmask(j,ispin) 
-    generators_bitmask(j,ispin,s_part,k) =  cas_bitmask_small(j,ispin) 
+    generators_bitmask(j,ispin,s_part,k) =  act_bitmask(j,ispin) 
    enddo
   enddo
  enddo
@@ -164,9 +164,9 @@ subroutine set_bitmask_for_1h
   do ispin=1,2
    do j = 1, N_int
     generators_bitmask(j,ispin,d_hole1,k) = reunion_of_inact_act_bitmask(j,ispin) 
-    generators_bitmask(j,ispin,d_part1,k) = cas_bitmask_small(j,ispin) 
-    generators_bitmask(j,ispin,d_hole2,k) = cas_bitmask_small(j,ispin) 
-    generators_bitmask(j,ispin,d_part2,k) = cas_bitmask_small(j,ispin) 
+    generators_bitmask(j,ispin,d_part1,k) = act_bitmask(j,ispin) 
+    generators_bitmask(j,ispin,d_hole2,k) = act_bitmask(j,ispin) 
+    generators_bitmask(j,ispin,d_part2,k) = act_bitmask(j,ispin) 
    enddo
   enddo
  enddo
@@ -187,7 +187,7 @@ subroutine set_bitmask_for_1p
  do k=1,N_generators_bitmask
   do ispin=1,2
    do j = 1, N_int
-    generators_bitmask(j,ispin,s_hole,k) =  cas_bitmask_small(j,ispin)  
+    generators_bitmask(j,ispin,s_hole,k) =  act_bitmask(j,ispin)  
     generators_bitmask(j,ispin,s_part,k) =  virt_bitmask(j,ispin) 
    enddo
   enddo
@@ -197,9 +197,9 @@ subroutine set_bitmask_for_1p
  do k=1,N_generators_bitmask
   do ispin=1,2
    do j = 1, N_int
-    generators_bitmask(j,ispin,d_hole1,k) = cas_bitmask_small(j,ispin) 
+    generators_bitmask(j,ispin,d_hole1,k) = act_bitmask(j,ispin) 
     generators_bitmask(j,ispin,d_part1,k) = reunion_of_virt_act_bitmask(j,ispin)
-    generators_bitmask(j,ispin,d_hole2,k) = cas_bitmask_small(j,ispin) 
+    generators_bitmask(j,ispin,d_hole2,k) = act_bitmask(j,ispin) 
     generators_bitmask(j,ispin,d_part2,k) = reunion_of_virt_act_bitmask(j,ispin)
 
    enddo
@@ -234,7 +234,7 @@ subroutine set_bitmask_for_1h1p
    do j = 1, N_int
     generators_bitmask(j,ispin,d_hole1,k) =  reunion_of_inact_act_bitmask(j,ispin) 
     generators_bitmask(j,ispin,d_part1,k) =  reunion_of_virt_act_bitmask(j,ispin)
-    generators_bitmask(j,ispin,d_hole2,k) =  cas_bitmask_small(j,ispin) 
+    generators_bitmask(j,ispin,d_hole2,k) =  act_bitmask(j,ispin) 
     generators_bitmask(j,ispin,d_part2,k) =  reunion_of_virt_act_bitmask(j,ispin)
    enddo
   enddo
@@ -267,9 +267,9 @@ subroutine set_bitmask_for_2h
   do ispin=1,2
    do j = 1, N_int
     generators_bitmask(j,ispin,d_hole1,k) =  reunion_of_inact_act_bitmask(j,ispin) 
-    generators_bitmask(j,ispin,d_part1,k) =  cas_bitmask_small(j,ispin)
+    generators_bitmask(j,ispin,d_part1,k) =  act_bitmask(j,ispin)
     generators_bitmask(j,ispin,d_hole2,k) =  reunion_of_inact_act_bitmask(j,ispin) 
-    generators_bitmask(j,ispin,d_part2,k) =  cas_bitmask_small(j,ispin)
+    generators_bitmask(j,ispin,d_part2,k) =  act_bitmask(j,ispin)
    enddo
   enddo
  enddo
@@ -300,9 +300,9 @@ subroutine set_bitmask_for_2p
  do k=1,N_generators_bitmask
   do ispin=1,2
    do j = 1, N_int
-    generators_bitmask(j,ispin,d_hole1,k) =  cas_bitmask_small(j,ispin) 
+    generators_bitmask(j,ispin,d_hole1,k) =  act_bitmask(j,ispin) 
     generators_bitmask(j,ispin,d_part1,k) =  reunion_of_virt_act_bitmask(j,ispin) 
-    generators_bitmask(j,ispin,d_hole2,k) =  cas_bitmask_small(j,ispin) 
+    generators_bitmask(j,ispin,d_hole2,k) =  act_bitmask(j,ispin) 
     generators_bitmask(j,ispin,d_part2,k) =  reunion_of_virt_act_bitmask(j,ispin) 
    enddo
   enddo

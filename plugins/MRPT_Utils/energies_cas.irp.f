@@ -681,8 +681,8 @@ BEGIN_PROVIDER [ double precision, one_anhil_inact, (n_inact_orb,n_act_orb,N_Sta
         norm_bis(j,ispin) +=  psi_in_out_coef(i,j)* psi_in_out_coef(i,j)
        enddo
        do j = 1, N_int
-        psi_in_out(j,1,i) = iand(psi_in_out(j,1,i),cas_bitmask(j,1,1))
-        psi_in_out(j,2,i) = iand(psi_in_out(j,2,i),cas_bitmask(j,1,1))
+        psi_in_out(j,1,i) = iand(psi_in_out(j,1,i),act_bitmask(j,1))
+        psi_in_out(j,2,i) = iand(psi_in_out(j,2,i),act_bitmask(j,1))
        enddo
      enddo
      do state_target = 1, N_states
@@ -779,8 +779,8 @@ BEGIN_PROVIDER [ double precision, one_creat_virt, (n_act_orb,n_virt_orb,N_State
         norm_bis(j,ispin) +=  psi_in_out_coef(i,j)* psi_in_out_coef(i,j)
        enddo
        do j = 1, N_int
-        psi_in_out(j,1,i) = iand(psi_in_out(j,1,i),cas_bitmask(j,1,1))
-        psi_in_out(j,2,i) = iand(psi_in_out(j,2,i),cas_bitmask(j,1,1))
+        psi_in_out(j,1,i) = iand(psi_in_out(j,1,i),act_bitmask(j,1))
+        psi_in_out(j,2,i) = iand(psi_in_out(j,2,i),act_bitmask(j,1))
        enddo
      enddo
      do state_target = 1, N_states
