@@ -11,7 +11,7 @@ subroutine routine
  implicit none
  integer :: i
  do i = 1, mo_tot_num
-  print*, '',mo_class(i)
+  print*,i ,'',mo_class(i)
  enddo
  print*, 'core'
  do i = 1, n_core_orb
