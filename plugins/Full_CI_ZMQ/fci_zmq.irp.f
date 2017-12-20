@@ -125,27 +125,18 @@ program fci_zmq
       write(*,fmt)
       print *,  ''
 
-    do k=1, N_states
-      print*,'State ',k
-      print *,  'PT2             = ', pt2(k)
-      print *,  'E               = ', CI_energy(k)
-      print *,  'E(before)+PT2   = ', E_CI_before(k)+pt2(k)
-    enddo
-
       do k=1, N_states_p
         print*,'State ',k
         print *,  'PT2             = ', pt2(k)
         print *,  'E               = ', CI_energy(k)
         print *,  'E+PT2'//pt2_string//'   = ', CI_energy(k)+pt2(k), ' +/- ', error(k)
       enddo
-    endif
     if(N_states.gt.1)then
       print*,'Variational + perturbative Energy difference'
       do i = 2, N_states
-        print*,'Delta E = ',E_CI_before(i)+ pt2(i) - (E_CI_before(1) + pt2(1))
+        print*,'Delta E = ',CI_energy(i)+ pt2(i) - (CI_energy(1) + pt2(1))
       enddo
     endif
-    E_CI_before(1:N_states) = CI_energy(1:N_states)
     call ezfio_set_full_ci_zmq_energy(CI_energy(1))
 
       print *,  '-----'
@@ -253,6 +244,7 @@ program fci_zmq
   write(fmt,*) '(''# ============'',', N_states_p, '(1X,''=============================''))'
   write(*,fmt)
   print *,  ''
+ endif
 
 end
 

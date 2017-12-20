@@ -369,8 +369,8 @@ END_PROVIDER
     key_tmp_act(j,2) = psi_det(j,2,i)
    enddo
    do j = 1, N_int
-    key_tmp_act(j,1) = iand(key_tmp_act(j,1),cas_bitmask(j,1,1))
-    key_tmp_act(j,2) = iand(key_tmp_act(j,2),cas_bitmask(j,1,1))
+    key_tmp_act(j,1) = iand(key_tmp_act(j,1),act_bitmask(j,1))
+    key_tmp_act(j,2) = iand(key_tmp_act(j,2),act_bitmask(j,1))
    enddo
    call bitstring_to_list_ab(key_tmp_act, occ_act, n_occ_ab_act, N_int)
    do j = 1,n_occ_ab_act(2)
@@ -457,8 +457,8 @@ END_PROVIDER
    key_tmp_i_core(j,2) = psi_det(j,2,i)
   enddo
   do j = 1, N_int
-   key_tmp_i(j,1) = iand(key_tmp_i(j,1),cas_bitmask(j,1,1))
-   key_tmp_i(j,2) = iand(key_tmp_i(j,2),cas_bitmask(j,1,1))
+   key_tmp_i(j,1) = iand(key_tmp_i(j,1),act_bitmask(j,1))
+   key_tmp_i(j,2) = iand(key_tmp_i(j,2),act_bitmask(j,1))
   enddo
   do j = 1, N_int
    key_tmp_i_core(j,1) = iand(key_tmp_i_core(j,1),core_bitmask(j,1))
@@ -473,8 +473,8 @@ END_PROVIDER
     key_tmp_j(k,2) = psi_det(k,2,j)
    enddo
    do k = 1, N_int
-    key_tmp_j(k,1) = iand(key_tmp_j(k,1),cas_bitmask(k,1,1))
-    key_tmp_j(k,2) = iand(key_tmp_j(k,2),cas_bitmask(k,1,1))
+    key_tmp_j(k,1) = iand(key_tmp_j(k,1),act_bitmask(k,1))
+    key_tmp_j(k,2) = iand(key_tmp_j(k,2),act_bitmask(k,1))
    enddo
    ! control if the two determinants are connected by 
    ! at most a double excitation WITHIN THE ACTIVE SPACE 

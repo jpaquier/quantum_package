@@ -234,8 +234,8 @@
   do idet = 1, N_det_ref
    !!! Diagonal element 
    do i = 1, N_int
-    key_tmp(i,1) = xor(psi_active(i,1,idet),cas_bitmask_small(i,1))
-    key_tmp(i,2) = xor(psi_active(i,2,idet),cas_bitmask_small(i,2))
+    key_tmp(i,1) = xor(psi_active(i,1,idet),act_bitmask(i,1))
+    key_tmp(i,2) = xor(psi_active(i,2,idet),act_bitmask(i,2))
    enddo
    call bitstring_to_list_ab(key_tmp, occ, n_elec_tmp, N_int)
    do ispin = 1, 2
