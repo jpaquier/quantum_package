@@ -205,8 +205,14 @@ end
                                   - fock_virt_total_spin_trace(r,istate)               & 
                                   - fock_virt_total_spin_trace(v,istate)               & 
                                   + fock_core_inactive_total_spin_trace(i,istate)        
-        delta_e(i_b,jspin,istate) = 1.d0/delta_e(i_b,jspin,istate)  
+!       delta_e(i_b,1,istate) = 1.d0/delta_e(i_b,jspin,istate)  
        enddo
+        print*, 'delta_e',delta_e(i_b,1,:)
+        print*, one_anhil(i_b,1,:)
+        print*, -fock_virt_total_spin_trace(r,:)
+        print*, -fock_virt_total_spin_trace(v,:)
+        print*,  fock_core_inactive_total_spin_trace(i,:)
+        pause
       enddo
      enddo
      do i_a = 1, n_act_orb

@@ -17,16 +17,21 @@ use bitmasks
      psi_cas_coef(i,l) = 0.d0
     enddo
       good = .True.
+      print*, 'i',i
       do k=1,N_int
         good = good .and. (                                          &
-            iand(not(act_bitmask(k,1)), psi_det(k,1,i)) ==         &
-            iand(not(act_bitmask(k,1)), hf_bitmask(k,1)) ) .and. (  &
-            iand(not(act_bitmask(k,2)), psi_det(k,2,i)) ==         &
-            iand(not(act_bitmask(k,2)), hf_bitmask(k,2)) )
-      enddo
-      if (good) then
+            iand(reunion_of_core_inact_bitmask(k,1), psi_det(k,1,i)) ==         &
+            reunion_of_core_inact_bitmask(k,1)) .and. (  &
+            iand(reunion_of_core_inact_bitmask(k,2), psi_det(k,2,i)) ==         &
+            reunion_of_core_inact_bitmask(k,2)  & 
+            )
+        good = good .and. (                                          &
+            iand(virt_bitmask(k,1), psi_det(k,1,i)) ==  0      &
+            .and. (  iand(virt_bitmask(k,2), psi_det(k,2,i)) == 0))
+      if (.not.good) then
         exit
       endif
+      enddo
     if (good) then
       N_det_cas = N_det_cas+1
       do k=1,N_int

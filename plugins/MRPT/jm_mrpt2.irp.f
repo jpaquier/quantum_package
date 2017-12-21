@@ -4,7 +4,7 @@ program MRPT_Utils
   touch read_wf
 ! call routine
 ! call routine_2
-  call routine
+  call routine_3
 end
 
 subroutine routine
