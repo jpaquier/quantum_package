@@ -417,11 +417,7 @@ END_PROVIDER
 
 END_PROVIDER
 
-  BEGIN_PROVIDER [ integer(bit_kind), core_bitmask,  (N_int,2)]
- &BEGIN_PROVIDER [ integer(bit_kind), inact_bitmask, (N_int,2) ]
- &BEGIN_PROVIDER [ integer(bit_kind), act_bitmask,   (N_int,2) ]
- &BEGIN_PROVIDER [ integer(bit_kind), virt_bitmask,  (N_int,2) ]
- &BEGIN_PROVIDER [ integer, n_core_orb]
+  BEGIN_PROVIDER [ integer, n_core_orb]
  &BEGIN_PROVIDER [ integer, n_inact_orb ]
  &BEGIN_PROVIDER [ integer, n_act_orb]
  &BEGIN_PROVIDER [ integer, n_virt_orb ]
@@ -485,6 +481,10 @@ END_PROVIDER
 &BEGIN_PROVIDER [integer, list_core_reverse, (mo_tot_num)]
 &BEGIN_PROVIDER [integer, list_act, (n_act_orb)]
 &BEGIN_PROVIDER [integer, list_act_reverse, (mo_tot_num)]
+&BEGIN_PROVIDER [ integer(bit_kind), core_bitmask,  (N_int,2)]
+&BEGIN_PROVIDER [ integer(bit_kind), inact_bitmask, (N_int,2) ]
+&BEGIN_PROVIDER [ integer(bit_kind), act_bitmask,   (N_int,2) ]
+&BEGIN_PROVIDER [ integer(bit_kind), virt_bitmask,  (N_int,2) ]
  implicit none
  BEGIN_DOC
  ! inact_bitmask : Bitmask of the inactive orbitals which are supposed to be doubly excited 

@@ -2,7 +2,17 @@ program print_1h2p
  implicit none
  read_wf = .True.
  touch read_wf
- call routine2
+ call routine
+end
+
+subroutine routine3
+ implicit none
+ integer :: i
+ provide fock_core_inactive
+!do i = 1, mo_tot_num
+! print*, 'fock_core_inactive',fock_core_inactive(i)
+!enddo
+
 end
 
 subroutine routine
