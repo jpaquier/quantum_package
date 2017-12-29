@@ -17,7 +17,6 @@ use bitmasks
      psi_cas_coef(i,l) = 0.d0
     enddo
       good = .True.
-      print*, 'i',i
       do k=1,N_int
         good = good .and. (                                          &
             iand(reunion_of_core_inact_bitmask(k,1), psi_det(k,1,i)) ==         &

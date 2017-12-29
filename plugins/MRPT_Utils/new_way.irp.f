@@ -234,6 +234,7 @@ subroutine give_1h2p_contrib(matrix_1h2p)
  double precision :: active_int(n_act_orb,2)
  double precision :: hij,phase
  double precision, allocatable :: matrix_1h2p_tmp(:,:,:)
+ logical :: is_a_1h2p
  
  elec_num_tab_local = 0
  do inint = 1, N_int
@@ -313,6 +314,11 @@ subroutine give_1h2p_contrib(matrix_1h2p)
            enddo
             
            call get_double_excitation(psi_ref(1,1,idet),det_tmp,exc,phase,N_int)
+           if(.not.is_a_1h2p(det_tmp))then
+            print*, 'AHAHAH problem in give_1h2p_contrib'
+            call debug_det(det_tmp,N_int)
+            pause
+           endif
            perturb_dets_phase(a,jspin,ispin) = phase
            do istate = 1, N_states
             delta_e(a,jspin,istate) = one_anhil(a,jspin,istate)                                                          &
@@ -325,8 +331,8 @@ subroutine give_1h2p_contrib(matrix_1h2p)
            else 
             perturb_dets_hij(a,jspin,ispin) = phase * active_int(a,1) 
            endif
-!!!!!!!!!!!!!!!!!!!!!1 Computation of the coefficient at first order coming from idet 
-!!!!!!!!!!!!!!!!!!!!!  for the excitation (i,j)(ispin,jspin)  ---> (r,a)(ispin,jspin)
+ !!!!!!!!!!!!!!!!!!!!1 Computation of the coefficient at first order coming from idet 
+ !!!!!!!!!!!!!!!!!!!!  for the excitation (i,j)(ispin,jspin)  ---> (r,a)(ispin,jspin)
            do istate = 1, N_states
             coef_perturb_from_idet(a,jspin,ispin,istate) = perturb_dets_hij(a,jspin,ispin) / delta_e(a,jspin,istate)
            enddo
@@ -335,9 +341,9 @@ subroutine give_1h2p_contrib(matrix_1h2p)
         enddo
        enddo
        
-!!!!!!!!!!!!!!!!!!!!!!!!!!! determination of the connections between I and the other J determinants mono excited in the CAS
-!!!!!!!!!!!!!!!!!!!!!!!!!!!! the determinants I and J must be connected by the following operator 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!! <Jdet | a^{\dagger}_b a_{a}  | Idet> 
+ !!!!!!!!!!!!!!!!!!!!!!!!!! determination of the connections between I and the other J determinants mono excited in the CAS
+ !!!!!!!!!!!!!!!!!!!!!!!!!!! the determinants I and J must be connected by the following operator 
+ !!!!!!!!!!!!!!!!!!!!!!!!!!! <Jdet | a^{\dagger}_b a_{a}  | Idet> 
        do jdet = 1, idx(0)
          if(idx(jdet).ne.idet)then
           call get_mono_excitation(psi_ref(1,1,idet),psi_ref(1,1,idx(jdet)),exc,phase,N_int)
@@ -383,6 +389,11 @@ subroutine give_1h2p_contrib(matrix_1h2p)
           ! hja = < det_tmp | H | Jdet >
 
           call get_double_excitation(psi_ref(1,1,idx(jdet)),det_tmp,exc,phase,N_int)
+           if(.not.is_a_1h2p(det_tmp))then
+            print*, 'AHAHAH problem in give_1h2p_contrib'
+            call debug_det(det_tmp,N_int)
+            pause
+           endif
           if(kspin == ispin)then
            hja = phase * (active_int(borb,1) - active_int(borb,2) )
           else

@@ -2,67 +2,74 @@ program print_1h2p
  implicit none
  read_wf = .True.
  touch read_wf
- call routine
+ call routine 
 end
 
 subroutine routine3
  implicit none
  integer :: i
  provide fock_core_inactive
+ provide one_anhil
 !do i = 1, mo_tot_num
 ! print*, 'fock_core_inactive',fock_core_inactive(i)
 !enddo
 
 end
 
-subroutine routine
+subroutine routine4
  implicit none
  double precision,allocatable :: matrix_1h2p(:,:,:) 
  allocate (matrix_1h2p(N_det,N_det,N_states))
+ call give_1h2p_contrib(matrix_1h2p)
+
+
+end
+
+subroutine routine
+ implicit none
+ double precision,allocatable :: matrix_1h2p(:,:,:) 
+ allocate (matrix_1h2p(N_det_ref,N_det_ref,N_states))
  integer :: i,j,istate
  double precision :: accu
  double precision :: accu_bis(N_states)
- do i = 1, N_det
-  do j = 1, N_det
+ do i = 1, N_det_ref
+  do j = 1, N_det_ref
    do istate = 1, N_states
     matrix_1h2p(i,j,istate) = 0.d0
    enddo
   enddo
  enddo
- if(.True.)then
+
  call contrib_1h2p_dm_based(accu_bis)
- print*, 'accu_bis     ', accu_bis(1)
- provide effective_fock_operator_1h2p
- call matrix_1h2p_dm_based(matrix_1h2p)
- accu = 0.d0
- do i = 1, N_det
-  do j = 1, N_det 
-   accu += matrix_1h2p(i,j,1) * psi_coef(i,1) * psi_coef(j,1)
-  enddo
- enddo
- print*, 'second order ', accu
- matrix_1h2p = 0.d0
- call give_1h2p_contrib(matrix_1h2p)
- accu = 0.d0
- do i = 1, N_det
-  do j = 1, N_det 
-   accu += matrix_1h2p(i,j,1) * psi_coef(i,1) * psi_coef(j,1)
-   print*, matrix_1h2p(i,j,1)
-  enddo
- enddo
- print*, 'second order ', accu
-
-
- print*, 'second order ', accu
+ print*, 'accu_bis',accu_bis
+ print*, '1h2p    ',contribution_1h2p
  matrix_1h2p = 0.d0
  call H_apply_mrpt_1h2p(matrix_1h2p,N_det_ref)
+ do istate = 1, N_states
  accu = 0.d0
- do i = 1, N_det
-  do j = 1, N_det 
-   accu += matrix_1h2p(i,j,1) * psi_coef(i,1) * psi_coef(j,1)
+ do i = 1, N_det_ref
+  do j = 1, N_det_ref 
+   accu += matrix_1h2p(i,j,istate) * psi_ref_coef(i,istate) * psi_ref_coef(j,istate)
   enddo
  enddo
- endif
+ print*, 'second order ', accu
+ print*, 'H apply - density matrix = ',accu - accu_bis(istate)
+ enddo
+ accu = 0.d0
+ integer :: ispin,a,b
+ do istate = 1, N_states
+  do ispin = 1, 2
+   do i = 1, n_act_orb
+    a = list_act(i)
+    do j = 1, n_act_orb 
+     b = list_act(j)
+     accu += effective_fock_operator_1h2p(i,j,ispin,istate) * one_body_dm_mo_spin_index(b,a,istate,ispin)
+    enddo
+   enddo
+  enddo
+  print*, 'accu = ',accu
+ print*, 'H apply - density matrix = ',accu - accu_bis(istate)
+ enddo
 
 
  deallocate (matrix_1h2p)

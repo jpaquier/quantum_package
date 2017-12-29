@@ -67,30 +67,59 @@ subroutine mrpt_dress(delta_ij_,  Ndet,i_generator,n_selected,det_buffer,Nint,ip
   
   
   do i_alpha=1,N_tq
+!!!!!!!!!! TEST FOR ALPHA- BETA 1h2p 
+  integer :: i_part(0:mo_tot_num,2)
+  logical :: is_a_1h2p
+  if(.not.is_a_1h2p(tq(1,1,i_alpha)))cycle
+  call find_particle_in_det(tq(1,1,i_alpha),i_part)
+! !! ALPHA double excitations
+! if(i_part(0,1)==2)then
+!  cycle
+! endif
+! !! BETA  double excitations
+! if(i_part(0,2)==2)then 
+!  cycle
+! endif
+! !! ALPHA-BETA  double excitations
+! if(i_part(0,1)==1.and.i_part(0,2)==1)then 
+!  cycle
+! endif
+  
+!!!!!!!!!!!!
     call get_excitation_degree_vector(miniList,tq(1,1,i_alpha),degree_alpha,Nint,N_minilist,idx_alpha)
     
     do j=1,idx_alpha(0)
       idx_alpha(j) = idx_miniList(idx_alpha(j))
     enddo
      
-!   double precision :: ihpsi0,coef_pert
-!   ihpsi0 = 0.d0
-!   coef_pert = 0.d0
     phase_array  =0.d0
+
+
+!!!!!! EPSTIEN NESBET 
+    double precision :: h
+    call i_H_j(tq(1,1,i_alpha),tq(1,1,i_alpha),N_int,h)
+!!!!!!!!!
     do i = 1,idx_alpha(0)
       index_i = idx_alpha(i)
+!     if(index_i.ne.2)cycle
+!   call debug_det(tq(1,1,i_alpha),N_int)
+!     call debug_det(psi_ref(1,1,index_i),N_int)
       call i_h_j(tq(1,1,i_alpha),psi_ref(1,1,index_i),Nint,hialpha)
+!     print*, hialpha
       double  precision :: coef_array(N_states)
       do i_state = 1, N_states
        coef_array(i_state) = psi_coef(index_i,i_state)
       enddo
       call get_delta_e_dyall(psi_ref(1,1,index_i),tq(1,1,i_alpha),delta_e)
-!     call get_delta_e_dyall_general_mp(psi_ref(1,1,index_i),tq(1,1,i_alpha),delta_e)
+!     print*, delta_e(1)
+!     pause
+!!!!  call get_delta_e_dyall_general_mp(psi_ref(1,1,index_i),tq(1,1,i_alpha),delta_e)
       hij_array(index_i) = hialpha
       call get_excitation(psi_ref(1,1,index_i),tq(1,1,i_alpha),exc,degree,phase,N_int)
-!     phase_array(index_i) = phase
       do i_state = 1,N_states
        delta_e_inv_array(index_i,i_state) = 1.d0/delta_e(i_state)
+!!!!!!!!!!! EPSTEIN NESBET
+!      delta_e_inv_array(index_i,i_state) = 1.d0/(CI_electronic_energy(i_state) - h)
       enddo
     enddo
     
@@ -98,18 +127,12 @@ subroutine mrpt_dress(delta_ij_,  Ndet,i_generator,n_selected,det_buffer,Nint,ip
       index_i = idx_alpha(i)
       hij_tmp = hij_array(index_i)
       call omp_set_lock( psi_ref_bis_lock(index_i) )
-      do j = 1, idx_alpha(0)
+!     do j = i,i
+      do j =1, idx_alpha(0)
        index_j = idx_alpha(j)
-!      call get_excitation(psi_ref(1,1,index_i),psi_ref(1,1,index_i),exc,degree,phase,N_int)
-!      if(index_j.ne.index_i)then
-!       if(phase_array(index_j) * phase_array(index_i) .ne. phase)then
-!        print*, phase_array(index_j) , phase_array(index_i) ,phase
-!        call debug_det(psi_ref(1,1,index_i),N_int)
-!        call debug_det(psi_ref(1,1,index_j),N_int)
-!        call debug_det(tq(1,1,i_alpha),N_int)
-!        stop
-!       endif
-!      endif
+!      if(index_j.ne.2)cycle
+!      if(index_i.ne.2)cycle
+!      print*, index_j,index_i
        do i_state=1,N_states
 ! standard dressing first order
          delta_ij_(index_i,index_j,i_state) += hij_array(index_j) * hij_tmp * delta_e_inv_array(index_j,i_state)

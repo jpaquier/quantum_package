@@ -45,6 +45,70 @@ subroutine pt2_epstein_nesbet ($arguments)
   
 end
 
+
+subroutine pt2_jm_mrpt ($arguments)
+  use bitmasks
+  implicit none
+  $declarations
+  
+  BEGIN_DOC
+  ! compute the PT2 correction according to the JM-MRPT framework
+  ! for the various N_st states.
+  !
+  ! c_pert(i) = <psi(i)|H|det_pert>/( E(i) - <det_pert|H|det_pert> )
+  !
+  ! e_2_pert(i) = <psi(i)|H|det_pert>^2/( E(i) - <det_pert|H|det_pert> )
+  !
+  END_DOC
+  
+  integer                        :: i,j
+  double precision               :: hij, delta_e(N_st)
+  double precision               :: i_H_psi_array(N_st)
+  PROVIDE  selection_criterion
+
+  ASSERT (Nint == N_int)
+  ASSERT (Nint > 0)
+
+  c_pert = 0.d0
+  e_2_pert = 0.d0
+  i_H_psi_array = 0.d0
+  
+  
+  integer :: i_hole(0:mo_tot_num,2)
+!! call find_hole_in_det(det_pert,i_hole)
+!! print*, i_hole(0,1),i_hole(0,2)
+!! call debug_det(det_pert,N_int)
+!! pause
+ !!print*, i_part(0,1),i_part(0,2)
+ !!call debug_det(det_pert,N_int)
+ !!pause
+  integer :: i_part(0:mo_tot_num,2)
+  call find_particle_in_det(det_pert,i_part)
+  !! alpha double excitations
+  double precision :: hjj
+  call i_H_j(det_pert,det_pert,N_int,hjj)
+  if(i_part(0,1)==2)then
+   return
+  !! beta  double excitations
+  endif
+  if(i_part(0,2)==2)then 
+   return
+  endif
+  do i = 1, N_det_selectors
+   call i_H_j(psi_selectors(1,1,i),det_pert,N_int,hij)
+   call get_delta_e_dyall(psi_selectors(1,1,i),det_pert,delta_e)
+   do j = 1, N_st
+    c_pert(j) += hij * psi_selectors_coef(i,j) / delta_e(j)
+!   c_pert(j) += hij * psi_selectors_coef(i,j) / (CI_electronic_energy(j) - hjj)
+    i_H_psi_array(j) += hij * psi_selectors_coef(i,j)
+   enddo
+  enddo
+  do j = 1, N_st
+   e_2_pert(j) = c_pert(j) * i_H_psi_array(j)
+  enddo
+  H_pert_diag = 0.d0
+end
+
 subroutine pt2_qdpt ($arguments)
   use bitmasks
   implicit none

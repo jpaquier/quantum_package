@@ -533,26 +533,26 @@ END_PROVIDER
    n_core_orb_tmp += 1
    list_core(n_core_orb_tmp) = i
    list_core_tmp(n_core_orb_tmp) = i
-   list_core_reverse(i) = 1
+   list_core_reverse(i) = n_core_orb_tmp
   else if (mo_class(i) == 'Inactive')then
    n_inact_orb_tmp += 1
    list_inact(n_inact_orb_tmp) = i
    list_inact_tmp(n_inact_orb_tmp) = i
-   list_inact_reverse(i) = 1
+   list_inact_reverse(i) = n_inact_orb_tmp
   else if (mo_class(i) == 'Active')then
    n_act_orb_tmp += 1
    list_act(n_act_orb_tmp) = i
    list_act_tmp(n_act_orb_tmp) = i
-   list_act_reverse(i) = 1
+   list_act_reverse(i) = n_act_orb_tmp
   else if (mo_class(i) == 'Virtual')then
    n_virt_orb_tmp += 1
    list_virt(n_virt_orb_tmp) = i
    list_virt_tmp(n_virt_orb_tmp) = i
-   list_act_reverse(i) = 1
-  else if (mo_class(i) == 'Virtual')then
-   n_virt_orb += 1
-   list_virt(n_virt_orb_tmp) = i
-   list_virt_reverse(i) = 1
+   list_act_reverse(i) = n_virt_orb_tmp
+! else if (mo_class(i) == 'Virtual')then
+!  n_virt_orb += 1
+!  list_virt(n_virt_orb_tmp) = i
+!  list_virt_reverse(i) = 1
   endif
  enddo
 

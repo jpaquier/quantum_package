@@ -18,6 +18,103 @@ BEGIN_PROVIDER [integer(bit_kind), psi_active, (N_int,2,psi_det_size)]
 END_PROVIDER
 
 
+subroutine give_holes_and_particles_inactive_active_virtual_space(det_ref,det_pert,list_holes_inactive,list_holes_active,list_particle_active,list_particle_virt,n_holes_inactive,n_holes_active,n_particle_active,n_particle_virt)
+ implicit none
+ use bitmasks
+ integer(bit_kind),intent(in)  :: det_ref(N_int,2)
+ integer(bit_kind),intent(in ) :: det_pert(N_int,2)
+ integer, intent(out) :: n_holes_inactive(2)
+ integer, intent(out) :: n_holes_active(2)
+ integer, intent(out) :: n_particle_active(2)
+ integer, intent(out) :: n_particle_virt(2)
+ integer, intent(out) :: list_holes_inactive(N_int*bit_kind_size,2)
+ integer, intent(out) :: list_holes_active(N_int*bit_kind_size,2)
+ integer, intent(out) :: list_particle_active(N_int*bit_kind_size,2)
+ integer, intent(out) :: list_particle_virt(N_int*bit_kind_size,2)
+ integer :: list_tmp(N_int*bit_kind_size,2)
+
+ integer :: exc(0:2,2,2)
+ integer :: degree
+ double precision :: phase
+ integer  :: h1,h2,p1,p2,s1,s2
+ integer(bit_kind) :: key_holes(N_int,2), key_part(N_int,2)
+ integer(bit_kind) :: key_holes_inact(N_int,2)
+ integer(bit_kind) :: key_holes_act(N_int,2), key_part_act(N_int,2)
+ integer(bit_kind) :: key_part_virt(N_int,2)
+ list_holes_inactive = 0
+ list_holes_active = 0
+ list_particle_active = 0
+ list_particle_virt = 0
+ 
+ call get_excitation(det_ref,det_pert,exc,degree,phase,N_int)
+ call decode_exc(exc,degree,h1,p1,h2,p2,s1,s2)
+ key_holes = 0_bit_kind
+ key_part  = 0_bit_kind
+ if(degree==2)then
+  if(s1==s2)then
+   if(s1==1)then
+    call set_bit_to_integer(h1,key_holes(1,1),N_int)
+    call set_bit_to_integer(h2,key_holes(1,1),N_int)
+    call set_bit_to_integer(p1,key_part(1,1),N_int)
+    call set_bit_to_integer(p2,key_part(1,1),N_int)
+   else
+    call set_bit_to_integer(h1,key_holes(1,2),N_int)
+    call set_bit_to_integer(h2,key_holes(1,2),N_int)
+    call set_bit_to_integer(p1,key_part(1,2),N_int)
+    call set_bit_to_integer(p2,key_part(1,2),N_int)
+   endif
+  else 
+    call set_bit_to_integer(h1,key_holes(1,1),N_int)
+    call set_bit_to_integer(p1,key_part(1,1),N_int)
+    call set_bit_to_integer(h2,key_holes(1,2),N_int)
+    call set_bit_to_integer(p2,key_part(1,2),N_int)
+  endif
+ else 
+  if (s1==1)then
+   call set_bit_to_integer(h1,key_holes(1,1),N_int)
+   call set_bit_to_integer(p1,key_part(1,1),N_int)
+  else
+   call set_bit_to_integer(h1,key_holes(1,2),N_int)
+   call set_bit_to_integer(p1,key_part(1,2),N_int)
+  endif
+ endif
+ integer :: k
+ do k = 1, N_int
+  key_holes_inact(k,1) = iand(key_holes(k,1),inact_bitmask(k,1))
+  key_holes_inact(k,2) = iand(key_holes(k,2),inact_bitmask(k,2))
+  key_holes_act(k,1) = iand(key_holes(k,1),act_bitmask(k,1))
+  key_holes_act(k,2) = iand(key_holes(k,2),act_bitmask(k,2))
+  key_part_act(k,1) = iand(key_part(k,1),act_bitmask(k,1))
+  key_part_act(k,2) = iand(key_part(k,2),act_bitmask(k,2))
+  key_part_virt(k,1) = iand(key_part(k,1),virt_bitmask(k,1))
+  key_part_virt(k,2) = iand(key_part(k,2),virt_bitmask(k,2))
+ enddo
+ call bitstring_to_list(key_holes_inact(1,1), list_holes_inactive(1,1), n_holes_inactive(1), N_int)
+ call bitstring_to_list(key_holes_inact(1,2), list_holes_inactive(1,2), n_holes_inactive(2), N_int)
+ 
+ call bitstring_to_list(key_holes_act(1,1), list_tmp(1,1), n_holes_active(1), N_int)
+ do k = 1, n_holes_active(1)
+  list_holes_active(k,1) = list_act_reverse(list_tmp(k,1))
+ enddo
+ call bitstring_to_list(key_holes_act(1,2), list_tmp(1,2), n_holes_active(2), N_int)
+ do k = 1, n_holes_active(2)
+  list_holes_active(k,2) = list_act_reverse(list_tmp(k,2))
+ enddo
+
+ call bitstring_to_list(key_part_act(1,1), list_tmp(1,1), n_particle_active(1), N_int)
+ do k = 1, n_particle_active(1)
+  list_particle_active(k,1) = list_act_reverse(list_tmp(k,1))
+ enddo
+ call bitstring_to_list(key_part_act(1,2), list_tmp(1,2), n_particle_active(2), N_int)
+ do k = 1, n_particle_active(2)
+  list_particle_active(k,2) = list_act_reverse(list_tmp(k,2))
+ enddo
+
+ call bitstring_to_list(key_part_virt(1,1), list_particle_virt(1,1), n_particle_virt(1), N_int)
+ call bitstring_to_list(key_part_virt(1,2), list_particle_virt(1,2), n_particle_virt(2), N_int)
+end
+
+
 subroutine give_holes_and_particles_in_active_space(det_1,det_2,n_holes_spin,n_particles_spin,n_holes,n_particles,& 
                                                     holes_active_list,particles_active_list)
  implicit none
@@ -167,6 +264,314 @@ subroutine get_delta_e_dyall(det_1,det_2,delta_e_final)
  ! operator in the active space that lead from det_1 to det_2
  END_DOC
  implicit none
+ use bitmasks
+ double precision, intent(out) :: delta_e_final(N_states)
+ integer(bit_kind), intent(in) :: det_1(N_int,2),det_2(N_int,2)
+ integer :: i,j,k,l
+ integer :: i_state
+ 
+ integer :: n_holes_inactive(2)
+ integer :: n_holes_active(2)
+ integer :: n_particle_active(2)
+ integer :: n_particle_virt(2)
+ integer :: list_holes_inactive(N_int*bit_kind_size,2)
+ integer :: list_holes_active(N_int*bit_kind_size,2)
+ integer :: list_particle_active(N_int*bit_kind_size,2)
+ integer :: list_particle_virt(N_int*bit_kind_size,2)
+
+
+ double precision :: delta_e_inactive(N_states)
+ integer :: i_hole_inact
+
+ call get_excitation_degree(det_1,det_2,degree,N_int)
+ if(degree>2)then
+  delta_e_final = -1.d+10
+  return
+ endif
+
+ 
+!print*, '*************'
+!call debug_det(det_1,N_int)
+!call debug_det(det_2,N_int)
+ call give_holes_and_particles_inactive_active_virtual_space(det_1,det_2,list_holes_inactive,list_holes_active,list_particle_active,list_particle_virt,n_holes_inactive,n_holes_active,n_particle_active,n_particle_virt)
+!print*, 'n_holes_inactive print ',n_holes_inactive(:)
+!print*, 'list_holes_active print',list_holes_active(1,1)
+!print*, 'list_holes_active print',list_holes_active(1,2)
+!print*, '*************'
+
+ delta_e_inactive = 0.d0
+ do i = 1, n_holes_inactive(1)
+  i_hole_inact = list_holes_inactive(i,1)
+  do i_state = 1, N_states
+   delta_e_inactive += fock_core_inactive_total_spin_trace(i_hole_inact,i_state)
+  enddo
+ enddo
+
+ do i = 1, n_holes_inactive(2)
+  i_hole_inact = list_holes_inactive(i,2)
+  do i_state = 1, N_states
+   delta_e_inactive(i_state) += fock_core_inactive_total_spin_trace(i_hole_inact,i_state)
+  enddo
+ enddo
+
+ double precision :: delta_e_virt(N_states)
+ integer :: i_part_virt
+ 
+ delta_e_virt = 0.d0
+ do i = 1, n_particle_virt(1)
+  i_part_virt = list_particle_virt(i,1)
+  do i_state = 1, N_states
+   delta_e_virt += fock_virt_total_spin_trace(i_part_virt,i_state)
+  enddo
+ enddo
+
+ do i = 1, n_particle_virt(2)
+  i_part_virt = list_particle_virt(i,2)
+  do i_state = 1, N_states
+   delta_e_virt += fock_virt_total_spin_trace(i_part_virt,i_state)
+  enddo
+ enddo
+
+ integer :: give_spin_exc_1, spin_exc_2(2),hp_2(2), spin_exc_3(3),hp_3(3)
+ double precision :: delta_e_act(N_states)
+
+ delta_e_act = 0.d0
+ integer :: n_holes_act,ispin,jspin,kspin
+ integer :: i_particle_act,i_hole_act
+ integer :: j_particle_act,j_hole_act
+ integer :: k_particle_act,k_hole_act
+ integer :: n_particles_act 
+ n_holes_act = n_holes_active(1) + n_holes_active(2)
+ n_particles_act = n_particle_active(1) + n_particle_active(2)
+ if      (n_holes_act == 0 .and. n_particles_act == 1) then
+  ispin = give_spin_exc_1(n_particle_active)
+  i_particle_act =  list_particle_active(1,ispin)
+  do i_state = 1, N_states
+   delta_e_act(i_state) += one_creat(i_particle_act,ispin,i_state)
+  enddo
+
+ else if (n_holes_act == 1 .and. n_particles_act == 0) then
+  ispin = give_spin_exc_1(n_holes_active)
+  i_hole_act =  list_holes_active(1,ispin)
+  do i_state = 1, N_states
+   delta_e_act(i_state) += one_anhil(i_hole_act , ispin,i_state)
+  enddo
+
+ else if (n_holes_act == 1 .and. n_particles_act == 1) then
+  ! first hole
+  ispin = give_spin_exc_1(n_holes_active)
+  i_hole_act =  list_holes_active(1,ispin)
+  ! first particle
+  ispin = give_spin_exc_1(n_particle_active)
+  i_particle_act =  list_particle_active(1,ispin)
+  do i_state = 1, N_states
+   delta_e_act(i_state) += one_anhil_one_creat(i_particle_act,i_hole_act,jspin,ispin,i_state)
+  enddo
+
+ else if (n_holes_act == 2 .and. n_particles_act == 0) then
+  call give_spin_exc_2(n_holes_active,list_holes_active,spin_exc_2,hp_2) 
+  ispin = spin_exc_2(1)
+  i_hole_act =  hp_2(1)
+  jspin = spin_exc_2(2)
+  j_hole_act =  hp_2(2)
+  do i_state = 1, N_states
+   delta_e_act(i_state) += two_anhil(i_hole_act,j_hole_act,ispin,jspin,i_state)
+  enddo
+
+ else if (n_holes_act == 0 .and. n_particles_act == 2) then
+  call give_spin_exc_2(n_particle_active,list_particle_active,spin_exc_2,hp_2) 
+  ! first particle 
+  ispin = spin_exc_2(1)
+  i_particle_act = hp_2(1)
+  ! second particle
+  jspin = spin_exc_2(2)
+  j_particle_act = hp_2(2)
+  do i_state = 1, N_states
+   delta_e_act(i_state) += two_creat(i_particle_act,j_particle_act,ispin,jspin,i_state)
+  enddo
+
+ else if (n_holes_act == 2 .and. n_particles_act == 1) then
+  call give_spin_exc_2(n_holes_active,list_holes_active,spin_exc_2,hp_2) 
+  ! first hole
+  ispin = spin_exc_2(1)
+  i_hole_act =  hp_2(1)
+  ! second hole
+  jspin = spin_exc_2(2)
+  j_hole_act =  hp_2(2)
+  ! first particle
+  kspin = give_spin_exc_1(n_particle_active)
+  i_particle_act =  list_particle_active(1,kspin)
+  do i_state = 1, N_states
+   delta_e_act(i_state) += two_anhil_one_creat(i_particle_act,i_hole_act,j_hole_act,kspin,ispin,jspin,i_state)
+  enddo
+
+ else if (n_holes_act == 1 .and. n_particles_act == 2) then
+  ! first hole
+  ispin = give_spin_exc_1(n_holes_active)
+  i_hole_act =  list_holes_active(1,ispin)
+  call give_spin_exc_2(n_particle_active,list_particle_active,spin_exc_2,hp_2) 
+  ! first particle 
+  jspin = spin_exc_2(1)
+  i_particle_act = hp_2(1)
+  ! second particle
+  kspin = spin_exc_2(2)
+  j_particle_act = hp_2(2)
+
+  do i_state = 1, N_states
+   delta_e_act(i_state) += two_creat_one_anhil(i_particle_act,j_particle_act,i_hole_act,jspin,kspin,ispin,i_state)
+  enddo
+
+ else if (n_holes_act == 3 .and. n_particles_act == 0) then
+  call give_spin_exc_3(n_particle_active,list_particle_active,spin_exc_3,hp_3)
+  ! first hole
+  ispin = spin_exc_3(1)
+  i_hole_act =  hp_3(1)
+  ! second hole
+  jspin = spin_exc_3(2)
+  j_hole_act = hp_3(2) 
+  ! third hole
+  kspin = spin_exc_3(3)
+  k_hole_act = hp_3(3) 
+  do i_state = 1, N_states
+   delta_e_act(i_state) += three_anhil(i_hole_act,j_hole_act,k_hole_act,ispin,jspin,kspin,i_state)
+  enddo
+
+ else if (n_holes_act == 0 .and. n_particles_act == 3) then
+  call give_spin_exc_3(n_holes_active,list_holes_active,spin_exc_3,hp_3)
+  ! first particle
+  ispin = spin_exc_3(1)
+  i_particle_act = hp_3(1) 
+  ! second particle
+  jspin = spin_exc_3(2)
+  j_particle_act =  hp_3(2) 
+  ! second particle
+  kspin = spin_exc_3(3)
+  k_particle_act =  hp_3(3) 
+  do i_state = 1, N_states
+   delta_e_act(i_state) += three_creat(i_particle_act,j_particle_act,k_particle_act,ispin,jspin,kspin,i_state)
+  enddo
+ 
+ else if (n_holes_act .eq. 0 .and. n_particles_act .eq.0)then
+  integer :: degree
+  integer(bit_kind) :: det_1_active(N_int,2)
+  integer          :: h1,h2,p1,p2,s1,s2
+  integer          :: exc(0:2,2,2)
+  integer          :: i_hole, i_part
+  double precision :: phase
+  call get_excitation_degree(det_1,det_2,degree,N_int)
+  if(degree == 1)then
+   call get_excitation(det_1,det_2,exc,degree,phase,N_int)
+   call decode_exc(exc,degree,h1,p1,h2,p2,s1,s2)
+   i_hole =  list_inact_reverse(h1)
+   i_part =  list_virt_reverse(p1)
+   do i_state = 1, N_states
+     delta_e_act(i_state) += one_anhil_one_creat_inact_virt(i_hole,i_part,i_state) 
+   enddo
+  endif
+ else if (n_holes_act .ge. 2 .and. n_particles_act .ge.2) then
+  delta_e_act = -10000000.d0
+ endif
+
+!print*, 'one_anhil_spin_trace'
+!print*,  one_anhil_spin_trace(1), one_anhil_spin_trace(2) 
+
+
+ do i_state = 1, n_states
+  delta_e_final(i_state) = delta_e_act(i_state)  + delta_e_inactive(i_state) - delta_e_virt(i_state)
+ enddo
+!write(*,'(100(f16.10,X))'), delta_e_final(1) , delta_e_act(1)  , delta_e_inactive(1) , delta_e_virt(1)
+
+end
+
+
+integer function give_spin_exc_1(array)
+ implicit none
+ use bitmasks
+ integer, intent(in) :: array(2)
+ if (array(1).ne.0)then
+  give_spin_exc_1 = 1
+ else 
+  give_spin_exc_1 = 2
+ endif
+end
+
+subroutine give_spin_exc_2(array_n,array_hp,spin_exc_2,hp_2)
+ implicit none
+ use bitmasks
+ integer, intent(in) :: array_hp(N_int*bit_kind_size,2)
+ integer, intent(in) :: array_n(2)
+ integer, intent(out) :: spin_exc_2(2),hp_2(2)
+ if (array_n(1).eq.2)then
+  spin_exc_2(1)= 1
+  hp_2(1) = array_hp(1,1)
+  spin_exc_2(2)= 1
+  hp_2(2) = array_hp(2,1)
+ else if(array_n(2) ==2)then
+  spin_exc_2(1)= 2
+  hp_2(1) = array_hp(1,2)
+  spin_exc_2(2)= 2
+  hp_2(2) = array_hp(2,2)
+ else 
+  spin_exc_2(1)= 1
+  hp_2(1) = array_hp(1,1)
+  spin_exc_2(2)= 2
+  hp_2(2) = array_hp(1,2)
+ endif
+end
+
+subroutine give_spin_exc_3(array_n,array_hp,spin_exc_3,hp_3)
+ implicit none
+ integer, intent(in) :: array_hp(N_int*bit_kind_size,2)
+ integer, intent(in) :: array_n(2)
+ integer, intent(out) :: spin_exc_3(3),hp_3(3)
+ if (array_n(1).eq.3)then
+  spin_exc_3(1)= 1
+  hp_3(1) = array_hp(1,1)
+  spin_exc_3(2)= 1
+  hp_3(2) = array_hp(2,1)
+  spin_exc_3(3)= 1
+  hp_3(3) = array_hp(3,1)
+ else if (array_n(2).eq.3)then
+  spin_exc_3(1)= 2
+  hp_3(1) = array_hp(1,2)
+  spin_exc_3(2)= 2
+  hp_3(2) = array_hp(2,2)
+  spin_exc_3(3)= 2
+  hp_3(3) = array_hp(3,2)
+ else if (array_n(1).eq.1)then
+  spin_exc_3(1)= 1
+  hp_3(1) = array_hp(1,1)
+  spin_exc_3(2)= 2
+  hp_3(2) = array_hp(2,2)
+  spin_exc_3(3)= 2
+  hp_3(3) = array_hp(3,2)
+ else if (array_n(1).eq.2)then
+  spin_exc_3(1)= 1
+  hp_3(1) = array_hp(1,1)
+  spin_exc_3(2)= 1
+  hp_3(2) = array_hp(2,1)
+  spin_exc_3(3)= 2
+  hp_3(3) = array_hp(3,2)
+ endif
+
+
+end
+
+subroutine get_delta_e_dyall_old(det_1,det_2,delta_e_final)
+ BEGIN_DOC
+ ! routine that returns the delta_e with the Moller Plesset and Dyall operators
+ !
+ ! with det_1 being a determinant from the cas, and det_2 being a perturber
+ !
+ ! Delta_e(det_1,det_2) = sum (hole) epsilon(hole) + sum(part) espilon(part) + delta_e(act)
+ !
+ ! where hole is necessary in the inactive, part necessary in the virtuals
+ ! 
+ ! and delta_e(act) is obtained from the contracted application of the excitation 
+ !
+ ! operator in the active space that lead from det_1 to det_2
+ END_DOC
+ implicit none
   use bitmasks
  double precision, intent(out) :: delta_e_final(N_states)
  integer(bit_kind), intent(in) :: det_1(N_int,2),det_2(N_int,2)
@@ -299,6 +704,7 @@ subroutine get_delta_e_dyall(det_1,det_2,delta_e_final)
  else if (n_holes_act == 1 .and. n_particles_act == 0) then
   ispin = hole_list_practical(1,1)
   i_hole_act =  hole_list_practical(2,1)
+  print*, 'i_hole_act print = ',i_hole_act
    do i_state = 1, N_states
     delta_e_act(i_state) += one_anhil(i_hole_act , ispin,i_state)
    enddo

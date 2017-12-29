@@ -13,14 +13,18 @@ BEGIN_PROVIDER [ integer, N_det_generators ]
       good = .True.
       do k=1,N_int
         good = good .and. (                                          &
-            iand(not(act_bitmask(k,1)), psi_det_sorted(k,1,i)) ==         &
-            iand(not(act_bitmask(k,1)), HF_bitmask(k,1)) ) .and. ( &
-            iand(not(act_bitmask(k,2)), psi_det_sorted(k,2,i)) ==         &
-            iand(not(act_bitmask(k,2)), HF_bitmask(k,2)) )
-      enddo
-      if (good) then
+            iand(reunion_of_core_inact_bitmask(k,1), psi_det(k,1,i)) ==         &
+            reunion_of_core_inact_bitmask(k,1)) .and. (  &
+            iand(reunion_of_core_inact_bitmask(k,2), psi_det(k,2,i)) ==         &
+            reunion_of_core_inact_bitmask(k,2)  & 
+            )
+        good = good .and. (                                          &
+            iand(virt_bitmask(k,1), psi_det(k,1,i)) ==  0      &
+            .and. (  iand(virt_bitmask(k,2), psi_det(k,2,i)) == 0))
+      if (.not.good) then
         exit
       endif
+      enddo
     if (good) then
       N_det_generators += 1
     endif
@@ -42,15 +46,19 @@ END_PROVIDER
   do i=1,N_det
       good = .True.
       do k=1,N_int
-        good = good .and. (                                         &
-            iand(not(act_bitmask(k,1)), psi_det_sorted(k,1,i)) ==         &
-            iand(not(act_bitmask(k,1)), HF_bitmask(k,1)) .and. (   &
-            iand(not(act_bitmask(k,2)), psi_det_sorted(k,2,i)) ==         &
-            iand(not(act_bitmask(k,2)), HF_bitmask(k,2) )) )
-      enddo
-      if (good) then
+        good = good .and. (                                          &
+            iand(reunion_of_core_inact_bitmask(k,1), psi_det(k,1,i)) ==         &
+            reunion_of_core_inact_bitmask(k,1)) .and. (  &
+            iand(reunion_of_core_inact_bitmask(k,2), psi_det(k,2,i)) ==         &
+            reunion_of_core_inact_bitmask(k,2)  & 
+            )
+        good = good .and. (                                          &
+            iand(virt_bitmask(k,1), psi_det(k,1,i)) ==  0      &
+            .and. (  iand(virt_bitmask(k,2), psi_det(k,2,i)) == 0))
+      if (.not.good) then
         exit
       endif
+      enddo
     if (good) then
       m = m+1
       do k=1,N_int
