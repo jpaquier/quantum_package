@@ -290,14 +290,7 @@ subroutine get_delta_e_dyall(det_1,det_2,delta_e_final)
  endif
 
  
-!print*, '*************'
-!call debug_det(det_1,N_int)
-!call debug_det(det_2,N_int)
  call give_holes_and_particles_inactive_active_virtual_space(det_1,det_2,list_holes_inactive,list_holes_active,list_particle_active,list_particle_virt,n_holes_inactive,n_holes_active,n_particle_active,n_particle_virt)
-!print*, 'n_holes_inactive print ',n_holes_inactive(:)
-!print*, 'list_holes_active print',list_holes_active(1,1)
-!print*, 'list_holes_active print',list_holes_active(1,2)
-!print*, '*************'
 
  delta_e_inactive = 0.d0
  do i = 1, n_holes_inactive(1)

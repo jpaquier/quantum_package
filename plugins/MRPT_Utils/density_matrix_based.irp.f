@@ -1,79 +1,6 @@
 
 
 
- BEGIN_PROVIDER [double precision, effective_fock_operator_2h1p, (n_act_orb,n_act_orb,2,N_states)]
-&BEGIN_PROVIDER [double precision, contribution_2h1p, (N_states)]
- implicit none
- integer :: i_i,i_v,i_j,i_a,i_b
- integer :: i,v,j,a,b
- integer :: ispin,jspin
- integer :: istate
- double precision :: active_int(n_act_orb,2)
- double precision :: delta_e(n_act_orb,2,N_states)
- double precision :: get_mo_bielec_integral
-
- effective_fock_operator_2h1p = 0.d0
- do i_i = 1, n_inact_orb
-  i = list_inact(i_i)
-  do i_j = 1, n_inact_orb
-   j = list_inact(i_j)
-   do i_v = 1, n_virt_orb
-    v = list_virt(i_v)
-     do istate = 1, N_states
-      do i_b = 1, n_act_orb 
-       b = list_act(i_b)
-       active_int(i_b,1) = get_mo_bielec_integral(i,j,v,b,mo_integrals_map) ! direct
-       active_int(i_b,2) = get_mo_bielec_integral(i,j,b,v,mo_integrals_map) ! exchange
-       do jspin=1, 2
-        delta_e(i_b,jspin,istate) = one_creat(i_b,jspin,istate)                        &
-                                  - fock_virt_total_spin_trace(v,istate)               & 
-                                  + fock_core_inactive_total_spin_trace(j,istate)               & 
-                                  + fock_core_inactive_total_spin_trace(i,istate)        
-        delta_e(i_b,jspin,istate) = 1.d0/delta_e(i_b,jspin,istate)  
-       enddo
-      enddo
-     enddo
-     do i_a = 1, n_act_orb
-      a = list_act(i_a)
-      do i_b = 1, n_act_orb 
-       b = list_act(i_b)
-       do jspin=1, 2
-        do istate = 1, N_states
-          do ispin = 1, 2 ! spin of (i --> r)
-           if(ispin == jspin .and. i.le.j)cycle ! condition not to double count 
-            if(ispin == jspin)then
-             effective_fock_operator_2h1p(i_a,i_b,jspin,istate) += (active_int(i_a,1) - active_int(i_a,2)) * (active_int(i_b,1) - active_int(i_b,2)) * delta_e(i_a,jspin,istate)
-                                                             
-            else 
-             effective_fock_operator_2h1p(i_a,i_b,jspin,istate) += active_int(i_a,1)   * delta_e(i_a,jspin,istate) * active_int(i_b,1)  
-            endif
-          enddo
-         enddo
-        enddo
-       enddo
-      enddo
-    enddo
-   enddo
- enddo
-
-
- contribution_2h1p = 0.d0
- do istate = 1, N_states
-  do jspin = 1, 2 
-   do i_a = 1,n_act_orb
-    a = list_act(i_a)
-    do i_b = 1, n_act_orb 
-     b = list_act(i_b)
-     contribution_2h1p(istate) += effective_fock_operator_2h1p(i_a,i_b,jspin,istate) * one_body_dm_dagger_mo_spin_index(a,b,istate,jspin)
-    enddo
-   enddo
-  enddo
- enddo
- print*, 'contribution_2h1p',contribution_2h1p
-
-END_PROVIDER 
-
-
 
 
 
@@ -318,6 +245,11 @@ end
 
  BEGIN_PROVIDER [double precision, effective_fock_operator_1h2p, (n_act_orb,n_act_orb,2,N_states)]
 &BEGIN_PROVIDER [double precision, contribution_1h2p, (N_states)]
+ BEGIN_DOC
+! contribution_1h2p(istate) = contribution of the 1h2p excitation class to the PT2
+! effective_fock_operator_1h2p(i,j,ispin,istate) = effective Fock-like operator of type a^{\dagger}_{b,ispin} a_{a,ispin} F_ab^{istate,ispin}
+! the total PT2 energy from the 1h2p is:  \sum_{ab}\sum_{ispin} \rho_{ab} F_ab^{istate,ispin}
+ END_DOC
 
  implicit none
  
@@ -400,3 +332,290 @@ end
 
 END_PROVIDER
 
+subroutine contrib_2h1p_a_b_dm_based(pt2)
+ implicit none
+ double precision, intent(out) :: pt2(N_states)
+ 
+ integer :: i_i,i_j,i_v,i_a,i_b
+ integer :: i,j,v,a,b
+ integer :: istate
+ double precision :: delta_e(n_act_orb,2,N_states)
+ double precision :: get_mo_bielec_integral
+ double precision :: active_int(n_act_orb,2)
+ double precision :: accu_direct
+ integer :: ispin
+ pt2 = 0.d0
+ do i_i = 1, n_inact_orb
+  i = list_inact(i_i) 
+  do i_j = 1, n_inact_orb
+   j = list_inact(i_j)
+   do i_v = 1, n_virt_orb
+    v = list_virt(i_v)
+    do i_a = 1, n_act_orb
+     a = list_act(i_a)
+     active_int(i_a,1) = get_mo_bielec_integral(i,j,a,v,mo_integrals_map) ! direct
+     do istate = 1, N_states
+      do ispin = 1, 2
+       delta_e(i_a,ispin,istate) = one_creat(i_a,ispin,istate)                        &
+                                 - fock_virt_total_spin_trace(v,istate)               & 
+                                 + fock_core_inactive_total_spin_trace(i,istate)      & 
+                                 + fock_core_inactive_total_spin_trace(j,istate)        
+       delta_e(i_a,ispin,istate) = 1.d0/delta_e(i_a,ispin,istate)  
+      enddo
+     enddo
+    enddo
+    do ispin = 1, 2
+     do istate = 1, N_states 
+      do i_a = 1, n_act_orb
+       a = list_act(i_a)
+       pt2(istate) += active_int(i_a,1) * active_int(i_a,1) * delta_e(i_a,ispin,istate) 
+       do i_b = 1, n_act_orb
+        b = list_act(i_b)
+        accu_direct = active_int(i_a,1) * active_int(i_b,1)
+        pt2(istate) -= accu_direct  * delta_e(i_a,ispin,istate) * one_body_dm_mo_spin_index(b,a,istate,ispin)
+       enddo
+      enddo
+     enddo
+    enddo
+    
+   enddo
+  enddo
+ enddo
+end
+
+subroutine contrib_2h1p_parallel_spin_dm_based(pt2)
+ implicit none
+ double precision, intent(out) :: pt2(N_states)
+ 
+ integer :: i_i,i_j,i_v,i_a,i_b
+ integer :: i,j,v,a,b
+ integer :: istate
+ double precision :: delta_e(n_act_orb,2,N_states)
+ double precision :: get_mo_bielec_integral
+ double precision :: active_int(n_act_orb,2)
+ double precision :: accu_direct
+ integer :: ispin
+ pt2 = 0.d0
+ do i_i = 1, n_inact_orb
+  i = list_inact(i_i) 
+  do i_v = 1, n_virt_orb
+   v = list_virt(i_v)
+   do i_j = i_i+1, n_inact_orb
+    j = list_inact(i_j)
+    do i_a = 1, n_act_orb
+     a = list_act(i_a)
+     active_int(i_a,1) = get_mo_bielec_integral(i,j,a,v,mo_integrals_map) ! direct
+     active_int(i_a,2) = get_mo_bielec_integral(i,j,v,a,mo_integrals_map) ! exchange
+     do istate = 1, N_states
+      do ispin = 1, 2
+       delta_e(i_a,ispin,istate) = one_creat(i_a,ispin,istate)                        &
+                                 - fock_virt_total_spin_trace(v,istate)               & 
+                                 + fock_core_inactive_total_spin_trace(i,istate)      & 
+                                 + fock_core_inactive_total_spin_trace(j,istate)        
+       delta_e(i_a,ispin,istate) = 1.d0/delta_e(i_a,ispin,istate)  
+      enddo
+     enddo
+    enddo
+    do ispin = 1, 2
+     do istate = 1, N_states 
+      do i_a = 1, n_act_orb
+       a = list_act(i_a)
+       pt2(istate) += (active_int(i_a,1) - active_int(i_a,2)) * (active_int(i_a,1) - active_int(i_a,2)  ) * delta_e(i_a,ispin,istate) 
+       do i_b = 1, n_act_orb
+        b = list_act(i_b)
+        accu_direct = (active_int(i_a,1) - active_int(i_a,2)) * (active_int(i_b,1) - active_int(i_b,2)  ) 
+        pt2(istate) -= accu_direct  * delta_e(i_a,ispin,istate) * one_body_dm_mo_spin_index(b,a,istate,ispin)
+       enddo
+      enddo
+     enddo
+    enddo
+    
+   enddo
+  enddo
+ enddo
+end
+
+
+subroutine contrib_2h1p_dm_based(pt2)
+ implicit none
+ double precision, intent(out) :: pt2(N_states)
+ 
+ integer :: i_i,i_j,i_v,i_a,i_b
+ integer :: i,j,v,a,b
+ integer :: istate
+ double precision :: delta_e(n_act_orb,2,N_states)
+ double precision :: get_mo_bielec_integral
+ double precision :: active_int(n_act_orb,2)
+ double precision :: accu_direct
+ integer :: ispin
+ pt2 = 0.d0
+ do i_i = 1, n_inact_orb
+  i = list_inact(i_i) 
+  do i_v = 1, n_virt_orb
+   v = list_virt(i_v)
+
+   do i_j = 1,i_i
+    j = list_inact(i_j)
+    do i_a = 1, n_act_orb
+     a = list_act(i_a)
+     active_int(i_a,1) = get_mo_bielec_integral(i,j,a,v,mo_integrals_map) ! direct
+     active_int(i_a,2) = get_mo_bielec_integral(i,j,v,a,mo_integrals_map) ! exchange
+     do istate = 1, N_states
+      do ispin = 1, 2
+       delta_e(i_a,ispin,istate) = one_creat(i_a,ispin,istate)                        &
+                                 - fock_virt_total_spin_trace(v,istate)               & 
+                                 + fock_core_inactive_total_spin_trace(i,istate)      & 
+                                 + fock_core_inactive_total_spin_trace(j,istate)        
+       delta_e(i_a,ispin,istate) = 1.d0/delta_e(i_a,ispin,istate)  
+      enddo
+     enddo
+    enddo
+    do ispin = 1, 2
+     do istate = 1, N_states 
+      do i_a = 1, n_act_orb
+       a = list_act(i_a)
+       pt2(istate) += active_int(i_a,1)  * active_int(i_a,1)   * delta_e(i_a,ispin,istate) 
+       do i_b = 1, n_act_orb
+        b = list_act(i_b)
+        accu_direct = active_int(i_a,1)  * active_int(i_b,1)   
+        pt2(istate) -= accu_direct  * delta_e(i_a,ispin,istate) * one_body_dm_mo_spin_index(b,a,istate,ispin)
+       enddo
+      enddo
+     enddo
+    enddo
+   enddo
+
+   do i_j = i_i+1, n_inact_orb
+    j = list_inact(i_j)
+    do i_a = 1, n_act_orb
+     a = list_act(i_a)
+     active_int(i_a,1) = get_mo_bielec_integral(i,j,a,v,mo_integrals_map) ! direct
+     active_int(i_a,2) = get_mo_bielec_integral(i,j,v,a,mo_integrals_map) ! exchange
+     do istate = 1, N_states
+      do ispin = 1, 2
+       delta_e(i_a,ispin,istate) = one_creat(i_a,ispin,istate)                        &
+                                 - fock_virt_total_spin_trace(v,istate)               & 
+                                 + fock_core_inactive_total_spin_trace(i,istate)      & 
+                                 + fock_core_inactive_total_spin_trace(j,istate)        
+       delta_e(i_a,ispin,istate) = 1.d0/delta_e(i_a,ispin,istate)  
+      enddo
+     enddo
+    enddo
+    do ispin = 1, 2
+     do istate = 1, N_states 
+      do i_a = 1, n_act_orb
+       a = list_act(i_a)
+       accu_direct = (active_int(i_a,1) - active_int(i_a,2)) * (active_int(i_a,1) - active_int(i_a,2)) + active_int(i_a,1) * active_int(i_a,1)  
+       pt2(istate) += accu_direct * delta_e(i_a,ispin,istate) 
+       do i_b = 1, n_act_orb
+        b = list_act(i_b)
+        accu_direct = (active_int(i_a,1) - active_int(i_a,2)) * (active_int(i_b,1) - active_int(i_b,2)  ) + active_int(i_a,1) * active_int(i_b,1)  
+        pt2(istate) -= accu_direct  * delta_e(i_a,ispin,istate) * one_body_dm_mo_spin_index(b,a,istate,ispin)
+       enddo
+      enddo
+     enddo
+    enddo
+    
+   enddo
+  enddo
+ enddo
+end
+
+
+ BEGIN_PROVIDER [double precision, effective_fock_operator_pure_diag_2h1p, (N_states)]
+&BEGIN_PROVIDER [double precision, effective_fock_operator_2h1p, (n_act_orb,n_act_orb,2,N_states)]
+&BEGIN_PROVIDER [double precision, contribution_2h1p, (N_states)]
+ implicit none
+ BEGIN_DOC
+! contribution_2h1p(istate) = contribution of the 2h1p excitation class to the PT2
+! effective_fock_operator_2h1p(i,j,ispin,istate) = effective Fock-like operator of type a^{\dagger}_{b,ispin} a_{a,ispin} F_ab^{istate,ispin}
+! effective_fock_operator_pure_diag_2h1p(istate) = pure diagonal contribution of the effective Fock like operator
+! the total PT2 energy from the 2h1p is: effective_fock_operator_pure_diag_2h1p + \sum_{ab}\sum_{ispin} \rho_{ab} F_ab^{istate,ispin}
+ END_DOC
+ 
+ integer :: i_i,i_j,i_v,i_a,i_b
+ integer :: i,j,v,a,b
+ integer :: istate
+ double precision :: delta_e(n_act_orb,2,N_states)
+ double precision :: get_mo_bielec_integral
+ double precision :: active_int(n_act_orb,2)
+ double precision :: accu_direct
+ integer :: ispin
+ contribution_2h1p = 0.d0
+ effective_fock_operator_2h1p = 0.d0
+ effective_fock_operator_pure_diag_2h1p = 0.d0
+ do i_i = 1, n_inact_orb
+  i = list_inact(i_i) 
+  do i_v = 1, n_virt_orb
+   v = list_virt(i_v)
+
+   do i_j = 1,i_i
+    j = list_inact(i_j)
+    do i_a = 1, n_act_orb
+     a = list_act(i_a)
+     active_int(i_a,1) = get_mo_bielec_integral(i,j,a,v,mo_integrals_map) ! direct
+     active_int(i_a,2) = get_mo_bielec_integral(i,j,v,a,mo_integrals_map) ! exchange
+     do istate = 1, N_states
+      do ispin = 1, 2
+       delta_e(i_a,ispin,istate) = one_creat(i_a,ispin,istate)                        &
+                                 - fock_virt_total_spin_trace(v,istate)               & 
+                                 + fock_core_inactive_total_spin_trace(i,istate)      & 
+                                 + fock_core_inactive_total_spin_trace(j,istate)        
+       delta_e(i_a,ispin,istate) = 1.d0/delta_e(i_a,ispin,istate)  
+      enddo
+     enddo
+    enddo
+    do ispin = 1, 2
+     do istate = 1, N_states 
+      do i_a = 1, n_act_orb
+       a = list_act(i_a)
+       effective_fock_operator_pure_diag_2h1p(istate) += active_int(i_a,1)  * active_int(i_a,1)   * delta_e(i_a,ispin,istate) 
+       contribution_2h1p(istate) += active_int(i_a,1)  * active_int(i_a,1)   * delta_e(i_a,ispin,istate) 
+       do i_b = 1, n_act_orb
+        b = list_act(i_b)
+        accu_direct = active_int(i_a,1)  * active_int(i_b,1)   
+        contribution_2h1p(istate) -= accu_direct  * delta_e(i_a,ispin,istate) * one_body_dm_mo_spin_index(b,a,istate,ispin)
+        effective_fock_operator_2h1p(i_a,i_b,ispin,istate)-= accu_direct  * delta_e(i_a,ispin,istate) 
+       enddo
+      enddo
+     enddo
+    enddo
+   enddo
+
+   do i_j = i_i+1, n_inact_orb
+    j = list_inact(i_j)
+    do i_a = 1, n_act_orb
+     a = list_act(i_a)
+     active_int(i_a,1) = get_mo_bielec_integral(i,j,a,v,mo_integrals_map) ! direct
+     active_int(i_a,2) = get_mo_bielec_integral(i,j,v,a,mo_integrals_map) ! exchange
+     do istate = 1, N_states
+      do ispin = 1, 2
+       delta_e(i_a,ispin,istate) = one_creat(i_a,ispin,istate)                        &
+                                 - fock_virt_total_spin_trace(v,istate)               & 
+                                 + fock_core_inactive_total_spin_trace(i,istate)      & 
+                                 + fock_core_inactive_total_spin_trace(j,istate)        
+       delta_e(i_a,ispin,istate) = 1.d0/delta_e(i_a,ispin,istate)  
+      enddo
+     enddo
+    enddo
+    do ispin = 1, 2
+     do istate = 1, N_states 
+      do i_a = 1, n_act_orb
+       a = list_act(i_a)
+       accu_direct = (active_int(i_a,1) - active_int(i_a,2)) * (active_int(i_a,1) - active_int(i_a,2)) + active_int(i_a,1) * active_int(i_a,1)  
+       contribution_2h1p(istate) += accu_direct * delta_e(i_a,ispin,istate) 
+       effective_fock_operator_pure_diag_2h1p(istate)+= accu_direct  * delta_e(i_a,ispin,istate) 
+       do i_b = 1, n_act_orb
+        b = list_act(i_b)
+        accu_direct = (active_int(i_a,1) - active_int(i_a,2)) * (active_int(i_b,1) - active_int(i_b,2)  ) + active_int(i_a,1) * active_int(i_b,1)  
+        contribution_2h1p(istate) -= accu_direct  * delta_e(i_a,ispin,istate) * one_body_dm_mo_spin_index(b,a,istate,ispin)
+        effective_fock_operator_2h1p(i_a,i_b,ispin,istate)-= accu_direct  * delta_e(i_a,ispin,istate) 
+       enddo
+      enddo
+     enddo
+    enddo
+    
+   enddo
+  enddo
+ enddo
+END_PROVIDER 

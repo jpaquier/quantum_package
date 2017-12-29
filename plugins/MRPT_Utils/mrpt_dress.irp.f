@@ -69,9 +69,14 @@ subroutine mrpt_dress(delta_ij_,  Ndet,i_generator,n_selected,det_buffer,Nint,ip
   do i_alpha=1,N_tq
 !!!!!!!!!! TEST FOR ALPHA- BETA 1h2p 
   integer :: i_part(0:mo_tot_num,2)
-  logical :: is_a_1h2p
-  if(.not.is_a_1h2p(tq(1,1,i_alpha)))cycle
-  call find_particle_in_det(tq(1,1,i_alpha),i_part)
+  integer :: i_hole(0:mo_tot_num,2) 
+  logical :: is_a_1h2p,is_a_2h1p
+
+  if(.not.is_a_2h1p(tq(1,1,i_alpha)))cycle
+
+! if(.not.is_a_1h2p(tq(1,1,i_alpha)))cycle
+!!!!!! CHECK FOR THE 1H2P
+! call find_particle_in_det(tq(1,1,i_alpha),i_part)
 ! !! ALPHA double excitations
 ! if(i_part(0,1)==2)then
 !  cycle
@@ -84,7 +89,20 @@ subroutine mrpt_dress(delta_ij_,  Ndet,i_generator,n_selected,det_buffer,Nint,ip
 ! if(i_part(0,1)==1.and.i_part(0,2)==1)then 
 !  cycle
 ! endif
-  
+  call find_hole_in_det(tq(1,1,i_alpha),i_hole)
+  !! ALPHA double excitations
+! if(i_hole(0,1)==2)then
+!  cycle
+! endif
+! !! BETA  double excitations
+! if(i_hole(0,2)==2)then
+!  cycle
+! endif
+! !! ALPHA-BETA  double excitations
+! if(i_hole(0,2)==1.and.i_hole(0,2)==1)then
+!  cycle
+! endif
+! 
 !!!!!!!!!!!!
     call get_excitation_degree_vector(miniList,tq(1,1,i_alpha),degree_alpha,Nint,N_minilist,idx_alpha)
     
