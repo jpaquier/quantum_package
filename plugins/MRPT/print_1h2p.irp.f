@@ -9,11 +9,11 @@ subroutine routine_1h1p
  implicit none
  double precision,allocatable :: matrix_1h1p(:,:,:) 
  allocate (matrix_1h1p(N_det_ref,N_det_ref,N_states))
- integer :: i,j,istate
+ integer :: i,j,istate,k
  double precision :: accu
  double precision :: accu_bis(N_states)
  double precision :: pt2(N_states)
- integer :: a,b,ispin
+ integer :: a,b,ispin,jspin
  matrix_1h1p = 0.d0
  call H_apply_mrpt_1h1p(matrix_1h1p,N_det_ref)
  do istate = 1, N_states
@@ -28,6 +28,36 @@ subroutine routine_1h1p
  enddo
  call test_1h1p(pt2)
  print*, 'pt2          ',pt2
+ integer :: occ_act(N_int*bit_kind_size,2),n_elec_act(2)
+ accu_bis = 0.d0
+ do istate = 1, N_states
+  do i = 1, N_det_ref
+   do ispin = 1, 2
+    call bitstring_to_list(psi_active(1,ispin,i), occ_act(1,ispin), n_elec_act(ispin), N_int)
+   enddo
+   do ispin = 1, 2
+    do j = 1, n_elec_act(ispin)
+     a = list_act_reverse(occ_act(j,ispin))
+     print*, 'j,a,ispin',j,a,ispin
+     print*, effective_active_fock_operator_from_core_inact_1h1p(a,istate)
+     accu_bis(istate) += effective_active_fock_operator_from_core_inact_1h1p(a,istate)
+     do jspin = 1,2
+      do k = 1, n_elec_act(jspin)
+       b = list_act_reverse(occ_act(k,jspin))
+       print*, 'k,b,jspin',k,b,jspin
+       print*, effective_active_fock_operator_from_act_1h1p(a,b,ispin,jspin,istate)
+
+       accu_bis(istate) += effective_active_fock_operator_from_act_1h1p(a,b,ispin,jspin,istate)
+      enddo
+     enddo
+    enddo
+   enddo
+  enddo
+ enddo
+ do istate = 1, N_states
+  print*, 'accu_bis(istate)',accu_bis(istate)
+  print*, 'accu_bis+pt2    ',accu_bis(istate)+ pt2(istate)
+ enddo
 
  
 !accu_bis = 0.d0

@@ -9,7 +9,7 @@ BEGIN_PROVIDER [integer(bit_kind), psi_active, (N_int,2,psi_det_size)]
  integer :: i,j,k,l
  provide act_bitmask
 !print*, 'psi_active '
- do i = 1, N_det
+ do i = 1, N_det_ref
   do j = 1, N_int
    psi_active(j,1,i) = iand(psi_ref(j,1,i),act_bitmask(j,1))
    psi_active(j,2,i) = iand(psi_ref(j,2,i),act_bitmask(j,1))
@@ -355,8 +355,11 @@ subroutine get_delta_e_dyall(det_1,det_2,delta_e_final)
   ispin = give_spin_exc_1(n_holes_active)
   i_hole_act =  list_holes_active(1,ispin)
   ! first particle
-  ispin = give_spin_exc_1(n_particle_active)
-  i_particle_act =  list_particle_active(1,ispin)
+  jspin = give_spin_exc_1(n_particle_active)
+  i_particle_act =  list_particle_active(1,jspin)
+! print*, 'ispin,jspin',ispin,jspin
+! call debug_det(det_1,N_int)
+! call debug_det(det_2,N_int)
   do i_state = 1, N_states
    delta_e_act(i_state) += one_anhil_one_creat(i_particle_act,i_hole_act,jspin,ispin,i_state)
   enddo
