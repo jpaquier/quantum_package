@@ -39,15 +39,15 @@ subroutine routine_1h1p
     do j = 1, n_elec_act(ispin)
      a = list_act_reverse(occ_act(j,ispin))
      print*, 'j,a,ispin',j,a,ispin
-     print*, effective_active_fock_operator_from_core_inact_1h1p(a,istate)
-     accu_bis(istate) += effective_active_fock_operator_from_core_inact_1h1p(a,istate)
+     print*, effective_active_energies_1h1p(a,istate)
+     accu_bis(istate) += effective_active_energies_1h1p(a,istate)
      do jspin = 1,2
       do k = 1, n_elec_act(jspin)
        b = list_act_reverse(occ_act(k,jspin))
        print*, 'k,b,jspin',k,b,jspin
-       print*, effective_active_fock_operator_from_act_1h1p(a,b,ispin,jspin,istate)
+       print*, effective_coulomb_1h1hp(a,b,ispin,jspin,istate)
 
-       accu_bis(istate) += effective_active_fock_operator_from_act_1h1p(a,b,ispin,jspin,istate)
+       accu_bis(istate) += effective_coulomb_1h1hp(a,b,ispin,jspin,istate)
       enddo
      enddo
     enddo
