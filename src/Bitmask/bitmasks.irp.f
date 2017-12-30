@@ -548,7 +548,7 @@ END_PROVIDER
    n_virt_orb_tmp += 1
    list_virt(n_virt_orb_tmp) = i
    list_virt_tmp(n_virt_orb_tmp) = i
-   list_act_reverse(i) = n_virt_orb_tmp
+   list_virt_reverse(i) = n_virt_orb_tmp
 ! else if (mo_class(i) == 'Virtual')then
 !  n_virt_orb += 1
 !  list_virt(n_virt_orb_tmp) = i

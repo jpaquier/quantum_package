@@ -455,6 +455,8 @@ subroutine get_delta_e_dyall(det_1,det_2,delta_e_final)
   if(degree == 1)then
    call get_excitation(det_1,det_2,exc,degree,phase,N_int)
    call decode_exc(exc,degree,h1,p1,h2,p2,s1,s2)
+!  print*, 'h1 print',h1
+!  print*, 'p1 print',p1
    i_hole =  list_inact_reverse(h1)
    i_part =  list_virt_reverse(p1)
    do i_state = 1, N_states
