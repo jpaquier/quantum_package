@@ -1,22 +1,5 @@
 
   use bitmasks
-BEGIN_PROVIDER [integer(bit_kind), psi_active, (N_int,2,psi_det_size)]
- BEGIN_DOC
-! active part of psi
- END_DOC
- implicit none
-  use bitmasks
- integer :: i,j,k,l
- provide act_bitmask
-!print*, 'psi_active '
- do i = 1, N_det_ref
-  do j = 1, N_int
-   psi_active(j,1,i) = iand(psi_ref(j,1,i),act_bitmask(j,1))
-   psi_active(j,2,i) = iand(psi_ref(j,2,i),act_bitmask(j,1))
-  enddo
- enddo
-END_PROVIDER
-
 
 subroutine give_holes_and_particles_inactive_active_virtual_space(det_ref,det_pert,list_holes_inactive,list_holes_active,list_particle_active,list_particle_virt,n_holes_inactive,n_holes_active,n_particle_active,n_particle_virt)
  implicit none

@@ -265,13 +265,13 @@ subroutine give_1h2p_contrib(matrix_1h2p)
       active_int(a,2) = get_mo_bielec_integral(iorb,aorb,vorb,rorb,mo_integrals_map) ! exchange
      enddo
      
-  integer           :: degree(N_det_ref)
-  integer           :: idx(0:N_det_ref)
   double precision :: delta_e(n_act_orb,2,N_states)
   integer :: istate
   integer :: index_orb_act_mono(N_det_ref,3)
 
       do idet = 1, N_det_ref
+  integer           :: degree(N_det_ref)
+  integer           :: idx(0:N_det_ref)
         call get_excitation_degree_vector_mono(psi_ref,psi_ref(1,1,idet),degree,N_int,N_det_ref,idx)
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Precomputation of matrix elements 
         do ispin = 1, 2  ! spin of the couple a-a^dagger (iorb,rorb)

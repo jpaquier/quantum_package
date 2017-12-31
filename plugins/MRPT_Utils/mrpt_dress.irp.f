@@ -72,7 +72,7 @@ subroutine mrpt_dress(delta_ij_,  Ndet,i_generator,n_selected,det_buffer,Nint,ip
   integer :: i_hole(0:mo_tot_num,2) 
   logical :: is_a_1h2p,is_a_2h1p,is_a_1h1p
 
-  if(.not.is_a_1h1p(tq(1,1,i_alpha)))cycle
+! if(.not.is_a_1h1p(tq(1,1,i_alpha)))cycle
 
 ! if(.not.is_a_2h1p(tq(1,1,i_alpha)))cycle
 
@@ -91,7 +91,7 @@ subroutine mrpt_dress(delta_ij_,  Ndet,i_generator,n_selected,det_buffer,Nint,ip
 ! if(i_part(0,1)==1.and.i_part(0,2)==1)then 
 !  cycle
 ! endif
-  call find_hole_in_det(tq(1,1,i_alpha),i_hole)
+! call find_hole_in_det(tq(1,1,i_alpha),i_hole)
   !! ALPHA double excitations
 ! if(i_hole(0,1)==2)then
 !  cycle
@@ -125,37 +125,53 @@ subroutine mrpt_dress(delta_ij_,  Ndet,i_generator,n_selected,det_buffer,Nint,ip
       call get_excitation_degree(psi_ref(1,1,index_i),tq(1,1,i_alpha),degree_tmp,N_int)
       call i_h_j(tq(1,1,i_alpha),psi_ref(1,1,index_i),N_int,hialpha)
 !!!!!!!!!!! TEST FOR THE SINGLE EXCITATION 1H1P
-      if(degree_tmp.ne.1)then
-       hialpha = 0.d0
-      endif
+     !if(degree_tmp.ne.1)then
+     ! hialpha = 0.d0
+     !endif
       double  precision :: coef_array(N_states)
       do i_state = 1, N_states
        coef_array(i_state) = psi_coef(index_i,i_state)
       enddo
       call get_delta_e_dyall(psi_ref(1,1,index_i),tq(1,1,i_alpha),delta_e)
-      hij_array(index_i) = hialpha
-!     print*, 'hialpha print',hialpha
       call get_excitation(psi_ref(1,1,index_i),tq(1,1,i_alpha),exc,degree,phase,N_int)
+     !if(degree==1)then
+     ! integer :: h1,p1,h2,p2,s1,s2
+     ! call decode_exc(exc,degree,h1,p1,h2,p2,s1,s2)
+     ! h2 = list_inact_reverse(h1)
+     ! p2 = list_virt_reverse(p1)
+     ! hialpha = phase * array_core_inact_contrib_1h1p(p2,h2)
+     !endif
+      hij_array(index_i) = hialpha
       do i_state = 1,N_states
-!      if(degree==1)then
-!       print*, 'delta_e print ' , delta_e(i_state)
-!      endif
-       delta_e_inv_array(index_i,i_state) = 1.d0/delta_e(i_state)
+        delta_e_inv_array(index_i,i_state) = 1.d0/delta_e(i_state)
 !!!!!!!!!!! EPSTEIN NESBET
 !      delta_e_inv_array(index_i,i_state) = 1.d0/(CI_electronic_energy(i_state) - h)
       enddo
     enddo
     
+    integer :: degree_2
     do i=1,idx_alpha(0)
       index_i = idx_alpha(i)
+      call get_excitation_degree(psi_ref(1,1,index_i),tq(1,1,i_alpha),degree_tmp,N_int)
       hij_tmp = hij_array(index_i)
       call omp_set_lock( psi_ref_bis_lock(index_i) )
       do j =1, idx_alpha(0)
        index_j = idx_alpha(j)
-       do i_state=1,N_states
-! standard dressing first order
-         delta_ij_(index_i,index_j,i_state) += hij_array(index_j) * hij_tmp * delta_e_inv_array(index_j,i_state)
-       enddo
+!      if(index_j==index_i)cycle
+       call get_excitation_degree(psi_ref(1,1,index_j),tq(1,1,i_alpha),degree_2,N_int)
+       if(degree_2==1.and.degree_tmp==2)then
+        do i_state=1,N_states
+          delta_ij_(index_i,index_j,i_state) += hij_array(index_j) * hij_tmp * delta_e_inv_array(index_j,i_state)
+        enddo
+       else if (degree_2==2.and.degree_tmp==1)then
+        do i_state=1,N_states
+          delta_ij_(index_i,index_j,i_state) += hij_array(index_j) * hij_tmp * delta_e_inv_array(index_j,i_state)
+        enddo
+       else if (degree_2==1.and.degree_tmp==1)then
+        do i_state=1,N_states
+          delta_ij_(index_i,index_j,i_state) += hij_array(index_j) * hij_tmp * delta_e_inv_array(index_j,i_state)
+        enddo
+       endif
       enddo
       call omp_unset_lock( psi_ref_bis_lock(index_i))
     enddo
