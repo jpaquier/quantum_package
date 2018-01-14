@@ -599,7 +599,7 @@ subroutine save_osoci_natural_mos(norm_total)
 
  label = "Natural"
  
- call mo_as_eigvectors_of_mo_matrix(tmp,size(tmp,1),size(tmp,2),label,1)
+ call mo_as_eigvectors_of_mo_matrix(tmp,size(tmp,1),size(tmp,2),label,1,.True.)
  touch mo_coef psi_det psi_coef
  deallocate(tmp,occ)
 

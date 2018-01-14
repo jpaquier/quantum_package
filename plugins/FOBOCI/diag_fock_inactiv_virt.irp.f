@@ -83,7 +83,7 @@ subroutine diag_inactive_virt_new_and_update_mos
 
 
  label = "Canonical"
- call mo_as_eigvectors_of_mo_matrix(tmp,size(tmp,1),size(tmp,2),label,1)
+ call mo_as_eigvectors_of_mo_matrix(tmp,size(tmp,1),size(tmp,2),label,1,.True.)
  soft_touch mo_coef
 
 
