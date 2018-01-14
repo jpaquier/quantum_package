@@ -24,6 +24,8 @@ subroutine opt_orb
 ! call diag_inactive_virt_and_update_mos_MR_Fock  
  deallocate(psi_coef_normalized)
  else 
+  call initialize_mo_coef_begin_iteration
+
   call damping_SCF
   print*, 'USING ROHF-LIKE  ORBITAL OPTIMIZATION'
   call diag_inactive_virt_and_update_mos_SR_Fock  

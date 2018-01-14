@@ -33,8 +33,6 @@ program loc_rasorb
         
         logical *1 z54
         print*,'passed the first copy'
-        print*, index_ligand_orb_loc
-        stop
         
         z54=.false.
         

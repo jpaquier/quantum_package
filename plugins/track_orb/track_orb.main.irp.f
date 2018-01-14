@@ -35,4 +35,5 @@ program track_orb
   print *, '           . .... : .             '
   print *, '            -------~              '
   print *, ''
+ call loc_cele_routine
 end

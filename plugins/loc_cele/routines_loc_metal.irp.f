@@ -1,4 +1,4 @@
-subroutine loc_cele_routine
+subroutine loc_cele_routine_metal
      implicit none
      integer id1,i_atom,shift,shift_h
      parameter (id1=300)

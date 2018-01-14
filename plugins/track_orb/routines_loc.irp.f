@@ -11,6 +11,9 @@ subroutine loc_cele_routine
      integer n,i,j,k,l,nmo(8),isym,nsym,idum,nrot(8),irot(id1,8)
      integer ipiv(id1),info,lwork
      logical *1 z54
+     integer                        :: index_rot(1000,1)
+     double precision               :: accu_norm
+
      z54=.false.
      accu_norm = 0.d0
      do i =1,mo_tot_num
@@ -36,7 +39,6 @@ subroutine loc_cele_routine
      nrot(1) = n_act_orb   ! number of orbitals to be localized
      
      
-     integer                        :: index_rot(1000,1)
      
      
      cmoref = 0.d0
@@ -48,13 +50,6 @@ subroutine loc_cele_routine
        cmoref(j,i,1)   = mo_coef_begin_iteration(j,irot(i,1))   !
       enddo
      enddo
-     
-     
-     
-!    do i = 1, nrot(1)
-!      print*,'irot(i,1) = ',irot(i,1)
-!    enddo
-     
      
      
      
@@ -120,16 +115,9 @@ subroutine loc_cele_routine
      
      ! we say that it hase been touched, and valid and that everything that
      ! depends on mo_coef must not be reprovided
-     double precision               :: accu_norm
-!    touch mo_coef
-!    print*,'after  = '
      accu_norm = 0.d0
      do i =1,mo_tot_num
        accu_norm += dabs(mo_overlap(i,i))
      enddo
-!    print*, 'accu_norm = ',accu_norm
-!    print*,'accu_norm = ',accu_norm
-     ! We call the routine that saves mo_coef in the ezfio format
-!    call save_mos
      
 end

@@ -460,6 +460,15 @@ subroutine get_delta_e_dyall(det_1,det_2,delta_e_final)
  do i_state = 1, n_states
   delta_e_final(i_state) = delta_e_act(i_state)  + delta_e_inactive(i_state) - delta_e_virt(i_state)
  enddo
+ logical :: test
+ test = (n_holes_act == 1 .and. n_particles_act == 1)
+ if(.not.test)then
+  do i_state = 1, n_states
+   delta_e_final(i_state) = 1.d+20
+  enddo
+ endif
+
+
 !write(*,'(100(f16.10,X))'), delta_e_final(1) , delta_e_act(1)  , delta_e_inactive(1) , delta_e_virt(1)
 
 end

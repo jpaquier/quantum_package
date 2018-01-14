@@ -160,14 +160,18 @@ subroutine mrpt_dress(delta_ij_,  Ndet,i_generator,n_selected,det_buffer,Nint,ip
 !      if(index_j==index_i)cycle
        call get_excitation_degree(psi_ref(1,1,index_j),tq(1,1,i_alpha),degree_2,N_int)
        if(degree_2==1.and.degree_tmp==2)then
-        do i_state=1,N_states
-          delta_ij_(index_i,index_j,i_state) += hij_array(index_j) * hij_tmp * delta_e_inv_array(index_j,i_state)
-        enddo
+       ! do i_state=1,N_states
+       !   delta_ij_(index_i,index_j,i_state) += hij_array(index_j) * hij_tmp * delta_e_inv_array(index_j,i_state)
+       ! enddo
        else if (degree_2==2.and.degree_tmp==1)then
-        do i_state=1,N_states
-          delta_ij_(index_i,index_j,i_state) += hij_array(index_j) * hij_tmp * delta_e_inv_array(index_j,i_state)
-        enddo
+       ! do i_state=1,N_states
+       !   delta_ij_(index_i,index_j,i_state) += hij_array(index_j) * hij_tmp * delta_e_inv_array(index_j,i_state)
+       ! enddo
        else if (degree_2==1.and.degree_tmp==1)then
+       !do i_state=1,N_states
+       !  delta_ij_(index_i,index_j,i_state) += hij_array(index_j) * hij_tmp * delta_e_inv_array(index_j,i_state)
+       !enddo
+       else if (degree_2==2.and.degree_tmp==2)then
         do i_state=1,N_states
           delta_ij_(index_i,index_j,i_state) += hij_array(index_j) * hij_tmp * delta_e_inv_array(index_j,i_state)
         enddo
