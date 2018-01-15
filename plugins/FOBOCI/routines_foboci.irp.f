@@ -665,6 +665,7 @@ end
  
  subroutine provide_properties
    implicit none
+   call set_psi_det_to_generators_restart
    call print_mulliken_sd
    call print_hcc
  end

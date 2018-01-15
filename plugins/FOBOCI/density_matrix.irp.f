@@ -3,6 +3,7 @@
 &BEGIN_PROVIDER [ double precision, norm_generators_restart, (N_states)]
 &BEGIN_PROVIDER [ double precision, inv_coef_ref_generators_restart_provider, (n_states)]
    implicit none
+  use bitmasks
    BEGIN_DOC
    ! Alpha and beta one-body density matrix for the generators restart
    END_DOC
@@ -12,7 +13,7 @@
    double precision               :: ck, cl, ckl
    double precision               :: phase
    integer                        :: h1,h2,p1,p2,s1,s2, degree
-   integer                        :: exc(0:2,2,2),n_occ_alpha
+   integer                        :: exc(0:2,2,2),n_occ_alpha,n_occ_beta
    double precision, allocatable  :: tmp_a(:,:,:), tmp_b(:,:,:)
    integer :: degree_respect_to_HF_k
    integer :: degree_respect_to_HF_l,index_ref_generators_restart(N_states)
@@ -44,7 +45,7 @@
      one_body_dm_mo_beta_generators_restart  = 0.d0
      !$OMP PARALLEL DEFAULT(NONE)                                         &
         !$OMP PRIVATE(j,k,l,m,occ,ck, cl, ckl,phase,h1,h2,p1,p2,s1,s2, degree,exc, &
-        !$OMP  tmp_a, tmp_b, n_occ_alpha)&
+        !$OMP  tmp_a, tmp_b, n_occ_alpha,n_occ_beta)&
         !$OMP SHARED(psi_det_generators_restart,psi_coef_generators_restart,N_int,elec_alpha_num,&
         !$OMP  elec_beta_num,one_body_dm_mo_alpha_generators_restart,one_body_dm_mo_beta_generators_restart,N_det_generators_restart,mo_tot_num,&
         !$OMP  N_states)
@@ -54,7 +55,7 @@
      !$OMP DO SCHEDULE(dynamic)
      do k=1,N_det_generators_restart
        call bitstring_to_list(psi_det_generators_restart(1,1,k), occ(1,1), n_occ_alpha, N_int)
-       call bitstring_to_list(psi_det_generators_restart(1,2,k), occ(1,2), n_occ_alpha, N_int)
+       call bitstring_to_list(psi_det_generators_restart(1,2,k), occ(1,2), n_occ_beta, N_int)
        do m=1,N_states
          ck = psi_coef_generators_restart(k,m)*psi_coef_generators_restart(k,m) 
          do l=1,elec_alpha_num
@@ -63,6 +64,7 @@
          enddo
          do l=1,elec_beta_num
            j = occ(l,2)
+           print*,j
            tmp_b(j,j,m) += ck
          enddo
        enddo

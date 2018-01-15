@@ -39,12 +39,12 @@ implicit none
 !if(N_det.gt.1)then
 
   print*, 'Using MR FOCK matrix'
-  call diag_inactive_virt_and_update_mos_MR_Fock
+! call diag_inactive_virt_and_update_mos_MR_Fock
 !else
 ! print*, 'Using SR FOCK matrix'
-! call diag_inactive_virt_and_update_mos_SR_Fock
+  call diag_inactive_virt_and_update_mos_SR_Fock
 !endif
- call save_mos
+!call save_mos
 
 
 end
