@@ -15,7 +15,7 @@ subroutine routine_1h1p_bis
  double precision :: accu_diag_dm(N_states),accu_of_diag_dm(N_states)
  double precision :: accu_bis(N_states)
  double precision :: pt2(N_states)
- integer :: a,b,ispin,jspin,i_a,i_b,i_c,c
+ integer :: a,b,ispin,jspin,i_a,i_b,i_c,c,i_d,d
  matrix_1h1p = 0.d0
  call H_apply_mrpt_1h1p(matrix_1h1p,N_det_ref)
  do istate = 1, N_states
@@ -29,25 +29,31 @@ subroutine routine_1h1p_bis
    accu_of_diag_h_apply+= matrix_1h1p(i,j,istate) * psi_ref_coef(i,istate) * psi_ref_coef(j,istate)
   enddo
  enddo
- print*, 'h_apply_diag ', accu_diag_h_apply
- print*, 'h_apply_of_di', accu_of_diag_h_apply
+ print*, 'h_apply_diag   =', accu_diag_h_apply
+ print*, 'h_apply_of_di  =', accu_of_diag_h_apply
+ print*, 'Total h_apply  =', accu_diag_h_apply + accu_of_diag_h_apply
  enddo
+ print*,'******************************************************'
 
  integer :: occ_act(N_int*bit_kind_size,2),n_elec_act(2)
- accu_diag_dm = pt2
+ accu_diag_dm = 0.d0
  
  do istate = 1, N_states
   do ispin = 1, 2
    do i_a = 1, n_act_orb
-!   accu_diag_dm(istate) += effective_active_energies_1h1p(i_a,istate) * cas_one_body_dm(i_a,i_a,ispin,istate)
-    do i_b = 1, n_act_orb
-     accu_diag_dm(istate) += effective_Fock_1h1hp_double(i_a,i_b,ispin,istate) * cas_one_body_dm(i_a,i_a,ispin,istate)
-    enddo
+     i_b  = i_a
+     accu_diag_dm(istate) += effective_active_energies_double_1h1p(i_a,ispin,istate) * cas_one_body_dm(i_b,i_a,ispin,istate)
+     do i_b = 1, n_act_orb
+      accu_diag_dm(istate) -= effective_coulomb_double_1h1hp(i_b,i_a,ispin,istate) * diag_cas_two_body_exchage_dm(i_b,i_a,ispin,istate)
+     enddo
    enddo
   enddo
  enddo
- print*, 'accu_diag_dm ', accu_diag_dm
- print*, '************************'
+ 
+ print*, 'accu_diag_dm   =', accu_diag_dm
+
+ print*, 'accu_of_diag_dm=', accu_of_diag_dm
+ print*, 'Total dm       =',accu_diag_dm+accu_of_diag_dm
 
 
 
@@ -88,9 +94,9 @@ subroutine routine_1h1p
   do ispin = 1, 2
    do i_a = 1, n_act_orb
     accu_diag_dm(istate) += effective_active_energies_1h1p(i_a,istate) * cas_one_body_dm(i_a,i_a,ispin,istate)
-    do jspin = 1, 2
+    do jspin = 1,2
      do i_b = 1, n_act_orb
-      accu_diag_dm(istate) += effective_coulomb_1h1hp(i_a,i_b,ispin,jspin,istate) * diag_cas_two_body_dm(i_a,i_b,ispin,jspin,istate)
+      accu_diag_dm(istate) += effective_coulomb_1h1hp(i_a,i_b,ispin,jspin,istate) * diag_cas_two_body_dm(i_b,i_a,ispin,ispin,istate)
      enddo
     enddo
    enddo

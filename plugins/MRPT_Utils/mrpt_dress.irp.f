@@ -172,7 +172,12 @@ subroutine mrpt_dress(delta_ij_,  Ndet,i_generator,n_selected,det_buffer,Nint,ip
        !  delta_ij_(index_i,index_j,i_state) += hij_array(index_j) * hij_tmp * delta_e_inv_array(index_j,i_state)
        !enddo
        else if (degree_2==2.and.degree_tmp==2)then
+!       print*,'ref'
+!       call debug_det(psi_ref(1,1,index_j),N_int)
+       !print*,'exc'
+       !call debug_det(tq(1,1,i_alpha),N_int)
         do i_state=1,N_states
+       !  print*,hij_array(index_j)**2,delta_e_inv_array(index_j,i_state),hij_array(index_j) * hij_tmp * delta_e_inv_array(index_j,i_state)
           delta_ij_(index_i,index_j,i_state) += hij_array(index_j) * hij_tmp * delta_e_inv_array(index_j,i_state)
         enddo
        endif

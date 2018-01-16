@@ -556,14 +556,22 @@ END_PROVIDER
   endif
  enddo
 
- call list_to_bitstring( core_bitmask(1,1), list_core, n_core_orb, N_int)
- call list_to_bitstring( core_bitmask(1,2), list_core, n_core_orb, N_int)
- call list_to_bitstring( inact_bitmask(1,1), list_inact, n_inact_orb, N_int)
- call list_to_bitstring( inact_bitmask(1,2), list_inact, n_inact_orb, N_int)
- call list_to_bitstring( act_bitmask(1,1), list_act, n_act_orb, N_int)
- call list_to_bitstring( act_bitmask(1,2), list_act, n_act_orb, N_int)
- call list_to_bitstring( virt_bitmask(1,1), list_virt, n_virt_orb, N_int)
- call list_to_bitstring( virt_bitmask(1,2), list_virt, n_virt_orb, N_int)
+ if(n_core_orb.ne.0)then
+  call list_to_bitstring( core_bitmask(1,1), list_core, n_core_orb, N_int)
+  call list_to_bitstring( core_bitmask(1,2), list_core, n_core_orb, N_int)
+ endif
+ if(n_inact_orb.ne.0)then
+  call list_to_bitstring( inact_bitmask(1,1), list_inact, n_inact_orb, N_int)
+  call list_to_bitstring( inact_bitmask(1,2), list_inact, n_inact_orb, N_int)
+ endif
+ if(n_act_orb.ne.0)then
+  call list_to_bitstring( act_bitmask(1,1), list_act, n_act_orb, N_int)
+  call list_to_bitstring( act_bitmask(1,2), list_act, n_act_orb, N_int)
+ endif
+ if(n_virt_orb.ne.0)then
+  call list_to_bitstring( virt_bitmask(1,1), list_virt, n_virt_orb, N_int)
+  call list_to_bitstring( virt_bitmask(1,2), list_virt, n_virt_orb, N_int)
+ endif
 
 
 END_PROVIDER 
