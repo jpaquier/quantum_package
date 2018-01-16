@@ -93,11 +93,12 @@ END_PROVIDER
  BEGIN_PROVIDER [double precision, effective_active_energies_1h1p, (n_act_orb,N_states)]
 &BEGIN_PROVIDER [double precision, effective_coulomb_1h1hp, (n_act_orb,n_act_orb,2,2,N_states)]
 &BEGIN_PROVIDER [double precision, effective_Fock_1h1hp, (n_act_orb,n_act_orb,2,N_states)]
-&BEGIN_PROVIDER [double precision, effective_Fock_1h1hp_double, (n_act_orb,n_act_orb,2,N_states)]
 &BEGIN_PROVIDER [double precision, effective_pseudo_Fock_1h1hp, (n_act_orb,2,n_act_orb,n_act_orb,2,N_states)]
 &BEGIN_PROVIDER [double precision, effective_pseudo_bielec_1h1hp, (n_act_orb,n_act_orb,2,n_act_orb,n_act_orb,2,N_states)]
 &BEGIN_PROVIDER [double precision, effective_active_energies_double_1h1p, (n_act_orb,2,N_states)]
 &BEGIN_PROVIDER [double precision, effective_coulomb_double_1h1hp, (n_act_orb,n_act_orb,2,N_states)]
+&BEGIN_PROVIDER [double precision, effective_Fock_1h1hp_double, (n_act_orb,n_act_orb,2,N_states)]
+&BEGIN_PROVIDER [double precision, effective_pseudo_Fock_double_1h1hp, (n_act_orb,n_act_orb,n_act_orb,2,N_states)]
   BEGIN_DOC
 ! effective_active_energies_1h1p(i_a) = effective one-body energy coming from ALL the single excitations 1h1p
 ! effective_coulomb_1h1hp(i_a,i_b,ispin,jspin) = effective two coulomb operator of type \hat{n}_{a,ispin} \hat{n}_{b,ispin} coming from ALL the single excitations 1h1p
@@ -120,6 +121,7 @@ END_PROVIDER
  effective_pseudo_bielec_1h1hp = 0.d0
  effective_active_energies_double_1h1p = 0.d0
  effective_coulomb_double_1h1hp = 0.d0
+ effective_pseudo_Fock_double_1h1hp = 0.d0
  do i_i = 1, n_inact_orb
   i = list_inact(i_i) 
   do i_v = 1, n_virt_orb
@@ -154,9 +156,9 @@ END_PROVIDER
    enddo
    double precision :: contrib,contrib_test
    do istate = 1, N_states
-    do i_a = 1, n_act_orb
+    do ispin = 1, 2
+     do i_a = 1, n_act_orb
      effective_active_energies_1h1p(i_a,istate)  += 2.d0 * array_core_inact_contrib_1h1p(i_v,i_i) * accu(i_a) * delta_e(istate)
-     do ispin = 1, 2
       do i_b = 1, n_act_orb
         contrib =delta_e_ab(i_b,i_a,ispin,istate)                              &
                 *(2.d0 * active_int_double(i_b,i_a,1)  * active_int_double(i_b,i_a,1)  & 
@@ -164,25 +166,28 @@ END_PROVIDER
                        - active_int_double(i_b,i_a,1)  * active_int_double(i_b,i_a,2)  &  
                        + active_int_double(i_b,i_a,2)  * active_int_double(i_b,i_a,2))   
        
-        contrib_test = & 
-                 (2.d0 * active_int_double(i_b,i_a,1)  * active_int_double(i_b,i_a,1)  & 
-                       - active_int_double(i_b,i_a,2)  * active_int_double(i_b,i_a,1)  &  
-                       - active_int_double(i_b,i_a,1)  * active_int_double(i_b,i_a,2)  &  
-                       + active_int_double(i_b,i_a,2)  * active_int_double(i_b,i_a,2))   
        effective_coulomb_double_1h1hp(i_b,i_a,ispin,istate) += contrib
        if (i_a.ne.i_b)then
-!       print*,i_a,i_b,ispin
-!       print*,contrib_test,delta_e_ab(i_b,i_a,ispin,istate) 
         effective_active_energies_double_1h1p(i_a,ispin,istate) += contrib
        endif
         effective_Fock_1h1hp(i_b,i_a,ispin,istate) += accu_2(i_b,i_a) * array_core_inact_contrib_1h1p(i_v,i_i) & 
                                                    *  (delta_e(istate) + delta_e_ab(i_b,i_a,ispin,istate))
         do i_c = 1, n_act_orb
-         effective_Fock_1h1hp_double(i_b,i_a,ispin,istate) += delta_e_ab(i_c,i_a,ispin,istate)                                       &
-                                                              *(2.d0 * active_int_double(i_c,i_a,1)  * active_int_double(i_c,i_b,1)  & 
-                                                                     - active_int_double(i_c,i_a,2)  * active_int_double(i_c,i_b,1)  &  
-                                                                     - active_int_double(i_c,i_a,1)  * active_int_double(i_c,i_b,2)  &  
-                                                                     + active_int_double(i_c,i_a,2)  * active_int_double(i_c,i_b,2))   
+         if(i_c == i_a)cycle
+         if(i_c == i_b)cycle
+         contrib = delta_e_ab(i_c,i_a,ispin,istate)                                       &
+                   *(2.d0 * active_int_double(i_c,i_a,1)  * active_int_double(i_c,i_b,1)  & 
+                          - active_int_double(i_c,i_a,2)  * active_int_double(i_c,i_b,1)  &  
+                          - active_int_double(i_c,i_a,1)  * active_int_double(i_c,i_b,2)  &  
+                          + active_int_double(i_c,i_a,2)  * active_int_double(i_c,i_b,2))   
+         effective_Fock_1h1hp_double(i_b,i_a,ispin,istate) += contrib
+         effective_pseudo_Fock_double_1h1hp(i_c,i_b,i_a,ispin,istate)  += contrib
+         contrib = delta_e_ab(i_a,i_c,ispin,istate)                                       &
+                   *(2.d0 * active_int_double(i_a,i_c,1)  * active_int_double(i_b,i_c,1)  & 
+                          - active_int_double(i_a,i_c,2)  * active_int_double(i_b,i_c,1)  &  
+                          - active_int_double(i_a,i_c,1)  * active_int_double(i_b,i_c,2)  &  
+                          + active_int_double(i_a,i_c,2)  * active_int_double(i_b,i_c,2))   
+         effective_pseudo_Fock_double_1h1hp(i_c,i_b,i_a,ispin,istate)  += contrib
         enddo
       enddo
      enddo

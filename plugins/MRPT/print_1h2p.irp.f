@@ -2,11 +2,11 @@ program print_1h2p
  implicit none
  read_wf = .True.
  touch read_wf
- call routine_1h1p_bis
+ call routine_1h1p_pure_double
 end
 
 
-subroutine routine_1h1p_bis
+subroutine routine_1h1p_pure_double
  implicit none
  double precision,allocatable :: matrix_1h1p(:,:,:) 
  allocate (matrix_1h1p(N_det_ref,N_det_ref,N_states))
@@ -51,6 +51,23 @@ subroutine routine_1h1p_bis
  enddo
  
  print*, 'accu_diag_dm   =', accu_diag_dm
+ accu_of_diag_dm = 0.d0 
+ accu_bis = 0.d0
+ do istate = 1, N_states
+  do ispin = 1, 2 
+   do i_a = 1, n_act_orb 
+    do i_b = 1, n_act_orb 
+     if(i_a == i_b)cycle
+     accu_of_diag_dm(istate) +=  effective_Fock_1h1hp_double(i_b,i_a,ispin,istate) * cas_one_body_dm(i_b,i_a,ispin,istate)
+     do i_c = 1, n_act_orb
+      if(i_c ==i_a)cycle 
+      if(i_c ==i_b)cycle 
+      accu_of_diag_dm(istate) -=  pseudo_diag_cas_two_body_dm(i_c,ispin,i_a,i_b,ispin,istate) * effective_pseudo_Fock_double_1h1hp(i_c,i_b,i_a,ispin,istate) 
+     enddo
+    enddo
+   enddo
+  enddo
+ enddo
 
  print*, 'accu_of_diag_dm=', accu_of_diag_dm
  print*, 'Total dm       =',accu_diag_dm+accu_of_diag_dm
@@ -59,7 +76,7 @@ subroutine routine_1h1p_bis
 
 end
 
-subroutine routine_1h1p
+subroutine routine_1h1p_single_and_mix_single_double
  implicit none
  double precision,allocatable :: matrix_1h1p(:,:,:) 
  allocate (matrix_1h1p(N_det_ref,N_det_ref,N_states))

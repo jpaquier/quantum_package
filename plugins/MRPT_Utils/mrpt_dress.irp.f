@@ -159,6 +159,8 @@ subroutine mrpt_dress(delta_ij_,  Ndet,i_generator,n_selected,det_buffer,Nint,ip
        index_j = idx_alpha(j)
 !      if(index_j==index_i)cycle
        call get_excitation_degree(psi_ref(1,1,index_j),tq(1,1,i_alpha),degree_2,N_int)
+       integer :: degree_ij
+       call get_excitation_degree(psi_ref(1,1,index_j),psi_ref(1,1,index_i),degree_ij,N_int)
        if(degree_2==1.and.degree_tmp==2)then
        ! do i_state=1,N_states
        !   delta_ij_(index_i,index_j,i_state) += hij_array(index_j) * hij_tmp * delta_e_inv_array(index_j,i_state)
@@ -172,14 +174,24 @@ subroutine mrpt_dress(delta_ij_,  Ndet,i_generator,n_selected,det_buffer,Nint,ip
        !  delta_ij_(index_i,index_j,i_state) += hij_array(index_j) * hij_tmp * delta_e_inv_array(index_j,i_state)
        !enddo
        else if (degree_2==2.and.degree_tmp==2)then
-!       print*,'ref'
-!       call debug_det(psi_ref(1,1,index_j),N_int)
-       !print*,'exc'
-       !call debug_det(tq(1,1,i_alpha),N_int)
-        do i_state=1,N_states
-       !  print*,hij_array(index_j)**2,delta_e_inv_array(index_j,i_state),hij_array(index_j) * hij_tmp * delta_e_inv_array(index_j,i_state)
-          delta_ij_(index_i,index_j,i_state) += hij_array(index_j) * hij_tmp * delta_e_inv_array(index_j,i_state)
-        enddo
+       !if(index_i .ne. index_j)then
+       ! if( dabs(delta_e_inv_array(index_j,1)).gt.1.d-6)then
+       !  print*,'ref'
+       !  call debug_det(psi_ref(1,1,index_j),N_int)
+       !  print*,'ref'
+       !  call debug_det(psi_ref(1,1,index_i),N_int)
+       !  print*,'exc'
+       !  call debug_det(tq(1,1,i_alpha),N_int)
+       !  do i_state=1,N_states
+       !    print*,hij_array(index_j),hij_tmp,delta_e_inv_array(index_j,i_state)!,hij_array(index_j) * hij_tmp * delta_e_inv_array(index_j,i_state)
+       !  enddo
+       ! endif
+       !endif
+        if(degree_ij.le.1)then
+         do i_state=1,N_states
+           delta_ij_(index_i,index_j,i_state) += hij_array(index_j) * hij_tmp * delta_e_inv_array(index_j,i_state)
+         enddo
+        endif
        endif
       enddo
       call omp_unset_lock( psi_ref_bis_lock(index_i))
