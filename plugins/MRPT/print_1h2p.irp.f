@@ -24,6 +24,7 @@ subroutine routine_1h1p_pure_double
  do i = 1, N_det_ref
 ! write(*,'(100(F10.5,X))')matrix_1h1p(i,:,istate)
   accu_diag_h_apply += matrix_1h1p(i,i,istate) * psi_ref_coef(i,istate) * psi_ref_coef(i,istate)
+!  write(*,'(100(F16.10,X))')matrix_1h1p(i,:,istate)
   do j = 1, N_det_ref 
    if(i==j)cycle
 !  if(i.lt.j)cycle

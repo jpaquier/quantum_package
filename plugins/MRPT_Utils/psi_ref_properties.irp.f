@@ -108,7 +108,8 @@
      do istate = 1, N_states
       cas_two_body_dm(h1,p1,s1,h2,p2,s2,istate) += psi_ref_coef(idet,istate) * psi_ref_coef(idx(jdet),istate) * phase
       cas_two_body_dm(h1,p2,s1,h2,p1,s2,istate) -= psi_ref_coef(idet,istate) * psi_ref_coef(idx(jdet),istate) * phase ! exchange the particles
-      cas_two_body_dm(h2,p1,s1,h1,p2,s2,istate) += psi_ref_coef(idet,istate) * psi_ref_coef(idx(jdet),istate) * phase ! exchange the holes 
+      cas_two_body_dm(h2,p1,s1,h1,p2,s2,istate) -= psi_ref_coef(idet,istate) * psi_ref_coef(idx(jdet),istate) * phase ! exchange the holes 
+      cas_two_body_dm(h2,p2,s1,h1,p1,s2,istate) += psi_ref_coef(idet,istate) * psi_ref_coef(idx(jdet),istate) * phase ! exchange the holes 
      enddo
     else if(exc(0,1,1)==2)then ! alpha-alpha double exc
      h1 = list_act_reverse(exc(1,1,1)) 
