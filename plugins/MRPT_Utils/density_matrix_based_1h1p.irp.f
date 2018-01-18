@@ -231,12 +231,10 @@ END_PROVIDER
          effective_pseudo_Fock_1h1hp(i_d,ispin,i_a,i_b,jspin,istate) += accu_3(i_d,ispin,i_a,i_b,jspin) & 
                                                                      * (delta_e(istate) + delta_e_ab(i_a,i_b,jspin,istate) )
          do i_c = 1, n_act_orb
-          effective_pseudo_bielec_1h1hp(i_c,i_d,ispin,i_a,i_b,jspin,istate) += delta_e_ab(i_b,i_a,jspin,istate)                                       &
-                                                                               *(2.d0 * active_int_double(i_a,i_b,1)  * active_int_double(i_c,i_d,1)  & 
-                                                                                      - active_int_double(i_a,i_b,2)  * active_int_double(i_c,i_d,1)  & 
-                                                                                      - active_int_double(i_a,i_b,1)  * active_int_double(i_c,i_d,2))   
-
-
+          effective_pseudo_bielec_1h1hp(i_c,i_d,ispin,i_a,i_b,jspin,istate) +=  delta_e_ab(i_a,i_b,jspin,istate)        *                              &
+                                                                                 (2.d0 * active_int_double(i_a,i_b,1)  * active_int_double(i_d,i_c,1)  & 
+                                                                                       - active_int_double(i_a,i_b,2)  * active_int_double(i_d,i_c,1)  & 
+                                                                                       - active_int_double(i_a,i_b,1)  * active_int_double(i_d,i_c,2))   
          enddo
         enddo
        enddo
@@ -249,8 +247,8 @@ END_PROVIDER
        do ispin = jspin,jspin
         do i_d = 1, n_act_orb
          do i_c = 1, n_act_orb
-          effective_pseudo_bielec_1h1hp(i_c,i_d,ispin,i_a,i_b,jspin,istate) += delta_e_ab(i_b,i_a,jspin,istate) &
-                                                                                 * active_int_double(i_a,i_b,2) * active_int_double(i_c,i_d,2)   
+          effective_pseudo_bielec_1h1hp(i_c,i_d,ispin,i_a,i_b,jspin,istate) += delta_e_ab(i_a,i_b,jspin,istate) &
+                                                                                 * active_int_double(i_a,i_b,2) * active_int_double(i_d,i_c,2)   
 
 
          enddo

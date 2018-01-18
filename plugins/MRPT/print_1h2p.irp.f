@@ -26,6 +26,7 @@ subroutine routine_1h1p_pure_double
   accu_diag_h_apply += matrix_1h1p(i,i,istate) * psi_ref_coef(i,istate) * psi_ref_coef(i,istate)
   do j = 1, N_det_ref 
    if(i==j)cycle
+!  if(i.lt.j)cycle
    accu_of_diag_h_apply+= matrix_1h1p(i,j,istate) * psi_ref_coef(i,istate) * psi_ref_coef(j,istate)
   enddo
  enddo
@@ -63,6 +64,34 @@ subroutine routine_1h1p_pure_double
       if(i_c ==i_a)cycle 
       if(i_c ==i_b)cycle 
       accu_of_diag_dm(istate) -=  pseudo_diag_cas_two_body_dm(i_c,ispin,i_a,i_b,ispin,istate) * effective_pseudo_Fock_double_1h1hp(i_c,i_b,i_a,ispin,istate) 
+     enddo
+    enddo
+   enddo
+  enddo
+ enddo
+
+ do istate = 1, N_states
+  do ispin = 1, 2 
+   do i_a = 1, n_act_orb 
+    do i_b = 1, n_act_orb 
+     if(i_a == i_b)cycle
+     do jspin = 1, 2
+      do i_c = 1, n_act_orb
+       do i_d = 1, n_act_orb
+        if(i_c == i_d)cycle
+        if(ispin==jspin)then
+         if(i_c==i_a)cycle 
+         if(i_c==i_b)cycle 
+         if(i_d==i_a)cycle 
+         if(i_d==i_b)cycle 
+        endif
+        !if(dabs(cas_two_body_dm(i_c,i_d,jspin,i_b,i_a,ispin,istate)).gt.0.d0)then
+        ! print*,i_c,i_d,jspin,i_b,i_a,ispin
+        ! print*,effective_pseudo_bielec_1h1hp(i_c,i_d,jspin,i_b,i_a,ispin,istate) * cas_two_body_dm(i_c,i_d,jspin,i_b,i_a,ispin,istate),effective_pseudo_bielec_1h1hp(i_c,i_d,jspin,i_b,i_a,ispin,istate), cas_two_body_dm(i_c,i_d,jspin,i_b,i_a,ispin,istate)
+        !endif
+         accu_of_diag_dm(istate) += effective_pseudo_bielec_1h1hp(i_c,i_d,jspin,i_b,i_a,ispin,istate) * cas_two_body_dm(i_c,i_d,jspin,i_b,i_a,ispin,istate)
+       enddo
+      enddo
      enddo
     enddo
    enddo

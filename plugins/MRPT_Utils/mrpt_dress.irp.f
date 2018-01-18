@@ -187,11 +187,31 @@ subroutine mrpt_dress(delta_ij_,  Ndet,i_generator,n_selected,det_buffer,Nint,ip
        !  enddo
        ! endif
        !endif
-        if(degree_ij.le.1)then
+!       if(degree_ij.eq.2)then
          do i_state=1,N_states
            delta_ij_(index_i,index_j,i_state) += hij_array(index_j) * hij_tmp * delta_e_inv_array(index_j,i_state)
          enddo
-        endif
+           logical :: test_log
+           integer                        :: h1, p1, h2, p2, s1, s2
+!          call get_double_excitation(psi_ref(1,1,index_j),psi_ref(1,1,index_i),exc,phase,Nint)
+!          call decode_exc(exc,2,h1,p1,h2,p2,s1,s2)
+!          test_log = (list_act_reverse(h1)==1 .and. list_act_reverse(p1)==3 .and. list_act_reverse(h2)==2 .and. list_act_reverse(p2)==4 .and. s1==1 .and. s2==1)
+!          if(test_log.and.dabs(delta_e_inv_array(index_j,1)).gt.1.d-6)then
+!              print*,'*************'
+!              print*,list_act_reverse(h1),list_act_reverse(p1),s1,list_act_reverse(h2),list_act_reverse(p2),s2
+!              print*,hij_array(index_j) * hij_tmp * delta_e_inv_array(index_j,i_state),delta_e_inv_array(index_j,i_state),hij_array(index_j) * hij_tmp 
+!              print*,hij_array(index_j) , hij_tmp 
+!              print*,hij_array(index_j) * hij_tmp * delta_e_inv_array(index_j,i_state) * psi_ref_coef(index_j,1) * psi_ref_coef(index_i,1)
+!              print*,index_i,index_j,delta_ij_(index_i,index_j,i_state)
+!          endif
+
+!          if( dabs(delta_e_inv_array(index_j,1)).gt.1.d-6)then
+          !   if((delta_e_inv_array(index_j,1) - -1.914275819d0).le.1.d-9)then
+          !    print*,'exc'
+          !    call debug_det(tq(1,1,i_alpha),N_int)
+          !   endif
+!          endif
+!       endif
        endif
       enddo
       call omp_unset_lock( psi_ref_bis_lock(index_i))
