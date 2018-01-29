@@ -114,7 +114,12 @@ END_PROVIDER
  double precision :: get_mo_bielec_integral
  double precision :: active_int(n_act_orb,2),active_int_double(n_act_orb,n_act_orb,2)
  double precision :: core_inactive_int(n_core_inact_orb,2)
- double precision :: accu(n_act_orb), accu_double(n_act_orb,n_act_orb,2,2),accu_2(n_act_orb,n_act_orb),accu_3(n_act_orb,2,n_act_orb,n_act_orb,2)
+ double precision :: accu_2(n_act_orb,n_act_orb),accu_3(n_act_orb,2,n_act_orb,n_act_orb,2)
+ integer :: other_spin(2)
+ other_spin(1) = 2
+ other_spin(2) = 1
+
+
  effective_active_energies_1h1p = 0.d0
  effective_coulomb_1h1hp = 0.d0
  effective_Fock_1h1hp = 0.d0
@@ -133,17 +138,15 @@ END_PROVIDER
                      + one_anhil_one_creat_inact_virt(i_i,i_v,istate) 
     delta_e(istate) = 1.d0/delta_e(istate)
    enddo
-   accu = 0.d0
    accu_2 = 0.d0
    do i_a = 1, n_act_orb
     a = list_act(i_a)
     active_int(i_a,1) = get_mo_bielec_integral(i,a,v,a,mo_integrals_map) ! direct
     active_int(i_a,2) = get_mo_bielec_integral(i,a,a,v,mo_integrals_map) ! exchange
-    accu(i_a) +=  (2.d0 * active_int(i_a,1) - active_int(i_a,2))
     do i_b = 1, n_act_orb
      b = list_act(i_b)
-     active_int_double(i_b,i_a,1)     = get_mo_bielec_integral(i,b,v,a,mo_integrals_map) ! direct 
-     active_int_double(i_b,i_a,2)     = get_mo_bielec_integral(i,a,b,v,mo_integrals_map) ! exchange
+     active_int_double(i_b,i_a,1)     = get_mo_bielec_integral(i,b,v,a,mo_integrals_map) ! V_{ib}^{va}
+     active_int_double(i_b,i_a,2)     = get_mo_bielec_integral(i,b,a,v,mo_integrals_map) ! V_{ib}^{av}
      accu_2(i_b,i_a) = (2.d0 * active_int_double(i_b,i_a,1) - active_int_double(i_b,i_a,2))
      do ispin = 1,2
       do istate = 1, N_states
@@ -162,24 +165,47 @@ END_PROVIDER
     enddo
    enddo
    double precision :: contrib,contrib_test
+!!!!!!!!!!!!!!!////////////////// EFFECTIVE ENERGIES and DIAGONAL BIELEC FROM THE SINGLES 
    do istate = 1, N_states
+    do i_a = 1, n_act_orb
+     effective_active_energies_1h1p(i_a,istate)  += 2.d0 * array_core_inact_contrib_1h1p(i_v,i_i) * (2.d0 * active_int(i_a,1) - active_int(i_a,2)) * delta_e(istate)
+     do ispin = 1, 2
+      do jspin = 1, 2
+       do i_b = 1, n_act_orb
+        effective_coulomb_1h1hp(i_b,i_a,jspin,ispin,istate) +=  (2.d0 * active_int(i_a,1) * active_int(i_b,1) - active_int(i_a,2) * active_int(i_b,1) - active_int(i_a,1) * active_int(i_b,2) ) & 
+                                                                *delta_e(istate)
+       enddo
+      enddo
+      jspin = ispin
+      do i_b = 1, n_act_orb
+       effective_coulomb_1h1hp(i_b,i_a,jspin,ispin,istate) +=  active_int(i_a,2) * active_int(i_b,2) * delta_e(istate)
+      enddo
+     enddo
+    enddo
+
+
+!!!!!!!!!!!!!!!////////////////// EFFECTIVE ENERGIES and DIAGONAL BIELEC FROM THE DOUBLES V_{ib}^{va}
     do ispin = 1, 2
      do i_a = 1, n_act_orb
-     effective_active_energies_1h1p(i_a,istate)  += 2.d0 * array_core_inact_contrib_1h1p(i_v,i_i) * accu(i_a) * delta_e(istate)
       do i_b = 1, n_act_orb
-        contrib =delta_e_ab(i_b,i_a,ispin,istate)                              &
-                *(2.d0 * active_int_double(i_b,i_a,1)  * active_int_double(i_b,i_a,1)  & 
-                       - active_int_double(i_b,i_a,2)  * active_int_double(i_b,i_a,1)  &  
-                       - active_int_double(i_b,i_a,1)  * active_int_double(i_b,i_a,2)  &  
-                       + active_int_double(i_b,i_a,2)  * active_int_double(i_b,i_a,2))   
-          
+       if(i_a==i_b)cycle
+       contrib =delta_e_ab(i_b,i_a,ispin,istate)                                      &
+               *(2.d0 * active_int_double(i_b,i_a,1)  * active_int_double(i_b,i_a,1)  & 
+                      - active_int_double(i_b,i_a,2)  * active_int_double(i_b,i_a,1)  &  
+                      - active_int_double(i_b,i_a,1)  * active_int_double(i_b,i_a,2)  &  
+                      + active_int_double(i_b,i_a,2)  * active_int_double(i_b,i_a,2))   
        
        effective_coulomb_double_1h1hp(i_b,i_a,ispin,istate) += contrib
-       if (i_a.ne.i_b)then
-        effective_active_energies_double_1h1p(i_a,ispin,istate) += contrib
-       endif
-        effective_Fock_1h1hp(i_b,i_a,ispin,istate) += accu_2(i_b,i_a) * array_core_inact_contrib_1h1p(i_v,i_i) & 
-                                                   *  (delta_e(istate) + delta_e_ab(i_b,i_a,ispin,istate))
+       effective_active_energies_double_1h1p(i_a,ispin,istate) += contrib
+      enddo
+     enddo
+    enddo
+
+    do ispin = 1, 2
+     do i_a = 1, n_act_orb
+      do i_b = 1, n_act_orb
+       effective_Fock_1h1hp(i_b,i_a,ispin,istate) += accu_2(i_b,i_a) * array_core_inact_contrib_1h1p(i_v,i_i) & 
+                                                  *  (delta_e(istate) + delta_e_ab(i_b,i_a,ispin,istate))
         do i_c = 1, n_act_orb
          if(i_c == i_a)cycle
          if(i_c == i_b)cycle
@@ -201,15 +227,11 @@ END_PROVIDER
      enddo
     enddo
    enddo
-   accu_double = 0.d0
    accu_3 = 0.d0
    do jspin = 1,2 
     do ispin = 1, 2
      do i_a = 1, n_act_orb
       do i_b = 1, n_act_orb
-       accu_double(i_b,i_a,ispin,jspin) += 2.d0 * active_int(i_a,1) * active_int(i_b,1) & 
-                                           - active_int(i_a,1) * active_int(i_b,2)      & 
-                                           - active_int(i_a,2) * active_int(i_b,1)        
        do i_c = 1, n_act_orb
         accu_3(i_c,ispin,i_b,i_a,jspin) += 2.d0 * active_int(i_c,1) * active_int_double(i_b,i_a,1) & 
                                          -        active_int(i_c,2) * active_int_double(i_b,i_a,1) &
@@ -222,7 +244,6 @@ END_PROVIDER
    do ispin = 1, 2
     do i_a = 1, n_act_orb
      do i_b = 1, n_act_orb
-      accu_double(i_b,i_a,ispin,ispin) +=  active_int(i_a,2) * active_int(i_b,2)   
       do i_c = 1, n_act_orb
        accu_3(i_c,ispin,i_b,i_a,ispin) +=  active_int(i_c,2) * active_int_double(i_b,i_a,2)   
       enddo
@@ -234,7 +255,6 @@ END_PROVIDER
      do i_b = 1, n_act_orb
       do i_a = 1, n_act_orb
        do ispin = 1, 2
-        effective_coulomb_1h1hp(i_a,i_b,ispin,jspin,istate) += accu_double(i_b,i_a,ispin,jspin) * delta_e(istate)
         do i_d = 1, n_act_orb
          effective_pseudo_Fock_1h1hp(i_d,ispin,i_a,i_b,jspin,istate) += accu_3(i_d,ispin,i_a,i_b,jspin) & 
                                                                      * (delta_e(istate) + delta_e_ab(i_a,i_b,jspin,istate) )
@@ -293,8 +313,8 @@ END_PROVIDER
  double precision :: delta_e_ab_bis(n_act_orb,2,n_act_orb,2,N_states)
  double precision :: get_mo_bielec_integral
  double precision :: active_int_double_bis(n_act_orb,n_act_orb,2)
- integer :: other_spin(2)
  logical :: test_1,test_2
+ integer :: other_spin(2)
  other_spin(1) = 2
  other_spin(2) = 1
 
