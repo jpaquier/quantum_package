@@ -474,20 +474,20 @@ subroutine get_delta_e_dyall(det_1,det_2,delta_e_final)
 !i_particle_act =  list_particle_active(1,jspin)
 !i_hole_act =  list_holes_active(1,ispin)
 !print*,test,test2
- if(.not.test)then
-   do i_state = 1, n_states
-    delta_e_final(i_state) = 1.d+20
-   enddo
- endif
+!if(.not.test)then
+!  do i_state = 1, n_states
+!   delta_e_final(i_state) = 1.d+20
+!  enddo
+!endif
 
- if(test)then
-  if(test2.eqv..False.)then
-   do i_state = 1, n_states
-    delta_e_final(i_state) = 1.d+20
-   enddo
-  else 
-  endif
- endif
+!if(test)then
+! if(test2.eqv..False.)then
+!  do i_state = 1, n_states
+!   delta_e_final(i_state) = 1.d+20
+!  enddo
+! else 
+! endif
+!endif
 
  !if(n_holes_inactive(2)==1)then
  ! do i_state = 1, n_states

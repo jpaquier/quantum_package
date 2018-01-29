@@ -145,8 +145,8 @@ END_PROVIDER
     active_int(i_a,2) = get_mo_bielec_integral(i,a,a,v,mo_integrals_map) ! exchange
     do i_b = 1, n_act_orb
      b = list_act(i_b)
-     active_int_double(i_b,i_a,1)     = get_mo_bielec_integral(i,b,v,a,mo_integrals_map) ! V_{ib}^{va}
-     active_int_double(i_b,i_a,2)     = get_mo_bielec_integral(i,b,a,v,mo_integrals_map) ! V_{ib}^{av}
+     active_int_double(i_b,i_a,1)     = get_mo_bielec_integral(i,a,v,b,mo_integrals_map) ! V_{ia}^{vb}
+     active_int_double(i_b,i_a,2)     = get_mo_bielec_integral(i,a,b,v,mo_integrals_map) ! V_{ia}^{bv}
      accu_2(i_b,i_a) = (2.d0 * active_int_double(i_b,i_a,1) - active_int_double(i_b,i_a,2))
      do ispin = 1,2
       do istate = 1, N_states
@@ -168,12 +168,13 @@ END_PROVIDER
 !!!!!!!!!!!!!!!////////////////// EFFECTIVE ENERGIES and DIAGONAL BIELEC FROM THE SINGLES 
    do istate = 1, N_states
     do i_a = 1, n_act_orb
-     effective_active_energies_1h1p(i_a,istate)  += 2.d0 * array_core_inact_contrib_1h1p(i_v,i_i) * (2.d0 * active_int(i_a,1) - active_int(i_a,2)) * delta_e(istate)
+     effective_active_energies_1h1p(i_a,istate)  += 2.d0 * array_core_inact_contrib_1h1p(i_v,i_i) & 
+                                                 * (2.d0 * active_int(i_a,1) - active_int(i_a,2)) * delta_e(istate)
      do ispin = 1, 2
       do jspin = 1, 2
        do i_b = 1, n_act_orb
-        effective_coulomb_1h1hp(i_b,i_a,jspin,ispin,istate) +=  (2.d0 * active_int(i_a,1) * active_int(i_b,1) - active_int(i_a,2) * active_int(i_b,1) - active_int(i_a,1) * active_int(i_b,2) ) & 
-                                                                *delta_e(istate)
+        effective_coulomb_1h1hp(i_b,i_a,jspin,ispin,istate) +=  (2.d0 * active_int(i_a,1) * active_int(i_b,1) & 
+                              - active_int(i_a,2) * active_int(i_b,1) - active_int(i_a,1) * active_int(i_b,2) ) * delta_e(istate)
        enddo
       enddo
       jspin = ispin
@@ -195,10 +196,6 @@ END_PROVIDER
                       - active_int_double(i_b,i_a,1)  * active_int_double(i_b,i_a,2)  &  
                       + active_int_double(i_b,i_a,2)  * active_int_double(i_b,i_a,2))   
        
-       if(dabs(contrib).gt.1.d-10)then
-        print*,contrib,delta_e_ab(i_b,i_a,ispin,istate),i_a,i_b
-        print*,active_int_double(i_b,i_a,1),active_int_double(i_b,i_a,1)- active_int_double(i_b,i_a,2)
-       endif
        effective_coulomb_double_1h1hp(i_b,i_a,ispin,istate) += contrib
        effective_active_energies_double_1h1p(i_a,ispin,istate) += contrib
       enddo
@@ -461,6 +458,41 @@ END_PROVIDER
    enddo
   enddo
  enddo
+
+
+ END_PROVIDER
+
+
+
+ BEGIN_PROVIDER [double precision, effective_coulomb_diag_1h1p_total,  (n_act_orb,n_act_orb,2,2,N_states)]
+&BEGIN_PROVIDER [double precision, effective_energies_1h1p_total,  (n_act_orb,2,N_states)]
+ implicit none
+ integer :: a,b,ispin,jspin,i_a,i_b,i_c,c,i_d,d
+ integer :: i,j,istate,k
+ double precision :: contrib_diag_one_bod 
+ double precision :: contrib_diag_two_bod 
+ effective_coulomb_diag_1h1p_total = 0.d0
+ effective_energies_1h1p_total = 0.d0
+ do istate = 1, N_states
+  do ispin = 1, 2
+   do i_a = 1, n_act_orb
+    contrib_diag_one_bod =  effective_active_energies_double_1h1p(i_a,ispin,istate)        & ! (i-->v)(a-->b)
+                          + effective_active_energies_1h1p(i_a,istate)                     & ! (i-->v)(a<->a)
+                          + effective_active_energies_double_bis_1h1p(i_a,ispin,istate)      ! (i-->a)(b-->v)
+    effective_energies_1h1p_total(i_a,ispin,istate) = contrib_diag_one_bod 
+    do jspin = 1,2
+     do i_b = 1, n_act_orb
+      effective_coulomb_diag_1h1p_total(i_b,i_a,jspin,ispin,istate) += effective_coulomb_1h1hp(i_a,i_b,jspin,ispin,istate)  & 
+                                                                     - effective_coulomb_double_bis_1h1hp(i_b,i_a,jspin,ispin,istate) 
+     enddo
+    enddo
+    do i_b = 1, n_act_orb
+     effective_coulomb_diag_1h1p_total(i_b,i_a,ispin,ispin,istate) -= effective_coulomb_double_1h1hp(i_b,i_a,ispin,istate) 
+    enddo
+   enddo
+  enddo
+ enddo
+
 
 
  END_PROVIDER

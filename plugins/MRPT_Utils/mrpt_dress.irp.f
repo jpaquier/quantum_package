@@ -126,9 +126,9 @@ subroutine mrpt_dress(delta_ij_,  Ndet,i_generator,n_selected,det_buffer,Nint,ip
       call get_excitation_degree(psi_ref(1,1,index_i),tq(1,1,i_alpha),degree_tmp,N_int)
       call i_h_j(tq(1,1,i_alpha),psi_ref(1,1,index_i),N_int,hialpha)
 !!!!!!!!!!! TEST FOR THE SINGLE EXCITATION 1H1P
-!     if(degree_tmp.ne.2)then
-!      hialpha = 0.d0
-!     endif
+!!!   if(degree_tmp.ne.1)then
+!!!    hialpha = 0.d0
+!!!   endif
       double  precision :: coef_array(N_states)
       do i_state = 1, N_states
        coef_array(i_state) = psi_coef(index_i,i_state)
@@ -158,11 +158,10 @@ subroutine mrpt_dress(delta_ij_,  Ndet,i_generator,n_selected,det_buffer,Nint,ip
         integer :: h1, p1, h2, p2, s1, s2
         integer :: h1_2, p1_2, h2_2, p2_2, s1_2, s2_2
         logical :: test_1, test_2
-        if(degree_tmp.ne.2)cycle
-        if (degree_tmp==2)then
+!       if (degree_tmp==2.or.degree_tmp==1)then
         call get_double_excitation(psi_ref(1,1,index_j),tq(1,1,i_alpha),exc,phase,N_int)
         call decode_exc(exc,2,h1,p1,h2,p2,s1,s2)
-        endif
+!       endif
        !call get_double_excitation(psi_ref(1,1,index_i),tq(1,1,i_alpha),exc,phase,N_int)
        !call decode_exc(exc,2,h1_2,p1_2,h2_2,p2_2,s1_2,s2_2)
        !test_1 = (h2.le.n_core_inact_orb .and. p2.le.(n_core_inact_orb+n_act_orb) .and. h1.le.(n_core_inact_orb+n_act_orb) .and. p1.gt.(n_core_inact_orb+n_act_orb)    ) & 
@@ -171,19 +170,21 @@ subroutine mrpt_dress(delta_ij_,  Ndet,i_generator,n_selected,det_buffer,Nint,ip
        !      .or. (h1_2.le.n_core_inact_orb .and. p1_2.le.(n_core_inact_orb+n_act_orb) .and. h2_2.le.(n_core_inact_orb+n_act_orb) .and. p2_2.gt.(n_core_inact_orb+n_act_orb)    )
 !      !if(test_1.or.test_2)cycle
          delta_ij_(index_i,index_j,i_state) += hij_array(index_j) * hij_tmp * delta_e_inv_array(index_j,i_state)
-         if( dabs(hij_array(index_j) * hij_tmp * delta_e_inv_array(index_j,i_state)).gt.1.d-9)then
-            print*,'exc'
-            call debug_det(tq(1,1,i_alpha),N_int)
-            print*,'///'
-            print*,s1,s2
-            print*,h1,p1, h2, p2
-         !  print*,h1_2,p1_2, h2_2, p2_2
-       !    call get_delta_e_dyall(psi_ref(1,1,index_j),tq(1,1,i_alpha),delta_e)
-         !  print*,1.d0/delta_e(1)
-            print*,hij_array(index_j) * hij_tmp * delta_e_inv_array(index_j,i_state)
-            print*,hij_array(index_j),hij_tmp,delta_e_inv_array(index_j,i_state)
-            print*,'///'
-        endif
+      !  if( dabs(hij_array(index_j) * hij_tmp * delta_e_inv_array(index_j,i_state)).gt.1.d-9)then
+      !     print*,'exc'
+      !     call debug_det(tq(1,1,i_alpha),N_int)
+      !     print*,'///'
+      !     print*,'degree_2   ',degree_2
+      !     print*,'degree_tmp ',degree_tmp
+      !     print*,s1,s2
+      !     print*,h1,p1, h2, p2
+      !  !  print*,h1_2,p1_2, h2_2, p2_2
+      !  !  call get_delta_e_dyall(psi_ref(1,1,index_j),tq(1,1,i_alpha),delta_e)
+      !  !  print*,1.d0/delta_e(1)
+      !     print*,hij_array(index_j) * hij_tmp * delta_e_inv_array(index_j,i_state)
+      !     print*,hij_array(index_j),hij_tmp,delta_e_inv_array(index_j,i_state)
+      !     print*,'///'
+      !  endif
         
        enddo
 !      integer :: degree_ij

@@ -13,12 +13,12 @@ subroutine all_1h1p
  implicit none
  double precision,allocatable :: matrix_1h1p(:,:,:) 
  allocate (matrix_1h1p(N_det_ref,N_det_ref,N_states))
- integer :: i,j,istate,k
  double precision :: accu_diag_h_apply,accu_of_diag_h_apply
  double precision :: accu_diag_dm(N_states),accu_of_diag_dm(N_states)
  double precision :: accu_bis(N_states)
  double precision :: pt2(N_states)
  integer :: a,b,ispin,jspin,i_a,i_b,i_c,c,i_d,d
+ integer :: i,j,istate,k
 
  integer :: other_spin(2)
  logical :: test_1,test_2
@@ -43,31 +43,23 @@ subroutine all_1h1p
  enddo
  print*,'******************************************************'
 
- accu_diag_dm = 0.d0
-!accu_diag_dm = scalar_core_inact_contrib_1h1p
+ accu_diag_dm = scalar_core_inact_contrib_1h1p
  
- double precision :: contrib_diag_one_bod,contrib_diag_two_bod
  do istate = 1, N_states
   do ispin = 1, 2
    do i_a = 1, n_act_orb
-    contrib_diag_one_bod = & !effective_active_energies_double_bis_1h1p(i_a,ispin,istate)  & ! (i-->a)(b-->v)
-                         + effective_active_energies_double_1h1p(i_a,ispin,istate)     !   & ! (i-->v)(a-->b)
-!                        + effective_active_energies_1h1p(i_a,istate)                        ! (i-->v)(a<->a)
-    accu_diag_dm(istate) += contrib_diag_one_bod * cas_one_body_dm(i_a,i_a,ispin,istate) 
+    accu_diag_dm(istate) += effective_energies_1h1p_total(i_a,ispin,istate) * cas_one_body_dm(i_a,i_a,ispin,istate) 
     do jspin = 1,2
      do i_b = 1, n_act_orb
-!     accu_diag_dm(istate) -= effective_coulomb_double_bis_1h1hp(i_b,i_a,jspin,ispin,istate) * diag_cas_two_body_dm(i_b,i_a,jspin,ispin,istate)
-!     accu_diag_dm(istate) += effective_coulomb_1h1hp(i_a,i_b,jspin,ispin,istate) * diag_cas_two_body_dm(i_b,i_a,jspin,ispin,istate)
+      accu_diag_dm(istate) += effective_coulomb_diag_1h1p_total(i_b,i_a,jspin,ispin,istate) * diag_cas_two_body_dm(i_b,i_a,jspin,ispin,istate)
      enddo
     enddo
-    do i_b = 1, n_act_orb
-     accu_diag_dm(istate) -= effective_coulomb_double_1h1hp(i_b,i_a,ispin,istate) * diag_cas_two_body_exchage_dm(i_b,i_a,ispin,istate)
-    enddo
-
    enddo
   enddo
  enddo
- print*, 'accu_diag_dm=', accu_diag_dm
+ print*, 'accu_diag_dm   =', accu_diag_dm
+
+
 
 end
 
