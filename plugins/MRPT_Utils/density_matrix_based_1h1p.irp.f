@@ -195,6 +195,10 @@ END_PROVIDER
                       - active_int_double(i_b,i_a,1)  * active_int_double(i_b,i_a,2)  &  
                       + active_int_double(i_b,i_a,2)  * active_int_double(i_b,i_a,2))   
        
+       if(dabs(contrib).gt.1.d-10)then
+        print*,contrib,delta_e_ab(i_b,i_a,ispin,istate),i_a,i_b
+        print*,active_int_double(i_b,i_a,1),active_int_double(i_b,i_a,1)- active_int_double(i_b,i_a,2)
+       endif
        effective_coulomb_double_1h1hp(i_b,i_a,ispin,istate) += contrib
        effective_active_energies_double_1h1p(i_a,ispin,istate) += contrib
       enddo
@@ -355,9 +359,9 @@ END_PROVIDER
         effective_active_energies_double_bis_1h1p(i_a,ispin,istate) += active_int_double_bis(i_b,i_a,1) * active_int_double_bis(i_b,i_a,1) * delta_e_ab_bis(i_b,other_spin(ispin),i_a,ispin,istate)
       enddo
       do i_b = 1, n_act_orb   ! same spin contribution i-->b + a-->v
-       if(i_a==i_b)cycle
-        effective_active_energies_double_bis_1h1p(i_a,ispin,istate) +=  (active_int_double_bis(i_b,i_a,1) - active_int_double_bis(i_b,i_a,2)) * (active_int_double_bis(i_b,i_a,1) -active_int_double_bis(i_b,i_a,2) ) * delta_e_ab_bis(i_b,ispin,i_a,ispin,istate)
-       
+     ! if(i_a==i_b)cycle
+     !  effective_active_energies_double_bis_1h1p(i_a,ispin,istate) +=  (active_int_double_bis(i_b,i_a,1) - active_int_double_bis(i_b,i_a,2)) * (active_int_double_bis(i_b,i_a,1) -active_int_double_bis(i_b,i_a,2) ) * delta_e_ab_bis(i_b,ispin,i_a,ispin,istate)
+     ! 
       enddo
 !!!!!!!!!!! /////////// ACTIVE COULOMB OPERATOR   n_{b,\sigma} n_{a,\sigma '}
       do i_b = 1, n_act_orb ! opposite spin contribution 
@@ -365,9 +369,9 @@ END_PROVIDER
                                             *  active_int_double_bis(i_b,i_a,1) *  active_int_double_bis(i_b,i_a,1)
       enddo
       do i_b = 1, n_act_orb ! same spin contribution 
-       if(i_a==i_b)cycle
-       effective_coulomb_double_bis_1h1hp(i_a,i_b,ispin,ispin,istate) +=  delta_e_ab_bis(i_b,ispin,i_a,ispin,istate) & 
-                                            *  (active_int_double_bis(i_b,i_a,1) - active_int_double_bis(i_b,i_a,2)) *  (active_int_double_bis(i_b,i_a,1) - active_int_double_bis(i_b,i_a,2))
+     ! if(i_a==i_b)cycle
+     ! effective_coulomb_double_bis_1h1hp(i_a,i_b,ispin,ispin,istate) +=  delta_e_ab_bis(i_b,ispin,i_a,ispin,istate) & 
+     !                                      *  (active_int_double_bis(i_b,i_a,1) - active_int_double_bis(i_b,i_a,2)) *  (active_int_double_bis(i_b,i_a,1) - active_int_double_bis(i_b,i_a,2))
       enddo
      enddo
     enddo
@@ -379,9 +383,9 @@ END_PROVIDER
         effective_Fock_1h1hp_double_bis(i_b,i_c,ispin,istate) += active_int_double_bis(i_a,i_b,1) * active_int_double_bis(i_a,i_c,1) * delta_e_ab_bis(i_a,other_spin(ispin),i_b,ispin,istate) 
        enddo
        do i_a = 1, n_act_orb ! same spin contribution i-->c + b-->v
-        if(i_a==i_b)cycle
-        if(i_a==i_c)cycle
-        effective_Fock_1h1hp_double_bis(i_b,i_c,ispin,istate) += (active_int_double_bis(i_a,i_b,1) - active_int_double_bis(i_a,i_b,2)) * (active_int_double_bis(i_a,i_c,1) - active_int_double_bis(i_a,i_c,2)) * delta_e_ab_bis(i_a,ispin,i_b,ispin,istate) 
+     !  if(i_a==i_b)cycle
+     !  if(i_a==i_c)cycle
+     !  effective_Fock_1h1hp_double_bis(i_b,i_c,ispin,istate) += (active_int_double_bis(i_a,i_b,1) - active_int_double_bis(i_a,i_b,2)) * (active_int_double_bis(i_a,i_c,1) - active_int_double_bis(i_a,i_c,2)) * delta_e_ab_bis(i_a,ispin,i_b,ispin,istate) 
        enddo
       enddo
      enddo
@@ -405,11 +409,11 @@ END_PROVIDER
        do i_b = 1, n_act_orb
         if(i_b==i_a)cycle
         if(i_b==i_c)cycle
-        effective_pseudo_Fock_double_bis_1h1hp(i_b,ispin,i_a,i_c,ispin,istate) += & 
-       (active_int_double_bis(i_a,i_b,1) - active_int_double_bis(i_a,i_b,2)) * (active_int_double_bis(i_c,i_b,1) - active_int_double_bis(i_c,i_b,2)) & 
-      * delta_e_ab_bis(i_a,ispin,i_b,ispin,istate) & 
-     + (active_int_double_bis(i_b,i_a,1) - active_int_double_bis(i_b,i_a,2)) * (active_int_double_bis(i_b,i_c,1) - active_int_double_bis(i_b,i_c,2)) & 
-      * delta_e_ab_bis(i_b,ispin,i_c,ispin,istate) 
+    !   effective_pseudo_Fock_double_bis_1h1hp(i_b,ispin,i_a,i_c,ispin,istate) += & 
+    !  (active_int_double_bis(i_a,i_b,1) - active_int_double_bis(i_a,i_b,2)) * (active_int_double_bis(i_c,i_b,1) - active_int_double_bis(i_c,i_b,2)) & 
+    ! * delta_e_ab_bis(i_a,ispin,i_b,ispin,istate) & 
+    !+ (active_int_double_bis(i_b,i_a,1) - active_int_double_bis(i_b,i_a,2)) * (active_int_double_bis(i_b,i_c,1) - active_int_double_bis(i_b,i_c,2)) & 
+    ! * delta_e_ab_bis(i_b,ispin,i_c,ispin,istate) 
        enddo
       enddo
      enddo
@@ -432,26 +436,26 @@ END_PROVIDER
      enddo
     enddo 
 
-    do ispin = 1, 2
-     do i_b = 1, n_act_orb
-      do i_a = 1, n_act_orb 
-       test_1 = ((i_a == 2.and.i_b==1.and.ispin==1))
-       if(i_a==i_b)cycle
-       jspin = ispin
-       do i_d = 1, n_act_orb
-        do i_c = 1, n_act_orb
-        if(i_c==i_d)cycle
-        if(i_c==i_a)cycle
-        if(i_c==i_b)cycle
-         effective_pseudo_bielec_double_bis_1h1hp(i_c,i_d,jspin,i_a,i_b,ispin,istate) += & 
-         (active_int_double_bis(i_c,i_b,1) - active_int_double_bis(i_c,i_b,2)) * &  !  V_{ib}^{cv} - V_{ib}^{vc} 
-         (active_int_double_bis(i_d,i_a,1) - active_int_double_bis(i_d,i_a,2)) * &  !* V_{ia}^{dv} - V_{ia}^{vd}
-         delta_e_ab_bis(i_d,jspin,i_a,ispin,istate)                                 ! /delta_a^d
-        enddo
-       enddo
-      enddo
-     enddo
-    enddo 
+   !do ispin = 1, 2
+   ! do i_b = 1, n_act_orb
+   !  do i_a = 1, n_act_orb 
+   !   test_1 = ((i_a == 2.and.i_b==1.and.ispin==1))
+   !   if(i_a==i_b)cycle
+   !   jspin = ispin
+   !   do i_d = 1, n_act_orb
+   !    do i_c = 1, n_act_orb
+   !    if(i_c==i_d)cycle
+   !    if(i_c==i_a)cycle
+   !    if(i_c==i_b)cycle
+   !     effective_pseudo_bielec_double_bis_1h1hp(i_c,i_d,jspin,i_a,i_b,ispin,istate) += & 
+   !     (active_int_double_bis(i_c,i_b,1) - active_int_double_bis(i_c,i_b,2)) * &  !  V_{ib}^{cv} - V_{ib}^{vc} 
+   !     (active_int_double_bis(i_d,i_a,1) - active_int_double_bis(i_d,i_a,2)) * &  !* V_{ia}^{dv} - V_{ia}^{vd}
+   !     delta_e_ab_bis(i_d,jspin,i_a,ispin,istate)                                 ! /delta_a^d
+   !    enddo
+   !   enddo
+   !  enddo
+   ! enddo
+   !enddo 
 
 
    enddo
