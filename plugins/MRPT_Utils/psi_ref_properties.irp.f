@@ -79,7 +79,10 @@
      do ispin = 1, 2
       do j = 1, n_elec_active(ispin)
        i_a = list_act_reverse(list_active(j,ispin))
-       pseudo_diag_cas_two_body_dm(i_a,ispin,h1,p1,s1,istate) += psi_ref_coef(idet,istate) * psi_ref_coef(idx(jdet),istate) * phase
+       pseudo_diag_cas_two_body_dm(i_a,ispin,p1,h1,s1,istate) += psi_ref_coef(idet,istate) * psi_ref_coef(idx(jdet),istate) * phase
+!      if(ispin==s1)then
+!       pseudo_diag_cas_two_body_dm(h1,ispin,i_a,p1,s1,istate) -= psi_ref_coef(idet,istate) * psi_ref_coef(idx(jdet),istate) * phase
+!      endif
        cas_two_body_dm(i_a,i_a,ispin,h1,p1,s1,istate) += psi_ref_coef(idet,istate) * psi_ref_coef(idx(jdet),istate) * phase
        cas_two_body_dm(h1,p1,s1,i_a,i_a,ispin,istate) += psi_ref_coef(idet,istate) * psi_ref_coef(idx(jdet),istate) * phase
       enddo
@@ -97,6 +100,8 @@
      do istate = 1, N_states
       cas_two_body_dm(h1,p1,s1,h2,p2,s2,istate) += psi_ref_coef(idet,istate) * psi_ref_coef(idx(jdet),istate) * phase
       cas_two_body_dm(h2,p2,s2,h1,p1,s1,istate) += psi_ref_coef(idet,istate) * psi_ref_coef(idx(jdet),istate) * phase
+!     print*,'cas_two_body_dm(h1,p1,s1,h2,p2,s2,istate)',cas_two_body_dm(h1,p1,s1,h2,p2,s2,istate)
+!     print*,h1,p1,s1,h2,p2,s2
      enddo
     else if(exc(0,1,1)==0)then ! beta-beta double exc
      h1 = list_act_reverse(exc(1,1,2)) 

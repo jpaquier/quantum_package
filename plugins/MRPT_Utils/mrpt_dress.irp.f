@@ -65,7 +65,7 @@ subroutine mrpt_dress(delta_ij_,  Ndet,i_generator,n_selected,det_buffer,Nint,ip
     call create_minilist(key_mask, psi_ref, miniList, idx_miniList, N_det, N_minilist, Nint)
   end if
   
-  
+  accu = 0.d0 
   do i_alpha=1,N_tq
 !!!!!!!!!! TEST FOR ALPHA- BETA 1h2p 
   integer :: i_part(0:mo_tot_num,2)
@@ -106,6 +106,7 @@ subroutine mrpt_dress(delta_ij_,  Ndet,i_generator,n_selected,det_buffer,Nint,ip
 ! endif
 ! 
 !!!!!!!!!!!!
+    double precision :: accu
     call get_excitation_degree_vector(miniList,tq(1,1,i_alpha),degree_alpha,Nint,N_minilist,idx_alpha)
     
     do j=1,idx_alpha(0)
@@ -174,32 +175,56 @@ subroutine mrpt_dress(delta_ij_,  Ndet,i_generator,n_selected,det_buffer,Nint,ip
        !  delta_ij_(index_i,index_j,i_state) += hij_array(index_j) * hij_tmp * delta_e_inv_array(index_j,i_state)
        !enddo
        else if (degree_2==2.and.degree_tmp==2)then
-       !if(index_i .ne. index_j)then
-       ! if( dabs(delta_e_inv_array(index_j,1)).gt.1.d-6)then
-       !  print*,'ref'
-       !  call debug_det(psi_ref(1,1,index_j),N_int)
-       !  print*,'ref'
-       !  call debug_det(psi_ref(1,1,index_i),N_int)
-       !  print*,'exc'
-       !  call debug_det(tq(1,1,i_alpha),N_int)
-       !  do i_state=1,N_states
-       !    print*,hij_array(index_j),hij_tmp,delta_e_inv_array(index_j,i_state)!,hij_array(index_j) * hij_tmp * delta_e_inv_array(index_j,i_state)
-       !  enddo
-       ! endif
-       !endif
-!       if(degree_ij.eq.2)then
+        integer :: h1, p1, h2, p2, s1, s2
+        integer :: h1_2, p1_2, h2_2, p2_2, s1_2, s2_2
+        call get_double_excitation(psi_ref(1,1,index_j),tq(1,1,i_alpha),exc,phase,N_int)
+        call decode_exc(exc,2,h1,p1,h2,p2,s1,s2)
+        call get_double_excitation(psi_ref(1,1,index_i),tq(1,1,i_alpha),exc,phase,N_int)
+        call decode_exc(exc,2,h1_2,p1_2,h2_2,p2_2,s1_2,s2_2)
+        logical :: test_1, test_2
+!       if(s1.ne.s2)then
+         test_1 = (h2.le.n_core_inact_orb .and. p2.le.(n_core_inact_orb+n_act_orb) .and. h1.le.(n_core_inact_orb+n_act_orb) .and. p1.gt.(n_core_inact_orb+n_act_orb)    ) & 
+                 .or. (h1.le.n_core_inact_orb .and. p1.le.(n_core_inact_orb+n_act_orb) .and. h2.le.(n_core_inact_orb+n_act_orb) .and.  h2.gt.n_core_inact_orb .and. p2.gt.(n_core_inact_orb+n_act_orb)    )
+         test_2 = (h2_2.le.n_core_inact_orb .and. p2_2.le.(n_core_inact_orb+n_act_orb) .and. h1_2.le.(n_core_inact_orb+n_act_orb) .and. p1_2.gt.(n_core_inact_orb+n_act_orb)    ) & 
+                 .or. (h1_2.le.n_core_inact_orb .and. p1_2.le.(n_core_inact_orb+n_act_orb) .and. h2_2.le.(n_core_inact_orb+n_act_orb) .and. p2_2.gt.(n_core_inact_orb+n_act_orb)    )
+        
          do i_state=1,N_states
-           delta_ij_(index_i,index_j,i_state) += hij_array(index_j) * hij_tmp * delta_e_inv_array(index_j,i_state)
            logical :: test_log
-           integer                        :: h1, p1, h2, p2, s1, s2
 !          if( dabs(delta_e_inv_array(index_j,1)).gt.1.d-6)then
-!          call get_double_excitation(psi_ref(1,1,index_j),psi_ref(1,1,index_i),exc,phase,Nint)
-!          call decode_exc(exc,2,h1,p1,h2,p2,s1,s2)
+!          call get_double_excitation(psi_ref(1,1,index_j),psi_ref(1,1,index_i),exc,phase,N_int)
 !          test_log = (list_act_reverse(h1)==1 .and. list_act_reverse(p1)==3 .and. list_act_reverse(h2)==2 .and. list_act_reverse(p2)==4 .and. s1==1 .and. s2==1)
 !          if(test_log.and.dabs(delta_e_inv_array(index_j,1)).gt.1.d-6)then
 !              print*,'*************'
 !              print*,list_act_reverse(h1),list_act_reverse(p1),s1,list_act_reverse(h2),list_act_reverse(p2),s2
-!              print*,hij_array(index_j) * hij_tmp * delta_e_inv_array(index_j,i_state),delta_e_inv_array(index_j,i_state),hij_array(index_j) * hij_tmp 
+          !if( dabs(hij_array(index_j) * hij_tmp * delta_e_inv_array(index_j,i_state)).gt.1.d-12)then
+          !   if(degree_ij==1)then
+          !   print*,'exc'
+          !   call debug_det(tq(1,1,i_alpha),N_int)
+          !   print*,'///'
+          !   print*,s1,s2
+          !   print*,h1,p1, h2, p2
+          !   print*,h1_2,p1_2, h2_2, p2_2
+          !   call get_delta_e_dyall(psi_ref(1,1,index_j),tq(1,1,i_alpha),delta_e)
+          !   print*,1.d0/delta_e(1)
+          !   print*,hij_array(index_j) * hij_tmp * delta_e_inv_array(index_j,i_state)
+          !   print*,hij_array(index_j),hij_tmp,delta_e_inv_array(index_j,i_state)
+          !   print*,'///'
+          !   endif
+          !endif
+           if(test_1.and.test_2)then
+          !if(degree_ij==0.or.degree_ij==1)then
+            delta_ij_(index_i,index_j,i_state) += hij_array(index_j) * hij_tmp * delta_e_inv_array(index_j,i_state)
+          !endif
+  
+           endif
+          !if( dabs(hij_array(index_j) * hij_tmp * delta_e_inv_array(index_j,i_state)).gt.1.d-10)then
+          !if(index_i == index_j)then
+          !    print*,'exc'
+          !    call debug_det(tq(1,1,i_alpha),N_int)
+          !    print*,hij_array(index_j) * hij_tmp * delta_e_inv_array(index_j,i_state),delta_e_inv_array(index_j,i_state),hij_array(index_j) * hij_tmp 
+          !    print*,hij_array(index_j) , hij_tmp
+          !endif
+          !endif
 !              print*,hij_array(index_j) , hij_tmp 
 !              print*,hij_array(index_j) * hij_tmp * delta_e_inv_array(index_j,i_state) * psi_ref_coef(index_j,1) * psi_ref_coef(index_i,1)
 !              print*,index_i,index_j,delta_ij_(index_i,index_j,i_state)

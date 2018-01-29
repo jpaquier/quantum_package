@@ -104,12 +104,13 @@ END_PROVIDER
 ! effective_coulomb_1h1hp(i_a,i_b,ispin,jspin) = effective two coulomb operator of type \hat{n}_{a,ispin} \hat{n}_{b,ispin} coming from ALL the single excitations 1h1p
 ! effective_Fock_1h1hp(i_a,i_b) = effective Fock operator of type a^{\dagger}_{b} a_{a}  (does not depend on the spin) coming from ALL the single excitations 1h1p
 ! effective_pseudo_Fock_1h1hp(i_a,ispin,i_b,i_c,jspin) = effective pseudo Fock operator of type a^{\dagger}_{c,ispin} a_{b,jspin} \hat{n}_{a,ispin}
+! effective_pseudo_bielec_1h1hp(i_a,i_b,ispin,i_c,i_d,jspin) = a^{\dagger}_{i_b,ispin} a^{\dagger}_{i_d,jspin} a_{i_c,jspin} a_{i_a,ispin}
   END_DOC
  implicit none
  integer :: i_i,i_v,i_j,i_k,i_a,i_b,ispin,jspin,i_c,i_d
  integer :: i,v,j,k,a,b,c,d
  integer :: istate
- double precision :: delta_e(N_states),delta_e_ab(n_act_orb,n_act_orb,2,N_states)
+ double precision :: delta_e(N_states),delta_e_ab(n_act_orb,n_act_orb,2,N_states),delta_e_ab_bis(n_act_orb,2,n_act_orb,2,N_states)
  double precision :: get_mo_bielec_integral
  double precision :: active_int(n_act_orb,2),active_int_double(n_act_orb,n_act_orb,2)
  double precision :: core_inactive_int(n_core_inact_orb,2)
@@ -141,15 +142,21 @@ END_PROVIDER
     accu(i_a) +=  (2.d0 * active_int(i_a,1) - active_int(i_a,2))
     do i_b = 1, n_act_orb
      b = list_act(i_b)
-     active_int_double(i_b,i_a,1) = get_mo_bielec_integral(i,b,v,a,mo_integrals_map) ! direct
-     active_int_double(i_b,i_a,2) = get_mo_bielec_integral(i,a,b,v,mo_integrals_map) ! exchange
+     active_int_double(i_b,i_a,1)     = get_mo_bielec_integral(i,b,v,a,mo_integrals_map) ! direct 
+     active_int_double(i_b,i_a,2)     = get_mo_bielec_integral(i,a,b,v,mo_integrals_map) ! exchange
      accu_2(i_b,i_a) = (2.d0 * active_int_double(i_b,i_a,1) - active_int_double(i_b,i_a,2))
      do ispin = 1,2
       do istate = 1, N_states
        delta_e_ab(i_b,i_a,ispin,istate) = fock_core_inactive_total_spin_trace(i,istate) &  
                                         - fock_virt_total_spin_trace(v,istate)          &
-                                        + one_anhil_one_creat(i_b,i_a,ispin,ispin,istate)
+                                        + one_anhil_one_creat(i_b,i_a,ispin,ispin,istate)! a^{\dagger}_{b,ispin} a_{a,ispin}
        delta_e_ab(i_b,i_a,ispin,istate) = 1.d0/delta_e_ab(i_b,i_a,ispin,istate)  
+       do jspin = 1, 2
+         delta_e_ab_bis(i_b,jspin,i_a,ispin,istate) = fock_core_inactive_total_spin_trace(i,istate)   & 
+                                                - fock_virt_total_spin_trace(v,istate)            &
+                                                + one_anhil_one_creat(i_b,i_a,jspin,ispin,istate) 
+                                                        ! a^{\dagger}_{b,jspin} a_{a,ispin}
+       enddo
       enddo
      enddo
     enddo
@@ -165,6 +172,7 @@ END_PROVIDER
                        - active_int_double(i_b,i_a,2)  * active_int_double(i_b,i_a,1)  &  
                        - active_int_double(i_b,i_a,1)  * active_int_double(i_b,i_a,2)  &  
                        + active_int_double(i_b,i_a,2)  * active_int_double(i_b,i_a,2))   
+          
        
        effective_coulomb_double_1h1hp(i_b,i_a,ispin,istate) += contrib
        if (i_a.ne.i_b)then
@@ -263,3 +271,172 @@ END_PROVIDER
  enddo
 
 END_PROVIDER 
+
+
+ BEGIN_PROVIDER [double precision, effective_active_energies_double_bis_1h1p, (n_act_orb,2,N_states)]
+&BEGIN_PROVIDER [double precision, effective_coulomb_double_bis_1h1hp,  (n_act_orb,n_act_orb,2,2,N_states)]
+&BEGIN_PROVIDER [double precision, effective_Fock_1h1hp_double_bis, (n_act_orb,n_act_orb,2,N_states)]
+&BEGIN_PROVIDER [double precision, effective_pseudo_Fock_double_bis_1h1hp, (n_act_orb,2,n_act_orb,n_act_orb,2,N_states)]
+&BEGIN_PROVIDER [double precision, effective_pseudo_bielec_double_bis_1h1hp, (n_act_orb,n_act_orb,2,n_act_orb,n_act_orb,2,N_states)]
+ implicit none
+  BEGIN_DOC
+! effective_active_energies_1h1p(i_a) = effective one-body energy coming from ALL the single excitations 1h1p
+! effective_coulomb_1h1hp(i_a,i_b,ispin,jspin) = effective two coulomb operator of type \hat{n}_{a,ispin} \hat{n}_{b,ispin} coming from ALL the single excitations 1h1p
+! effective_Fock_1h1hp(i_a,i_b) = effective Fock operator of type a^{\dagger}_{b} a_{a}  (does not depend on the spin) coming from ALL the single excitations 1h1p
+! effective_pseudo_Fock_1h1hp(i_a,ispin,i_b,i_c,jspin) = effective pseudo Fock operator of type a^{\dagger}_{c,ispin} a_{b,jspin} \hat{n}_{a,ispin}
+! effective_pseudo_bielec_1h1hp(i_a,i_b,ispin,i_c,i_d,jspin) = a^{\dagger}_{i_b,ispin} a^{\dagger}_{i_d,jspin} a_{i_c,jspin} a_{i_a,ispin}
+  END_DOC
+
+ integer :: i_i,i_v,i_j,i_k,i_a,i_b,ispin,jspin,i_c,i_d
+ integer :: i,v,j,k,a,b,c,d
+ integer :: istate
+ double precision :: delta_e_ab_bis(n_act_orb,2,n_act_orb,2,N_states)
+ double precision :: get_mo_bielec_integral
+ double precision :: active_int_double_bis(n_act_orb,n_act_orb,2)
+ integer :: other_spin(2)
+ logical :: test_1,test_2
+ other_spin(1) = 2
+ other_spin(2) = 1
+
+ effective_active_energies_double_bis_1h1p = 0.d0
+ effective_coulomb_double_bis_1h1hp = 0.d0
+ effective_Fock_1h1hp_double_bis = 0.d0
+ effective_pseudo_Fock_double_bis_1h1hp = 0.d0
+ effective_pseudo_bielec_double_bis_1h1hp = 0.d0
+
+ do i_i = 1, n_inact_orb
+  i = list_inact(i_i) 
+  do i_v = 1, n_virt_orb
+   v = list_virt(i_v)
+   do i_a = 1, n_act_orb
+    a = list_act(i_a)
+    do i_b = 1, n_act_orb
+     b = list_act(i_b)
+     active_int_double_bis(i_b,i_a,1) = get_mo_bielec_integral(i,a,b,v,mo_integrals_map)  ! V_{ia}^{bv}
+     active_int_double_bis(i_b,i_a,2) = get_mo_bielec_integral(i,a,v,b,mo_integrals_map)  ! V_{ia}^{vb}
+     do istate = 1, N_states
+      do ispin = 1, 2
+       do jspin = 1, 2
+         delta_e_ab_bis(i_b,jspin,i_a,ispin,istate) = fock_core_inactive_total_spin_trace(i,istate)   & 
+                                                - fock_virt_total_spin_trace(v,istate)            &
+                                                + one_anhil_one_creat(i_b,i_a,jspin,ispin,istate) 
+                                                        ! a^{\dagger}_{b,jspin} a_{a,ispin}
+         delta_e_ab_bis(i_b,jspin,i_a,ispin,istate) = 1.d0/delta_e_ab_bis(i_b,jspin,i_a,ispin,istate)
+       enddo
+      enddo 
+     enddo
+    enddo
+   enddo
+   do istate = 1, N_states 
+    do i_a = 1, n_act_orb
+     do ispin = 1, 2
+!!!!!!!!!!! /////////// ACTIVE ENERGIES
+      do i_b = 1, n_act_orb   ! opposite spin contribution i-->b + a-->v
+        effective_active_energies_double_bis_1h1p(i_a,ispin,istate) += active_int_double_bis(i_b,i_a,1) * active_int_double_bis(i_b,i_a,1) * delta_e_ab_bis(i_b,other_spin(ispin),i_a,ispin,istate)
+      enddo
+      do i_b = 1, n_act_orb   ! same spin contribution i-->b + a-->v
+       if(i_a==i_b)cycle
+        effective_active_energies_double_bis_1h1p(i_a,ispin,istate) +=  (active_int_double_bis(i_b,i_a,1) - active_int_double_bis(i_b,i_a,2)) * (active_int_double_bis(i_b,i_a,1) -active_int_double_bis(i_b,i_a,2) ) * delta_e_ab_bis(i_b,ispin,i_a,ispin,istate)
+       
+      enddo
+!!!!!!!!!!! /////////// ACTIVE COULOMB OPERATOR   n_{b,\sigma} n_{a,\sigma '}
+      do i_b = 1, n_act_orb ! opposite spin contribution 
+       effective_coulomb_double_bis_1h1hp(i_a,i_b,ispin,other_spin(ispin),istate) +=  delta_e_ab_bis(i_b,other_spin(ispin),i_a,ispin,istate) & 
+                                            *  active_int_double_bis(i_b,i_a,1) *  active_int_double_bis(i_b,i_a,1)
+      enddo
+      do i_b = 1, n_act_orb ! same spin contribution 
+       if(i_a==i_b)cycle
+       effective_coulomb_double_bis_1h1hp(i_a,i_b,ispin,ispin,istate) +=  delta_e_ab_bis(i_b,ispin,i_a,ispin,istate) & 
+                                            *  (active_int_double_bis(i_b,i_a,1) - active_int_double_bis(i_b,i_a,2)) *  (active_int_double_bis(i_b,i_a,1) - active_int_double_bis(i_b,i_a,2))
+      enddo
+     enddo
+    enddo
+!!!!!!!!!!! /////////// ACTIVE FOCK OPERATOR   a^{\dagger}_{b,ispin}  a_{a,ispin}
+    do i_c = 1, n_act_orb
+     do ispin = 1, 2
+      do i_b = 1, n_act_orb   
+       do i_a = 1, n_act_orb ! opposite spin contribution i-->a + b-->v
+        effective_Fock_1h1hp_double_bis(i_b,i_c,ispin,istate) += active_int_double_bis(i_a,i_b,1) * active_int_double_bis(i_a,i_c,1) * delta_e_ab_bis(i_a,other_spin(ispin),i_b,ispin,istate) 
+       enddo
+       do i_a = 1, n_act_orb ! same spin contribution i-->c + b-->v
+        if(i_a==i_b)cycle
+        if(i_a==i_c)cycle
+        effective_Fock_1h1hp_double_bis(i_b,i_c,ispin,istate) += (active_int_double_bis(i_a,i_b,1) - active_int_double_bis(i_a,i_b,2)) * (active_int_double_bis(i_a,i_c,1) - active_int_double_bis(i_a,i_c,2)) * delta_e_ab_bis(i_a,ispin,i_b,ispin,istate) 
+       enddo
+      enddo
+     enddo
+    enddo
+!!!!!!!!!!! /////////// ACTIVE PSEUDO FOCK OPERATOR a^{\dagger}_{a,ispin} a_{c,ispin} \hat{n}_{b,jspin}
+    do i_a = 1, n_act_orb
+     do ispin = 1, 2
+      do i_c = 1, n_act_orb ! opposite spin contribution 
+       do i_b = 1, n_act_orb
+        effective_pseudo_Fock_double_bis_1h1hp(i_b,other_spin(ispin),i_a,i_c,ispin,istate) += (active_int_double_bis(i_a,i_b,1) * active_int_double_bis(i_c,i_b,1) * delta_e_ab_bis(i_a,ispin,i_b,other_spin(ispin),istate)) & 
+                                                                                            + (active_int_double_bis(i_b,i_a,1) * active_int_double_bis(i_b,i_c,1) * delta_e_ab_bis(i_b,other_spin(ispin),i_c,ispin,istate))
+       enddo
+      enddo
+     enddo
+    enddo
+
+    do i_a = 1, n_act_orb
+     do ispin = 1, 2
+      do i_c = 1, n_act_orb ! same spin contribution 
+       if(i_a==i_b)cycle
+       do i_b = 1, n_act_orb
+        if(i_b==i_a)cycle
+        if(i_b==i_c)cycle
+        effective_pseudo_Fock_double_bis_1h1hp(i_b,ispin,i_a,i_c,ispin,istate) += & 
+       (active_int_double_bis(i_a,i_b,1) - active_int_double_bis(i_a,i_b,2)) * (active_int_double_bis(i_c,i_b,1) - active_int_double_bis(i_c,i_b,2)) & 
+      * delta_e_ab_bis(i_a,ispin,i_b,ispin,istate) & 
+     + (active_int_double_bis(i_b,i_a,1) - active_int_double_bis(i_b,i_a,2)) * (active_int_double_bis(i_b,i_c,1) - active_int_double_bis(i_b,i_c,2)) & 
+      * delta_e_ab_bis(i_b,ispin,i_c,ispin,istate) 
+       enddo
+      enddo
+     enddo
+    enddo
+
+!!!!!!!!!!! /////////// ACTIVE EXTRA DIAGONAL COULOMB OPERATOR a^{\dagger}_{b,ispin} a^{\dager}_{d,jspin} a_{c,jspin} a_{a,ispin}
+    do ispin = 1, 2
+     do i_b = 1, n_act_orb
+      do i_a = 1, n_act_orb 
+       test_1 = ((i_a == 2.and.i_b==1.and.ispin==1))
+       if(i_a==i_b)cycle
+       jspin = other_spin(ispin)
+       do i_d = 1, n_act_orb
+        do i_c = 1, n_act_orb
+        if(i_c==i_d)cycle
+         effective_pseudo_bielec_double_bis_1h1hp(i_c,i_d,jspin,i_a,i_b,ispin,istate) += active_int_double_bis(i_c,i_b,1) * active_int_double_bis(i_d,i_a,1) * delta_e_ab_bis(i_d,jspin,i_a,ispin,istate)! V_{ib}^{cv} * V_{ia}^{dv}/delta_a^d
+        enddo
+       enddo
+      enddo
+     enddo
+    enddo 
+
+    do ispin = 1, 2
+     do i_b = 1, n_act_orb
+      do i_a = 1, n_act_orb 
+       test_1 = ((i_a == 2.and.i_b==1.and.ispin==1))
+       if(i_a==i_b)cycle
+       jspin = ispin
+       do i_d = 1, n_act_orb
+        do i_c = 1, n_act_orb
+        if(i_c==i_d)cycle
+        if(i_c==i_a)cycle
+        if(i_c==i_b)cycle
+         effective_pseudo_bielec_double_bis_1h1hp(i_c,i_d,jspin,i_a,i_b,ispin,istate) += & 
+         (active_int_double_bis(i_c,i_b,1) - active_int_double_bis(i_c,i_b,2)) * &  !  V_{ib}^{cv} - V_{ib}^{vc} 
+         (active_int_double_bis(i_d,i_a,1) - active_int_double_bis(i_d,i_a,2)) * &  !* V_{ia}^{dv} - V_{ia}^{vd}
+         delta_e_ab_bis(i_d,jspin,i_a,ispin,istate)                                 ! /delta_a^d
+        enddo
+       enddo
+      enddo
+     enddo
+    enddo 
+
+
+   enddo
+  enddo
+ enddo
+
+
+ END_PROVIDER

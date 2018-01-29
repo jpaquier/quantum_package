@@ -474,24 +474,31 @@ subroutine get_delta_e_dyall(det_1,det_2,delta_e_final)
  i_particle_act =  list_particle_active(1,jspin)
  i_hole_act =  list_holes_active(1,ispin)
 !print*,test,test2
- if(test)then
-! print*,test2
-  if(test2.eqv..False.)then
+ if(.not.test)then
    do i_state = 1, n_states
     delta_e_final(i_state) = 1.d+20
    enddo
-  else 
-! print*,i_hole_act,i_particle_act
-! print*,'ispin print,',ispin,jspin
-
-  endif
  endif
 
-!  if(n_holes_inactive(2)==1)then
+!if(test)then
+! if(test2.eqv..False.)then
 !  do i_state = 1, n_states
 !   delta_e_final(i_state) = 1.d+20
 !  enddo
-!  endif
+! else 
+! endif
+!endif
+
+ !if(n_holes_inactive(2)==1)then
+ ! do i_state = 1, n_states
+ !  delta_e_final(i_state) = 1.d+20
+ ! enddo
+ !endif
+ !do i_state = 1, N_states
+ ! if(delta_e_final(i_state).lt.1.d+19)then
+ !  print*,'i_hole_act,i_particle_act',list_act(i_hole_act),list_act(i_particle_act),ispin,jspin
+ ! endif
+ !enddo
 
 
 !write(*,'(100(f16.10,X))'), delta_e_final(1) , delta_e_act(1)  , delta_e_inactive(1) , delta_e_virt(1)
