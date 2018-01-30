@@ -43,7 +43,7 @@
 END_PROVIDER
 
 
-BEGIN_PROVIDER [double precision, effective_one_e_potential, (mo_tot_num_align, mo_tot_num,N_states)]
+BEGIN_PROVIDER [double precision, effective_one_e_potential, (mo_tot_num, mo_tot_num,N_states)]
  implicit none
  integer :: i,j,i_state
  effective_one_e_potential = 0.d0
@@ -66,7 +66,7 @@ BEGIN_PROVIDER [double precision, effective_one_e_potential, (mo_tot_num_align, 
  enddo
 END_PROVIDER 
 
-BEGIN_PROVIDER [double precision, one_e_energy_potential, (mo_tot_num_align, mo_tot_num)]
+BEGIN_PROVIDER [double precision, one_e_energy_potential, (mo_tot_num, mo_tot_num)]
  implicit none
  integer :: i,j,i_state
   do i = 1, mo_tot_num
@@ -132,7 +132,7 @@ BEGIN_PROVIDER [double precision, Trace_v_xc]
  implicit none
  integer :: i,j
  
- double precision :: tmp(mo_tot_num_align,mo_tot_num)
+ double precision :: tmp(mo_tot_num,mo_tot_num)
   tmp = 0.d0
   do i = 1, mo_tot_num
    do j = 1, mo_tot_num

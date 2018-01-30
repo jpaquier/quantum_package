@@ -1,5 +1,5 @@
- BEGIN_PROVIDER [double precision, ao_potential_alpha_xc, (ao_num_align, ao_num)] 
-&BEGIN_PROVIDER [double precision, ao_potential_beta_xc, (ao_num_align, ao_num)] 
+ BEGIN_PROVIDER [double precision, ao_potential_alpha_xc, (ao_num, ao_num)] 
+&BEGIN_PROVIDER [double precision, ao_potential_beta_xc, (ao_num, ao_num)] 
  implicit none
  integer :: i,j,k,l
  ao_potential_alpha_xc = 0.d0

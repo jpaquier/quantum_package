@@ -5,7 +5,7 @@ BEGIN_PROVIDER [ double precision, psi_energy_erf, (N_states) ]
 &BEGIN_PROVIDER [ double precision, total_electronic_energy, (N_states) ]
   implicit none
   integer :: i,j
-  double precision :: array(mo_tot_num_align,mo_tot_num),average
+  double precision :: array(mo_tot_num,mo_tot_num),average
   BEGIN_DOC
 ! Energy of the current wave function
   END_DOC

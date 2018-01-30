@@ -1,5 +1,5 @@
- BEGIN_PROVIDER [double precision, big_array_coulomb_integrals_erf, (mo_tot_num_align,mo_tot_num, mo_tot_num)]
-&BEGIN_PROVIDER [double precision, big_array_exchange_integrals_erf,(mo_tot_num_align,mo_tot_num, mo_tot_num)]
+ BEGIN_PROVIDER [double precision, big_array_coulomb_integrals_erf, (mo_tot_num,mo_tot_num, mo_tot_num)]
+&BEGIN_PROVIDER [double precision, big_array_exchange_integrals_erf,(mo_tot_num,mo_tot_num, mo_tot_num)]
  implicit none
  integer :: i,j,k,l
  double precision :: get_mo_bielec_integral_erf
@@ -22,8 +22,8 @@
 END_PROVIDER 
 
 
-!BEGIN_PROVIDER [double precision, big_array_coulomb_integrals_sr, (mo_tot_num_align,mo_tot_num, mo_tot_num)]
-!&BEGIN_PROVIDER [double precision, big_array_exchange_integrals_sr,(mo_tot_num_align,mo_tot_num, mo_tot_num)]
+!BEGIN_PROVIDER [double precision, big_array_coulomb_integrals_sr, (mo_tot_num,mo_tot_num, mo_tot_num)]
+!&BEGIN_PROVIDER [double precision, big_array_exchange_integrals_sr,(mo_tot_num,mo_tot_num, mo_tot_num)]
 !implicit none
 !integer :: i,j,k,l
 !double precision :: get_mo_bielec_integral_sr

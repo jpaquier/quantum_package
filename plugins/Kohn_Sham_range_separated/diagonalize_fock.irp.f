@@ -1,5 +1,5 @@
  BEGIN_PROVIDER [ double precision, diagonal_Fock_matrix_mo, (ao_num) ]
-&BEGIN_PROVIDER [ double precision, eigenvectors_Fock_matrix_mo, (ao_num_align,mo_tot_num) ]
+&BEGIN_PROVIDER [ double precision, eigenvectors_Fock_matrix_mo, (ao_num,mo_tot_num) ]
    implicit none
    BEGIN_DOC
    ! Diagonal Fock matrix in the MO basis
@@ -11,7 +11,7 @@
    double precision, allocatable  :: work(:), F(:,:), S(:,:)
    
 
-       allocate( F(mo_tot_num_align,mo_tot_num) )
+       allocate( F(mo_tot_num,mo_tot_num) )
        do j=1,mo_tot_num
          do i=1,mo_tot_num
            F(i,j) = Fock_matrix_mo(i,j)

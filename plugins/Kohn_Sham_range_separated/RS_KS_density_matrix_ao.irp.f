@@ -1,4 +1,4 @@
-BEGIN_PROVIDER [ double precision, RS_KS_density_matrix_ao_alpha, (ao_num_align,ao_num) ]
+BEGIN_PROVIDER [ double precision, RS_KS_density_matrix_ao_alpha, (ao_num,ao_num) ]
    implicit none
    BEGIN_DOC
    ! S^-1 x Alpha density matrix in the AO basis x S^-1
@@ -11,7 +11,7 @@ BEGIN_PROVIDER [ double precision, RS_KS_density_matrix_ao_alpha, (ao_num_align,
 
 END_PROVIDER
 
-BEGIN_PROVIDER [ double precision, RS_KS_density_matrix_ao_beta,  (ao_num_align,ao_num) ]
+BEGIN_PROVIDER [ double precision, RS_KS_density_matrix_ao_beta,  (ao_num,ao_num) ]
    implicit none
    BEGIN_DOC
    ! S^-1 Beta density matrix in the AO basis x S^-1
@@ -24,7 +24,7 @@ BEGIN_PROVIDER [ double precision, RS_KS_density_matrix_ao_beta,  (ao_num_align,
 
 END_PROVIDER
  
-BEGIN_PROVIDER [ double precision, RS_KS_density_matrix_ao, (ao_num_align,ao_num) ]
+BEGIN_PROVIDER [ double precision, RS_KS_density_matrix_ao, (ao_num,ao_num) ]
    implicit none
    BEGIN_DOC
    ! S^-1 Density matrix in the AO basis S^-1

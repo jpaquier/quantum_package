@@ -139,19 +139,10 @@ END_PROVIDER
      r(2) = grid_points_per_atom(2,l,k,j)
      r(3) = grid_points_per_atom(3,l,k,j)
 
-!    call give_all_mos_at_r(r,mos_array)
-!    do istate = 1 , N_states
-!     do i = 1, mo_tot_num
-!      do m = 1, mo_tot_num
-!       contrib = mos_array(i) * mos_array(m)
-!       one_body_dm_mo_alpha_at_grid_points(l,k,j,istate) += one_body_dm_mo_alpha(i,m,istate) * contrib
-!       one_body_dm_mo_beta_at_grid_points(l,k,j,istate) += one_body_dm_mo_beta(i,m,istate) * contrib
-!      enddo
-!     enddo
-!    enddo
- !!!!! Works also with the ao basis 
      double precision :: dm_a,dm_b
      call density_matrices_alpha_beta_at_r(r,dm_a,dm_b)
+     one_body_dm_mo_alpha_at_grid_points(l,k,j,1) = dm_a
+     one_body_dm_mo_beta_at_grid_points(l,k,j,1) = dm_b
      if(dabs(dm_a - one_body_dm_mo_alpha_at_grid_points(l,k,j,1)).gt.1.d-10)then
        print*, r
        print*, j,k,l

@@ -13,8 +13,8 @@ subroutine ex_lda(rho_a,rho_b,ex,vx_a,vx_b)
 end
 
  BEGIN_PROVIDER [double precision, lda_exchange, (N_states)]
-&BEGIN_PROVIDER [double precision, lda_ex_potential_alpha_ao,(ao_num_align,ao_num,N_states)]
-&BEGIN_PROVIDER [double precision, lda_ex_potential_beta_ao,(ao_num_align,ao_num,N_states)]
+&BEGIN_PROVIDER [double precision, lda_ex_potential_alpha_ao,(ao_num,ao_num,N_states)]
+&BEGIN_PROVIDER [double precision, lda_ex_potential_beta_ao,(ao_num,ao_num,N_states)]
 
  implicit none
  integer :: i,j,k,l
@@ -54,10 +54,10 @@ END_PROVIDER
 
  BEGIN_PROVIDER [double precision, energy_x, (N_states)]
 &BEGIN_PROVIDER [double precision, energy_c, (N_states)]
-&BEGIN_PROVIDER [double precision, potential_x_alpha_ao,(ao_num_align,ao_num,N_states)]
-&BEGIN_PROVIDER [double precision, potential_x_beta_ao,(ao_num_align,ao_num,N_states)]
-&BEGIN_PROVIDER [double precision, potential_c_alpha_ao,(ao_num_align,ao_num,N_states)]
-&BEGIN_PROVIDER [double precision, potential_c_beta_ao,(ao_num_align,ao_num,N_states)]
+&BEGIN_PROVIDER [double precision, potential_x_alpha_ao,(ao_num,ao_num,N_states)]
+&BEGIN_PROVIDER [double precision, potential_x_beta_ao,(ao_num,ao_num,N_states)]
+&BEGIN_PROVIDER [double precision, potential_c_alpha_ao,(ao_num,ao_num,N_states)]
+&BEGIN_PROVIDER [double precision, potential_c_beta_ao,(ao_num,ao_num,N_states)]
 
  implicit none
  integer :: i,j,k,l
@@ -68,6 +68,10 @@ END_PROVIDER
  potential_c_beta_ao = 0.d0
  potential_x_alpha_ao = 0.d0
  potential_x_beta_ao = 0.d0
+!print*,'exchange_functional',exchange_functional
+!print*,(exchange_functional.EQ."LDA")
+!pause
+ print*,'providing the potentials ...'
  do l = 1, N_states
   energy_x(l) = 0.d0
   energy_c(l) = 0.d0
@@ -92,6 +96,7 @@ END_PROVIDER
       vx_b = 0.d0
      else
       print*, 'Exchange functional required does not exist ...'
+      print*,'exchange_functional',exchange_functional
       stop
      endif
     !if(dabs(vx_a - vx_b).gt.1.d-6)then
@@ -134,13 +139,14 @@ END_PROVIDER
    enddo
   enddo
  enddo
+ print*,'potentials provided !' 
 
 END_PROVIDER 
 
- BEGIN_PROVIDER [double precision, potential_x_alpha_mo,(mo_tot_num_align,mo_tot_num,N_states)]
-&BEGIN_PROVIDER [double precision, potential_x_beta_mo,(mo_tot_num_align,mo_tot_num,N_states)]
-&BEGIN_PROVIDER [double precision, potential_c_alpha_mo,(mo_tot_num_align,mo_tot_num,N_states)]
-&BEGIN_PROVIDER [double precision, potential_c_beta_mo,(mo_tot_num_align,mo_tot_num,N_states)]
+ BEGIN_PROVIDER [double precision, potential_x_alpha_mo,(mo_tot_num,mo_tot_num,N_states)]
+&BEGIN_PROVIDER [double precision, potential_x_beta_mo,(mo_tot_num,mo_tot_num,N_states)]
+&BEGIN_PROVIDER [double precision, potential_c_alpha_mo,(mo_tot_num,mo_tot_num,N_states)]
+&BEGIN_PROVIDER [double precision, potential_c_beta_mo,(mo_tot_num,mo_tot_num,N_states)]
  implicit none
  
     call ao_to_mo(                                                   &
