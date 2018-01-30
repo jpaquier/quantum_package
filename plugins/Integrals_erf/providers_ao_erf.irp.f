@@ -24,7 +24,7 @@ BEGIN_PROVIDER [ logical, ao_bielec_integrals_erf_in_map ]
   
   integral = ao_bielec_integral_erf(1,1,1,1)
   
-  real                           :: map_mb
+  double precision               :: map_mb
   PROVIDE read_ao_integrals_erf disk_access_ao_integrals_erf
   if (read_ao_integrals_erf) then
     print*,'Reading the AO integrals_erf'
@@ -39,31 +39,37 @@ BEGIN_PROVIDER [ logical, ao_bielec_integrals_erf_in_map ]
   call wall_time(wall_1)
   call cpu_time(cpu_1)
 
-  integer(ZMQ_PTR) :: zmq_to_qp_run_socket
-  call new_parallel_job(zmq_to_qp_run_socket,'ao_integrals_erf')
+  integer(ZMQ_PTR) :: zmq_to_qp_run_socket, zmq_socket_pull
+  call new_parallel_job(zmq_to_qp_run_socket,zmq_socket_pull,'ao_integrals_erf')
 
   character(len=:), allocatable :: task
   allocate(character(len=ao_num*12) :: task)
   write(fmt,*) '(', ao_num, '(I5,X,I5,''|''))'
   do l=1,ao_num
     write(task,fmt) (i,l, i=1,l)
-    call add_task_to_taskserver(zmq_to_qp_run_socket,trim(task))
+    integer, external :: add_task_to_taskserver
+    if (add_task_to_taskserver(zmq_to_qp_run_socket,trim(task)) == -1) then
+      stop 'Unable to add task to server'
+    endif
   enddo
   deallocate(task)
   
-  call zmq_set_running(zmq_to_qp_run_socket)
+  integer, external :: zmq_set_running
+  if (zmq_set_running(zmq_to_qp_run_socket) == -1) then
+    print *,  irp_here, ': Failed in zmq_set_running'
+  endif
 
   PROVIDE nproc
-  !$OMP PARALLEL DEFAULT(private) num_threads(nproc+1)
+  !$OMP PARALLEL DEFAULT(shared) private(i) num_threads(nproc+1)
       i = omp_get_thread_num()
       if (i==0) then
-        call ao_bielec_integrals_erf_in_map_collector(i)
+        call ao_bielec_integrals_erf_in_map_collector(zmq_socket_pull)
       else
         call ao_bielec_integrals_erf_in_map_slave_inproc(i)
       endif
   !$OMP END PARALLEL
 
-  call end_parallel_job(zmq_to_qp_run_socket, 'ao_integrals_erf')
+  call end_parallel_job(zmq_to_qp_run_socket, zmq_socket_pull, 'ao_integrals_erf')
 
 
   print*, 'Sorting the map'

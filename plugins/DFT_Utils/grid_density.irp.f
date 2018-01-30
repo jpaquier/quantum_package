@@ -5,7 +5,7 @@ BEGIN_PROVIDER [integer, n_points_integration_angular]
 
 BEGIN_PROVIDER [integer, n_points_radial_grid]
  implicit none
- n_points_radial_grid = 1000
+ n_points_radial_grid = 100
 END_PROVIDER 
 
 
@@ -143,12 +143,6 @@ END_PROVIDER
      call density_matrices_alpha_beta_at_r(r,dm_a,dm_b)
      one_body_dm_mo_alpha_at_grid_points(l,k,j,1) = dm_a
      one_body_dm_mo_beta_at_grid_points(l,k,j,1) = dm_b
-     if(dabs(dm_a - one_body_dm_mo_alpha_at_grid_points(l,k,j,1)).gt.1.d-10)then
-       print*, r
-       print*, j,k,l
-       print*, dm_a,one_body_dm_mo_alpha_at_grid_points(l,k,j,1),dabs(dm_a - one_body_dm_mo_alpha_at_grid_points(l,k,j,1))
-       pause
-     endif
 
     enddo
    enddo

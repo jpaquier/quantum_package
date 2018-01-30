@@ -64,32 +64,28 @@ END_PROVIDER
  integer :: m,n
  double precision :: aos_array(ao_num)
  double precision :: r(3)
+ double precision :: rho_a,rho_b,ex,ec
+ double precision :: vx_a,vx_b,vc_a,vc_b
  potential_c_alpha_ao = 0.d0
  potential_c_beta_ao = 0.d0
  potential_x_alpha_ao = 0.d0
  potential_x_beta_ao = 0.d0
-!print*,'exchange_functional',exchange_functional
-!print*,(exchange_functional.EQ."LDA")
-!pause
  print*,'providing the potentials ...'
- do l = 1, N_states
-  energy_x(l) = 0.d0
-  energy_c(l) = 0.d0
+      print*,'exchange_functional',exchange_functional
+ do i = 1, N_states
+  energy_x(i) = 0.d0
+  energy_c(i) = 0.d0
   do j = 1, nucl_num
-   do i = 1, n_points_radial_grid  -1
-    do k = 1, n_points_integration_angular 
-     double precision :: rho_a,rho_b,ex,ec
-     double precision :: vx_a,vx_b,vc_a,vc_b
-     rho_a = one_body_dm_mo_alpha_at_grid_points(k,i,j,l)
-     rho_b = one_body_dm_mo_beta_at_grid_points(k,i,j,l)
-     if(exchange_functional.EQ."LDA")then
-      call ex_lda(rho_a,rho_b,ex,vx_a,vx_b) 
-     else if(exchange_functional.EQ."short_range_LDA")then
-      if(rho_a == 0.d0)then
-       print*,k,i,j,l 
-       pause
-      endif
+   do k = 1, n_points_radial_grid  -1
+    do l = 1, n_points_integration_angular 
+     rho_a = one_body_dm_mo_alpha_at_grid_points(l,k,j,i)
+     rho_b =  one_body_dm_mo_beta_at_grid_points(l,k,j,i)
+
+!!!!!!!!!!! EXCHANGE PART
+     if(exchange_functional.EQ."short_range_LDA")then
       call ex_lda_sr(rho_a,rho_b,ex,vx_a,vx_b)
+     else if(exchange_functional.EQ."LDA")then
+      call ex_lda(rho_a,rho_b,ex,vx_a,vx_b) 
      else if(exchange_functional.EQ."None")then
       ex = 0.d0
       vx_a = 0.d0
@@ -99,15 +95,8 @@ END_PROVIDER
       print*,'exchange_functional',exchange_functional
       stop
      endif
-    !if(dabs(vx_a - vx_b).gt.1.d-6)then
-    ! print*, i,j,k
-    ! print*, rho_a,rho_b
-    ! print*, vx_a,vx_b,dabs(vx_a - vx_b)
-    ! stop
-    !endif
 
-!    print*, correlation_functional
-!    print*, correlation_functional.EQ."LDA"
+!!!!!!!!!!! CORRELATION PART
      if(correlation_functional.EQ."short_range_LDA")then
       call ec_lda_sr(rho_a,rho_b,ec,vc_a,vc_b)
      else if(correlation_functional.EQ."LDA")then
@@ -118,21 +107,21 @@ END_PROVIDER
       vc_b = 0.d0
      else
       print*, 'Correlation functional required does not exist ...'
+      print*, 'correlation_functional',correlation_functional
       stop
      endif
-     energy_x(l) += final_weight_functions_at_grid_points(k,i,j) * ex !* (1.d0 - HF_exchange)   
-     energy_c(l) += final_weight_functions_at_grid_points(k,i,j) * ec
-     r(1) = grid_points_per_atom(1,k,i,j) 
-     r(2) = grid_points_per_atom(2,k,i,j) 
-     r(3) = grid_points_per_atom(3,k,i,j) 
+     energy_x(i) += final_weight_functions_at_grid_points(l,k,j) * ex 
+     energy_c(i) += final_weight_functions_at_grid_points(l,k,j) * ec
+     r(1) = grid_points_per_atom(1,l,k,j) 
+     r(2) = grid_points_per_atom(2,l,k,j) 
+     r(3) = grid_points_per_atom(3,l,k,j) 
      call give_all_aos_at_r(r,aos_array)
      do m = 1, ao_num
-!     lda_ex_potential_ao(m,m,l) += (vx_a + vx_b) * aos_array(m)*aos_array(m)
       do n = 1, ao_num
-       potential_x_alpha_ao(m,n,l) += (vx_a ) * aos_array(m)*aos_array(n) * final_weight_functions_at_grid_points(k,i,j)
-       potential_x_beta_ao(m,n,l)  += (vx_b) * aos_array(m)*aos_array(n) * final_weight_functions_at_grid_points(k,i,j)
-       potential_c_alpha_ao(m,n,l) += (vc_a ) * aos_array(m)*aos_array(n) * final_weight_functions_at_grid_points(k,i,j)
-       potential_c_beta_ao(m,n,l)  += (vc_b) * aos_array(m)*aos_array(n) * final_weight_functions_at_grid_points(k,i,j)
+       potential_x_alpha_ao(m,n,i) += (vx_a) * aos_array(m)*aos_array(n)  * final_weight_functions_at_grid_points(l,k,j)
+       potential_x_beta_ao(m,n,i)  += (vx_b) * aos_array(m)*aos_array(n)  * final_weight_functions_at_grid_points(l,k,j)
+       potential_c_alpha_ao(m,n,i) += (vc_a) * aos_array(m)*aos_array(n)  * final_weight_functions_at_grid_points(l,k,j)
+       potential_c_beta_ao(m,n,i)  += (vc_b) * aos_array(m)*aos_array(n)  * final_weight_functions_at_grid_points(l,k,j)
       enddo
      enddo
     enddo
@@ -150,32 +139,32 @@ END_PROVIDER
  implicit none
  
     call ao_to_mo(                                                   &
-        potential_x_alpha_ao(1,1,1),                                       &
-        size(potential_x_alpha_ao,1),                               &
-        potential_x_alpha_mo(1,1,1),                                       &
-        size(potential_x_alpha_mo,1)                                &
+        potential_x_alpha_ao(1,1,1),                                 &
+        size(potential_x_alpha_ao,1),                                &
+        potential_x_alpha_mo(1,1,1),                                 &
+        size(potential_x_alpha_mo,1)                                 &
         )
 
     call ao_to_mo(                                                   &
-        potential_x_beta_ao(1,1,1),                                       &
-        size(potential_x_beta_ao,1),                               &
-        potential_x_beta_mo(1,1,1),                                       &
-        size(potential_x_beta_mo,1)                                &
+        potential_x_beta_ao(1,1,1),                                  &
+        size(potential_x_beta_ao,1),                                 &
+        potential_x_beta_mo(1,1,1),                                  &
+        size(potential_x_beta_mo,1)                                  &
         )
 
 
     call ao_to_mo(                                                   &
-        potential_c_alpha_ao(1,1,1),                                       &
-        size(potential_c_alpha_ao,1),                               &
-        potential_c_alpha_mo(1,1,1),                                       &
-        size(potential_c_alpha_mo,1)                                &
+        potential_c_alpha_ao(1,1,1),                                 &
+        size(potential_c_alpha_ao,1),                                &
+        potential_c_alpha_mo(1,1,1),                                 &
+        size(potential_c_alpha_mo,1)                                 &
         )
 
     call ao_to_mo(                                                   &
-        potential_c_beta_ao(1,1,1),                                       &
-        size(potential_c_beta_ao,1),                               &
-        potential_c_beta_mo(1,1,1),                                       &
-        size(potential_c_beta_mo,1)                                &
+        potential_c_beta_ao(1,1,1),                                  &
+        size(potential_c_beta_ao,1),                                 &
+        potential_c_beta_mo(1,1,1),                                  &
+        size(potential_c_beta_mo,1)                                  &
         )
 
 

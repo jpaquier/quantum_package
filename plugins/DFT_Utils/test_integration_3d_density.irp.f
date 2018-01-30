@@ -2,7 +2,7 @@ program pouet
  print*,'coucou'
  read_wf = .True.
  touch read_wf
- print*,'m_knowles = ',m_knowles
+!print*,'m_knowles = ',m_knowles
  call routine3
 end
 
