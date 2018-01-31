@@ -91,6 +91,7 @@ subroutine ecorrlr(rs,z,mu,eclr)
 !SCD
       double precision ecdd,eczd
 !SCF
+      pi=dacos(-1.d0)
       alpha=(4.d0/9.d0/pi)**(1.d0/3.d0)
       cf=1.d0/alpha
 
@@ -174,7 +175,7 @@ subroutine vcorrlr(rs,z,mu,vclrup,vclrdown,vclrupd,vclrdownd)
       double precision u,du,ddu,v,dv,ddv,Qrpadd,eclrzd
 !SCF
       double precision sqrt2pi
-
+      pi=dacos(-1.d0)
       alpha=(4.d0/9.d0/pi)**(1.d0/3.d0)
       cf=1.d0/alpha
 !     sqrt2pi=sqrt(2.d0*pi)
