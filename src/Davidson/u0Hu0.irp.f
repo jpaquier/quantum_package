@@ -11,7 +11,6 @@ BEGIN_PROVIDER [ double precision, psi_energy, (N_states) ]
 END_PROVIDER
 
 
-
 subroutine H_S2_u_0_nstates_openmp(v_0,s_0,u_0,N_st,sze)
   use bitmasks
   implicit none

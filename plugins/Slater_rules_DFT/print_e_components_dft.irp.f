@@ -18,8 +18,8 @@ subroutine routine2
  print*, ''
  write(*, '(A31,X,F16.10)') 'psi_energy_erf               = ',psi_energy_erf      
  write(*, '(A31,X,F16.10)') 'psi_energy_core              = ',psi_energy_core    
- write(*, '(A31,X,F16.10)') 'psi_energy_hartree           = ',psi_energy_hartree
- write(*, '(A31,X,F16.10)') 'psi_energy_core_and_hartree  = ',psi_energy_core_and_hartree
+ write(*, '(A31,X,F16.10)') 'short_range_Hartree          = ',short_range_Hartree
+ write(*, '(A31,X,F16.10)') 'psi_energy_core_and_hartree  = ',short_range_Hartree+psi_energy_core
  write(*, '(A31,X,F16.10)') 'energy_x                     = ',energy_x         
  write(*, '(A31,X,F16.10)') 'energy_c                     = ',energy_c          
  print*, ''

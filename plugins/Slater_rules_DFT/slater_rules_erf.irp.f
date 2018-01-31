@@ -1,9 +1,12 @@
-
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!! THIS FILE CONTAINS EVERYTHING YOU NEED TO COMPUTE THE LONG RANGE PART OF THE INTERACTION
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 subroutine i_H_j_erf(key_i,key_j,Nint,hij)
   use bitmasks
   implicit none
   BEGIN_DOC
-  ! Returns <i|H|j> where i and j are determinants
+  ! Returns <i|W_{ee}^{lr}|j> where i and j are determinants 
+  ! and the W_{ee}^{lr} is the long range two-body interaction
   END_DOC
   integer, intent(in)            :: Nint
   integer(bit_kind), intent(in)  :: key_i(Nint,2), key_j(Nint,2)
@@ -105,149 +108,11 @@ subroutine i_H_j_erf(key_i,key_j,Nint,hij)
 end
 
 
-
-subroutine i_H_j_mono(key_i,key_j,Nint,hij)
-  use bitmasks
-  implicit none
-  BEGIN_DOC
-  ! Returns <i|H|j> where i and j are determinants
-  END_DOC
-  integer, intent(in)            :: Nint
-  integer(bit_kind), intent(in)  :: key_i(Nint,2), key_j(Nint,2)
-  double precision, intent(out)  :: hij
-  
-  integer                        :: exc(0:2,2,2)
-  integer                        :: degree
-  integer                        :: m,n,p,q
-  integer                        :: i,j,k
-  integer                        :: occ(Nint*bit_kind_size,2)
-  double precision               :: diag_H_mat_elem_mono, phase,phase_2
-  integer                        :: n_occ_ab(2)
-  
-  ASSERT (Nint > 0)
-  ASSERT (Nint == N_int)
-  ASSERT (sum(popcnt(key_i(:,1))) == elec_alpha_num)
-  ASSERT (sum(popcnt(key_i(:,2))) == elec_beta_num)
-  ASSERT (sum(popcnt(key_j(:,1))) == elec_alpha_num)
-  ASSERT (sum(popcnt(key_j(:,2))) == elec_beta_num)
-  
-  hij = 0.d0
-  !DIR$ FORCEINLINE
-  call get_excitation_degree(key_i,key_j,degree,Nint)
-  integer :: spin
-  select case (degree)
-    case (1)
-      call get_mono_excitation(key_i,key_j,exc,phase,Nint)
-      if (exc(0,1,1) == 1) then
-        ! Mono alpha
-        m = exc(1,1,1)
-        p = exc(1,2,1)
-      else
-        ! Mono beta
-        m = exc(1,1,2)
-        p = exc(1,2,2)
-      endif
-      hij = phase * (mo_nucl_elec_integral(p,m) + mo_kinetic_integral(p,m))
-    case (0)
-      hij = diag_H_mat_elem_mono(key_i,Nint)
-  end select
-end
-
-subroutine i_H_j_hartree(key_i,key_j,Nint,hij)
-  use bitmasks
-  implicit none
-  BEGIN_DOC
-  ! Returns <i|H|j> where i and j are determinants
-  END_DOC
-  integer, intent(in)            :: Nint
-  integer(bit_kind), intent(in)  :: key_i(Nint,2), key_j(Nint,2)
-  double precision, intent(out)  :: hij
-  
-  integer                        :: exc(0:2,2,2)
-  integer                        :: degree
-  integer                        :: m,n,p,q
-  integer                        :: i,j,k
-  integer                        :: occ(Nint*bit_kind_size,2)
-  double precision               :: diag_H_mat_elem_hartree, phase,phase_2
-  integer                        :: n_occ_ab(2)
-  
-  ASSERT (Nint > 0)
-  ASSERT (Nint == N_int)
-  ASSERT (sum(popcnt(key_i(:,1))) == elec_alpha_num)
-  ASSERT (sum(popcnt(key_i(:,2))) == elec_beta_num)
-  ASSERT (sum(popcnt(key_j(:,1))) == elec_alpha_num)
-  ASSERT (sum(popcnt(key_j(:,2))) == elec_beta_num)
-  
-  hij = 0.d0
-  !DIR$ FORCEINLINE
-  call get_excitation_degree(key_i,key_j,degree,Nint)
-  integer :: spin
-  select case (degree)
-    case (1)
-      call get_mono_excitation(key_i,key_j,exc,phase,Nint)
-      if (exc(0,1,1) == 1) then
-        ! Mono alpha
-        m = exc(1,1,1)
-        p = exc(1,2,1)
-      else
-        ! Mono beta
-        m = exc(1,1,2)
-        p = exc(1,2,2)
-      endif
-      hij = phase * (short_range_Hartree_operator(p,m) + short_range_Hartree_operator(p,m))
-    case (0)
-      hij = diag_H_mat_elem_hartree(key_i,Nint)
-  end select
-end
-
-
-
-double precision function diag_H_mat_elem_mono(key_i,Nint)
- implicit none
- integer(bit_kind), intent(in) :: key_i(N_int,2)
- integer, intent(in)  :: Nint
- integer :: i,j
- integer                        :: occ(Nint*bit_kind_size,2)
- integer                        :: n_occ_ab(2)
- call bitstring_to_list_ab(key_i, occ, n_occ_ab, Nint)
- diag_H_mat_elem_mono = 0.d0
- ! alpha - alpha
- do i = 1, n_occ_ab(1)
-  diag_H_mat_elem_mono += (mo_nucl_elec_integral(occ(i,1),occ(i,1)) + mo_kinetic_integral(occ(i,1),occ(i,1)))
- enddo
-
- ! beta - beta 
- do i = 1, n_occ_ab(2)
-  diag_H_mat_elem_mono += (mo_nucl_elec_integral(occ(i,2),occ(i,2)) + mo_kinetic_integral(occ(i,2),occ(i,2)))
- enddo
-
-end
-
-
-double precision function diag_H_mat_elem_hartree(key_i,Nint)
- implicit none
- integer(bit_kind), intent(in) :: key_i(N_int,2)
- integer, intent(in)  :: Nint
- integer :: i,j
- integer                        :: occ(Nint*bit_kind_size,2)
- integer                        :: n_occ_ab(2)
- call bitstring_to_list_ab(key_i, occ, n_occ_ab, Nint)
- diag_H_mat_elem_hartree = 0.d0
- ! alpha - alpha
- do i = 1, n_occ_ab(1)
-  diag_H_mat_elem_hartree += (short_range_Hartree_operator(occ(i,1),occ(i,1)) + short_range_Hartree_operator(occ(i,1),occ(i,1)))
- enddo
-
- ! beta - beta 
- do i = 1, n_occ_ab(2)
-  diag_H_mat_elem_hartree += (short_range_Hartree_operator(occ(i,2),occ(i,2)) + short_range_Hartree_operator(occ(i,2),occ(i,2)))
- enddo
-
-end
-
-
-
 double precision function diag_H_mat_elem_erf(key_i,Nint)
+ BEGIN_DOC 
+! returns <i|W_{ee}^{lr}|i> where |i> is a determinant and 
+! W_{ee}^{lr} is the two body long-range interaction
+ END_DOC
  implicit none
  integer(bit_kind), intent(in) :: key_i(N_int,2)
  integer, intent(in)  :: Nint
@@ -273,12 +138,14 @@ double precision function diag_H_mat_elem_erf(key_i,Nint)
  ! alpha - beta 
  do i = 1, n_occ_ab(1)
   do j = 1, n_occ_ab(2)
-!  print*,'mo_bielec_integral_erf_jj(occ(i,1),occ(j,2))',mo_bielec_integral_erf_jj(occ(i,1),occ(j,2))
    diag_H_mat_elem_erf += mo_bielec_integral_erf_jj(occ(i,1),occ(j,2))
   enddo
  enddo
-
 end
+
+
+
+
 
 
 

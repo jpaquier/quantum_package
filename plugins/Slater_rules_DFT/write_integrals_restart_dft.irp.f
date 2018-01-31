@@ -14,7 +14,8 @@ end
 subroutine routine
  implicit none
  call save_one_e_effective_potential
- call save_erf_bi_elec_integrals
+ call save_erf_bi_elec_integrals_ao
+ call save_erf_bi_elec_integrals_mo
 
 end
 
@@ -28,7 +29,7 @@ subroutine routine2
  print*, ''
  write(*, '(A22,X,F16.10)') 'psi_energy_erf      = ',psi_energy_erf      
  write(*, '(A22,X,F16.10)') 'psi_energy_core     = ',psi_energy_core    
- write(*, '(A22,X,F16.10)') 'psi_energy_hartree  = ',psi_energy_hartree
+ write(*, '(A22,X,F16.10)') 'short_range_Hartree = ',short_range_Hartree
  write(*, '(A22,X,F16.10)') 'energy_x            = ',energy_x         
  write(*, '(A22,X,F16.10)') 'energy_c            = ',energy_c          
  print*, ''

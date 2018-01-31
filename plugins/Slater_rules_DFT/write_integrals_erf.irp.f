@@ -7,7 +7,7 @@ end
 subroutine routine
  implicit none
  call save_erf_bi_elec_integrals_ao
- call save_erf_bi_elec_integrals
+ call save_erf_bi_elec_integrals_mo
 
 end
 
