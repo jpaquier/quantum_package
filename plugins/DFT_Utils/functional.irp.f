@@ -71,7 +71,6 @@ END_PROVIDER
  potential_x_alpha_ao = 0.d0
  potential_x_beta_ao = 0.d0
  print*,'providing the potentials ...'
-      print*,'exchange_functional',exchange_functional
  do i = 1, N_states
   energy_x(i) = 0.d0
   energy_c(i) = 0.d0
@@ -84,6 +83,9 @@ END_PROVIDER
 !!!!!!!!!!! EXCHANGE PART
      if(exchange_functional.EQ."short_range_LDA")then
       call ex_lda_sr(rho_a,rho_b,ex,vx_a,vx_b)
+!     ex = 0.d0
+!     vx_a = 0.d0
+!     vx_b = 0.d0
      else if(exchange_functional.EQ."LDA")then
       call ex_lda(rho_a,rho_b,ex,vx_a,vx_b) 
      else if(exchange_functional.EQ."None")then

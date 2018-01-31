@@ -91,7 +91,6 @@ subroutine ecorrlr(rs,z,mu,eclr)
 !SCD
       double precision ecdd,eczd
 !SCF
-      pi=dacos(-1.d0)
       alpha=(4.d0/9.d0/pi)**(1.d0/3.d0)
       cf=1.d0/alpha
 
@@ -176,10 +175,10 @@ subroutine vcorrlr(rs,z,mu,vclrup,vclrdown,vclrupd,vclrdownd)
 !SCF
       double precision sqrt2pi
 
-      pi=dacos(-1.d0)
       alpha=(4.d0/9.d0/pi)**(1.d0/3.d0)
       cf=1.d0/alpha
-      sqrt2pi=sqrt(2.d0*pi)
+!     sqrt2pi=sqrt(2.d0*pi)
+      sqrt2pi=2.5066282746310002d0
 
       phi=((1.d0+z)**(2.d0/3.d0)+(1.d0-z)**(2.d0/3.d0))/2.d0
 !c parameters from the fit
