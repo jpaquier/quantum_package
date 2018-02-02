@@ -62,30 +62,43 @@ END_PROVIDER
  implicit none
  integer :: i,j,k,l
  integer :: m,n
- double precision :: aos_array(ao_num)
- double precision :: r(3)
+ double precision, allocatable :: aos_array(:)
+ double precision, allocatable :: r(:)
  double precision :: rho_a,rho_b,ex,ec
  double precision :: vx_a,vx_b,vc_a,vc_b
  potential_c_alpha_ao = 0.d0
  potential_c_beta_ao = 0.d0
  potential_x_alpha_ao = 0.d0
  potential_x_beta_ao = 0.d0
+ double precision, allocatable :: tmp_c_a(:,:),tmp_c_b(:,:),tmp_x_a(:,:),tmp_x_b(:,:)
  print*,'providing the potentials ...'
  do i = 1, N_states
   energy_x(i) = 0.d0
   energy_c(i) = 0.d0
   do j = 1, nucl_num
    do k = 1, n_points_radial_grid  -1
+   !!$OMP PARALLEL DEFAULT(NONE)                                                                                                                   &
+   !!OMP PRIVATE(r,l,rho_a,rho_b,ex,ec,vx_a,vx_b,vc_a,vc_b,aos_array,contrib_xa,contrib_xb,contrib_ca, contrib_cb,tmp_c_a,tmp_c_b,tmp_x_a,tmp_x_b) & 
+   !!OMP SHARED(i,j,k,ao_num,n_points_integration_angular,exchange_functional,correlation_functional,final_weight_functions_at_grid_points,potential_x_alpha_ao,potential_x_beta_ao,potential_c_alpha_ao,potential_c_beta_ao)                &
+   !!$OMP REDUCTION (+:energy_x)       &
+   !!$OMP REDUCTION (+:energy_c)        
+    allocate(tmp_c_a(ao_num,ao_num),tmp_c_b(ao_num,ao_num),tmp_x_a(ao_num,ao_num),tmp_x_b(ao_num,ao_num),aos_array(ao_num),r(3))
+    
+    tmp_c_a = 0.d0
+    tmp_c_b = 0.d0
+    tmp_x_a = 0.d0
+    tmp_x_b = 0.d0
+   !!$OMP DO SCHEDULE(static)
     do l = 1, n_points_integration_angular 
-     rho_a = one_body_dm_mo_alpha_at_grid_points(l,k,j,i)
-     rho_b =  one_body_dm_mo_beta_at_grid_points(l,k,j,i)
+     
+     r(1) = grid_points_per_atom(1,l,k,j)
+     r(2) = grid_points_per_atom(2,l,k,j)
+     r(3) = grid_points_per_atom(3,l,k,j)
+     call density_matrices_alpha_beta_and_all_aos_at_r(r,rho_a,rho_b,aos_array)
 
 !!!!!!!!!!! EXCHANGE PART
      if(exchange_functional.EQ."short_range_LDA")then
       call ex_lda_sr(rho_a,rho_b,ex,vx_a,vx_b)
-!     ex = 0.d0
-!     vx_a = 0.d0
-!     vx_b = 0.d0
      else if(exchange_functional.EQ."LDA")then
       call ex_lda(rho_a,rho_b,ex,vx_a,vx_b) 
      else if(exchange_functional.EQ."None")then
@@ -114,19 +127,28 @@ END_PROVIDER
      endif
      energy_x(i) += final_weight_functions_at_grid_points(l,k,j) * ex 
      energy_c(i) += final_weight_functions_at_grid_points(l,k,j) * ec
-     r(1) = grid_points_per_atom(1,l,k,j) 
-     r(2) = grid_points_per_atom(2,l,k,j) 
-     r(3) = grid_points_per_atom(3,l,k,j) 
-     call give_all_aos_at_r(r,aos_array)
-     do m = 1, ao_num
-      do n = 1, ao_num
-       potential_x_alpha_ao(m,n,i) += (vx_a) * aos_array(m)*aos_array(n)  * final_weight_functions_at_grid_points(l,k,j)
-       potential_x_beta_ao(m,n,i)  += (vx_b) * aos_array(m)*aos_array(n)  * final_weight_functions_at_grid_points(l,k,j)
-       potential_c_alpha_ao(m,n,i) += (vc_a) * aos_array(m)*aos_array(n)  * final_weight_functions_at_grid_points(l,k,j)
-       potential_c_beta_ao(m,n,i)  += (vc_b) * aos_array(m)*aos_array(n)  * final_weight_functions_at_grid_points(l,k,j)
-      enddo
-     enddo
+
+     double precision :: contrib_xa,contrib_xb,contrib_ca, contrib_cb
+     contrib_xa =  vx_a * final_weight_functions_at_grid_points(l,k,j)
+     contrib_ca =  vc_a * final_weight_functions_at_grid_points(l,k,j)
+     contrib_xb =  vx_b * final_weight_functions_at_grid_points(l,k,j)
+     contrib_cb =  vc_b * final_weight_functions_at_grid_points(l,k,j)
+     call dger(ao_num,ao_num,contrib_xa,aos_array,1,aos_array,1,tmp_x_a,size(tmp_x_a,1))
+     call dger(ao_num,ao_num,contrib_ca,aos_array,1,aos_array,1,tmp_c_a,size(tmp_c_a,1))
+     call dger(ao_num,ao_num,contrib_xb,aos_array,1,aos_array,1,tmp_x_b,size(tmp_x_b,1))
+     call dger(ao_num,ao_num,contrib_cb,aos_array,1,aos_array,1,tmp_c_b,size(tmp_c_b,1))
+
     enddo
+  !!$OMP END DO 
+    
+  !!$OMP CRITICAL
+    potential_c_alpha_ao(:,:,i) = potential_c_alpha_ao(:,:,i) + tmp_c_a(:,:)
+    potential_x_alpha_ao(:,:,i) = potential_x_alpha_ao(:,:,i) + tmp_x_a(:,:)
+    potential_c_beta_ao(:,:,i)  =  potential_c_beta_ao(:,:,i) + tmp_c_b(:,:)
+    potential_x_beta_ao(:,:,i)  =  potential_x_beta_ao(:,:,i) + tmp_x_b(:,:)
+  !!$OMP END CRITICAL
+    deallocate(tmp_x_a,tmp_x_b,tmp_c_a,tmp_c_b,aos_array,r)
+  !!$OMP END PARALLEL
    enddo
   enddo
  enddo

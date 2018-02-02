@@ -1,4 +1,15 @@
 program fcidump
+ implicit none
+ disk_access_mo_one_integrals = "None"
+ touch disk_access_mo_one_integrals
+ disk_access_mo_integrals = "None"
+ touch disk_access_mo_integrals
+ disk_access_ao_integrals = "None"
+ touch disk_access_ao_integrals
+ call routine
+
+end 
+subroutine routine
   implicit none
   character*(128) :: output
   integer :: i_unit_output,getUnitAndOpen

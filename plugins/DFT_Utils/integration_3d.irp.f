@@ -4,18 +4,12 @@ double precision function step_function_becke(x)
  double precision :: f_function_becke
  integer :: i,n_max_becke
 
-!if(x.lt.-1.d0)then
-! step_function_becke = 0.d0
-!else if (x .gt.1)then
-! step_function_becke = 0.d0
-!else 
   step_function_becke = f_function_becke(x)
-!!n_max_becke = 1
   do i = 1, 4
+   !DIR$ forceinline
    step_function_becke = f_function_becke(step_function_becke)
   enddo
   step_function_becke = 0.5d0*(1.d0 - step_function_becke)
-!endif
 end
 
 double precision function f_function_becke(x)
@@ -46,8 +40,9 @@ double precision function cell_function_becke(r,atom_number)
   distance_j+= (r(2) - nucl_coord_transp(2,j) ) * (r(2) - nucl_coord_transp(2,j))  
   distance_j+= (r(3) - nucl_coord_transp(3,j) ) * (r(3) - nucl_coord_transp(3,j))
   distance_j = dsqrt(distance_j)
-  mu_ij = (distance_i - distance_j)/nucl_dist(atom_number,j)
+  mu_ij = (distance_i - distance_j)*nucl_dist_inv(atom_number,j)
   nu_ij = mu_ij + slater_bragg_type_inter_distance_ua(atom_number,j) * (1.d0 - mu_ij*mu_ij)
+  !DIR$ forceinline
   cell_function_becke *= step_function_becke(nu_ij)
  enddo
 end

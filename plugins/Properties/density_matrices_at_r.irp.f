@@ -23,6 +23,35 @@ subroutine density_matrices_alpha_beta_at_r(r,dm_a,dm_b)
 end
 
 
+subroutine density_matrices_alpha_beta_and_all_aos_at_r(r,dm_a,dm_b,aos_array)
+ implicit none
+ double precision, intent(in) :: r(3)
+ double precision, intent(out) :: dm_a,dm_b
+ double precision, intent(out) :: aos_array(ao_num)
+
+ integer :: i,j
+ double precision  :: aos_array_bis(ao_num),u_dot_v
+
+ call give_all_aos_at_r(r,aos_array)
+
+ dm_a = 1.d0
+ dm_b = 1.d0
+
+ aos_array_bis = aos_array
+ ! alpha density
+!call dgemv('N',ao_num,ao_num,1.d0,one_body_dm_ao_alpha,ao_num,aos_array,1,0.d0,aos_array_bis,1)
+ call dsymv('U',ao_num,1.d0,one_body_dm_ao_alpha,size(one_body_dm_ao_alpha,1),aos_array,1,0.d0,aos_array_bis,1)
+ dm_a = u_dot_v(aos_array,aos_array_bis,ao_num)
+
+ ! beta density
+ aos_array_bis = aos_array
+!call dgemv('N',ao_num,ao_num,1.d0,one_body_dm_ao_beta,ao_num,aos_array,1,0.d0,aos_array_bis,1)
+ call dsymv('U',ao_num,1.d0,one_body_dm_ao_beta,size(one_body_dm_ao_beta,1),aos_array,1,0.d0,aos_array_bis,1)
+ dm_b = u_dot_v(aos_array,aos_array_bis,ao_num)
+
+end
+
+
 
 subroutine density_matrices_and_gradients_alpha_beta_at_r(r,dm_a,dm_b, dm_a_grad, dm_b_grad)
  implicit none

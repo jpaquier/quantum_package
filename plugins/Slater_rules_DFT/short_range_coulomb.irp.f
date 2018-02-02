@@ -21,6 +21,11 @@
      contrib = one_body_dm_mo(i,j) * (integral  - integral_erf)
      short_range_Hartree_operator(l,k) += contrib 
      short_range_Hartree += contrib * one_body_dm_mo(k,l) 
+!    print*,'::::::::::::::::::::::::::::::::::::::::::::::::::::'
+!    print*,'delta int             , int regurlar,      int  erf '
+!    print*,integral  - integral_erf,integral,integral_erf
+!    print*,'short range accu,    contrib '
+!    print*,short_range_Hartree,contrib * one_body_dm_mo(k,l)
     enddo
    enddo
   enddo

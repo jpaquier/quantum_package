@@ -31,7 +31,7 @@ double precision function ao_value(i,r)
 
 end
 
-subroutine give_all_aos_at_r(r,aos_array)
+subroutine give_all_aos_at_r_old(r,aos_array)
  implicit none
  BEGIN_dOC
 ! gives the values of aos at a given point r
@@ -46,7 +46,7 @@ subroutine give_all_aos_at_r(r,aos_array)
 end
 
 
-subroutine give_all_aos_at_r_new(r,aos_array)
+subroutine give_all_aos_at_r(r,aos_array)
  implicit none
  double precision, intent(in) :: r(3)
  double precision, intent(out) :: aos_array(ao_num)

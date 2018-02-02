@@ -1,7 +1,7 @@
 program write_integrals
  implicit none
  disk_access_mo_one_integrals = "None"
- touch disk_access_only_mo_one_integrals
+ touch disk_access_mo_one_integrals
  disk_access_mo_integrals = "None"
  touch disk_access_mo_integrals
  disk_access_ao_integrals = "None"

@@ -25,7 +25,7 @@ subroutine routine2
  implicit none
 
  print*,  '****************************************'
- write(*, '(A22,X,F16.10)') 'TOTAL ENERGY        = ',total_electronic_energy
+ write(*, '(A22,X,F16.10)') 'TOTAL ENERGY        = ',total_electronic_energy+nuclear_repulsion
  print*, ''
  print*, 'Component of the energy ....'
  print*, ''
