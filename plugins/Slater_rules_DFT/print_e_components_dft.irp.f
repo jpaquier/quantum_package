@@ -5,6 +5,12 @@ program pouet
  call routine2
 
 end
+subroutine routine 
+ implicit none
+ write(*, '(A31,X,F16.10)') 'psi_energy_core              = ',psi_energy_core    
+
+end
+
 subroutine routine2
  implicit none
 

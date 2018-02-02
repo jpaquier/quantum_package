@@ -14,23 +14,37 @@ BEGIN_PROVIDER [ double precision, psi_energy_erf, (N_states) ]
 END_PROVIDER
 
 
+BEGIN_PROVIDER [ double precision, psi_energy_core_and_sr_hartree, (N_states) ]
+  implicit none
+  BEGIN_DOC
+! psi_energy_core                = <Psi| h_{core} + v_{H}^{sr}|Psi>
+  END_DOC
+  psi_energy_core_and_sr_hartree = psi_energy_core + short_range_Hartree
+END_PROVIDER
 
 
  BEGIN_PROVIDER [ double precision, psi_energy_core, (N_states) ]
-&BEGIN_PROVIDER [ double precision, psi_energy_core_and_sr_hartree, (N_states) ]
   implicit none
-  integer :: i,j
+  integer :: i
+  integer :: j,k
+  double precision :: tmp(mo_tot_num,mo_tot_num),mono_ints(mo_tot_num,mo_tot_num)
   BEGIN_DOC
 ! psi_energy_core                = <Psi| h_{core} |Psi>
   END_DOC
-  double precision :: tmp(mo_tot_num,mo_tot_num),mono_ints(mo_tot_num,mo_tot_num)
   psi_energy_core = 0.d0
-  mono_ints(:,:) = mo_nucl_elec_integral(:,:) + mo_kinetic_integral(:,:)
+  do j = 1, mo_tot_num
+   do k = 1, mo_tot_num
+    mono_ints(k,j) = mo_nucl_elec_integral(k,j) + mo_kinetic_integral(k,j)
+   enddo
+  enddo
   do i = 1, N_states
-   tmp(:,:) = one_body_dm_mo_alpha(:,:,i) + one_body_dm_mo_beta(:,:,i)
+   do j = 1, mo_tot_num
+    do k = 1, mo_tot_num
+     tmp(k,j) = one_body_dm_mo_alpha(k,j,i) + one_body_dm_mo_beta(k,j,i)
+    enddo
+   enddo
    call get_average(mono_ints,tmp,psi_energy_core(i))
   enddo
-  psi_energy_core_and_sr_hartree = psi_energy_core + short_range_Hartree
 END_PROVIDER
 
 BEGIN_PROVIDER [ double precision, total_electronic_energy, (N_states) ]

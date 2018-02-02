@@ -6,18 +6,26 @@ subroutine save_one_e_effective_potential
 ! this effective_one_e_potential is computed with the current density 
 ! and will couple the WFT with DFT for the next regular WFT calculation
  END_DOC
- double precision, allocatable :: tmp(:,:)
- allocate(tmp(size(effective_one_e_potential,1),size(effective_one_e_potential,2)))
+ double precision, allocatable :: tmp(:,:),tmp_2(:,:)
+ allocate(tmp(size(effective_one_e_potential,1),size(effective_one_e_potential,2)),tmp_2(mo_tot_num,mo_tot_num))
  integer :: i,j
  do i = 1, mo_tot_num
   do j = 1, mo_tot_num
    tmp(i,j) = effective_one_e_potential(i,j,1)
   enddo
  enddo
- call write_one_e_integrals('mo_one_integral', tmp,      &
+ call write_one_e_integrals('mo_ne_integral', tmp, &
       size(tmp,1), size(tmp,2))
- call ezfio_set_integrals_monoelec_disk_access_only_mo_one_integrals("Read")
- deallocate(tmp)
+ print *,  'Effective DFT potential is written on disk on the mo_ne_integral integrals'
+ call ezfio_set_integrals_monoelec_disk_access_mo_one_integrals("Read")
+
+ tmp_2 = 0.d0
+ call write_one_e_integrals('mo_kinetic_integral', tmp_2,&
+      size(tmp_2,1), size(tmp_2,2))
+ print *,  'MO kinetic integrals written and set to ZERO'
+
+
+ deallocate(tmp,tmp_2)
 
 end
 

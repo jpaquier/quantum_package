@@ -8,9 +8,10 @@ end
 subroutine routine
  integer :: i,j
  double precision :: accu,hij
-!print*, 'psi_energy_bielec   = ',psi_energy_bielec
-!print*, 'psi_energy_monoelec = ',psi_energy_monoelec
-!print*, 'total energy        = ',psi_energy_monoelec + psi_energy_bielec
+ double precision :: get_mo_bielec_integral
+ print*, 'psi_energy_bielec   = ',psi_energy_bielec
+ print*, 'psi_energy_monoelec = ',psi_energy_monoelec
+ print*, 'total energy        = ',psi_energy_monoelec + psi_energy_bielec
  print*, 'psi_energy          = ',psi_energy
  accu = 0.d0
  do i = 1, N_det
