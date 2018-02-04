@@ -15,6 +15,7 @@ BEGIN_PROVIDER [ double precision, ao_nucl_elec_integral, (ao_num,ao_num)]
             size(ao_nucl_elec_integral,1), size(ao_nucl_elec_integral,2))
      print *,  'AO N-e integrals read from disk'
    else
+   print*,' computing the ao_nucl_elec_integral'
      
      ao_nucl_elec_integral = 0.d0
      

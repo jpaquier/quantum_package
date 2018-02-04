@@ -79,9 +79,9 @@ BEGIN_PROVIDER [ logical, ao_bielec_integrals_erf_in_map ]
   integer(map_size_kind)         :: get_ao_erf_map_size, ao_erf_map_size
   ao_erf_map_size = get_ao_erf_map_size()
   
-  print*, 'AO ERF integrals provided:'
-  print*, ' Size of AO ERF map :         ', map_mb(ao_integrals_erf_map) ,'MB'
-  print*, ' Number of AO ERF integrals :', ao_erf_map_size
+  print*, 'AO integrals provided:'
+  print*, ' Size of AO map :         ', map_mb(ao_integrals_erf_map) ,'MB'
+  print*, ' Number of AO integrals :', ao_erf_map_size
   print*, ' cpu  time :',cpu_2 - cpu_1, 's'
   print*, ' wall time :',wall_2 - wall_1, 's  ( x ', (cpu_2-cpu_1)/(wall_2-wall_1+tiny(1.d0)), ' )'
   

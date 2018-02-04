@@ -29,9 +29,11 @@ subroutine routine2
  print*, ''
  print*, 'Component of the energy ....'
  print*, ''
+ write(*, '(A22,X,F16.10)') 'nuclear_repulsion   = ',nuclear_repulsion
  write(*, '(A22,X,F16.10)') 'psi_energy_erf      = ',psi_energy_erf      
  write(*, '(A22,X,F16.10)') 'psi_energy_core     = ',psi_energy_core    
  write(*, '(A22,X,F16.10)') 'short_range_Hartree = ',short_range_Hartree
+ write(*, '(A22,X,F16.10)') 'two_elec_energy     = ',two_elec_energy_dft
  write(*, '(A22,X,F16.10)') 'energy_x            = ',energy_x         
  write(*, '(A22,X,F16.10)') 'energy_c            = ',energy_c          
  print*, ''

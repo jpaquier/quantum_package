@@ -21,11 +21,6 @@
      contrib = one_body_dm_mo(i,j) * (integral  - integral_erf)
      short_range_Hartree_operator(l,k) += contrib 
      short_range_Hartree += contrib * one_body_dm_mo(k,l) 
-!    print*,'::::::::::::::::::::::::::::::::::::::::::::::::::::'
-!    print*,'delta int             , int regurlar,      int  erf '
-!    print*,integral  - integral_erf,integral,integral_erf
-!    print*,'short range accu,    contrib '
-!    print*,short_range_Hartree,contrib * one_body_dm_mo(k,l)
     enddo
    enddo
   enddo
@@ -35,7 +30,8 @@
 END_PROVIDER
 
 
-BEGIN_PROVIDER [double precision, effective_one_e_potential, (mo_tot_num, mo_tot_num,N_states)]
+ BEGIN_PROVIDER [double precision, effective_one_e_potential, (mo_tot_num, mo_tot_num,N_states)]
+&BEGIN_PROVIDER [double precision, effective_one_e_potential_without_kin, (mo_tot_num, mo_tot_num,N_states)]
  implicit none
  integer :: i,j,i_state
  effective_one_e_potential = 0.d0
@@ -48,6 +44,9 @@ BEGIN_PROVIDER [double precision, effective_one_e_potential, (mo_tot_num, mo_tot
   do i = 1, mo_tot_num
    do j = 1, mo_tot_num
     effective_one_e_potential(i,j,i_state) = short_range_Hartree_operator(i,j) + mo_nucl_elec_integral(i,j) + mo_kinetic_integral(i,j) & 
+                                   + 0.5d0 * (potential_x_alpha_mo(i,j,i_state) + potential_c_alpha_mo(i,j,i_state)                               &
+                                   +          potential_x_beta_mo(i,j,i_state) + potential_c_beta_mo(i,j,i_state)   )
+    effective_one_e_potential_without_kin(i,j,i_state) = short_range_Hartree_operator(i,j) + mo_nucl_elec_integral(i,j)  & 
                                    + 0.5d0 * (potential_x_alpha_mo(i,j,i_state) + potential_c_alpha_mo(i,j,i_state)                               &
                                    +          potential_x_beta_mo(i,j,i_state) + potential_c_beta_mo(i,j,i_state)   )
    enddo

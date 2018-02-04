@@ -56,6 +56,15 @@ BEGIN_PROVIDER [ double precision, total_electronic_energy, (N_states) ]
 END_PROVIDER
 
 
+BEGIN_PROVIDER [ double precision, two_elec_energy_dft, (N_states) ]
+  implicit none
+  BEGIN_DOC
+! two_elec_energy_dft = <Psi| v_{H}^{sr} |Psi> + <i|W_{ee}^{lr}|i> 
+  END_DOC
+   two_elec_energy_dft = short_range_Hartree + psi_energy_erf
+END_PROVIDER
+
+
  BEGIN_PROVIDER [ double precision, ref_bitmask_energy_erf ]
 &BEGIN_PROVIDER [ double precision, bi_elec_ref_bitmask_energy_erf ]
   use bitmasks

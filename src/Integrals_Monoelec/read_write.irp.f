@@ -32,9 +32,11 @@
      read_only_mo_one_integrals = .True.
    endif
    
+     print*,'disk_access_mo_one_integrals ===== ',disk_access_mo_one_integrals
    if (disk_access_mo_one_integrals.EQ.'Read') then
      read_mo_one_integrals =  .True.
      write_mo_one_integrals = .False.
+     print*,'read_mo_one_integrals == ',read_mo_one_integrals
      
    else if  (disk_access_mo_one_integrals.EQ.'Write') then
      read_mo_one_integrals = .False.

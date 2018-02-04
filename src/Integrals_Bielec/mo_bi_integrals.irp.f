@@ -24,6 +24,8 @@ BEGIN_PROVIDER [ logical, mo_bielec_integrals_in_map ]
   implicit none
   integer(bit_kind)              :: mask_ijkl(N_int,4)
   integer(bit_kind)              :: mask_ijk(N_int,3)
+
+  real                           :: map_mb
   
   BEGIN_DOC
   ! If True, the map of MO bielectronic integrals is provided
@@ -143,6 +145,9 @@ BEGIN_PROVIDER [ logical, mo_bielec_integrals_in_map ]
     mo_map_size = get_mo_map_size()
     
     print*,'Molecular integrals provided'
+    print*,' Size of MO map           ', map_mb(mo_integrals_map) ,'MB'
+    print*,' Number of MO integrals: ',  mo_map_size
+
   endif
   if (write_mo_integrals.and.mpi_master) then
     call ezfio_set_work_empty(.False.)
