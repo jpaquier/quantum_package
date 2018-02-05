@@ -154,6 +154,7 @@ subroutine mrpt_dress(delta_ij_,  Ndet,i_generator,n_selected,det_buffer,Nint,ip
        call get_excitation_degree(psi_ref(1,1,index_j),tq(1,1,i_alpha),degree_2,N_int)
 
        do i_state=1,N_states
+        integer :: degree_ij
         call get_excitation_degree(psi_ref(1,1,index_j),psi_ref(1,1,index_i),degree_ij,N_int)
 !       if(index_j.ne.index_i)cycle
         if(degree_ij.gt.1)cycle
