@@ -75,10 +75,15 @@ BEGIN_PROVIDER [double precision, Fock_matrix_expectation_value]
 
 END_PROVIDER 
 
-BEGIN_PROVIDER [double precision, Trace_v_xc]
+ BEGIN_PROVIDER [double precision, Trace_v_xc]
+&BEGIN_PROVIDER [double precision, Trace_v_Hxc]
  implicit none
  integer :: i,j
  double precision :: tmp(mo_tot_num,mo_tot_num)
+ BEGIN_DOC 
+! Trace_v_xc  = \sum_{i,j} rho_{ij} v^{xc}_{ij} 
+! Trace_v_Hxc = \sum_{i,j} rho_{ij} v^{Hxc}_{ij} 
+ END_DOC
   tmp = 0.d0
   do i = 1, mo_tot_num
    do j = 1, mo_tot_num
@@ -87,5 +92,15 @@ BEGIN_PROVIDER [double precision, Trace_v_xc]
    enddo
   enddo
   call get_average(tmp,one_body_dm_mo,Trace_v_xc)
+
+  tmp = 0.d0
+  do i = 1, mo_tot_num
+   do j = 1, mo_tot_num
+     tmp(i,j) =    short_range_Hartree_operator(j,i) & 
+                 + 0.5d0 * (potential_x_alpha_mo(j,i,1) + potential_c_alpha_mo(j,i,1)&
+                      +     potential_x_beta_mo(j,i,1) + potential_c_beta_mo(j,i,1)   )
+   enddo
+  enddo
+  call get_average(tmp,one_body_dm_mo,Trace_v_Hxc)
 
 END_PROVIDER 

@@ -5,6 +5,8 @@ program scf
 ! output: kohn_sham.energy
 ! optional: mo_basis.mo_coef
   END_DOC
+  read_wf = .False.
+  touch read_wf
   call create_guess
   call orthonormalize_mos
   call run

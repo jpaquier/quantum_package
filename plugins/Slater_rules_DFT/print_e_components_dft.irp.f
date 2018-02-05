@@ -40,8 +40,9 @@ subroutine routine2
  print*, ''
  print*,  '****************************************'
  print*, ''
- write(*, '(A31,X,F16.10)') 'Approx eigenvalue            = ',Fock_matrix_expectation_value + psi_energy_erf
+ write(*, '(A31,X,F16.10)') 'Approx eigenvalue            = ',Fock_matrix_expectation_value + psi_energy_erf + nuclear_repulsion
  write(*, '(A31,X,F16.10)') 'Trace_v_xc                   = ',Trace_v_xc
+ write(*, '(A31,X,F16.10)') 'Trace_v_Hxc                  = ',Trace_v_Hxc
 
 
 end

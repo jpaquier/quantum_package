@@ -140,7 +140,7 @@ END_PROVIDER
      r(3) = grid_points_per_atom(3,l,k,j)
 
      double precision :: dm_a,dm_b
-     call density_matrices_alpha_beta_at_r(r,dm_a,dm_b)
+     call dm_dft_alpha_beta_at_r(r,dm_a,dm_b)
      one_body_dm_mo_alpha_at_grid_points(l,k,j,1) = dm_a
      one_body_dm_mo_beta_at_grid_points(l,k,j,1) = dm_b
 
@@ -179,7 +179,7 @@ END_PROVIDER
 
  !!!!! Works also with the ao basis 
      double precision :: dm_a,dm_b, dm_a_grad(3), dm_b_grad(3)
-     call density_matrices_and_gradients_alpha_beta_at_r(r,dm_a,dm_b, dm_a_grad, dm_b_grad)
+     call dm_and_gradients_dft_alpha_beta_at_r(r,dm_a,dm_b, dm_a_grad, dm_b_grad)
      one_body_dm_mo_alpha_and_grad_at_grid_points(1,l,k,j,1) +=  dm_a_grad(1)
      one_body_dm_mo_alpha_and_grad_at_grid_points(2,l,k,j,1) +=  dm_a_grad(2)
      one_body_dm_mo_alpha_and_grad_at_grid_points(3,l,k,j,1) +=  dm_a_grad(3)

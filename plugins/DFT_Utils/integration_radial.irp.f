@@ -20,7 +20,7 @@
      ! Angular integration over the solid angle Omega for a FIXED angular coordinate "r"
      f_average_angular_alpha = 0.d0
      f_average_angular_beta = 0.d0
-     do istate = 1, N_States
+     do istate = 1, N_states
       do k = 1, n_points_integration_angular
        f_average_angular_alpha += weights_angular_points(k) * one_body_dm_mo_alpha_at_grid_points(k,i,j,istate) * weight_functions_at_grid_points(k,i,j)
        f_average_angular_beta  += weights_angular_points(k) * one_body_dm_mo_beta_at_grid_points(k,i,j,istate)  * weight_functions_at_grid_points(k,i,j)

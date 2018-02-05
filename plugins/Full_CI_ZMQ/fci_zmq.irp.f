@@ -156,6 +156,14 @@ program fci_zmq
       call ezfio_set_full_ci_zmq_energy_pt2(CI_energy(1)+pt2(1))
       call dump_fci_iterations_value(N_det,CI_energy,pt2) 
 
+      call ezfio_set_data_energy_and_density_data_energy_var(CI_energy)
+      call ezfio_set_data_energy_and_density_data_energy_proj(CI_energy+pt2)
+      if(store_one_body_dm)then
+       call ezfio_set_data_energy_and_density_data_one_body_alpha_dm_mo(one_body_dm_mo_alpha)
+       call ezfio_set_data_energy_and_density_data_one_body_beta_dm_mo(one_body_dm_mo_beta)
+      endif
+      
+
       n_det_before = N_det
       if (s2_eig) then
         to_select = N_det/2+1
