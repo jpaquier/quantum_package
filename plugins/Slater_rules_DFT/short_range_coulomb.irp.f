@@ -13,14 +13,14 @@
  short_range_Hartree = 0.d0
  do i = 1, mo_tot_num
   do j = 1, mo_tot_num
-   if(dabs(one_body_dm_mo(i,j)).le.1.d-10)cycle
+   if(dabs(one_body_dm_average_mo_for_dft(i,j)).le.1.d-10)cycle
    do k = 1, mo_tot_num
     do l = 1, mo_tot_num
      integral = get_mo_bielec_integral(i,k,j,l,mo_integrals_map) ! <ik|jl> = (ij|kl)
      integral_erf = get_mo_bielec_integral_erf(i,k,j,l,mo_integrals_erf_map)
-     contrib = one_body_dm_mo(i,j) * (integral  - integral_erf)
+     contrib = one_body_dm_average_mo_for_dft(i,j) * (integral  - integral_erf)
      short_range_Hartree_operator(l,k) += contrib 
-     short_range_Hartree += contrib * one_body_dm_mo(k,l) 
+     short_range_Hartree += contrib * one_body_dm_average_mo_for_dft(k,l) 
     enddo
    enddo
   enddo
@@ -54,6 +54,45 @@ END_PROVIDER
  enddo
 END_PROVIDER 
 
+
+BEGIN_PROVIDER [double precision, Fock_matrix_expectation_value]
+ implicit none
+  call get_average(effective_one_e_potential,one_body_dm_average_mo_for_dft,Fock_matrix_expectation_value)
+
+END_PROVIDER 
+
+ BEGIN_PROVIDER [double precision, Trace_v_xc, (N_states)]
+&BEGIN_PROVIDER [double precision, Trace_v_Hxc, (N_states)]
+ implicit none
+ integer :: i,j,istate
+ double precision :: tmp(mo_tot_num,mo_tot_num)
+ BEGIN_DOC 
+! Trace_v_xc  = \sum_{i,j} rho_{ij} v^{xc}_{ij} 
+! Trace_v_Hxc = \sum_{i,j} rho_{ij} v^{Hxc}_{ij} 
+ END_DOC
+ do istate = 1, N_states
+  tmp = 0.d0
+  do i = 1, mo_tot_num
+   do j = 1, mo_tot_num
+     tmp(i,j) =   + 0.5d0 * (potential_x_alpha_mo(i,j,istate) + potential_c_alpha_mo(i,j,istate)&
+                  +          potential_x_beta_mo(i,j,istate)  + potential_c_beta_mo(i,j,istate)   )
+   enddo
+  enddo
+  call get_average(tmp,one_body_dm_mo_for_dft(1,1,istate),Trace_v_xc(istate))
+
+  tmp = 0.d0
+  do i = 1, mo_tot_num
+   do j = 1, mo_tot_num
+     tmp(i,j) =    short_range_Hartree_operator(j,i) & 
+                 + 0.5d0 * (potential_x_alpha_mo(j,i,istate) + potential_c_alpha_mo(j,i,istate)&
+                      +     potential_x_beta_mo(j,i,istate)  + potential_c_beta_mo(j,i,istate)   )
+   enddo
+  enddo
+  call get_average(tmp,one_body_dm_mo_for_dft(1,1,istate),Trace_v_Hxc(istate))
+ enddo
+
+END_PROVIDER 
+
 BEGIN_PROVIDER [double precision, one_e_energy_potential, (mo_tot_num, mo_tot_num)]
  implicit none
  integer :: i,j,i_state
@@ -69,38 +108,3 @@ BEGIN_PROVIDER [double precision, one_e_energy_potential, (mo_tot_num, mo_tot_nu
 
 END_PROVIDER 
 
-BEGIN_PROVIDER [double precision, Fock_matrix_expectation_value]
- implicit none
-  call get_average(effective_one_e_potential,one_body_dm_mo,Fock_matrix_expectation_value)
-
-END_PROVIDER 
-
- BEGIN_PROVIDER [double precision, Trace_v_xc]
-&BEGIN_PROVIDER [double precision, Trace_v_Hxc]
- implicit none
- integer :: i,j
- double precision :: tmp(mo_tot_num,mo_tot_num)
- BEGIN_DOC 
-! Trace_v_xc  = \sum_{i,j} rho_{ij} v^{xc}_{ij} 
-! Trace_v_Hxc = \sum_{i,j} rho_{ij} v^{Hxc}_{ij} 
- END_DOC
-  tmp = 0.d0
-  do i = 1, mo_tot_num
-   do j = 1, mo_tot_num
-     tmp(i,j) =   + 0.5d0 * (potential_x_alpha_mo(i,j,1) + potential_c_alpha_mo(i,j,1)&
-                  +     potential_x_beta_mo(i,j,1) + potential_c_beta_mo(i,j,1)   )
-   enddo
-  enddo
-  call get_average(tmp,one_body_dm_mo,Trace_v_xc)
-
-  tmp = 0.d0
-  do i = 1, mo_tot_num
-   do j = 1, mo_tot_num
-     tmp(i,j) =    short_range_Hartree_operator(j,i) & 
-                 + 0.5d0 * (potential_x_alpha_mo(j,i,1) + potential_c_alpha_mo(j,i,1)&
-                      +     potential_x_beta_mo(j,i,1) + potential_c_beta_mo(j,i,1)   )
-   enddo
-  enddo
-  call get_average(tmp,one_body_dm_mo,Trace_v_Hxc)
-
-END_PROVIDER 

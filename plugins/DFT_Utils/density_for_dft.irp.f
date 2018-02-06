@@ -26,6 +26,21 @@ BEGIN_PROVIDER [double precision, one_body_dm_beta_mo_for_dft, (mo_tot_num,mo_to
 
 END_PROVIDER 
 
+
+BEGIN_PROVIDER [double precision, one_body_dm_mo_for_dft, (mo_tot_num,mo_tot_num, N_states)]
+ implicit none
+ one_body_dm_mo_for_dft = one_body_dm_beta_mo_for_dft + one_body_dm_alpha_mo_for_dft
+END_PROVIDER 
+
+BEGIN_PROVIDER [double precision, one_body_dm_average_mo_for_dft, (mo_tot_num,mo_tot_num)]
+ implicit none
+ integer :: i
+ one_body_dm_average_mo_for_dft = 0.d0
+ do i = 1, N_states
+  one_body_dm_average_mo_for_dft(:,:) +=  one_body_dm_mo_for_dft(:,:,i) * state_average_weight(i)
+ enddo
+END_PROVIDER 
+
  BEGIN_PROVIDER [ double precision, one_body_dm_alpha_ao_for_dft, (ao_num,ao_num,N_states) ]
 &BEGIN_PROVIDER [ double precision, one_body_dm_beta_ao_for_dft, (ao_num,ao_num,N_states) ]
  BEGIN_DOC

@@ -40,7 +40,7 @@ END_PROVIDER
   do i = 1, N_states
    do j = 1, mo_tot_num
     do k = 1, mo_tot_num
-     tmp(k,j) = one_body_dm_mo_alpha(k,j,i) + one_body_dm_mo_beta(k,j,i)
+     tmp(k,j) = one_body_dm_alpha_mo_for_dft(k,j,i) + one_body_dm_beta_mo_for_dft(k,j,i)
     enddo
    enddo
    call get_average(mono_ints,tmp,psi_energy_core(i))

@@ -3,7 +3,7 @@
 source $QP_ROOT/tests/bats/common.bats.sh
 
 function run_FCI() {
-  thresh=5.e-5
+  thresh=9.e-5
   test_exe full_ci || skip
   qp_edit -c $1
   ezfio set_file $1
@@ -19,7 +19,7 @@ function run_FCI() {
 }
 
 function run_FCI_ZMQ() {
-  thresh=5.e-5
+  thresh=9.e-5
   test_exe fci_zmq || skip
   qp_edit -c $1
   ezfio set_file $1

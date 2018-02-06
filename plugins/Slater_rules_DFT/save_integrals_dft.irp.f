@@ -34,3 +34,10 @@ subroutine save_erf_bi_elec_integrals_ao
  call ezfio_set_integrals_bielec_disk_access_ao_integrals("Read")
 end
 
+subroutine write_all_integrals_for_mrdft
+ implicit none
+ call save_one_e_effective_potential
+ call save_erf_bi_elec_integrals_ao
+ call save_erf_bi_elec_integrals_mo
+
+end
