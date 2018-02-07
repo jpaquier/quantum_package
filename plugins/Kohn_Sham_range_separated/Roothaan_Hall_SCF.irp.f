@@ -20,13 +20,13 @@ END_DOC
       error_matrix_DIIS(ao_num,ao_num,max_dim_DIIS)                  &
       )
 
-  call write_time(output_kohn_sham)
+  call write_time(6)
 
-  write(output_kohn_sham,'(A4, 1X, A16, 1X, A16, 1X, A16)')  &
+  write(6,'(A4, 1X, A16, 1X, A16, 1X, A16)')  &
     '====','================','================','================'
-  write(output_kohn_sham,'(A4, 1X, A16, 1X, A16, 1X, A16)')  &
+  write(6,'(A4, 1X, A16, 1X, A16, 1X, A16)')  &
     '  N ', 'Energy  ', 'Energy diff  ', 'DIIS error  '
-  write(output_kohn_sham,'(A4, 1X, A16, 1X, A16, 1X, A16)')  &
+  write(6,'(A4, 1X, A16, 1X, A16, 1X, A16)')  &
     '====','================','================','================'
 
 ! Initialize energies and density matrices
@@ -117,7 +117,7 @@ END_DOC
 
    !Print results at the end of each iteration
 
-    write(output_kohn_sham,'(I4, 1X, F16.10, 1X, F16.10, 1X, F16.10, 1X, I3)')  &
+    write(6,'(I4, 1X, F16.10, 1X, F16.10, 1X, F16.10, 1X, I3)')  &
       iteration_SCF, energy_SCF, Delta_energy_SCF, max_error_DIIS, dim_DIIS
 
     if (Delta_energy_SCF < 0.d0) then
@@ -130,18 +130,18 @@ END_DOC
  !End of Main SCF loop
  
 
-  write(output_kohn_sham,'(A4, 1X, A16, 1X, A16, 1X, A16)') &
+  write(6,'(A4, 1X, A16, 1X, A16, 1X, A16)') &
     '====','================','================','================'
-  write(output_kohn_sham,*)
+  write(6,*)
   
   if(.not.no_oa_or_av_opt)then
    call mo_as_eigvectors_of_mo_matrix(Fock_matrix_mo,size(Fock_matrix_mo,1),size(Fock_matrix_mo,2),mo_label,1,.true.)
   endif
 
-  call write_double(output_kohn_sham, Energy_SCF, 'Hartree-Fock energy')
+  call write_double(6, Energy_SCF, 'Hartree-Fock energy')
   call ezfio_set_hartree_fock_energy(Energy_SCF)
 
-  call write_time(output_kohn_sham)
+  call write_time(6)
 
 end
 

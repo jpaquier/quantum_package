@@ -304,7 +304,7 @@ END_PROVIDER
   allocate(grd_st_eigenvec(size_super_ci))
   do m = 1, N_states
     call create_good_guess(grd_st_eigenvec,e_guess,m)
-    call davidson_diag_general_state_specific(grd_st_eigenvec,e_guess,size_super_ci,size_super_ci,m,1,N_int,output_determinants)
+    call davidson_diag_general_state_specific(grd_st_eigenvec,e_guess,size_super_ci,size_super_ci,m,1,N_int,6)
     eigenvectors_sci(:,m) = grd_st_eigenvec(:)
     eigenvalues_sci(m) = e_guess
   enddo
@@ -446,7 +446,7 @@ END_PROVIDER
  else 
   allocate(grd_st_eigenvec(size_super_ci))
     call create_good_guess_state_average(grd_st_eigenvec,e_guess)
-    call davidson_diag_general_state_average(grd_st_eigenvec,e_guess,size_super_ci,size_super_ci,1,N_int,output_determinants)
+    call davidson_diag_general_state_average(grd_st_eigenvec,e_guess,size_super_ci,size_super_ci,1,N_int,6)
     eigenvectors_sci_state_average(:) = grd_st_eigenvec(:)
     eigenvalues_sci_state_average = e_guess
   deallocate(grd_st_eigenvec)
