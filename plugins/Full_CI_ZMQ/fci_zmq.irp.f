@@ -4,11 +4,12 @@ program fci_zmq
   logical, external              :: detEq
   
   double precision, allocatable  :: pt2(:)
+  double precision, allocatable  :: CI_energy_before(:)
   integer                        :: degree
   integer                        :: n_det_before, to_select
   double precision               :: threshold_davidson_in
   
-  allocate (pt2(N_states))
+  allocate (pt2(N_states),CI_energy_before(N_states))
 
   double precision               :: hf_energy_ref
   logical                        :: has
@@ -61,6 +62,7 @@ program fci_zmq
   double precision :: error(N_states)
 
   correlation_energy_ratio = 0.d0
+  CI_energy_before = CI_energy
 
   if (.True.) then ! Avoid pre-calculation of CI_energy
     do while (                                                         &
@@ -114,7 +116,11 @@ program fci_zmq
       write(fmt,*) '(A12,', 2*N_states_p, '(1X,F14.8))'
       write(*,fmt) '# PT2'//pt2_string, (pt2(k), error(k), k=1,N_states_p)
       write(*,'(A)') '#'
-      write(*,fmt) '# E+PT2      ', (CI_energy(k)+pt2(k),error(k), k=1,N_states_p)
+      if(do_pt2)then
+       write(*,fmt) '# E+PT2      ', (CI_energy(k)+pt2(k),error(k), k=1,N_states_p)
+      else
+       write(*,fmt) '# E before+PT', (CI_energy_before(k)+pt2(k),error(k), k=1,N_states_p)
+      endif
       if (N_states_p > 1) then
         write(*,fmt) '# Excit. (au)', ( (CI_energy(k)+pt2(k)-CI_energy(1)-pt2(1)), &
           dsqrt(error(k)*error(k)+error(1)*error(1)), k=1,N_states_p)
@@ -129,7 +135,11 @@ program fci_zmq
         print*,'State ',k
         print *,  'PT2             = ', pt2(k)
         print *,  'E               = ', CI_energy(k)
+      if(do_pt2)then
         print *,  'E+PT2'//pt2_string//'   = ', CI_energy(k)+pt2(k), ' +/- ', error(k)
+      else
+        print *,  'E before + PT2'//pt2_string//'   = ', CI_energy_before(k)+pt2(k), ' +/- ', error(k)
+      endif
       enddo
     if(N_states.gt.1)then
       print*,'Variational + perturbative Energy difference'
@@ -187,6 +197,7 @@ program fci_zmq
     call diagonalize_CI
     call save_wavefunction
     call ezfio_set_full_ci_zmq_energy(CI_energy(1))
+    CI_energy_before = CI_energy
   enddo
 
   if (N_det < N_det_max) then
@@ -243,6 +254,8 @@ program fci_zmq
   write(*,fmt) '# PT2'//pt2_string, (pt2(k), error(k), k=1,N_states_p)
   write(*,'(A)') '#'
   write(*,fmt) '# E+PT2      ', (CI_energy(k)+pt2(k),error(k), k=1,N_states_p)
+  print *,  'E+PT2'//pt2_string//'   = ', CI_energy(1)+pt2(1), ' +/- ', error(1)
+  print *,  'E               = ', CI_energy(1)
   if (N_states_p > 1) then
     write(*,fmt) '# Excit. (au)', ( (CI_energy(k)+pt2(k)-CI_energy(1)-pt2(1)), &
       dsqrt(error(k)*error(k)+error(1)*error(1)), k=1,N_states_p)

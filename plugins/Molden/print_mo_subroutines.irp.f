@@ -5,36 +5,22 @@ subroutine print_mos(it)
  integer :: i_unit_output,getUnitAndOpen
  provide ezfio_filename 
 
- integer :: i
+ integer :: i,j,k,l
  print*,trim(ezfio_filename)
  
- character(len=1024) :: filename
+ character*(128) :: filename
  if (it.lt.10)then 
   write (filename, "(I1)")it
  else 
   write (filename, "(I2)")it
  endif
+ print*,filename
  output=trim(ezfio_filename)//'.'//trim(filename)//'.mol'
+ output=trim(output)
  print*,'output = ',trim(output)
  i_unit_output = getUnitAndOpen(output,'w')
- print*,'i_unit_output = ',i_unit_output
- call write_intro_gamess(i_unit_output)
- call write_geometry(i_unit_output)
- call write_Ao_basis(i_unit_output)
- call write_Mo_basis(i_unit_output)
- 
 
- write(i_unit_output,*),''
- write(i_unit_output,*),''
- write(i_unit_output,*)'          ------------------------'
 
- close(i_unit_output)
-end
-
-subroutine write_intro_gamess(i_unit_output)
- implicit none
- integer, intent(in) :: i_unit_output
- integer :: i,j,k,l
 
  write(i_unit_output,*)'         *         GAMESS VERSION = 22 FEB 2006 (R5)          *' 
  write(i_unit_output,*)'         *             FROM IOWA STATE UNIVERSITY             *' 
@@ -45,17 +31,12 @@ subroutine write_intro_gamess(i_unit_output)
  write(i_unit_output,*)'         *         J.COMPUT.CHEM.  14, 1347-1363(1993)        *' 
  write(i_unit_output,*)''
 
-end
-
-
-
-
-subroutine write_geometry(i_unit_output)
- implicit none
- integer, intent(in) :: i_unit_output
- integer :: i,j,k,l, getUnitAndOpen
-
-
+ write(i_unit_output,*)'ATOM      ATOMIC                      COORDINATES (BOHR)          '
+ write(i_unit_output,*)'          CHARGE         X                   Y                   Z'
+ do i = 1, nucl_num
+! write(i_unit_output,'(A2 I3 X F3.1 X 3(F16.10))') trim(element_name(int(nucl_charge(i)))),i,(nucl_charge(i)), nucl_coord(i,1), nucl_coord(i,2), nucl_coord(i,3)
+  write(i_unit_output,'(A2,I1, 9X F5.1 X 3(F16.10 ,4X))') trim(element_name(int(nucl_charge(i)))),i,(nucl_charge(i)), nucl_coord(i,1), nucl_coord(i,2), nucl_coord(i,3)
+ enddo
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  write(i_unit_output,*)'ATOM      ATOMIC                      COORDINATES (BOHR)          '
@@ -64,14 +45,7 @@ subroutine write_geometry(i_unit_output)
 ! write(i_unit_output,'(A2 I3 X F3.1 X 3(F16.10))') trim(element_name(int(nucl_charge(i)))),i,(nucl_charge(i)), nucl_coord(i,1), nucl_coord(i,2), nucl_coord(i,3)
   write(i_unit_output,'(A2,I1, 9X F5.1 X 3(F16.10 ,4X))') trim(element_name(int(nucl_charge(i)))),i,(nucl_charge(i)), nucl_coord(i,1), nucl_coord(i,2), nucl_coord(i,3)
  enddo
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-end
 
-
-subroutine write_Ao_basis(i_unit_output)
- implicit none
- integer, intent(in) :: i_unit_output
- integer :: i,j,k,l, getUnitAndOpen
  character*(128) :: character_shell
  integer :: i_shell,i_prim,i_ao
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -117,12 +91,6 @@ subroutine write_Ao_basis(i_unit_output)
  write(i_unit_output,*)''
 
 
-end
-
-subroutine write_Mo_basis(i_unit_output)
- implicit none
- integer, intent(in) :: i_unit_output
- integer :: i,j,k,l, getUnitAndOpen
  integer :: i_5,i_mod
 
  write(i_unit_output,*),'          ----------------------'
@@ -144,4 +112,11 @@ subroutine write_Mo_basis(i_unit_output)
   write(i_unit_output,*)''
  enddo
 
+
+ write(i_unit_output,*),''
+ write(i_unit_output,*),''
+ write(i_unit_output,*)'          ------------------------'
+
+ close(i_unit_output)
 end
+

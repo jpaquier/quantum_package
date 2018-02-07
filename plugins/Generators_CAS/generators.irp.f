@@ -7,24 +7,12 @@ BEGIN_PROVIDER [ integer, N_det_generators ]
   END_DOC
   integer                        :: i,k,l
   logical                        :: good
+  integer :: number_of_holes,number_of_particles
   call write_time(output_determinants)
   N_det_generators = 0
   do i=1,N_det
-      good = .True.
-      do k=1,N_int
-        good = good .and. (                                          &
-            iand(reunion_of_core_inact_bitmask(k,1), psi_det(k,1,i)) ==         &
-            reunion_of_core_inact_bitmask(k,1)) .and. (  &
-            iand(reunion_of_core_inact_bitmask(k,2), psi_det(k,2,i)) ==         &
-            reunion_of_core_inact_bitmask(k,2)  & 
-            )
-        good = good .and. (                                          &
-            iand(virt_bitmask(k,1), psi_det(k,1,i)) ==  0      &
-            .and. (  iand(virt_bitmask(k,2), psi_det(k,2,i)) == 0))
-      if (.not.good) then
-        exit
-      endif
-      enddo
+    good = .True.
+    good = good .and. ( number_of_holes(psi_det_sorted(1,1,i)) ==0 .and. number_of_particles(psi_det_sorted(1,1,i))==0 )
     if (good) then
       N_det_generators += 1
     endif
@@ -42,30 +30,18 @@ END_PROVIDER
   END_DOC
   integer                        :: i, k, l, m
   logical                        :: good
+  integer :: number_of_holes,number_of_particles
   m=0
   do i=1,N_det
-      good = .True.
-      do k=1,N_int
-        good = good .and. (                                          &
-            iand(reunion_of_core_inact_bitmask(k,1), psi_det(k,1,i)) ==         &
-            reunion_of_core_inact_bitmask(k,1)) .and. (  &
-            iand(reunion_of_core_inact_bitmask(k,2), psi_det(k,2,i)) ==         &
-            reunion_of_core_inact_bitmask(k,2)  & 
-            )
-        good = good .and. (                                          &
-            iand(virt_bitmask(k,1), psi_det(k,1,i)) ==  0      &
-            .and. (  iand(virt_bitmask(k,2), psi_det(k,2,i)) == 0))
-      if (.not.good) then
-        exit
-      endif
-      enddo
+    good = .True.
+    good = good .and. ( number_of_holes(psi_det_sorted(1,1,i)) ==0 .and. number_of_particles(psi_det_sorted(1,1,i))==0)
     if (good) then
       m = m+1
       do k=1,N_int
         psi_det_generators(k,1,m) = psi_det_sorted(k,1,i)
         psi_det_generators(k,2,m) = psi_det_sorted(k,2,i)
       enddo
-      psi_coef_generators(m,:) = psi_coef(m,:)
+      psi_coef_generators(m,:) = psi_coef_sorted(m,:)
     endif
   enddo
   

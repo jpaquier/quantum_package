@@ -1,4 +1,4 @@
-program fci_zmq
+program cassd_zmq
   implicit none
   integer                        :: i,j,k
   logical, external              :: detEq
@@ -60,6 +60,10 @@ program fci_zmq
         (correlation_energy_ratio < correlation_energy_ratio_max)    &
         )
 
+    print*,'Generators '
+    do i = 1, N_det_generators
+     call debug_det(psi_det_generators(1,1,i),N_int)
+    enddo
     correlation_energy_ratio = E_CI_before(1) - hf_energy_ref
     correlation_energy_ratio = correlation_energy_ratio / (correlation_energy_ratio + pt2(1))
  

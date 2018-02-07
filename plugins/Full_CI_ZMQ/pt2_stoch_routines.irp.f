@@ -320,22 +320,27 @@ subroutine pt2_collector(zmq_socket_pull, E, b, tbc, comb, Ncomb, computed, pt2_
         eqt = 0.d0
       endif
       call wall_time(time)
-      if ( (dabs(eqt/avg) < relative_error) .or. (dabs(eqt) < absolute_error) ) then
-        ! Termination
-        pt2(pt2_stoch_istate) = avg
-        error(pt2_stoch_istate) = eqt
-        print '(G10.3, 2X, F16.10, 2X, G16.3, 2X, F16.4, A20)', Nabove(tooth), avg+E, eqt, time-time0, ''
-        if (zmq_abort(zmq_to_qp_run_socket) == -1) then
-          call sleep(1)
-          if (zmq_abort(zmq_to_qp_run_socket) == -1) then
-            print *, irp_here, ': Error in sending abort signal (2)'
-          endif
-        endif
+      if(dabs(avg).gt.1.d-15)then
+       if ( (dabs(eqt/avg) < relative_error) .or. (dabs(eqt) < absolute_error) ) then
+         ! Termination
+         pt2(pt2_stoch_istate) = avg
+         error(pt2_stoch_istate) = eqt
+         print '(G10.3, 2X, F16.10, 2X, G16.3, 2X, F16.4, A20)', Nabove(tooth), avg+E, eqt, time-time0, ''
+         if (zmq_abort(zmq_to_qp_run_socket) == -1) then
+           call sleep(1)
+           if (zmq_abort(zmq_to_qp_run_socket) == -1) then
+             print *, irp_here, ': Error in sending abort signal (2)'
+           endif
+         endif
+       else
+         if (Nabove(tooth) > Nabove_old) then
+           print '(G10.3, 2X, F16.10, 2X, G16.3, 2X, F16.4, A20)', Nabove(tooth), avg+E, eqt, time-time0, ''
+           Nabove_old = Nabove(tooth)
+         endif
+       endif
       else
-        if (Nabove(tooth) > Nabove_old) then
-          print '(G10.3, 2X, F16.10, 2X, G16.3, 2X, F16.4, A20)', Nabove(tooth), avg+E, eqt, time-time0, ''
-          Nabove_old = Nabove(tooth)
-        endif
+       pt2 = 0.d0
+       error = 0.d0
       endif
     end if
   end do pullLoop

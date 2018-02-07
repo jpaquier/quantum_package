@@ -4,7 +4,12 @@ program fcidump
   integer :: i_unit_output,getUnitAndOpen
   output=trim(ezfio_filename)//'.FCIDUMP'
   i_unit_output = getUnitAndOpen(output,'w')
-
+  print*,'i_unit_output = ',i_unit_output
+  call write_fci_dump_ao(i_unit_output)
+end
+subroutine write_fci_dump_ao(i_unit_output)
+  implicit none
+  integer, intent(in) :: i_unit_output
   integer :: i,j,k,l
   integer :: i1,j1,k1,l1
   integer :: i2,j2,k2,l2

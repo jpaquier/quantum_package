@@ -4,6 +4,7 @@ program printwf
  touch read_wf
  print*,'ref_bitmask_energy = ',ref_bitmask_energy
  call routine
+!call print_cas
 
 end
 
@@ -83,3 +84,11 @@ subroutine routine
 
 end
 
+subroutine print_cas
+ implicit none
+ integer :: i,j
+ do i = 1, N_det_cas
+  call debug_det(psi_cas(1,1,i),N_int)
+ enddo
+
+end
