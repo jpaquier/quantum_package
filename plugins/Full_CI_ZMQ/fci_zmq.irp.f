@@ -209,6 +209,7 @@ program fci_zmq
       call ezfio_set_full_ci_zmq_energy_pt2(CI_energy(1)+pt2(1))
   endif
 
+  pt2_string = '        '
   if (do_pt2) then
     pt2 = 0.d0
     threshold_selectors = 1.d0

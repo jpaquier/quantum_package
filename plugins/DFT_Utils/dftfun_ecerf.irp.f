@@ -63,6 +63,9 @@ subroutine ec_lda_sr(rho_a,rho_b,ec,vc_a,vc_b)
       double precision :: eclr,vcup,vcdown,vclrup,vclrdown,vclrupd,vclrdownd
       rsfac = (3.0d0/(4.0d0*pi))**c_1_3
 
+      ec = 0.d0
+      vc_a = 0.d0
+      vc_b = 0.d0
 ! Test on density
       rho = rho_a + rho_b
       if (dabs(rho).ge.1.d-12) then
@@ -82,7 +85,6 @@ subroutine ec_lda_sr(rho_a,rho_b,ec,vc_a,vc_b)
       call vcorrlr(rs,z,mu_erf,vclrup,vclrdown,vclrupd,vclrdownd)
       vc_a = vcup-vclrup
       vc_b = vcdown-vclrdown
-!     ec = 0.d0
 
       endif
 
