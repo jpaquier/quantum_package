@@ -22,8 +22,8 @@ subroutine damping_SCF
   
   do j=1,ao_num
     do i=1,ao_num
-      D_alpha(i,j) = RS_KS_density_matrix_ao_alpha(i,j)
-      D_beta (i,j) = RS_KS_density_matrix_ao_beta (i,j)
+      D_alpha(i,j) = SCF_density_matrix_ao_alpha(i,j)
+      D_beta (i,j) = SCF_density_matrix_ao_beta (i,j)
     enddo
   enddo
   
@@ -37,13 +37,13 @@ subroutine damping_SCF
   write(6,'(A4,1X,A16, 1X, A16, 1X, A16, 1X, A4 )')  &
     '====','================','================','================', '===='
 
-  E = RS_KS_energy + 1.d0
-  E_min = RS_KS_energy
+  E = SCF_energy + 1.d0
+  E_min = SCF_energy
   delta_D = 0.d0
   do k=1,n_it_scf_max
     
-    delta_E = RS_KS_energy - E
-    E = RS_KS_energy
+    delta_E = SCF_energy - E
+    E = SCF_energy
     
     if ( (delta_E < 0.d0).and.(dabs(delta_E) < thresh_scf) ) then
       exit
@@ -61,16 +61,22 @@ subroutine damping_SCF
     write(6,'(I4,1X,F16.10, 1X, F16.10, 1X, F16.10, 3X, A )')  &
       k, E, delta_E, delta_D, save_char
     
-    
-    D_alpha = RS_KS_density_matrix_ao_alpha
-    D_beta  = RS_KS_density_matrix_ao_beta 
+    if(no_oa_or_av_opt)then
+     call initialize_mo_coef_begin_iteration
+    endif
+    D_alpha = SCF_density_matrix_ao_alpha
+    D_beta  = SCF_density_matrix_ao_beta 
     mo_coef = eigenvectors_fock_matrix_mo
+    if(no_oa_or_av_opt)then
+     call reorder_active_orb
+     call initialize_mo_coef_begin_iteration
+    endif
     TOUCH mo_coef
     
-    D_new_alpha = RS_KS_density_matrix_ao_alpha
-    D_new_beta  = RS_KS_density_matrix_ao_beta 
+    D_new_alpha = SCF_density_matrix_ao_alpha
+    D_new_beta  = SCF_density_matrix_ao_beta 
     F_new = Fock_matrix_ao
-    E_new = RS_KS_energy
+    E_new = SCF_energy
 
     delta_alpha = D_new_alpha - D_alpha
     delta_beta  = D_new_beta  - D_beta 
@@ -78,12 +84,16 @@ subroutine damping_SCF
     lambda = .5d0
     E_half = 0.d0
     do while (E_half > E)
-      RS_KS_density_matrix_ao_alpha = D_alpha + lambda * delta_alpha
-      RS_KS_density_matrix_ao_beta  = D_beta  + lambda * delta_beta
-      TOUCH RS_KS_density_matrix_ao_alpha RS_KS_density_matrix_ao_beta
+      SCF_density_matrix_ao_alpha = D_alpha + lambda * delta_alpha
+      SCF_density_matrix_ao_beta  = D_beta  + lambda * delta_beta
+      TOUCH SCF_density_matrix_ao_alpha SCF_density_matrix_ao_beta
       mo_coef = eigenvectors_fock_matrix_mo
+      if(no_oa_or_av_opt)then
+       call reorder_active_orb
+       call initialize_mo_coef_begin_iteration
+      endif
       TOUCH mo_coef
-      E_half = RS_KS_energy
+      E_half = SCF_energy
       if ((E_half > E).and.(E_new < E)) then
         lambda = 1.d0
         exit
@@ -100,28 +110,31 @@ subroutine damping_SCF
     lambda = -lambda*b/(a+1.d-16)
     D_alpha = (1.d0-lambda) * D_alpha + lambda * D_new_alpha
     D_beta  = (1.d0-lambda) * D_beta  + lambda * D_new_beta 
-    delta_E = RS_KS_energy - E
+    delta_E = SCF_energy - E
     do j=1,ao_num
       do i=1,ao_num
         delta_D = delta_D + &
-        (D_alpha(i,j) - RS_KS_density_matrix_ao_alpha(i,j))*(D_alpha(i,j) - RS_KS_density_matrix_ao_alpha(i,j)) + &
-        (D_beta (i,j) - RS_KS_density_matrix_ao_beta (i,j))*(D_beta (i,j) - RS_KS_density_matrix_ao_beta (i,j))
+        (D_alpha(i,j) - SCF_density_matrix_ao_alpha(i,j))*(D_alpha(i,j) - SCF_density_matrix_ao_alpha(i,j)) + &
+        (D_beta (i,j) - SCF_density_matrix_ao_beta (i,j))*(D_beta (i,j) - SCF_density_matrix_ao_beta (i,j))
       enddo
     enddo
     delta_D = dsqrt(delta_D/dble(ao_num)**2)
-    RS_KS_density_matrix_ao_alpha = D_alpha
-    RS_KS_density_matrix_ao_beta  = D_beta
-    TOUCH RS_KS_density_matrix_ao_alpha RS_KS_density_matrix_ao_beta
+    SCF_density_matrix_ao_alpha = D_alpha
+    SCF_density_matrix_ao_beta  = D_beta
+    TOUCH SCF_density_matrix_ao_alpha SCF_density_matrix_ao_beta
     mo_coef = eigenvectors_fock_matrix_mo
+    if(no_oa_or_av_opt)then
+     call reorder_active_orb
+     call initialize_mo_coef_begin_iteration
+    endif
     TOUCH mo_coef
-
 
   enddo
   write(6,'(A4,1X,A16, 1X, A16, 1X, A16, 1X, A4 )')  '====','================','================','================', '===='
   write(6,*)
   
   if(.not.no_oa_or_av_opt)then
-   call mo_as_eigvectors_of_mo_matrix(Fock_matrix_mo,size(Fock_matrix_mo,1),size(Fock_matrix_mo,2),mo_label,1)
+   call mo_as_eigvectors_of_mo_matrix(Fock_matrix_mo,size(Fock_matrix_mo,1),size(Fock_matrix_mo,2),mo_label,1,.true.)
   endif
 
   call write_double(6, E_min, 'Hartree-Fock energy')
