@@ -164,6 +164,46 @@
 
 END_PROVIDER
 
+ BEGIN_PROVIDER [ double precision, Fock_matrix_ao_alpha, (ao_num, ao_num) ]
+&BEGIN_PROVIDER [ double precision, Fock_matrix_ao_beta,  (ao_num, ao_num) ]
+ implicit none
+ BEGIN_DOC
+ ! Alpha Fock matrix in ao basis set
+ END_DOC
+
+ integer                        :: i,j
+ do j=1,ao_num
+   !DIR$ VECTOR ALIGNED
+   do i=1,ao_num
+     Fock_matrix_ao_alpha(i,j) = Fock_matrix_alpha_no_xc_ao(i,j) + ao_potential_alpha_xc(i,j)
+     Fock_matrix_ao_beta (i,j) = Fock_matrix_beta_no_xc_ao(i,j)  + ao_potential_beta_xc(i,j)
+   enddo
+ enddo
+
+END_PROVIDER
+
+
+ BEGIN_PROVIDER [ double precision, Fock_matrix_alpha_no_xc_ao, (ao_num, ao_num) ]
+&BEGIN_PROVIDER [ double precision, Fock_matrix_beta_no_xc_ao,  (ao_num, ao_num) ]
+ implicit none
+ BEGIN_DOC
+ ! Mono electronic an Coulomb matrix in ao basis set
+ END_DOC
+
+ integer                        :: i,j
+ do j=1,ao_num
+   !DIR$ VECTOR ALIGNED
+   do i=1,ao_num
+     Fock_matrix_alpha_no_xc_ao(i,j) = ao_mono_elec_integral(i,j) + ao_bi_elec_integral_alpha(i,j)
+     Fock_matrix_beta_no_xc_ao(i,j) = ao_mono_elec_integral(i,j) + ao_bi_elec_integral_beta (i,j)
+   enddo
+ enddo
+
+END_PROVIDER
+
+
+
+
  BEGIN_PROVIDER [ double precision, KS_energy]
 &BEGIN_PROVIDER [ double precision, two_electron_energy]
 &BEGIN_PROVIDER [ double precision, one_electron_energy]
@@ -191,4 +231,9 @@ END_PROVIDER
 
  KS_energy +=  e_exchange_dft + e_correlation_dft + one_electron_energy + two_electron_energy
 END_PROVIDER
+
+BEGIN_PROVIDER [double precision, extra_energy_contrib_from_density]
+ implicit none
+ extra_energy_contrib_from_density = e_exchange_dft + e_correlation_dft
+END_PROVIDER 
 

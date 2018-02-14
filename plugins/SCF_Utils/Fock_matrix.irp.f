@@ -81,24 +81,6 @@ END_PROVIDER
  
  
  
- BEGIN_PROVIDER [ double precision, Fock_matrix_ao_alpha, (ao_num, ao_num) ]
-&BEGIN_PROVIDER [ double precision, Fock_matrix_ao_beta,  (ao_num, ao_num) ]
- implicit none
- BEGIN_DOC
- ! Alpha Fock matrix in AO basis set
- END_DOC
- 
- integer                        :: i,j
- do j=1,ao_num
-   do i=1,ao_num
-     Fock_matrix_ao_alpha(i,j) = ao_mono_elec_integral(i,j) + ao_bi_elec_integral_alpha(i,j)
-     Fock_matrix_ao_beta (i,j) = ao_mono_elec_integral(i,j) + ao_bi_elec_integral_beta (i,j)
-   enddo
- enddo
-
-END_PROVIDER
-
-
 BEGIN_PROVIDER [ double precision, Fock_matrix_mo_alpha, (mo_tot_num,mo_tot_num) ]
    implicit none
    BEGIN_DOC
@@ -118,24 +100,6 @@ BEGIN_PROVIDER [ double precision, Fock_matrix_mo_beta, (mo_tot_num,mo_tot_num) 
                  Fock_matrix_mo_beta,size(Fock_matrix_mo_beta,1))
 END_PROVIDER
  
-BEGIN_PROVIDER [ double precision, SCF_energy ]
- implicit none
- BEGIN_DOC
- ! Hartree-Fock energy
- END_DOC
- SCF_energy = nuclear_repulsion
- 
- integer                        :: i,j
- do j=1,ao_num
-   do i=1,ao_num
-     SCF_energy += 0.5d0 * (                                          &
-         (ao_mono_elec_integral(i,j) + Fock_matrix_ao_alpha(i,j) ) *  SCF_density_matrix_ao_alpha(i,j) +&
-         (ao_mono_elec_integral(i,j) + Fock_matrix_ao_beta (i,j) ) *  SCF_density_matrix_ao_beta (i,j) )
-   enddo
- enddo
-  
-END_PROVIDER
-
 
 BEGIN_PROVIDER [ double precision, Fock_matrix_ao, (ao_num, ao_num) ]
  implicit none
@@ -158,4 +122,24 @@ BEGIN_PROVIDER [ double precision, Fock_matrix_ao, (ao_num, ao_num) ]
  endif
 END_PROVIDER
 
+
+BEGIN_PROVIDER [ double precision, SCF_energy ]
+ implicit none
+ BEGIN_DOC
+ ! Hartree-Fock energy
+ END_DOC
+ SCF_energy = nuclear_repulsion
+
+ integer                        :: i,j
+ do j=1,ao_num
+   do i=1,ao_num
+     SCF_energy += 0.5d0 * (                                          &
+         (ao_mono_elec_integral(i,j) + Fock_matrix_ao_alpha(i,j) ) *  SCF_density_matrix_ao_alpha(i,j) +&
+         (ao_mono_elec_integral(i,j) + Fock_matrix_ao_beta (i,j) ) *  SCF_density_matrix_ao_beta (i,j) )
+   enddo
+ enddo
+ 
+ SCF_energy += extra_energy_contrib_from_density
+
+END_PROVIDER
 

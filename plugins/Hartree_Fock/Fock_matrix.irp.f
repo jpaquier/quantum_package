@@ -158,12 +158,27 @@
 
 END_PROVIDER
 
-
-BEGIN_PROVIDER [double precision, HF_energy]
+ BEGIN_PROVIDER [ double precision, Fock_matrix_ao_alpha, (ao_num, ao_num) ]
+&BEGIN_PROVIDER [ double precision, Fock_matrix_ao_beta,  (ao_num, ao_num) ]
  implicit none
  BEGIN_DOC
- ! Hartree Fock energy
+ ! Alpha Fock matrix in AO basis set
  END_DOC
- HF_energy = SCF_energy
+
+ integer                        :: i,j
+ do j=1,ao_num
+   do i=1,ao_num
+     Fock_matrix_ao_alpha(i,j) = ao_mono_elec_integral(i,j) + ao_bi_elec_integral_alpha(i,j)
+     Fock_matrix_ao_beta (i,j) = ao_mono_elec_integral(i,j) + ao_bi_elec_integral_beta (i,j)
+   enddo
+ enddo
+
+END_PROVIDER
+
+
+BEGIN_PROVIDER [double precision, extra_energy_contrib_from_density]
+ implicit none
+ extra_energy_contrib_from_density = 0.D0
 
 END_PROVIDER 
+

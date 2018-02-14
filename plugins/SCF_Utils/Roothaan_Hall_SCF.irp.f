@@ -100,7 +100,7 @@ END_DOC
     double precision :: level_shift_save
     level_shift_save = level_shift
     mo_coef_save(1:ao_num,1:mo_tot_num) = mo_coef(1:ao_num,1:mo_tot_num)
-    do while (Delta_Energy_SCF > 0.d0)
+    do while (Delta_Energy_SCF .ge. 0.d0)
       mo_coef(1:ao_num,1:mo_tot_num) = mo_coef_save
       TOUCH mo_coef
       level_shift = level_shift + 0.1d0
