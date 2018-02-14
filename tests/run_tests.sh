@@ -4,7 +4,7 @@
 LIST="
 convert.bats
 hf.bats
-fci.bats
+#fci.bats
 cassd.bats
 mrcepa0.bats
 pseudo.bats
