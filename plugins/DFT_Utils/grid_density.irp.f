@@ -1,11 +1,17 @@
 BEGIN_PROVIDER [integer, n_points_integration_angular]
  implicit none
+ BEGIN_DOC
+! number of angular points per atom for 3d numerical integration, needed for DFT for example
+ END_DOC
 !n_points_integration_angular =1202
  n_points_integration_angular = 2030
 END_PROVIDER 
 
 BEGIN_PROVIDER [integer, n_points_radial_grid]
  implicit none
+ BEGIN_DOC
+! number of radial points per atom for 3d numerical integration, needed for DFT for example
+ END_DOC
  n_points_radial_grid = 100
 END_PROVIDER 
 
@@ -64,7 +70,7 @@ END_PROVIDER
 
 BEGIN_PROVIDER [double precision, grid_points_per_atom, (3,n_points_integration_angular,n_points_radial_grid,nucl_num)]
  BEGIN_DOC
-! points for integration over space
+! x,y,z coordinates of grid points used for integration in 3d space
  END_DOC
  implicit none
  integer :: i,j,k

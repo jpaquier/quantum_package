@@ -90,6 +90,37 @@ subroutine ec_lda_sr(rho_a,rho_b,ec,vc_a,vc_b)
 
 end
 
+subroutine ec_only_lda_sr(rho_a,rho_b,ec)
+      implicit none
+ include 'constants.include.F'
+      double precision, intent(out) ::  ec
+      double precision, intent(in)  ::  rho_a,rho_b
+
+! Double precision numbers
+      
+      double precision :: rsfac,rho,rs,rhoa,rhob,z
+      double precision :: eccoul, ecd, ecz, ecdd, eczd
+      double precision :: eclr
+      rsfac = (3.0d0/(4.0d0*pi))**c_1_3
+
+      ec = 0.d0
+! Test on density
+      rho = rho_a + rho_b
+      if (dabs(rho).ge.1.d-12) then
+
+      rs=rsfac/(rho**c_1_3)
+      rhoa=max(rho_a,1.0d-15)
+      rhob=max(rho_b,1.0d-15)
+      z=(rhoa-rhob)/(rhoa+rhob)
+
+      call ecPW(rs,z,eccoul,ecd,ecz,ecdd,eczd)
+      call ecorrlr(rs,z,mu_erf,eclr)
+      ec=(eccoul-eclr)*rho
+
+      endif
+
+end
+
 
 subroutine ecorrlr(rs,z,mu,eclr)
 !cc Hartree atomic units used
