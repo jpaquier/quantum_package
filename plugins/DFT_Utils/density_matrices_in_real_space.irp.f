@@ -107,3 +107,78 @@ subroutine dm_and_gradients_dft_alpha_beta_at_r(r,dm_a,dm_b, dm_a_grad, dm_b_gra
   
 end
 
+
+subroutine on_top_pair_density_in_real_space(r,rho2)
+ implicit none
+ double precision, intent(in)  :: r(3)
+ double precision, intent(out) :: rho2(N_states)
+ rho2 = 0.d0
+ double precision :: mos_array(mo_tot_num)
+ double precision :: aos_array(mo_tot_num)
+ 
+ call give_all_mos_at_r(r,mos_array) 
+!call give_all_aos_at_r(r,mos_array)
+ double precision :: threshold,c1,c2,c3
+ double precision :: a1,a2,a3
+ integer :: i,j,k,l,istate
+ threshold = 1.d-11 
+ rho2 = 0.d0
+ do istate = 1, N_states
+  do i = 1, mo_tot_num
+   a1 = mos_array(i)
+   c1 = dabs(a1)
+   if(c1.le.threshold)cycle
+   do j = 1, mo_tot_num 
+    a2 = a1 * mos_array(j)
+    c2 = dabs(a2)
+    if(dabs(one_body_dm_mo_for_dft(j,i,istate)).le.threshold)cycle
+    if(c2.le.threshold)cycle
+    do k = 1, mo_tot_num 
+     a3 = a2 * mos_array(k)
+     c3 = dabs(a3)
+     if(c3.le.threshold)cycle
+     do l = 1, mo_tot_num
+      rho2 += a3 * mos_array(l) * two_bod_alpha_beta_mo(l,k,j,i,istate)
+!     print*,a3,mos_array(l),two_bod_alpha_beta_mo(l,k,j,i,istate)
+     enddo
+    enddo
+   enddo
+  enddo
+ enddo
+end
+
+subroutine on_top_pair_density_in_real_space_from_ao(r,rho2)
+ implicit none
+ double precision, intent(in)  :: r(3)
+ double precision, intent(out) :: rho2(N_states)
+ rho2 = 0.d0
+ double precision :: aos_array(ao_num)
+ 
+ call give_all_aos_at_r(r,aos_array)
+
+ double precision :: threshold,c1,c2,c3
+ double precision :: a1,a2,a3
+ integer :: i,j,k,l,istate
+ threshold = 1.d-8 
+ rho2 = 0.d0
+ do istate = 1, N_states
+  do i = 1, ao_num
+   a1 = aos_array(i)
+   c1 = dabs(a1)
+   if(c1.le.threshold)cycle
+   do j = 1, ao_num 
+    a2 = a1 * aos_array(j)
+    c2 = dabs(a2)
+    if(c2.le.threshold)cycle
+    do k = 1, ao_num 
+     a3 = a2 * aos_array(k)
+     c3 = dabs(a3)
+     if(c3.le.threshold)cycle
+     do l = 1, ao_num
+      rho2 += a3 * aos_array(l) * two_bod_alpha_beta_ao(l,k,j,i,istate)
+     enddo
+    enddo
+   enddo
+  enddo
+ enddo
+end

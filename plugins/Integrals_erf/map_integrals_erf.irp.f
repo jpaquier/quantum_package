@@ -341,7 +341,7 @@ BEGIN_PROVIDER [ type(map_type), mo_integrals_erf_map ]
   call bielec_integrals_index(mo_tot_num,mo_tot_num,mo_tot_num,mo_tot_num,key_max)
   sze = key_max
   call map_init(mo_integrals_erf_map,sze)
-  print*, 'MO map initialized'
+  print*, 'MO ERF map initialized'
 END_PROVIDER
 
 subroutine insert_into_ao_integrals_erf_map(n_integrals,buffer_i, buffer_values)
