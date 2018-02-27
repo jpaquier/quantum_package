@@ -136,6 +136,7 @@ END_DOC
   
   if(.not.no_oa_or_av_opt)then
    call mo_as_eigvectors_of_mo_matrix(Fock_matrix_mo,size(Fock_matrix_mo,1),size(Fock_matrix_mo,2),mo_label,1,.true.)
+   call save_mos
   endif
 
   call write_double(6, Energy_SCF, 'Hartree-Fock energy')

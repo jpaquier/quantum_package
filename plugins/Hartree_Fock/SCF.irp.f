@@ -50,6 +50,7 @@ subroutine run
   EHF = SCF_energy 
 
   mo_label = "Canonical"
+  soft_touch mo_label
 
 ! Choose SCF algorithm
 

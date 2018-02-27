@@ -19,6 +19,121 @@
 
  END_PROVIDER 
 
+ BEGIN_PROVIDER [double precision, two_bod_alpha_beta_mo_transposed, (mo_tot_num,mo_tot_num,mo_tot_num,mo_tot_num,N_states)]
+ implicit none
+ BEGIN_DOC
+ !  two_bod_alpha_beta(i,j,k,l) = <Psi| a^{dagger}_{l,alpha} a^{dagger}_{k,beta} a_{j,beta} a_{i,alpha} | Psi>
+ !  note that no 1/2 factor is introduced in order to take into acccount for the spin symmetry
+ END_DOC
+ integer :: i,j,k,l,istate
+ double precision :: cpu_0,cpu_1
+ two_bod_alpha_beta_mo_transposed= 0.d0
+ print*,'providing two_bod_alpha_beta ...'
+ call cpu_time(cpu_0)
+ do istate = 1, N_states 
+  do i = 1, mo_tot_num
+   do j = 1, mo_tot_num
+    do k = 1, mo_tot_num
+     do l = 1, mo_tot_num
+      two_bod_alpha_beta_mo_transposed(l,k,j,i,istate) = two_bod_alpha_beta_mo(i,l,j,k,istate)
+     enddo
+    enddo
+   enddo
+  enddo
+ enddo
+ call cpu_time(cpu_1)
+ print*,'two_bod_alpha_beta provided in',dabs(cpu_1-cpu_0)
+
+ END_PROVIDER 
+
+
+ BEGIN_PROVIDER [double precision, two_bod_alpha_beta_mo_transposed_bis, (mo_tot_num,mo_tot_num,mo_tot_num,mo_tot_num,N_states)]
+&BEGIN_PROVIDER [double precision, two_bod_alpha_beta_mo_transposed_bis_sum, (mo_tot_num,mo_tot_num,N_states)]
+ implicit none
+ BEGIN_DOC
+ !  two_bod_alpha_beta(i,j,k,l) = <Psi| a^{dagger}_{l,alpha} a^{dagger}_{k,beta} a_{j,beta} a_{i,alpha} | Psi>
+ !  note that no 1/2 factor is introduced in order to take into acccount for the spin symmetry
+ END_DOC
+ integer :: i,j,k,l,istate
+ double precision :: cpu_0,cpu_1
+ two_bod_alpha_beta_mo_transposed_bis = 0.d0
+ print*,'providing two_bod_alpha_beta ...'
+ call cpu_time(cpu_0)
+ do istate = 1, N_states 
+  do i = 1, mo_tot_num
+   do j = 1, mo_tot_num
+    do k = 1, mo_tot_num
+     do l = 1, mo_tot_num
+      two_bod_alpha_beta_mo_transposed_bis(l,k,j,i,istate) = two_bod_alpha_beta_mo(i,l,j,k,istate)
+                                           
+     enddo
+    enddo
+   enddo
+  enddo
+ enddo
+ integer :: n,m
+ do istate = 1, N_states
+  do l = 1, mo_tot_num
+   do k = 1, mo_tot_num
+    do m = 1, mo_tot_num
+     do n = 1, mo_tot_num
+      two_bod_alpha_beta_mo_transposed_bis_sum(k,l,istate)+= dabs(two_bod_alpha_beta_mo_transposed_bis(n,m,k,l,istate))
+     enddo
+    enddo
+   enddo
+  enddo
+ enddo
+ call cpu_time(cpu_1)
+ print*,'two_bod_alpha_beta provided in',dabs(cpu_1-cpu_0)
+
+ END_PROVIDER 
+
+
+
+
+ BEGIN_PROVIDER [double precision, two_bod_alpha_beta_mo_contracted, (mo_tot_num,mo_tot_num,mo_tot_num,mo_tot_num,N_states)]
+ implicit none
+ BEGIN_DOC
+ !  two_bod_alpha_beta_mo_contracted(n,m,j,i) = \sum_{k,l} <ij|kl> <\Psi|a^{dagger}_{k,alpha} a^{dagger}_{l,beta} a_{n,beta} a_{m,alpha}|\Psi>
+ END_DOC
+ integer :: i,j,k,l,istate,m,n
+ double precision :: cpu_0,cpu_1
+ double precision :: integrals_array(mo_tot_num,mo_tot_num)
+ two_bod_alpha_beta_mo_contracted = 0.d0
+ double precision :: threshold 
+ threshold = 1.d-10
+ print*,'providing two_bod_alpha_beta_mo_contracted...'
+ call cpu_time(cpu_0)
+ do istate = 1, N_states 
+  do i = 1, mo_tot_num
+   do j = 1, mo_tot_num 
+    call get_mo_bielec_integrals_ij(i,j,mo_tot_num,integrals_array,mo_integrals_map) 
+    do l = 1, mo_tot_num
+     do k = 1, mo_tot_num
+      if(dabs(integrals_array(k,l)).le.threshold)cycle
+!     double precision :: integral, get_mo_bielec_integral
+!     integral = get_mo_bielec_integral(i,j,k,l,mo_integrals_map)
+!     if(dabs(integral -  integrals_array(k,l)).gt.1.d-10)then
+!      print*,i,j,k,l 
+!      print*,integral , integrals_array(k,l)
+!     endif
+      if(dabs(two_bod_alpha_beta_mo_transposed_bis_sum(k,l,istate)).le.threshold)cycle
+      do m = 1, mo_tot_num
+       do n = 1, mo_tot_num
+          two_bod_alpha_beta_mo_contracted(n,m,j,i,istate)+= integrals_array(k,l) * two_bod_alpha_beta_mo_transposed_bis(n,m,k,l,istate)
+       enddo
+      enddo
+     enddo
+    enddo
+   enddo
+  enddo
+ enddo
+ call cpu_time(cpu_1)
+ print*,'two_bod_alpha_beta_mo_contracted provided in',dabs(cpu_1-cpu_0)
+
+ END_PROVIDER 
+
+
 
  subroutine two_body_dm_nstates_openmp(big_array,dim1,dim2,dim3,dim4,u_0,N_st,sze)
   use bitmasks
@@ -469,6 +584,49 @@
   enddo
  enddo
  end
+
+ subroutine diagonal_contrib_to_all_two_body_dm(det_1,c_1,big_array_ab,big_array_aa,big_array_bb,dim1,dim2,dim3,dim4)
+ use bitmasks
+ implicit none
+ integer, intent(in) :: dim1,dim2,dim3,dim4
+ double precision, intent(inout) :: big_array_ab(dim1,dim2,dim3,dim4,N_states)
+ double precision, intent(inout) :: big_array_aa(dim1,dim2,dim3,dim4,N_states)
+ double precision, intent(inout) :: big_array_bb(dim1,dim2,dim3,dim4,N_states)
+ integer(bit_kind), intent(in)  :: det_1(N_int,2)
+ double precision, intent(in)   :: c_1(N_states)
+ integer                        :: occ(N_int*bit_kind_size,2)
+ integer                        :: n_occ_ab(2)
+ integer :: i,j,h1,h2,istate
+ double precision               :: c_1_bis
+ BEGIN_DOC
+! no factor 1/2 have to be taken into account as the permutations are already taken into account
+ END_DOC
+ call bitstring_to_list_ab(det_1, occ, n_occ_ab, N_int)
+ do istate = 1, N_states
+  c_1_bis = c_1(istate) * c_1(istate)
+  do i = 1, n_occ_ab(1)
+   h1 = occ(i,1)
+   do j = 1, n_occ_ab(2)
+    h2 = occ(j,2)
+    big_array_ab(h1,h1,h2,h2,istate) += c_1_bis 
+   enddo 
+   do j = 1, n_occ_ab(1)
+    h2 = occ(j,1)
+    big_array_aa(h1,h2,h1,h2,istate) -= c_1_bis 
+    big_array_aa(h1,h1,h2,h2,istate) += c_1_bis 
+   enddo
+  enddo
+  do i = 1, n_occ_ab(2)
+   h1 = occ(i,2)
+   do j = 1, n_occ_ab(2)
+    h2 = occ(j,2)
+    big_array_bb(h1,h1,h2,h2,istate) += c_1_bis 
+    big_array_bb(h1,h2,h1,h2,istate) -= c_1_bis 
+   enddo
+  enddo
+ enddo
+ end
+
 
  subroutine off_diagonal_double_to_two_body_ab_dm(det_1,det_2,c_1,c_2,big_array,dim1,dim2,dim3,dim4)
  use bitmasks
