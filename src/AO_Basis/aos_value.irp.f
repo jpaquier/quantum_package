@@ -67,9 +67,10 @@ subroutine give_all_aos_at_r(r,aos_array)
    k = Nucl_Aos_transposed(j,i) ! index of the ao in the ordered format 
    aos_array(k) = 0.d0
    power_ao(1:3)= ao_power_ordered_transp_per_nucl(1:3,j,i)
-   dx2 = dx**power_ao(1)
-   dy2 = dy**power_ao(2)
-   dz2 = dz**power_ao(3)
+   double precision :: power
+   dx2 = power(power_ao(1),dx)
+   dy2 = power(power_ao(2),dy)
+   dz2 = power(power_ao(3),dz)
    do l = 1,ao_prim_num(k) 
     beta = ao_expo_ordered_transp_per_nucl(l,j,i)
     aos_array(k)+= ao_coef_normalized_ordered_transp_per_nucl(l,j,i) * dexp(-beta*r2) 

@@ -65,7 +65,6 @@
     do k = 1, mo_tot_num
      do l = 1, mo_tot_num
       two_bod_alpha_beta_mo_transposed_bis(l,k,j,i,istate) = two_bod_alpha_beta_mo(i,l,j,k,istate)
-                                           
      enddo
     enddo
    enddo
@@ -101,7 +100,7 @@
  double precision :: integrals_array(mo_tot_num,mo_tot_num)
  two_bod_alpha_beta_mo_contracted = 0.d0
  double precision :: threshold 
- threshold = 1.d-10
+ threshold = 0.d0
  print*,'providing two_bod_alpha_beta_mo_contracted...'
  call cpu_time(cpu_0)
  do istate = 1, N_states 
@@ -110,14 +109,8 @@
     call get_mo_bielec_integrals_ij(i,j,mo_tot_num,integrals_array,mo_integrals_map) 
     do l = 1, mo_tot_num
      do k = 1, mo_tot_num
-      if(dabs(integrals_array(k,l)).le.threshold)cycle
-!     double precision :: integral, get_mo_bielec_integral
-!     integral = get_mo_bielec_integral(i,j,k,l,mo_integrals_map)
-!     if(dabs(integral -  integrals_array(k,l)).gt.1.d-10)then
-!      print*,i,j,k,l 
-!      print*,integral , integrals_array(k,l)
-!     endif
-      if(dabs(two_bod_alpha_beta_mo_transposed_bis_sum(k,l,istate)).le.threshold)cycle
+ !    if(dabs(integrals_array(k,l)).le.threshold)cycle
+ !    if(dabs(two_bod_alpha_beta_mo_transposed_bis_sum(k,l,istate)).le.threshold)cycle
       do m = 1, mo_tot_num
        do n = 1, mo_tot_num
           two_bod_alpha_beta_mo_contracted(n,m,j,i,istate)+= integrals_array(k,l) * two_bod_alpha_beta_mo_transposed_bis(n,m,k,l,istate)

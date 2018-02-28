@@ -4,7 +4,8 @@ program pouet
  integer :: nx
  double precision :: rmax
  nx = 100
- rmax = 5.d0
+ rmax = 15.d0
+!call test
  call test_expectation_value_and_coulomb(nx,rmax)
 !call routine3
 !call test_rho2
@@ -14,6 +15,19 @@ program pouet
 !call test_erf_coulomb_oprerator
 !call test_nuclear_coulomb_oprerator
 !call test_integratio_mo
+end
+
+subroutine test
+implicit none
+ double precision :: r1(3),r2(3),coulomb_bis
+ r1 = 0.d0
+ r2 = 0.d0
+ r2(1) = 6.d0
+ r2(2) = 6.d0
+  call expectation_value_in_real_space(r1,r2,coulomb_bis) 
+  call expectation_value_in_real_space_old(r1,r2,coulomb_bis) 
+  print*,'old = ',coulomb_bis
+
 end
 
 subroutine routine3
@@ -239,17 +253,21 @@ subroutine test_expectation_value_and_coulomb(nx,xmax)
  rinit(2) = nucl_coord(1,2)
  rinit(3) = nucl_coord(1,3)
  r1 = rinit
+ r1 = 0.5d0
 
  dr = 0.d0
- dr(3) = dx
+ dr(1) = dx
+ dr(2) = dx
 
  r2 = r1
  do i = 1, nx 
   r2 += dr
   r12 = dsqrt((r1(1)-r2(1))**2 + (r1(2)-r2(2))**2 +(r1(3)-r2(3))**2 )
-  call expectation_value_in_real_space(r1,r2,coulomb_bis) 
-  call coulomb_operator_in_real_space(r1,r2,coulomb) 
-  write(i_unit_output,'(F10.7,X,F16.8,X,F16.8,X,F16.8)')r12,1.d0/r12,coulomb_bis,coulomb
+  call expectation_value_in_real_space_old(r1,r2,coulomb_bis,two_dm) 
+  double precision :: two_dm
+! call expectation_value_in_real_space(r1,r2,coulomb) 
+! call coulomb_operator_in_real_space(r1,r2,coulomb) 
+  write(i_unit_output,'(F10.7,X,F16.8,X,F16.8,X,F16.8)')r12,1.d0/r12,coulomb_bis,two_dm
  enddo
 end
 

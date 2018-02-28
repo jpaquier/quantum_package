@@ -301,8 +301,11 @@ end
  double precision function power(n,x)
  implicit none
  integer :: i,n
- double precision :: x,accu
- power = x**n
+ double precision :: x
+ power = 1 
+ do i = 1, n
+  power *= x
+ enddo
  return
  end
 

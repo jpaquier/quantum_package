@@ -120,11 +120,11 @@ subroutine nuclear_coulomb_operator_in_real_space(r1,coulomb)
 end
 
 
-subroutine expectation_value_in_real_space_old(r1,r2,coulomb)
+subroutine expectation_value_in_real_space_old(r1,r2,coulomb,two_dm)
 use map_module
  implicit none
  double precision, intent(in) :: r1(3), r2(3)
- double precision, intent(out):: coulomb
+ double precision, intent(out):: coulomb, two_dm
  integer :: i,j,k,l,m,n  
  double precision :: integrals_array(mo_tot_num,mo_tot_num)
  double precision :: mos_array_r1(mo_tot_num)
@@ -133,13 +133,13 @@ use map_module
  double precision :: c1,c2,c3,c4
  double precision :: threshold
  double precision :: integral,get_mo_bielec_integral
- double precision :: two_dm
- threshold = 1.d-12
- two_dm = 0.d0
+ double precision :: two_dm_orb
+ threshold = 0.d-10
 
  call give_all_mos_at_r(r1,mos_array_r1) 
  call give_all_mos_at_r(r2,mos_array_r2) 
 
+ two_dm = 0.d0
  coulomb = 0.d0
  do i = 1, mo_tot_num
   a1 = mos_array_r1(i) 
@@ -157,18 +157,29 @@ use map_module
     do n = 1, mo_tot_num
      a4 = a3 * mos_array_r2(n)
      c4 = dabs(a4)
-     two_dm += two_bod_alpha_beta_mo_transposed(n,m,j,i,1) * a4 
+!    two_dm += two_bod_alpha_beta_mo_transposed(n,m,j,i,1) * mos_array_r1(i) * mos_array_r1(n) * mos_array_r2(j) * mos_array_r2(m)
      if(c4.le.threshold)cycle
        do l = 1, mo_tot_num
         do k = 1, mo_tot_num
          coulomb += a4 * integrals_array(k,l) * two_bod_alpha_beta_mo_transposed(k,l,n,m,1)
+        !                               <ij|kl>    * gamma(kl,mn)                              
         enddo
        enddo
     enddo
    enddo
   enddo
  enddo
+ do i = 1, mo_tot_num
+  do j = 1, mo_tot_num 
+   do k = 1, mo_tot_num
+    do l = 1, mo_tot_num
+     two_dm += two_bod_alpha_beta_mo_transposed(l,k,j,i,1) * mos_array_r1(i) * mos_array_r1(l)  * mos_array_r2(k) * mos_array_r2(j)  
+    enddo
+   enddo
+  enddo
+ enddo
 !coulomb = coulomb * 0.5d0 
+!print*,coulomb,two_dm
  coulomb = coulomb / two_dm
 
 end
@@ -188,11 +199,11 @@ use map_module
  double precision :: integral,get_mo_bielec_integral
  double precision :: two_dm
  threshold = 1.d-12
- two_dm = 0.d0
 
  call give_all_mos_at_r(r1,mos_array_r1) 
  call give_all_mos_at_r(r2,mos_array_r2) 
 
+ two_dm = 0.d0
  coulomb = 0.d0
  do i = 1, mo_tot_num
   a1 = mos_array_r1(i) 
@@ -210,13 +221,37 @@ use map_module
      a4 = a3 * mos_array_r2(n)
      c4 = dabs(a4)
      two_dm += two_bod_alpha_beta_mo_transposed(n,m,j,i,1) * a4 
-    !if(c4.le.threshold)cycle
-      coulomb += a4 * two_bod_alpha_beta_mo_contracted(n,m,j,i,1)
+     coulomb += a4 * two_bod_alpha_beta_mo_contracted(n,m,j,i,1)
+    !if(dabs(a4 * two_bod_alpha_beta_mo_contracted(n,m,j,i,1)).gt.1.d-10)then
+    ! print*,'#######'
+    ! print*,n,m,j,i
+    ! print*,coulomb
+    ! print*,a4,two_bod_alpha_beta_mo_contracted(n,m,j,i,1),a4 * two_bod_alpha_beta_mo_contracted(n,m,j,i,1)
+    ! print*,two_dm,coulomb/two_dm
+    !endif
     enddo
    enddo
   enddo
  enddo
+!if(two_dm.lt.0.d0)then
+! print*,two_dm 
+! print*,r1
+! print*,r2
+! pause
+!endif
+
+!if(coulomb.lt.0.d0)then
+! print*,'coulomb'
+! print*,coulomb
+! print*,r1
+! print*,r2
+! pause
+!endif
 !coulomb = coulomb * 0.5d0 
- coulomb = coulomb / two_dm
+!if(dabs(two_dm).lt.1.d-6.and.dabs(coulomb).lt.1.d-6)then
+! coulomb = 0.d0 
+!else
+  coulomb = coulomb / two_dm
+!endif
 
 end
