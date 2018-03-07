@@ -101,12 +101,13 @@ subroutine density_and_grad_alpha_beta_and_all_aos_and_grad_aos_at_r(r,dm_a,dm_b
    grad_dm_a(1,istate) = u_dot_v(aos_grad_array(1,1),aos_array_bis,ao_num)
    grad_dm_a(2,istate) = u_dot_v(aos_grad_array(1,2),aos_array_bis,ao_num)
    grad_dm_a(3,istate) = u_dot_v(aos_grad_array(1,3),aos_array_bis,ao_num)
+   grad_dm_a *= 2.d0
    ! aos_grad_array_bis = \rho_ao * aos_grad_array
-   call dsymv('U',ao_num,1.d0,one_body_dm_alpha_ao_for_dft(1,1,istate),size(one_body_dm_beta_ao_for_dft,1),aos_grad_array,1,0.d0,aos_grad_array_bis,1)
-   ! grad_dm(1) += \sum_i aos_grad_array(i,1) * aos_array_bis(i)
-   grad_dm_a(1,istate)+= u_dot_v(aos_array(1),aos_grad_array_bis,ao_num)
-   grad_dm_a(2,istate)+= u_dot_v(aos_array(1),aos_grad_array_bis,ao_num)
-   grad_dm_a(3,istate)+= u_dot_v(aos_array(1),aos_grad_array_bis,ao_num)
+ ! call dsymv('U',ao_num,1.d0,one_body_dm_alpha_ao_for_dft(1,1,istate),size(one_body_dm_beta_ao_for_dft,1),aos_grad_array,1,0.d0,aos_grad_array_bis,1)
+ ! ! grad_dm(1) += \sum_i aos_grad_array(i,1) * aos_array_bis(i)
+ ! grad_dm_a(1,istate)+= u_dot_v(aos_array(1),aos_grad_array_bis,ao_num)
+ ! grad_dm_a(2,istate)+= u_dot_v(aos_array(1),aos_grad_array_bis,ao_num)
+ ! grad_dm_a(3,istate)+= u_dot_v(aos_array(1),aos_grad_array_bis,ao_num)
   
   !aos_array_bis = aos_array
    ! beta density
@@ -117,12 +118,13 @@ subroutine density_and_grad_alpha_beta_and_all_aos_and_grad_aos_at_r(r,dm_a,dm_b
    grad_dm_b(1,istate) = u_dot_v(aos_grad_array(1,1),aos_array_bis,ao_num)
    grad_dm_b(2,istate) = u_dot_v(aos_grad_array(1,2),aos_array_bis,ao_num)
    grad_dm_b(3,istate) = u_dot_v(aos_grad_array(1,3),aos_array_bis,ao_num)
+   grad_dm_b *= 2.d0
    ! aos_grad_array_bis = \rho_ao * aos_grad_array
-   call dsymv('U',ao_num,1.d0,one_body_dm_beta_ao_for_dft(1,1,istate),size(one_body_dm_beta_ao_for_dft,1),aos_grad_array,1,0.d0,aos_grad_array_bis,1)
-   ! grad_dm(1) += \sum_i aos_grad_array(i,1) * aos_array_bis(i)
-   grad_dm_b(1,istate)+= u_dot_v(aos_array(1),aos_grad_array_bis,ao_num)
-   grad_dm_b(2,istate)+= u_dot_v(aos_array(1),aos_grad_array_bis,ao_num)
-   grad_dm_b(3,istate)+= u_dot_v(aos_array(1),aos_grad_array_bis,ao_num)
+ ! call dsymv('U',ao_num,1.d0,one_body_dm_beta_ao_for_dft(1,1,istate),size(one_body_dm_beta_ao_for_dft,1),aos_grad_array,1,0.d0,aos_grad_array_bis,1)
+ ! ! grad_dm(1) += \sum_i aos_grad_array(i,1) * aos_array_bis(i)
+ ! grad_dm_b(1,istate)+= u_dot_v(aos_array(1),aos_grad_array_bis,ao_num)
+ ! grad_dm_b(2,istate)+= u_dot_v(aos_array(1),aos_grad_array_bis,ao_num)
+ ! grad_dm_b(3,istate)+= u_dot_v(aos_array(1),aos_grad_array_bis,ao_num)
  enddo
   
 end
