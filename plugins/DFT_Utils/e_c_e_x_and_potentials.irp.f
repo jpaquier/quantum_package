@@ -1,3 +1,9 @@
+BEGIN_PROVIDER [integer, n_terms_functional] 
+ implicit none
+ n_terms_functional = 2
+
+END_PROVIDER 
+
 
  BEGIN_PROVIDER [double precision, energy_x, (N_states)]
 &BEGIN_PROVIDER [double precision, energy_c, (N_states)]
@@ -12,7 +18,7 @@
  double precision, allocatable :: aos_array(:)
  double precision, allocatable :: r(:)
  double precision :: rho_a(N_states),rho_b(N_states),ex(N_states),ec(N_states)
- double precision :: vx_a(N_states),vx_b(N_states),vc_a(N_states),vc_b(N_states)
+ double precision :: vx_a(n_terms_functional,N_states),vx_b(n_terms_functional,N_states),vc_a(n_terms_functional,N_states),vc_b(n_terms_functional,N_states)
  potential_c_alpha_ao = 0.d0
  potential_c_beta_ao = 0.d0
  potential_x_alpha_ao = 0.d0
@@ -23,18 +29,12 @@
   energy_c = 0.d0
   do j = 1, nucl_num
    do k = 1, n_points_radial_grid  -1
-   !!$OMP PARALLEL DEFAULT(NONE)                                                                                                                   &
-   !!OMP PRIVATE(r,l,rho_a,rho_b,ex,ec,vx_a,vx_b,vc_a,vc_b,aos_array,contrib_xa,contrib_xb,contrib_ca, contrib_cb,tmp_c_a,tmp_c_b,tmp_x_a,tmp_x_b) & 
-   !!OMP SHARED(i,j,k,ao_num,n_points_integration_angular,exchange_functional,correlation_functional,final_weight_functions_at_grid_points,potential_x_alpha_ao,potential_x_beta_ao,potential_c_alpha_ao,potential_c_beta_ao)                &
-   !!$OMP REDUCTION (+:energy_x)       &
-   !!$OMP REDUCTION (+:energy_c)        
     allocate(tmp_c_a(ao_num,ao_num,N_states),tmp_c_b(ao_num,ao_num,N_states),tmp_x_a(ao_num,ao_num,N_states),tmp_x_b(ao_num,ao_num,N_states),aos_array(ao_num),r(3))
     
     tmp_c_a = 0.d0
     tmp_c_b = 0.d0
     tmp_x_a = 0.d0
     tmp_x_b = 0.d0
-   !!$OMP DO SCHEDULE(static)
     do l = 1, n_points_integration_angular 
      
      r(1) = grid_points_per_atom(1,l,k,j)
@@ -89,9 +89,6 @@
      enddo
 
     enddo
-  !!$OMP END DO 
-    
-  !!$OMP CRITICAL
    
     do istate = 1,N_states
      potential_c_alpha_ao(:,:,istate) = potential_c_alpha_ao(:,:,istate) + tmp_c_a(:,:,istate)
@@ -99,14 +96,19 @@
      potential_c_beta_ao(:,:,istate)  =  potential_c_beta_ao(:,:,istate) + tmp_c_b(:,:,istate)
      potential_x_beta_ao(:,:,istate)  =  potential_x_beta_ao(:,:,istate) + tmp_x_b(:,:,istate)
     enddo
-  !!$OMP END CRITICAL
     deallocate(tmp_x_a,tmp_x_b,tmp_c_a,tmp_c_b,aos_array,r)
-  !!$OMP END PARALLEL
    enddo
   enddo
  print*,'potentials provided !' 
 
 END_PROVIDER 
+
+
+subroutine functional_correlation(rho_a,rho_b,grad_rho_a,grad_rho_b,e)
+ implicit none
+
+
+end
 
  BEGIN_PROVIDER [double precision, potential_x_alpha_mo,(mo_tot_num,mo_tot_num,N_states)]
 &BEGIN_PROVIDER [double precision, potential_x_beta_mo,(mo_tot_num,mo_tot_num,N_states)]
