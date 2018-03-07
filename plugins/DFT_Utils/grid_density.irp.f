@@ -174,7 +174,7 @@ END_PROVIDER
  integer :: i,j,k,l,m,istate
  double precision :: contrib
  double precision :: r(3)
- double precision :: aos_array(ao_num),mos_array(mo_tot_num)
+ double precision :: aos_array(ao_num),mos_array(mo_tot_num),grad_aos_array(3,ao_num)
 !do istate = 1, N_States
   do j = 1, nucl_num
    do k = 1, n_points_radial_grid -1
@@ -190,7 +190,7 @@ END_PROVIDER
 
  !!!!! Works also with the ao basis 
      double precision :: dm_a,dm_b, dm_a_grad(3), dm_b_grad(3)
-     call dm_and_gradients_dft_alpha_beta_at_r(r,dm_a,dm_b, dm_a_grad, dm_b_grad)
+     call density_and_grad_alpha_beta_and_all_aos_and_grad_aos_at_r(r,dm_a,dm_b,  dm_a_grad, dm_b_grad, aos_array, grad_aos_array)
      one_body_dm_mo_alpha_and_grad_at_grid_points(1,l,k,j,1) +=  dm_a_grad(1)
      one_body_dm_mo_alpha_and_grad_at_grid_points(2,l,k,j,1) +=  dm_a_grad(2)
      one_body_dm_mo_alpha_and_grad_at_grid_points(3,l,k,j,1) +=  dm_a_grad(3)
