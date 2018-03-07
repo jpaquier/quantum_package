@@ -104,11 +104,11 @@ END_PROVIDER
 END_PROVIDER 
 
 
-subroutine functional_correlation(rho_a,rho_b,grad_rho_a,grad_rho_b,e)
- implicit none
+!subroutine functional_correlation(rho_a,rho_b,grad_rho_a,grad_rho_b,e)
+! implicit none
 
 
-end
+!end
 
  BEGIN_PROVIDER [double precision, potential_x_alpha_mo,(mo_tot_num,mo_tot_num,N_states)]
 &BEGIN_PROVIDER [double precision, potential_x_beta_mo,(mo_tot_num,mo_tot_num,N_states)]
