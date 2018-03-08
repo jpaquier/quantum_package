@@ -33,57 +33,14 @@
      r(1) = grid_points_per_atom(1,l,k,j)
      r(2) = grid_points_per_atom(2,l,k,j)
      r(3) = grid_points_per_atom(3,l,k,j)
-     if(DFT_TYPE=="LDA")then
-      call dm_dft_alpha_beta_and_all_aos_at_r(r,rho_a,rho_b,aos_array)
- 
-!!!!!!!!!!!! EXCHANGE PART
-      do istate = 1, N_states
-       if(exchange_functional.EQ."short_range_LDA")then
-        call ex_lda_sr(rho_a(istate),rho_b(istate),ex(istate),vx_a(istate),vx_b(istate))
-       else if(exchange_functional.EQ."LDA")then
-        call ex_lda(rho_a(istate),rho_b(istate),ex(istate),vx_a(istate),vx_b(istate))
-       else if(exchange_functional.EQ."None")then
-        ex = 0.d0
-        vx_a = 0.d0
-        vx_b = 0.d0
-       else
-        print*, 'Exchange functional required does not exist ...'
-        print*,'exchange_functional',exchange_functional
-        stop
-       endif
- 
-!!!!!!!!!!!!! CORRELATION PART
-       if(correlation_functional.EQ."short_range_LDA")then
-        call ec_lda_sr(rho_a(istate),rho_b(istate),ec(istate),vc_a(istate),vc_b(istate))
-       else if(correlation_functional.EQ."LDA")then
-        call ec_lda(rho_a(istate),rho_b(istate),ec(istate),vc_a(istate),vc_b(istate))
-       else if(correlation_functional.EQ."None")then
-        ec = 0.d0
-        vc_a = 0.d0
-        vc_b = 0.d0
-       else
-        print*, 'Correlation functional required does not exist ...'
-        print*, 'correlation_functional',correlation_functional
-        stop
-       endif
-      enddo
-      double precision :: contrib_xa,contrib_xb,contrib_ca, contrib_cb
-      do istate = 1, N_states
-       energy_x(istate) += final_weight_functions_at_grid_points(l,k,j) * ex(istate) 
-       energy_c(istate) += final_weight_functions_at_grid_points(l,k,j) * ec(istate)
- 
-       contrib_xa =  vx_a(istate) * final_weight_functions_at_grid_points(l,k,j)
-       contrib_ca =  vc_a(istate) * final_weight_functions_at_grid_points(l,k,j)
-       contrib_xb =  vx_b(istate) * final_weight_functions_at_grid_points(l,k,j)
-       contrib_cb =  vc_b(istate) * final_weight_functions_at_grid_points(l,k,j)
-       call dger(ao_num,ao_num,contrib_xa,aos_array,1,aos_array,1,tmp_x_a,size(tmp_x_a,1))
-       call dger(ao_num,ao_num,contrib_ca,aos_array,1,aos_array,1,tmp_c_a,size(tmp_c_a,1))
-       call dger(ao_num,ao_num,contrib_xb,aos_array,1,aos_array,1,tmp_x_b,size(tmp_x_b,1))
-       call dger(ao_num,ao_num,contrib_cb,aos_array,1,aos_array,1,tmp_c_b,size(tmp_c_b,1))
-      enddo
-     else
+     double precision :: weight
+     weight = final_weight_functions_at_grid_points(l,k,j)
 
-     endif
+     call exchange_correlation_functional(r,weight,ec,ex,tmp_c_a,tmp_c_b,tmp_x_a,tmp_x_b)
+     do istate = 1, N_states
+      energy_x(istate) +=  ex(istate) ! final_weight_functions_at_grid_points(l,k,j) *
+      energy_c(istate) +=  ec(istate) ! final_weight_functions_at_grid_points(l,k,j) *
+     enddo
 
     enddo
    
@@ -101,11 +58,77 @@
 END_PROVIDER 
 
 
-!subroutine functional_correlation(rho_a,rho_b,grad_rho_a,grad_rho_b,e)
-! implicit none
+ subroutine exchange_correlation_functional(r,weight,ec,ex,vc_a_array,vc_b_array,vx_a_array,vx_b_array)
+  implicit none
+  double precision, intent(in)  :: r(3), weight
+  double precision, intent(out) :: ec(N_states),ex(N_states)
+  double precision, intent(inout) :: vx_a_array(ao_num,ao_num,N_states),vx_b_array(ao_num,ao_num,N_states)
+  double precision, intent(inout) :: vc_a_array(ao_num,ao_num,N_states),vc_b_array(ao_num,ao_num,N_states)
 
+  double precision :: rho_a(N_states),rho_b(N_states)
+  double precision :: aos_array(ao_num)
+  double precision :: grad_rho_a(3,N_states),grad_rho_b(3,N_states)
+  double precision :: grad_aos_array(3,ao_num)
+  double precision :: vx_a(N_states), vx_b(N_states), vc_a(N_states), vc_b(N_states)
+  integer :: istate
+  if(DFT_TYPE.EQ."LDA")then
+   call dm_dft_alpha_beta_and_all_aos_at_r(r,rho_a,rho_b,aos_array)
 
-!end
+!!!!!!!!!!! EXCHANGE PART
+   do istate = 1, N_states
+    if(exchange_functional.EQ."short_range_LDA")then
+     call ex_lda_sr(rho_a(istate),rho_b(istate),ex(istate),vx_a(istate),vx_b(istate))
+    else if(exchange_functional.EQ."LDA")then
+     call ex_lda(rho_a(istate),rho_b(istate),ex(istate),vx_a(istate),vx_b(istate))
+    else if(exchange_functional.EQ."None")then
+     ex = 0.d0
+     vx_a = 0.d0
+     vx_b = 0.d0
+    else
+     print*, 'Exchange functional required does not exist ...'
+     print*,'exchange_functional',exchange_functional
+     stop
+    endif
+
+!!!!!!!!!! CORRELATION PART
+    if(correlation_functional.EQ."short_range_LDA")then
+     call ec_lda_sr(rho_a(istate),rho_b(istate),ec(istate),vc_a(istate),vc_b(istate))
+    else if(correlation_functional.EQ."LDA")then
+     call ec_lda(rho_a(istate),rho_b(istate),ec(istate),vc_a(istate),vc_b(istate))
+     if(dabs(ec(istate)).gt.1.D+10)then
+      print*,r
+      print*,rho_a(istate),rho_b(istate)
+      print*,'ec = ',ec 
+      pause
+     endif
+    else if(correlation_functional.EQ."None")then
+     ec = 0.d0
+     vc_a = 0.d0
+     vc_b = 0.d0
+    else
+     print*, 'Correlation functional required does not exist ...'
+     print*, 'correlation_functional',correlation_functional
+     stop
+    endif
+    double precision :: contrib_xa,contrib_xb,contrib_ca, contrib_cb
+    contrib_xa = weight *  vx_a(istate) 
+    contrib_ca = weight *  vc_a(istate) 
+    contrib_xb = weight *  vx_b(istate) 
+    contrib_cb = weight *  vc_b(istate) 
+    call dger(ao_num,ao_num,contrib_xa,aos_array,1,aos_array,1,vx_a_array,size(vx_a_array,1))
+    call dger(ao_num,ao_num,contrib_ca,aos_array,1,aos_array,1,vc_a_array,size(vc_a_array,1))
+    call dger(ao_num,ao_num,contrib_xb,aos_array,1,aos_array,1,vx_b_array,size(vx_b_array,1))
+    call dger(ao_num,ao_num,contrib_cb,aos_array,1,aos_array,1,vc_b_array,size(vc_b_array,1))
+   enddo
+
+  else if(DFT_TYPE.EQ."GGA")then
+   call density_and_grad_alpha_beta_and_all_aos_and_grad_aos_at_r(r,rho_a,rho_b, grad_rho_a, grad_rho_b, aos_array, grad_aos_array)
+  
+  endif
+  ex = ex * weight
+  ec = ec * weight
+
+ end
 
  BEGIN_PROVIDER [double precision, potential_x_alpha_mo,(mo_tot_num,mo_tot_num,N_states)]
 &BEGIN_PROVIDER [double precision, potential_x_beta_mo,(mo_tot_num,mo_tot_num,N_states)]

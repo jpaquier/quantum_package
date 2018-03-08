@@ -7,9 +7,26 @@ program scf
   END_DOC
   read_wf = .False.
   touch read_wf
+  call check_coherence_functional
   call create_guess
   call orthonormalize_mos
   call run
+end
+
+subroutine check_coherence_functional
+ implicit none
+ integer :: ifound_x,ifound_c
+ ifound_x = index(exchange_functional,"short_range")
+ ifound_c = index(correlation_functional,"short_range")
+ if(ifound_x .ne.0 .or. ifound_c .ne. 0)then
+  print*,'YOU ARE USING THE REGULAR KS PROGRAM BUT YOUR INPUT KEYWORD FOR '
+  print*,'exchange_functional is ',exchange_functional
+  print*,'correlation_functional is ',correlation_functional
+  print*,'CHANGE THE exchange_functional and correlation_functional keywords to regular functionals'
+  print*,'or switch to the RS_KS_SCF program that uses range separated functionals'
+  stop
+ endif
+
 end
 
 subroutine create_guess

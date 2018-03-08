@@ -29,7 +29,7 @@ subroutine ec_lda(rho_a,rho_b,ec,vc_a,vc_b)
 
 ! Test on density
       rho = rho_a + rho_b
-      if (dabs(rho).ge.1.d-12) then
+      if (dabs(rho).ge.1.d-10) then
 
       rs=rsfac/(rho**c_1_3)
       rhoa=max(rho_a,1.0d-15)
@@ -44,6 +44,10 @@ subroutine ec_lda(rho_a,rho_b,ec,vc_a,vc_b)
       vcdown=eccoul-rs/3.d0*ecd-(z+1.d0)*ecz
       vc_a = vcup
       vc_b = vcdown
+      else
+       ec = 0.d0
+       vc_a = 0.d0
+       vc_b = 0.d0
 
       endif
 
@@ -85,7 +89,12 @@ subroutine ec_lda_sr(rho_a,rho_b,ec,vc_a,vc_b)
       call vcorrlr(rs,z,mu_erf,vclrup,vclrdown,vclrupd,vclrdownd)
       vc_a = vcup-vclrup
       vc_b = vcdown-vclrdown
-
+      
+      else
+       ec = 0.d0
+       vc_a = 0.d0
+       vc_b = 0.d0
+       
       endif
 
 end
