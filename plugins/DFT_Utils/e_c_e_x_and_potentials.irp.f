@@ -23,27 +23,22 @@
   do j = 1, nucl_num
    do k = 1, n_points_radial_grid  -1
     allocate(tmp_c_a(ao_num,ao_num,N_states),tmp_c_b(ao_num,ao_num,N_states),tmp_x_a(ao_num,ao_num,N_states),tmp_x_b(ao_num,ao_num,N_states),aos_array(ao_num),r(3))
-    
     tmp_c_a = 0.d0
     tmp_c_b = 0.d0
     tmp_x_a = 0.d0
     tmp_x_b = 0.d0
     do l = 1, n_points_integration_angular 
-     
      r(1) = grid_points_per_atom(1,l,k,j)
      r(2) = grid_points_per_atom(2,l,k,j)
      r(3) = grid_points_per_atom(3,l,k,j)
      double precision :: weight
      weight = final_weight_functions_at_grid_points(l,k,j)
-
      call exchange_correlation_functional(r,weight,ec,ex,tmp_c_a,tmp_c_b,tmp_x_a,tmp_x_b)
      do istate = 1, N_states
-      energy_x(istate) +=  ex(istate) ! final_weight_functions_at_grid_points(l,k,j) *
-      energy_c(istate) +=  ec(istate) ! final_weight_functions_at_grid_points(l,k,j) *
+      energy_x(istate) +=  ex(istate) 
+      energy_c(istate) +=  ec(istate) 
      enddo
-
     enddo
-   
     do istate = 1,N_states
      potential_c_alpha_ao(:,:,istate) = potential_c_alpha_ao(:,:,istate) + tmp_c_a(:,:,istate)
      potential_x_alpha_ao(:,:,istate) = potential_x_alpha_ao(:,:,istate) + tmp_x_a(:,:,istate)
@@ -95,12 +90,6 @@ END_PROVIDER
      call ec_lda_sr(rho_a(istate),rho_b(istate),ec(istate),vc_a(istate),vc_b(istate))
     else if(correlation_functional.EQ."LDA")then
      call ec_lda(rho_a(istate),rho_b(istate),ec(istate),vc_a(istate),vc_b(istate))
-     if(dabs(ec(istate)).gt.1.D+10)then
-      print*,r
-      print*,rho_a(istate),rho_b(istate)
-      print*,'ec = ',ec 
-      pause
-     endif
     else if(correlation_functional.EQ."None")then
      ec = 0.d0
      vc_a = 0.d0
@@ -110,11 +99,12 @@ END_PROVIDER
      print*, 'correlation_functional',correlation_functional
      stop
     endif
+
     double precision :: contrib_xa,contrib_xb,contrib_ca, contrib_cb
-    contrib_xa = weight *  vx_a(istate) 
-    contrib_ca = weight *  vc_a(istate) 
-    contrib_xb = weight *  vx_b(istate) 
-    contrib_cb = weight *  vc_b(istate) 
+    contrib_xa = weight * vx_a(istate) 
+    contrib_ca = weight * vc_a(istate) 
+    contrib_xb = weight * vx_b(istate) 
+    contrib_cb = weight * vc_b(istate) 
     call dger(ao_num,ao_num,contrib_xa,aos_array,1,aos_array,1,vx_a_array,size(vx_a_array,1))
     call dger(ao_num,ao_num,contrib_ca,aos_array,1,aos_array,1,vc_a_array,size(vc_a_array,1))
     call dger(ao_num,ao_num,contrib_xb,aos_array,1,aos_array,1,vx_b_array,size(vx_b_array,1))
@@ -123,11 +113,30 @@ END_PROVIDER
 
   else if(DFT_TYPE.EQ."GGA")then
    call density_and_grad_alpha_beta_and_all_aos_and_grad_aos_at_r(r,rho_a,rho_b, grad_rho_a, grad_rho_b, aos_array, grad_aos_array)
-  
+   do istate = 1, N_states
+    double precision :: dvc_a(3,N_states), dvc_b(3,N_states)
+    call routine_gga_correlation(r,rho_a(istate),rho_b(istate),grad_rho_a(1,istate),grad_rho_b(1,istate),ec(istate),vc_a(istate),dvc_a(1,istate),vc_b(istate),dvc_b(1,istate))
+   enddo
   endif
   ex = ex * weight
   ec = ec * weight
 
+ end
+
+ subroutine routine_gga_correlation(r,rho_a,rho_b,grad_rho_a,grad_rho_b,ec,vc_a,dvc_a,vc_b,dvc_b)
+  implicit none
+  double precision, intent(in) :: r(3)
+  double precision, intent(in) :: rho_a,rho_b,grad_rho_a(3),grad_rho_b(3)
+  double precision, intent(out) :: dvc_b(3),dvc_a(3),vc_a,vc_b,ec 
+  ec = 0.d0
+  double precision :: rho_a_bis(N_states),rho_b_bis(N_states) 
+  double precision :: grad_rho_a_bis(3,N_states), grad_rho_b_bis(3,N_states)
+  double precision :: aos_array(ao_num), grad_aos_array(3,ao_num)
+  call density_and_grad_alpha_beta_and_all_aos_and_grad_aos_at_r(r,rho_a,rho_b, grad_rho_a, grad_rho_b, aos_array, grad_aos_array)
+  vc_a = 0.d0
+  vc_b = 0.d0
+  dvc_a = 0.d0
+  dvc_b = 0.d0
  end
 
  BEGIN_PROVIDER [double precision, potential_x_alpha_mo,(mo_tot_num,mo_tot_num,N_states)]
