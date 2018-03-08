@@ -1,10 +1,3 @@
-BEGIN_PROVIDER [integer, n_terms_functional] 
- implicit none
- n_terms_functional = 2
-
-END_PROVIDER 
-
-
  BEGIN_PROVIDER [double precision, energy_x, (N_states)]
 &BEGIN_PROVIDER [double precision, energy_c, (N_states)]
 &BEGIN_PROVIDER [double precision, potential_x_alpha_ao,(ao_num,ao_num,N_states)]
@@ -18,7 +11,7 @@ END_PROVIDER
  double precision, allocatable :: aos_array(:)
  double precision, allocatable :: r(:)
  double precision :: rho_a(N_states),rho_b(N_states),ex(N_states),ec(N_states)
- double precision :: vx_a(n_terms_functional,N_states),vx_b(n_terms_functional,N_states),vc_a(n_terms_functional,N_states),vc_b(n_terms_functional,N_states)
+ double precision :: vx_a(N_states),vx_b(N_states),vc_a(N_states),vc_b(N_states)
  potential_c_alpha_ao = 0.d0
  potential_c_beta_ao = 0.d0
  potential_x_alpha_ao = 0.d0
@@ -40,53 +33,57 @@ END_PROVIDER
      r(1) = grid_points_per_atom(1,l,k,j)
      r(2) = grid_points_per_atom(2,l,k,j)
      r(3) = grid_points_per_atom(3,l,k,j)
-     call dm_dft_alpha_beta_and_all_aos_at_r(r,rho_a,rho_b,aos_array)
+     if(DFT_TYPE=="LDA")then
+      call dm_dft_alpha_beta_and_all_aos_at_r(r,rho_a,rho_b,aos_array)
+ 
+!!!!!!!!!!!! EXCHANGE PART
+      do istate = 1, N_states
+       if(exchange_functional.EQ."short_range_LDA")then
+        call ex_lda_sr(rho_a(istate),rho_b(istate),ex(istate),vx_a(istate),vx_b(istate))
+       else if(exchange_functional.EQ."LDA")then
+        call ex_lda(rho_a(istate),rho_b(istate),ex(istate),vx_a(istate),vx_b(istate))
+       else if(exchange_functional.EQ."None")then
+        ex = 0.d0
+        vx_a = 0.d0
+        vx_b = 0.d0
+       else
+        print*, 'Exchange functional required does not exist ...'
+        print*,'exchange_functional',exchange_functional
+        stop
+       endif
+ 
+!!!!!!!!!!!!! CORRELATION PART
+       if(correlation_functional.EQ."short_range_LDA")then
+        call ec_lda_sr(rho_a(istate),rho_b(istate),ec(istate),vc_a(istate),vc_b(istate))
+       else if(correlation_functional.EQ."LDA")then
+        call ec_lda(rho_a(istate),rho_b(istate),ec(istate),vc_a(istate),vc_b(istate))
+       else if(correlation_functional.EQ."None")then
+        ec = 0.d0
+        vc_a = 0.d0
+        vc_b = 0.d0
+       else
+        print*, 'Correlation functional required does not exist ...'
+        print*, 'correlation_functional',correlation_functional
+        stop
+       endif
+      enddo
+      double precision :: contrib_xa,contrib_xb,contrib_ca, contrib_cb
+      do istate = 1, N_states
+       energy_x(istate) += final_weight_functions_at_grid_points(l,k,j) * ex(istate) 
+       energy_c(istate) += final_weight_functions_at_grid_points(l,k,j) * ec(istate)
+ 
+       contrib_xa =  vx_a(istate) * final_weight_functions_at_grid_points(l,k,j)
+       contrib_ca =  vc_a(istate) * final_weight_functions_at_grid_points(l,k,j)
+       contrib_xb =  vx_b(istate) * final_weight_functions_at_grid_points(l,k,j)
+       contrib_cb =  vc_b(istate) * final_weight_functions_at_grid_points(l,k,j)
+       call dger(ao_num,ao_num,contrib_xa,aos_array,1,aos_array,1,tmp_x_a,size(tmp_x_a,1))
+       call dger(ao_num,ao_num,contrib_ca,aos_array,1,aos_array,1,tmp_c_a,size(tmp_c_a,1))
+       call dger(ao_num,ao_num,contrib_xb,aos_array,1,aos_array,1,tmp_x_b,size(tmp_x_b,1))
+       call dger(ao_num,ao_num,contrib_cb,aos_array,1,aos_array,1,tmp_c_b,size(tmp_c_b,1))
+      enddo
+     else
 
-!!!!!!!!!!! EXCHANGE PART
-     do istate = 1, N_states
-      if(exchange_functional.EQ."short_range_LDA")then
-       call ex_lda_sr(rho_a(istate),rho_b(istate),ex(istate),vx_a(istate),vx_b(istate))
-      else if(exchange_functional.EQ."LDA")then
-       call ex_lda(rho_a(istate),rho_b(istate),ex(istate),vx_a(istate),vx_b(istate))
-      else if(exchange_functional.EQ."None")then
-       ex = 0.d0
-       vx_a = 0.d0
-       vx_b = 0.d0
-      else
-       print*, 'Exchange functional required does not exist ...'
-       print*,'exchange_functional',exchange_functional
-       stop
-      endif
-
-!!!!!!!!!!!! CORRELATION PART
-      if(correlation_functional.EQ."short_range_LDA")then
-       call ec_lda_sr(rho_a(istate),rho_b(istate),ec(istate),vc_a(istate),vc_b(istate))
-      else if(correlation_functional.EQ."LDA")then
-       call ec_lda(rho_a(istate),rho_b(istate),ec(istate),vc_a(istate),vc_b(istate))
-      else if(correlation_functional.EQ."None")then
-       ec = 0.d0
-       vc_a = 0.d0
-       vc_b = 0.d0
-      else
-       print*, 'Correlation functional required does not exist ...'
-       print*, 'correlation_functional',correlation_functional
-       stop
-      endif
-     enddo
-     double precision :: contrib_xa,contrib_xb,contrib_ca, contrib_cb
-     do istate = 1, N_states
-      energy_x(istate) += final_weight_functions_at_grid_points(l,k,j) * ex(istate) 
-      energy_c(istate) += final_weight_functions_at_grid_points(l,k,j) * ec(istate)
-
-      contrib_xa =  vx_a(istate) * final_weight_functions_at_grid_points(l,k,j)
-      contrib_ca =  vc_a(istate) * final_weight_functions_at_grid_points(l,k,j)
-      contrib_xb =  vx_b(istate) * final_weight_functions_at_grid_points(l,k,j)
-      contrib_cb =  vc_b(istate) * final_weight_functions_at_grid_points(l,k,j)
-      call dger(ao_num,ao_num,contrib_xa,aos_array,1,aos_array,1,tmp_x_a,size(tmp_x_a,1))
-      call dger(ao_num,ao_num,contrib_ca,aos_array,1,aos_array,1,tmp_c_a,size(tmp_c_a,1))
-      call dger(ao_num,ao_num,contrib_xb,aos_array,1,aos_array,1,tmp_x_b,size(tmp_x_b,1))
-      call dger(ao_num,ao_num,contrib_cb,aos_array,1,aos_array,1,tmp_c_b,size(tmp_c_b,1))
-     enddo
+     endif
 
     enddo
    

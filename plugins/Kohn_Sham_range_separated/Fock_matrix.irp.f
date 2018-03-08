@@ -254,6 +254,7 @@ END_PROVIDER
 &BEGIN_PROVIDER [ double precision, two_electron_energy]
 &BEGIN_PROVIDER [ double precision, one_electron_energy]
 &BEGIN_PROVIDER [ double precision, Fock_matrix_energy]
+&BEGIN_PROVIDER [ double precision, trace_potential_xc ]
  implicit none
  BEGIN_DOC
  ! Range-separated Kohn-Sham energy
@@ -265,6 +266,7 @@ END_PROVIDER
  one_electron_energy = 0.d0
  two_electron_energy = 0.d0
  Fock_matrix_energy = 0.d0
+ trace_potential_xc = 0.d0
  do j=1,ao_num
    do i=1,ao_num
     Fock_matrix_energy +=   Fock_matrix_ao_alpha(i,j) * SCF_density_matrix_ao_alpha(i,j) + & 
@@ -272,6 +274,7 @@ END_PROVIDER
     two_electron_energy += 0.5d0 * ( ao_bi_elec_integral_alpha(i,j) * SCF_density_matrix_ao_alpha(i,j) & 
                 +ao_bi_elec_integral_beta(i,j) * SCF_density_matrix_ao_beta(i,j) ) 
     one_electron_energy += ao_mono_elec_integral(i,j) * (SCF_density_matrix_ao_alpha(i,j) + SCF_density_matrix_ao_beta (i,j) )
+    trace_potential_xc += (ao_potential_alpha_xc(i,j) + ao_potential_beta_xc(i,j) ) *  (SCF_density_matrix_ao_alpha(i,j) + SCF_density_matrix_ao_beta (i,j) )
    enddo
  enddo
  RS_KS_energy +=  e_exchange_dft + e_correlation_dft + one_electron_energy + two_electron_energy
@@ -280,7 +283,7 @@ END_PROVIDER
 
 BEGIN_PROVIDER [double precision, extra_energy_contrib_from_density]
  implicit none
- extra_energy_contrib_from_density = e_exchange_dft + e_correlation_dft
+ extra_energy_contrib_from_density = e_exchange_dft + e_correlation_dft - 0.25d0 * trace_potential_xc
 
 END_PROVIDER 
 

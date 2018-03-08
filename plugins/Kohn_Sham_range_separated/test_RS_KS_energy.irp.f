@@ -8,6 +8,7 @@ end
 
 subroutine test_energy
  implicit none
+ print*, 'SCF_energy          = ',SCF_energy
  print*, 'exchange_functional = ',exchange_functional
  print*, 'RS_KS_energy        = ',RS_KS_energy
  print*, 'one_electron_energy = ',one_electron_energy
