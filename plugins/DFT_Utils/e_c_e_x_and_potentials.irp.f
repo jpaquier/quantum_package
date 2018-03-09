@@ -63,8 +63,11 @@ END_PROVIDER
   double precision :: rho_a(N_states),rho_b(N_states)
   double precision :: aos_array(ao_num)
   double precision :: grad_rho_a(3,N_states),grad_rho_b(3,N_states)
-  double precision :: grad_aos_array(3,ao_num)
+  double precision :: grad_aos_array(3,ao_num),grad_aos_array_transpose(ao_num,3)
   double precision :: vx_a(N_states), vx_b(N_states), vc_a(N_states), vc_b(N_states)
+  double precision :: contrib_grad_ca, contrib_grad_cb
+  double precision :: ao_ao_grad_matrix(ao_num,ao_num)
+  double precision :: ao_ao_grad_matrix_transpose(ao_num,ao_num)
   integer :: istate,i,j,k
   if(DFT_TYPE.EQ."LDA")then
    call dm_dft_alpha_beta_and_all_aos_at_r(r,rho_a,rho_b,aos_array)
@@ -116,15 +119,25 @@ END_PROVIDER
    do istate = 1, N_states
     double precision :: dvc_a(3,N_states), dvc_b(3,N_states)
     call routine_gga_correlation(r,rho_a(istate),rho_b(istate),grad_rho_a(1,istate),grad_rho_b(1,istate),ec(istate),vc_a(istate),dvc_a(1,istate),vc_b(istate),dvc_b(1,istate))
-    do j = 1, ao_num
-     do i = 1, ao_num
-      vc_a_array(i,j,istate) += weight*vc_a(istate)*aos_array(i)*aos_array(j) 
-      vc_b_array(i,j,istate) += weight*vc_b(istate)*aos_array(i)*aos_array(j) 
-      do k= 1,3
-        vc_a_array(i,j,istate) += weight*dvc_a(k,istate)*(aos_array(i)*grad_aos_array(k,j)+grad_aos_array(k,i)*aos_array(j))
-        vc_b_array(i,j,istate) += weight*dvc_b(k,istate)*(aos_array(i)*grad_aos_array(k,j)+grad_aos_array(k,i)*aos_array(j))
-      enddo
-     enddo  
+
+    contrib_ca=weight*vc_a(istate)
+    contrib_cb=weight*vc_b(istate)
+
+    call dger(ao_num,ao_num,contrib_ca,aos_array,1,aos_array,1,vc_a_array(1,1,istate),size(vc_a_array,1))
+    call dger(ao_num,ao_num,contrib_cb,aos_array,1,aos_array,1,vc_b_array(1,1,istate),size(vc_b_array,1))
+    call dtranspose(grad_aos_array,3,grad_aos_array_transpose,ao_num,3,ao_num)
+    do k= 1,3
+      contrib_grad_ca=weight*dvc_a(k,istate)
+      contrib_grad_cb=weight*dvc_b(k,istate)
+      ao_ao_grad_matrix= 0.d0
+      call dger(ao_num,ao_num,1.D0,aos_array,1,grad_aos_array_transpose(1,k),1,ao_ao_grad_matrix(1,1),size(ao_ao_grad_matrix,1))
+      call dtranspose(ao_ao_grad_matrix,ao_num,ao_ao_grad_matrix_transpose,ao_num,ao_num,ao_num)
+      ao_ao_grad_matrix += ao_ao_grad_matrix_transpose
+      vc_a_array(:,:,istate) += ao_ao_grad_matrix(:,:) * contrib_grad_ca
+      vc_b_array(:,:,istate) += ao_ao_grad_matrix(:,:) * contrib_grad_cb
+!     call dger(ao_num,ao_num,contrib_grad_ca,grad_aos_array_transpose(1,k),1,aos_array,1,vc_a_array(1,1,istate),size(vc_a_array,1))
+!     call dger(ao_num,ao_num,contrib_grad_cb,aos_array,1,grad_aos_array_transpose(1,k),1,vc_b_array(1,1,istate),size(vc_b_array,1))
+!     call dger(ao_num,ao_num,contrib_grad_cb,grad_aos_array_transpose(1,k),1,aos_array,1,vc_b_array(1,1,istate),size(vc_b_array,1))
     enddo
    enddo
   endif
