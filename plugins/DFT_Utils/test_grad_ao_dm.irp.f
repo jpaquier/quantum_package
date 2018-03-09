@@ -1,9 +1,9 @@
 program pouet
  read_wf = .True.
  touch read_wf
- call test_grad_density
+!call test_grad_density
+ call test_v_corel
 end
-
 
 subroutine test_grad_ao
  implicit none
@@ -17,7 +17,6 @@ subroutine test_grad_ao
  dr = 10d0**(-n)
  r = 0d0
  accu = 0d0
- 
   do j = 1,nucl_num
    do k = 1, n_points_radial_grid -1
     do l = 1 , n_points_integration_angular
@@ -36,15 +35,6 @@ subroutine test_grad_ao
       do i = 1, ao_num
         grad_aos_array_bis(m,i) = (aos_array_plus(i) - aos_array_minus(i)) / (2.d0 * dr)
         accu(m) += dabs(grad_aos_array_bis(m,i) - grad_aos_array(m,i)) *  final_weight_functions_at_grid_points(l,k,j)
- 
-      ! if(dabs(grad_aos_array_bis(m,i) - grad_aos_array(m,i))>1d-6)then
-      !  print*,'AHAHAH !!' 
-      !  print*,r
-      !  print*,i , m 
-      !  print*,grad_aos_array_bis(m,i),grad_aos_array(m,i)
-      !  print*, aos_array(i), aos_array_plus(i), aos_array_minus(i)
-      !  pause 
-      ! endif
       enddo
      enddo
     enddo
@@ -90,15 +80,6 @@ subroutine test_grad_density
       grad_dm_b_bis(m) = (dm_b_plus - dm_b_minus) / (2.d0 * dr)
       accu_a(m) += dabs(grad_dm_a_bis(m) - grad_dm_a(m)) *  final_weight_functions_at_grid_points(l,k,j)
       accu_b(m) += dabs(grad_dm_b_bis(m) - grad_dm_b(m)) *  final_weight_functions_at_grid_points(l,k,j)
- 
-      ! if(dabs(grad_aos_array_bis(m,i) - grad_aos_array(m,i))>1d-6)then
-      !  print*,'AHAHAH !!' 
-      !  print*,r
-      !  print*,i , m 
-      !  print*,grad_aos_array_bis(m,i),grad_aos_array(m,i)
-      !  print*, aos_array(i), aos_array_plus(i), aos_array_minus(i)
-      !  pause 
-      ! endif
      enddo
     enddo
    enddo
@@ -106,4 +87,14 @@ subroutine test_grad_density
   print*,dr,accu_a(1), accu_b(1)
  enddo
 
+end
+
+subroutine test_v_corel
+implicit none
+ integer :: i,j
+ do i = 1, ao_num
+  do j = 1, ao_num
+   print*,j,i,potential_c_beta_ao(j,i,1)
+  enddo
+ enddo
 end

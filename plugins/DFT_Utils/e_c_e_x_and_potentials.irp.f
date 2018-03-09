@@ -65,7 +65,7 @@ END_PROVIDER
   double precision :: grad_rho_a(3,N_states),grad_rho_b(3,N_states)
   double precision :: grad_aos_array(3,ao_num)
   double precision :: vx_a(N_states), vx_b(N_states), vc_a(N_states), vc_b(N_states)
-  integer :: istate
+  integer :: istate,i,j,k
   if(DFT_TYPE.EQ."LDA")then
    call dm_dft_alpha_beta_and_all_aos_at_r(r,rho_a,rho_b,aos_array)
 
@@ -105,10 +105,10 @@ END_PROVIDER
     contrib_ca = weight * vc_a(istate) 
     contrib_xb = weight * vx_b(istate) 
     contrib_cb = weight * vc_b(istate) 
-    call dger(ao_num,ao_num,contrib_xa,aos_array,1,aos_array,1,vx_a_array,size(vx_a_array,1))
-    call dger(ao_num,ao_num,contrib_ca,aos_array,1,aos_array,1,vc_a_array,size(vc_a_array,1))
-    call dger(ao_num,ao_num,contrib_xb,aos_array,1,aos_array,1,vx_b_array,size(vx_b_array,1))
-    call dger(ao_num,ao_num,contrib_cb,aos_array,1,aos_array,1,vc_b_array,size(vc_b_array,1))
+    call dger(ao_num,ao_num,contrib_xa,aos_array,1,aos_array,1,vx_a_array(1,1,istate),size(vx_a_array,1))
+    call dger(ao_num,ao_num,contrib_ca,aos_array,1,aos_array,1,vc_a_array(1,1,istate),size(vc_a_array,1))
+    call dger(ao_num,ao_num,contrib_xb,aos_array,1,aos_array,1,vx_b_array(1,1,istate),size(vx_b_array,1))
+    call dger(ao_num,ao_num,contrib_cb,aos_array,1,aos_array,1,vc_b_array(1,1,istate),size(vc_b_array,1))
    enddo
 
   else if(DFT_TYPE.EQ."GGA")then
@@ -116,6 +116,16 @@ END_PROVIDER
    do istate = 1, N_states
     double precision :: dvc_a(3,N_states), dvc_b(3,N_states)
     call routine_gga_correlation(r,rho_a(istate),rho_b(istate),grad_rho_a(1,istate),grad_rho_b(1,istate),ec(istate),vc_a(istate),dvc_a(1,istate),vc_b(istate),dvc_b(1,istate))
+    do j = 1, ao_num
+     do i = 1, ao_num
+      vc_a_array(i,j,istate) += weight*vc_a(istate)*aos_array(i)*aos_array(j) 
+      vc_b_array(i,j,istate) += weight*vc_b(istate)*aos_array(i)*aos_array(j) 
+      do k= 1,3
+        vc_a_array(i,j,istate) += weight*dvc_a(k,istate)*(aos_array(i)*grad_aos_array(k,j)+grad_aos_array(k,i)*aos_array(j))
+        vc_b_array(i,j,istate) += weight*dvc_b(k,istate)*(aos_array(i)*grad_aos_array(k,j)+grad_aos_array(k,i)*aos_array(j))
+      enddo
+     enddo  
+    enddo
    enddo
   endif
   ex = ex * weight
@@ -128,15 +138,11 @@ END_PROVIDER
   double precision, intent(in) :: r(3)
   double precision, intent(in) :: rho_a,rho_b,grad_rho_a(3),grad_rho_b(3)
   double precision, intent(out) :: dvc_b(3),dvc_a(3),vc_a,vc_b,ec 
-  ec = 0.d0
-  double precision :: rho_a_bis(N_states),rho_b_bis(N_states) 
-  double precision :: grad_rho_a_bis(3,N_states), grad_rho_b_bis(3,N_states)
-  double precision :: aos_array(ao_num), grad_aos_array(3,ao_num)
-  call density_and_grad_alpha_beta_and_all_aos_and_grad_aos_at_r(r,rho_a,rho_b, grad_rho_a, grad_rho_b, aos_array, grad_aos_array)
-  vc_a = 0.d0
-  vc_b = 0.d0
-  dvc_a = 0.d0
-  dvc_b = 0.d0
+  ec = rho_a + rho_b
+  vc_a = rho_a
+  vc_b = rho_b
+  dvc_a = grad_rho_a(:)
+  dvc_b = grad_rho_b(:)
  end
 
  BEGIN_PROVIDER [double precision, potential_x_alpha_mo,(mo_tot_num,mo_tot_num,N_states)]
