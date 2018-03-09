@@ -123,8 +123,12 @@ END_PROVIDER
     contrib_ca=weight*vc_a(istate)
     contrib_cb=weight*vc_b(istate)
 
-    call dger(ao_num,ao_num,contrib_ca,aos_array,1,aos_array,1,vc_a_array(1,1,istate),size(vc_a_array,1))
-    call dger(ao_num,ao_num,contrib_cb,aos_array,1,aos_array,1,vc_b_array(1,1,istate),size(vc_b_array,1))
+!   call dger(ao_num,ao_num,contrib_ca,aos_array,1,aos_array,1,vc_a_array(1,1,istate),size(vc_a_array,1))
+!   call dger(ao_num,ao_num,contrib_cb,aos_array,1,aos_array,1,vc_b_array(1,1,istate),size(vc_b_array,1))
+    ao_ao_grad_matrix= 0.d0
+    call dger(ao_num,ao_num,1.d0,aos_array,1,aos_array,1,ao_ao_grad_matrix(1,1),size(ao_ao_grad_matrix,1))
+    vc_a_array(:,:,istate) += contrib_ca * ao_ao_grad_matrix(:,:)
+    vc_b_array(:,:,istate) += contrib_cb * ao_ao_grad_matrix(:,:)
     call dtranspose(grad_aos_array,3,grad_aos_array_transpose,ao_num,3,ao_num)
     do k= 1,3
       contrib_grad_ca=weight*dvc_a(k,istate)

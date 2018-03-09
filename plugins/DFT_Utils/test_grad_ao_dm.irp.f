@@ -92,6 +92,7 @@ end
 subroutine test_v_corel
 implicit none
  integer :: i,j
+!provide potential_c_beta_ao
  do i = 1, ao_num
   do j = 1, ao_num
    print*,j,i,potential_c_beta_ao(j,i,1)
