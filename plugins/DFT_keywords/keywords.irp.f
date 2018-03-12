@@ -11,5 +11,5 @@ BEGIN_PROVIDER [ character*(32), DFT_TYPE]
  else
   DFT_TYPE = "GGA"
  endif
-!DFT_TYPE = "GGA"
+ DFT_TYPE = "GGA"
 END_PROVIDER 

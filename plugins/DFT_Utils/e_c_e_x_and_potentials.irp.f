@@ -241,18 +241,27 @@ subroutine exchange_correlation_functional_at_radial_point(i_nucl,j_rad,ec,ex,v_
  double precision, intent(out) :: v_array_x_a(ao_num,ao_num,N_states)
  double precision, intent(out) :: v_array_x_b(ao_num,ao_num,N_states)
 
- integer :: l,i,istate
+ integer :: l,i,k,istate
  double precision :: r(3),diag_matrix(n_points_integration_angular,n_points_integration_angular,N_states)
- double precision :: ao_matrix(ao_num,n_points_integration_angular)
- double precision :: aos_array(ao_num)
+ double precision :: ao_matrix(ao_num,n_points_integration_angular),grad_ao_matrix(ao_num,n_points_integration_angular,3)
+ double precision :: aos_array(ao_num),grad_aos_array(3,ao_num),grad_aos_array_transpose(ao_num,3)
  double precision :: ao_matrix_vc_a(ao_num,n_points_integration_angular,N_states)
  double precision :: ao_matrix_vc_b(ao_num,n_points_integration_angular,N_states)
  double precision :: ao_matrix_vx_a(ao_num,n_points_integration_angular,N_states)
  double precision :: ao_matrix_vx_b(ao_num,n_points_integration_angular,N_states)
+ double precision :: ao_matrix_dvc_a(ao_num,n_points_integration_angular,3,N_states)
+ double precision :: ao_matrix_dvc_b(ao_num,n_points_integration_angular,3,N_states)
+ double precision :: ao_matrix_dvx_a(ao_num,n_points_integration_angular,3,N_states)
+ double precision :: ao_matrix_dvx_b(ao_num,n_points_integration_angular,3,N_states)
+ double precision :: grad_ao_matrix_dvc_a(ao_num,n_points_integration_angular,3,N_states)
+ double precision :: grad_ao_matrix_dvc_b(ao_num,n_points_integration_angular,3,N_states)
+ double precision :: grad_ao_matrix_dvx_a(ao_num,n_points_integration_angular,3,N_states)
+ double precision :: grad_ao_matrix_dvx_b(ao_num,n_points_integration_angular,3,N_states)
  double precision :: ex_tmp(N_states),ec_tmp(N_states),rho_a(N_states),rho_b(N_states)
- double precision :: vx_a(N_states),vx_b(N_states),vc_a(N_states),vc_b(N_states)
+ double precision :: vx_a(N_states),vx_b(N_states),vc_a(N_states),vc_b(N_states),dvx_a(3,N_states),dvx_b(3,N_states),dvc_a(3,N_states),dvc_b(3,N_states)
  double precision :: weight
- double precision :: contrib_xa,contrib_xb,contrib_ca, contrib_cb
+ double precision :: contrib_xa,contrib_xb,contrib_ca, contrib_cb, contrib_grad_xa(3), contrib_grad_xb(3),contrib_grad_ca(3),contrib_grad_cb(3)
+ double precision :: grad_rho_a(3,N_states), grad_rho_b(3,N_states)
  ex = 0.d0
  ec = 0.d0
 
@@ -317,7 +326,84 @@ subroutine exchange_correlation_functional_at_radial_point(i_nucl,j_rad,ec,ex,v_
    call dgemm('N','T',ao_num,ao_num,n_points_integration_angular,1.d0,ao_matrix_vx_a(1,1,istate),size(ao_matrix_vx_a,1),ao_matrix,size(ao_matrix,1),0.d0,v_array_x_a(1,1,istate),size(v_array_x_a,1))
    call dgemm('N','T',ao_num,ao_num,n_points_integration_angular,1.d0,ao_matrix_vx_b(1,1,istate),size(ao_matrix_vx_a,1),ao_matrix,size(ao_matrix,1),0.d0,v_array_x_b(1,1,istate),size(v_array_x_b,1))
   enddo
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
  else if(DFT_TYPE.EQ."GGA")then
+  do l = 1, n_points_integration_angular 
+   r(1) = grid_points_per_atom(1,l,j_rad,i_nucl)
+   r(2) = grid_points_per_atom(2,l,j_rad,i_nucl)
+   r(3) = grid_points_per_atom(3,l,j_rad,i_nucl)
+   call density_and_grad_alpha_beta_and_all_aos_and_grad_aos_at_r(r,rho_a,rho_b, grad_rho_a, grad_rho_b, aos_array, grad_aos_array)
+   do i = 1, ao_num
+    ao_matrix(i,l) = aos_array(i)
+    do k = 1,3
+     grad_aos_array_transpose(i,k)=grad_aos_array(k,i)
+    enddo
+   enddo
+   do k = 1,3
+    do i = 1,ao_num
+     grad_ao_matrix(i,l,k) = grad_aos_array_transpose(i,k)
+    enddo
+   enddo
+   weight = final_weight_functions_at_grid_points(l,j_rad,i_nucl) 
+   do istate=1,N_states
+    !!!!!!!!!!!
+    call routine_gga_correlation(r,rho_a(istate),rho_b(istate),grad_rho_a(1,istate),grad_rho_b(1,istate),ec(istate),vc_a(istate),dvc_a(1,istate),vc_b(istate),dvc_b(1,istate))
+    call routine_gga_correlation(r,rho_a(istate),rho_b(istate),grad_rho_a(1,istate),grad_rho_b(1,istate),ex(istate),vx_a(istate),dvx_a(1,istate),vx_b(istate),dvx_b(1,istate))
+    !!!!!!!!!!
+    contrib_xa = weight * vx_a(istate) 
+    contrib_ca = weight * vc_a(istate) 
+    contrib_xb = weight * vx_b(istate) 
+    contrib_cb = weight * vc_b(istate) 
+    do k= 1,3
+     contrib_grad_xa(k) = weight * dvx_a(k,istate) 
+     contrib_grad_ca(k) = weight * dvc_a(k,istate) 
+     contrib_grad_xb(k) = weight * dvx_b(k,istate) 
+     contrib_grad_cb(k) = weight * dvc_b(k,istate) 
+    enddo 
+    do i = 1, ao_num
+     ao_matrix_vc_a(i,l,istate) = contrib_ca * aos_array(i)
+     ao_matrix_vc_b(i,l,istate) = contrib_cb * aos_array(i)
+     ao_matrix_vx_a(i,l,istate) = contrib_xa * aos_array(i)
+     ao_matrix_vx_b(i,l,istate) = contrib_xb * aos_array(i)
+     do k = 1,3
+      ao_matrix_dvc_a(i,l,k,istate) = contrib_grad_ca(k) * aos_array(i) 
+      ao_matrix_dvc_b(i,l,k,istate) = contrib_grad_ca(k) * aos_array(i) 
+      ao_matrix_dvx_a(i,l,k,istate) = contrib_grad_xa(k) * aos_array(i) 
+      ao_matrix_dvx_b(i,l,k,istate) = contrib_grad_xb(k) * aos_array(i) 
+      grad_ao_matrix_dvc_a(i,l,k,istate) = contrib_grad_ca(k) * grad_aos_array_transpose(i,k) 
+      grad_ao_matrix_dvc_b(i,l,k,istate) = contrib_grad_ca(k) * grad_aos_array_transpose(i,k) 
+      grad_ao_matrix_dvx_a(i,l,k,istate) = contrib_grad_xa(k) * grad_aos_array_transpose(i,k) 
+      grad_ao_matrix_dvx_b(i,l,k,istate) = contrib_grad_xb(k) * grad_aos_array_transpose(i,k) 
+     enddo
+    enddo
+   enddo
+  enddo
+
+  ! matrix product ! 
+  do istate = 1, N_states
+   call dgemm('N','T',ao_num,ao_num,n_points_integration_angular,1.d0,ao_matrix_vc_a(1,1,istate),size(ao_matrix_vc_a,1),ao_matrix,size(ao_matrix,1),0.d0,v_array_c_a(1,1,istate),size(v_array_c_a,1))
+   call dgemm('N','T',ao_num,ao_num,n_points_integration_angular,1.d0,ao_matrix_vc_b(1,1,istate),size(ao_matrix_vc_a,1),ao_matrix,size(ao_matrix,1),0.d0,v_array_c_b(1,1,istate),size(v_array_c_b,1))
+   call dgemm('N','T',ao_num,ao_num,n_points_integration_angular,1.d0,ao_matrix_vx_a(1,1,istate),size(ao_matrix_vx_a,1),ao_matrix,size(ao_matrix,1),0.d0,v_array_x_a(1,1,istate),size(v_array_x_a,1))
+   call dgemm('N','T',ao_num,ao_num,n_points_integration_angular,1.d0,ao_matrix_vx_b(1,1,istate),size(ao_matrix_vx_a,1),ao_matrix,size(ao_matrix,1),0.d0,v_array_x_b(1,1,istate),size(v_array_x_b,1))
+   do k=1,3
+    call dgemm('N','T',ao_num,ao_num,n_points_integration_angular,1.d0,ao_matrix_dvc_a(1,1,k,istate),size(ao_matrix_dvc_a,1),grad_ao_matrix(1,1,k),size(grad_ao_matrix,1),1.d0,v_array_c_a(1,1,istate),size(v_array_c_a,1))
+    call dgemm('N','T',ao_num,ao_num,n_points_integration_angular,1.d0,grad_ao_matrix_dvc_a(1,1,k,istate),size(grad_ao_matrix_dvc_a,1),ao_matrix,size(ao_matrix,1),1.d0,v_array_c_a(1,1,istate),size(v_array_c_a,1))
+    call dgemm('N','T',ao_num,ao_num,n_points_integration_angular,1.d0,ao_matrix_dvc_b(1,1,k,istate),size(ao_matrix_dvc_b,1),grad_ao_matrix(1,1,k),size(grad_ao_matrix,1),1.d0,v_array_c_b(1,1,istate),size(v_array_c_b,1))
+    call dgemm('N','T',ao_num,ao_num,n_points_integration_angular,1.d0,grad_ao_matrix_dvc_b(1,1,k,istate),size(grad_ao_matrix_dvc_b,1),ao_matrix,size(ao_matrix,1),1.d0,v_array_c_b(1,1,istate),size(v_array_c_b,1))
+    call dgemm('N','T',ao_num,ao_num,n_points_integration_angular,1.d0,ao_matrix_dvx_a(1,1,k,istate),size(ao_matrix_dvx_a,1),grad_ao_matrix(1,1,k),size(grad_ao_matrix,1),1.d0,v_array_x_a(1,1,istate),size(v_array_x_a,1))
+    call dgemm('N','T',ao_num,ao_num,n_points_integration_angular,1.d0,grad_ao_matrix_dvx_a(1,1,k,istate),size(grad_ao_matrix_dvx_a,1),ao_matrix,size(ao_matrix,1),1.d0,v_array_x_a(1,1,istate),size(v_array_x_a,1))
+    call dgemm('N','T',ao_num,ao_num,n_points_integration_angular,1.d0,ao_matrix_dvx_b(1,1,k,istate),size(ao_matrix_dvx_b,1),grad_ao_matrix(1,1,k),size(grad_ao_matrix,1),1.d0,v_array_x_b(1,1,istate),size(v_array_x_b,1))
+    call dgemm('N','T',ao_num,ao_num,n_points_integration_angular,1.d0,grad_ao_matrix_dvx_b(1,1,k,istate),size(grad_ao_matrix_dvx_b,1),ao_matrix,size(ao_matrix,1),1.d0,v_array_x_b(1,1,istate),size(v_array_x_b,1))
+   enddo 
+  enddo 
+
+
+
    !call density_and_grad_alpha_beta_and_all_aos_and_grad_aos_at_r(r,rho_a,rho_b, grad_rho_a, grad_rho_b, aos_array, grad_aos_array)
    !do istate = 1, N_states
    ! double precision :: dvc_a(3,N_states), dvc_b(3,N_states)
