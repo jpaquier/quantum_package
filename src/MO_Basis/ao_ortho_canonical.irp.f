@@ -111,7 +111,7 @@ END_PROVIDER
 !return
 
   if (ao_cartesian) then
-
+    print*,'Doing cartesian'
     ao_ortho_canonical_num = ao_num
     call ortho_canonical(ao_overlap,size(ao_overlap,1), &
       ao_num,ao_ortho_canonical_coef,size(ao_ortho_canonical_coef,1), &
@@ -121,12 +121,16 @@ END_PROVIDER
   else
 
     double precision, allocatable :: S(:,:)
+    print*,'Doing Spherical Harmonics'
 
     allocate(S(ao_cart_to_sphe_num,ao_cart_to_sphe_num))
     S = 0.d0
     do i=1,ao_cart_to_sphe_num
       S(i,i) = 1.d0
     enddo
+    print*,'ao_cart_to_sphe_num = ',ao_cart_to_sphe_num
+    print*,'ao_num              = ',ao_num
+!   pause
 
     ao_ortho_canonical_num = ao_cart_to_sphe_num
     call ortho_canonical(ao_cart_to_sphe_overlap, size(ao_cart_to_sphe_overlap,1), &

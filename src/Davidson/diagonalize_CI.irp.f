@@ -66,6 +66,8 @@ END_PROVIDER
      allocate (eigenvalues(N_det))
      call lapack_diag(eigenvalues,eigenvectors,                      &
          H_matrix_all_dets,size(H_matrix_all_dets,1),N_det)
+     print*,'ENERGY'
+     print*,eigenvalues(1:min(N_det,10))
      CI_electronic_energy(:) = 0.d0
      if (s2_eig) then
        i_state = 0
@@ -74,6 +76,8 @@ END_PROVIDER
        good_state_array = .False.
        call u_0_S2_u_0(s2_eigvalues,eigenvectors,N_det,psi_det,N_int,&
          N_det,size(eigenvectors,1))
+        print*,'S2'
+        print*,s2_eigvalues(1:min(N_det,10))
        do j=1,N_det
          ! Select at least n_states states with S^2 values closed to "expected_s2"
          if(dabs(s2_eigvalues(j)-expected_s2).le.0.5d0)then

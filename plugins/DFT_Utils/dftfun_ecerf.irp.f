@@ -29,7 +29,7 @@ subroutine ec_lda(rho_a,rho_b,ec,vc_a,vc_b)
 
 ! Test on density
       rho = rho_a + rho_b
-      if (dabs(rho).ge.1.d-12) then
+      if (dabs(rho).ge.1.d-10) then
 
       rs=rsfac/(rho**c_1_3)
       rhoa=max(rho_a,1.0d-15)
@@ -44,6 +44,10 @@ subroutine ec_lda(rho_a,rho_b,ec,vc_a,vc_b)
       vcdown=eccoul-rs/3.d0*ecd-(z+1.d0)*ecz
       vc_a = vcup
       vc_b = vcdown
+      else
+       ec = 0.d0
+       vc_a = 0.d0
+       vc_b = 0.d0
 
       endif
 
@@ -63,6 +67,9 @@ subroutine ec_lda_sr(rho_a,rho_b,ec,vc_a,vc_b)
       double precision :: eclr,vcup,vcdown,vclrup,vclrdown,vclrupd,vclrdownd
       rsfac = (3.0d0/(4.0d0*pi))**c_1_3
 
+      ec = 0.d0
+      vc_a = 0.d0
+      vc_b = 0.d0
 ! Test on density
       rho = rho_a + rho_b
       if (dabs(rho).ge.1.d-12) then
@@ -82,7 +89,42 @@ subroutine ec_lda_sr(rho_a,rho_b,ec,vc_a,vc_b)
       call vcorrlr(rs,z,mu_erf,vclrup,vclrdown,vclrupd,vclrdownd)
       vc_a = vcup-vclrup
       vc_b = vcdown-vclrdown
-!     ec = 0.d0
+      
+      else
+       ec = 0.d0
+       vc_a = 0.d0
+       vc_b = 0.d0
+       
+      endif
+
+end
+
+subroutine ec_only_lda_sr(rho_a,rho_b,ec)
+      implicit none
+ include 'constants.include.F'
+      double precision, intent(out) ::  ec
+      double precision, intent(in)  ::  rho_a,rho_b
+
+! Double precision numbers
+      
+      double precision :: rsfac,rho,rs,rhoa,rhob,z
+      double precision :: eccoul, ecd, ecz, ecdd, eczd
+      double precision :: eclr
+      rsfac = (3.0d0/(4.0d0*pi))**c_1_3
+
+      ec = 0.d0
+! Test on density
+      rho = rho_a + rho_b
+      if (dabs(rho).ge.1.d-12) then
+
+      rs=rsfac/(rho**c_1_3)
+      rhoa=max(rho_a,1.0d-15)
+      rhob=max(rho_b,1.0d-15)
+      z=(rhoa-rhob)/(rhoa+rhob)
+
+      call ecPW(rs,z,eccoul,ecd,ecz,ecdd,eczd)
+      call ecorrlr(rs,z,mu_erf,eclr)
+      ec=(eccoul-eclr)*rho
 
       endif
 

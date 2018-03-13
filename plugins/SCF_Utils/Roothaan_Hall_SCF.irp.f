@@ -33,7 +33,7 @@ END_DOC
 
 ! Initialize energies and density matrices
 
-  energy_SCF_previous = HF_energy
+  energy_SCF_previous = SCF_energy
   Delta_energy_SCF    = 1.d0
   iteration_SCF       = 0
   dim_DIIS            = 0
@@ -88,7 +88,7 @@ END_DOC
 
 !   SCF energy
 
-    energy_SCF = HF_energy
+    energy_SCF = SCF_energy
     Delta_Energy_SCF = energy_SCF - energy_SCF_previous
     if ( (SCF_algorithm == 'DIIS').and.(Delta_Energy_SCF > 0.d0) ) then
       Fock_matrix_AO(1:ao_num,1:ao_num) = Fock_matrix_DIIS (1:ao_num,1:ao_num,index_dim_DIIS)
@@ -100,14 +100,14 @@ END_DOC
     double precision :: level_shift_save
     level_shift_save = level_shift
     mo_coef_save(1:ao_num,1:mo_tot_num) = mo_coef(1:ao_num,1:mo_tot_num)
-    do while (Delta_Energy_SCF > 0.d0)
+    do while (Delta_Energy_SCF .ge. 0.d0)
       mo_coef(1:ao_num,1:mo_tot_num) = mo_coef_save
       TOUCH mo_coef
       level_shift = level_shift + 0.1d0
       mo_coef(1:ao_num,1:mo_tot_num) = eigenvectors_Fock_matrix_MO(1:ao_num,1:mo_tot_num)
       TOUCH mo_coef level_shift
-      Delta_Energy_SCF = HF_energy - energy_SCF_previous
-      energy_SCF = HF_energy
+      Delta_Energy_SCF = SCF_energy - energy_SCF_previous
+      energy_SCF = SCF_energy
       if (level_shift-level_shift_save > 1.d0) exit
       dim_DIIS=0
     enddo
@@ -136,6 +136,7 @@ END_DOC
   
   if(.not.no_oa_or_av_opt)then
    call mo_as_eigvectors_of_mo_matrix(Fock_matrix_mo,size(Fock_matrix_mo,1),size(Fock_matrix_mo,2),mo_label,1,.true.)
+   call save_mos
   endif
 
   call write_double(6, Energy_SCF, 'Hartree-Fock energy')

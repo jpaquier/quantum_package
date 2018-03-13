@@ -1,103 +1,3 @@
- BEGIN_PROVIDER [ double precision, Fock_matrix_mo, (mo_tot_num,mo_tot_num) ]
-&BEGIN_PROVIDER [ double precision, Fock_matrix_diag_mo, (mo_tot_num)]
-   implicit none
-   BEGIN_DOC
-   ! Fock matrix on the MO basis.
-   ! For open shells, the ROHF Fock Matrix is
-   !
-   !  |   F-K    |  F + K/2  |    F     |
-   !  |---------------------------------|
-   !  | F + K/2  |     F     |  F - K/2 |
-   !  |---------------------------------|
-   !  |    F     |  F - K/2  |  F + K   |
-   !
-   ! F = 1/2 (Fa + Fb)
-   !
-   ! K = Fb - Fa
-   !
-   END_DOC
-   integer                        :: i,j,n
-   if (elec_alpha_num == elec_beta_num) then
-     Fock_matrix_mo = Fock_matrix_mo_alpha
-   else
-     
-     do j=1,elec_beta_num
-       ! F-K
-       do i=1,elec_beta_num
-         Fock_matrix_mo(i,j) = 0.5d0*(Fock_matrix_mo_alpha(i,j)+Fock_matrix_mo_beta(i,j))&
-             - (Fock_matrix_mo_beta(i,j) - Fock_matrix_mo_alpha(i,j))
-       enddo
-       ! F+K/2
-       do i=elec_beta_num+1,elec_alpha_num
-         Fock_matrix_mo(i,j) = 0.5d0*(Fock_matrix_mo_alpha(i,j)+Fock_matrix_mo_beta(i,j))&
-             + 0.5d0*(Fock_matrix_mo_beta(i,j) - Fock_matrix_mo_alpha(i,j))
-       enddo
-       ! F
-       do i=elec_alpha_num+1, mo_tot_num
-         Fock_matrix_mo(i,j) = 0.5d0*(Fock_matrix_mo_alpha(i,j)+Fock_matrix_mo_beta(i,j))
-       enddo
-     enddo
-
-     do j=elec_beta_num+1,elec_alpha_num
-       ! F+K/2
-       do i=1,elec_beta_num
-         Fock_matrix_mo(i,j) = 0.5d0*(Fock_matrix_mo_alpha(i,j)+Fock_matrix_mo_beta(i,j))&
-             + 0.5d0*(Fock_matrix_mo_beta(i,j) - Fock_matrix_mo_alpha(i,j))
-       enddo
-       ! F
-       do i=elec_beta_num+1,elec_alpha_num
-         Fock_matrix_mo(i,j) = 0.5d0*(Fock_matrix_mo_alpha(i,j)+Fock_matrix_mo_beta(i,j))
-       enddo
-       ! F-K/2
-       do i=elec_alpha_num+1, mo_tot_num
-         Fock_matrix_mo(i,j) = 0.5d0*(Fock_matrix_mo_alpha(i,j)+Fock_matrix_mo_beta(i,j))&
-             - 0.5d0*(Fock_matrix_mo_beta(i,j) - Fock_matrix_mo_alpha(i,j))
-       enddo
-     enddo
-
-     do j=elec_alpha_num+1, mo_tot_num
-       ! F
-       do i=1,elec_beta_num
-         Fock_matrix_mo(i,j) = 0.5d0*(Fock_matrix_mo_alpha(i,j)+Fock_matrix_mo_beta(i,j))
-       enddo
-       ! F-K/2
-       do i=elec_beta_num+1,elec_alpha_num
-         Fock_matrix_mo(i,j) = 0.5d0*(Fock_matrix_mo_alpha(i,j)+Fock_matrix_mo_beta(i,j))&
-             - 0.5d0*(Fock_matrix_mo_beta(i,j) - Fock_matrix_mo_alpha(i,j))
-       enddo
-       ! F+K
-       do i=elec_alpha_num+1,mo_tot_num
-         Fock_matrix_mo(i,j) = 0.5d0*(Fock_matrix_mo_alpha(i,j)+Fock_matrix_mo_beta(i,j)) &
-             + (Fock_matrix_mo_beta(i,j) - Fock_matrix_mo_alpha(i,j))
-       enddo
-     enddo
-     
-   endif
-
-   do i = 1, mo_tot_num
-     Fock_matrix_diag_mo(i) = Fock_matrix_mo(i,i) 
-   enddo
-END_PROVIDER
- 
- 
- 
- BEGIN_PROVIDER [ double precision, Fock_matrix_ao_alpha, (ao_num, ao_num) ]
-&BEGIN_PROVIDER [ double precision, Fock_matrix_ao_beta,  (ao_num, ao_num) ]
- implicit none
- BEGIN_DOC
- ! Alpha Fock matrix in AO basis set
- END_DOC
- 
- integer                        :: i,j
- do j=1,ao_num
-   do i=1,ao_num
-     Fock_matrix_ao_alpha(i,j) = ao_mono_elec_integral(i,j) + ao_bi_elec_integral_alpha(i,j)
-     Fock_matrix_ao_beta (i,j) = ao_mono_elec_integral(i,j) + ao_bi_elec_integral_beta (i,j)
-   enddo
- enddo
-
-END_PROVIDER
-
 
  BEGIN_PROVIDER [ double precision, ao_bi_elec_integral_alpha, (ao_num, ao_num) ]
 &BEGIN_PROVIDER [ double precision, ao_bi_elec_integral_beta ,  (ao_num, ao_num) ]
@@ -123,7 +23,7 @@ END_PROVIDER
        !$OMP PRIVATE(i,j,l,k1,k,integral,ii,jj,kk,ll,i8,keys,values,p,q,r,s,i0,j0,k0,l0, &
        !$OMP ao_bi_elec_integral_alpha_tmp,ao_bi_elec_integral_beta_tmp, c0, c1, c2, &
        !$OMP local_threshold)&
-       !$OMP SHARED(ao_num,HF_density_matrix_ao_alpha,HF_density_matrix_ao_beta,&
+       !$OMP SHARED(ao_num,SCF_density_matrix_ao_alpha,SCF_density_matrix_ao_beta,&
        !$OMP ao_integrals_map,ao_integrals_threshold, ao_bielec_integral_schwartz, &
        !$OMP ao_overlap_abs, ao_bi_elec_integral_alpha, ao_bi_elec_integral_beta)
 
@@ -170,9 +70,9 @@ END_PROVIDER
              j = jj(k2)
              k = kk(k2)
              l = ll(k2)
-             c0 = HF_density_matrix_ao_alpha(k,l)+HF_density_matrix_ao_beta(k,l)
-             c1 = HF_density_matrix_ao_alpha(k,i)
-             c2 = HF_density_matrix_ao_beta(k,i)
+             c0 = SCF_density_matrix_ao_alpha(k,l)+SCF_density_matrix_ao_beta(k,l)
+             c1 = SCF_density_matrix_ao_alpha(k,i)
+             c2 = SCF_density_matrix_ao_beta(k,i)
              if ( dabs(c0)+dabs(c1)+dabs(c2) < local_threshold) then
                cycle
              endif
@@ -209,7 +109,7 @@ END_PROVIDER
    !$OMP PARALLEL DEFAULT(NONE)                                      &
        !$OMP PRIVATE(i,j,l,k1,k,integral,ii,jj,kk,ll,i8,keys,values,n_elements_max, &
        !$OMP  n_elements,ao_bi_elec_integral_alpha_tmp,ao_bi_elec_integral_beta_tmp)&
-       !$OMP SHARED(ao_num,HF_density_matrix_ao_alpha,HF_density_matrix_ao_beta,&
+       !$OMP SHARED(ao_num,SCF_density_matrix_ao_alpha,SCF_density_matrix_ao_beta,&
        !$OMP  ao_integrals_map, ao_bi_elec_integral_alpha, ao_bi_elec_integral_beta) 
 
    call get_cache_map_n_elements_max(ao_integrals_map,n_elements_max)
@@ -235,12 +135,12 @@ END_PROVIDER
          j = jj(k2)
          k = kk(k2)
          l = ll(k2)
-         integral = (HF_density_matrix_ao_alpha(k,l)+HF_density_matrix_ao_beta(k,l)) * values(k1)
+         integral = (SCF_density_matrix_ao_alpha(k,l)+SCF_density_matrix_ao_beta(k,l)) * values(k1)
          ao_bi_elec_integral_alpha_tmp(i,j) += integral
          ao_bi_elec_integral_beta_tmp (i,j) += integral
          integral = values(k1)
-         ao_bi_elec_integral_alpha_tmp(l,j) -= HF_density_matrix_ao_alpha(k,i) * integral
-         ao_bi_elec_integral_beta_tmp (l,j) -= HF_density_matrix_ao_beta (k,i) * integral
+         ao_bi_elec_integral_alpha_tmp(l,j) -= SCF_density_matrix_ao_alpha(k,i) * integral
+         ao_bi_elec_integral_beta_tmp (l,j) -= SCF_density_matrix_ao_beta (k,i) * integral
        enddo
      enddo
    enddo
@@ -258,63 +158,45 @@ END_PROVIDER
 
 END_PROVIDER
 
-BEGIN_PROVIDER [ double precision, Fock_matrix_mo_alpha, (mo_tot_num,mo_tot_num) ]
-   implicit none
-   BEGIN_DOC
-   ! Fock matrix on the MO basis
-   END_DOC
-   call ao_to_mo(Fock_matrix_ao_alpha,size(Fock_matrix_ao_alpha,1), &
-                 Fock_matrix_mo_alpha,size(Fock_matrix_mo_alpha,1))
-END_PROVIDER
- 
- 
-BEGIN_PROVIDER [ double precision, Fock_matrix_mo_beta, (mo_tot_num,mo_tot_num) ]
-   implicit none
-   BEGIN_DOC
-   ! Fock matrix on the MO basis
-   END_DOC
-   call ao_to_mo(Fock_matrix_ao_beta,size(Fock_matrix_ao_beta,1), &
-                 Fock_matrix_mo_beta,size(Fock_matrix_mo_beta,1))
-END_PROVIDER
- 
-BEGIN_PROVIDER [ double precision, HF_energy ]
+ BEGIN_PROVIDER [ double precision, Fock_matrix_ao_alpha, (ao_num, ao_num) ]
+&BEGIN_PROVIDER [ double precision, Fock_matrix_ao_beta,  (ao_num, ao_num) ]
  implicit none
  BEGIN_DOC
- ! Hartree-Fock energy
+ ! Alpha Fock matrix in AO basis set
  END_DOC
- HF_energy = nuclear_repulsion
- 
+
  integer                        :: i,j
  do j=1,ao_num
    do i=1,ao_num
-     HF_energy += 0.5d0 * (                                          &
-         (ao_mono_elec_integral(i,j) + Fock_matrix_ao_alpha(i,j) ) *  HF_density_matrix_ao_alpha(i,j) +&
-         (ao_mono_elec_integral(i,j) + Fock_matrix_ao_beta (i,j) ) *  HF_density_matrix_ao_beta (i,j) )
+     Fock_matrix_ao_alpha(i,j) = ao_mono_elec_integral(i,j) + ao_bi_elec_integral_alpha(i,j)
+     Fock_matrix_ao_beta (i,j) = ao_mono_elec_integral(i,j) + ao_bi_elec_integral_beta (i,j)
    enddo
  enddo
-  
+
 END_PROVIDER
 
 
-BEGIN_PROVIDER [ double precision, Fock_matrix_ao, (ao_num, ao_num) ]
+BEGIN_PROVIDER [double precision, extra_energy_contrib_from_density]
  implicit none
- BEGIN_DOC
- ! Fock matrix in AO basis set
- END_DOC
- 
- if ( (elec_alpha_num == elec_beta_num).and. &
-      (level_shift == 0.) ) &
- then
-   integer                        :: i,j
-   do j=1,ao_num
-     do i=1,ao_num
-       Fock_matrix_ao(i,j) = Fock_matrix_ao_alpha(i,j)
-     enddo
-   enddo
- else
-   call mo_to_ao(Fock_matrix_mo,size(Fock_matrix_mo,1), &
-      Fock_matrix_ao,size(Fock_matrix_ao,1)) 
- endif
-END_PROVIDER
+ extra_energy_contrib_from_density = 0.D0
 
+END_PROVIDER 
+
+ BEGIN_PROVIDER [ double precision, HF_energy]
+&BEGIN_PROVIDER [ double precision, HF_two_electron_energy]
+&BEGIN_PROVIDER [ double precision, HF_one_electron_energy]
+ implicit none
+ integer :: i,j 
+ HF_energy = nuclear_repulsion
+ do j=1,ao_num
+   do i=1,ao_num
+    HF_two_electron_energy += 0.5d0 * ( ao_bi_elec_integral_alpha(i,j) * SCF_density_matrix_ao_alpha(i,j) &
+                                       +ao_bi_elec_integral_beta(i,j)  * SCF_density_matrix_ao_beta(i,j) )
+    HF_one_electron_energy += ao_mono_elec_integral(i,j) * (SCF_density_matrix_ao_alpha(i,j) + SCF_density_matrix_ao_beta (i,j) )
+   enddo
+ enddo
+ HF_energy += HF_two_electron_energy + HF_one_electron_energy
+
+
+END_PROVIDER 
 

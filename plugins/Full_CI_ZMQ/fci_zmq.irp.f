@@ -25,8 +25,10 @@ program fci_zmq
   threshold_davidson = threshold_davidson_in * 100.d0
   SOFT_TOUCH threshold_davidson
 
-  call diagonalize_CI
-  call save_wavefunction
+  if(N_det.lt.1.d+6)then
+   call diagonalize_CI
+   call save_wavefunction
+  endif
   
   call ezfio_has_hartree_fock_energy(has)
   if (has) then
@@ -209,6 +211,7 @@ program fci_zmq
       call ezfio_set_full_ci_zmq_energy_pt2(CI_energy(1)+pt2(1))
   endif
 
+  pt2_string = '        '
   if (do_pt2) then
     pt2 = 0.d0
     threshold_selectors = 1.d0

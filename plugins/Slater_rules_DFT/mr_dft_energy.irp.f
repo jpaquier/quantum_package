@@ -9,7 +9,7 @@ BEGIN_PROVIDER [double precision, electronic_energy_mr_dft, (N_states)]
   electronic_energy_mr_dft = data_energy_proj + short_range_Hartree + energy_x + energy_c - Trace_v_Hxc
  else
   print*,'You are using a variational method which uses the wave function stored in the EZFIO folder'
-  electronic_energy_mr_dft = total_electronic_energy
+  electronic_energy_mr_dft = total_range_separated_electronic_energy
  endif
 
 
@@ -19,6 +19,8 @@ subroutine print_variational_energy_dft
  implicit none
 
  print*,  '****************************************'
+ print*,  ' Regular range separated DFT energy '
+ write(*, '(A22,X,F16.10)') 'mu_erf              = ',mu_erf          
  write(*, '(A22,X,F16.10)') 'TOTAL ENERGY        = ',electronic_energy_mr_dft+nuclear_repulsion
  print*, ''
  print*, 'Component of the energy ....'
@@ -35,6 +37,19 @@ subroutine print_variational_energy_dft
  print*, ''
  write(*, '(A22,X,F16.10)') 'Approx eigenvalue   = ',Fock_matrix_expectation_value + psi_energy_erf
  write(*, '(A22,X,F16.10)') 'Trace_v_xc          = ',Trace_v_xc
+
+ print*,  '****************************************'
+ print*,  '****************************************'
+ print*,  ' MR DFT energy with pure correlation part for the DFT '
+ write(*, '(A22,X,F16.10)') 'TOTAL ENERGY CORR   = ',elec_energy_dft_pure_corr_funct+nuclear_repulsion
+ print*, ''
+ print*, 'Component of the energy ....'
+ print*, ''
+ write(*, '(A28,X,F16.10)') 'nuclear_repulsion         = ',nuclear_repulsion
+ write(*, '(A28,X,F16.10)') 'Variational energy of Psi = ',psi_energy
+ write(*, '(A28,X,F16.10)') 'psi_energy_bielec         = ',psi_energy_bielec
+ write(*, '(A28,X,F16.10)') 'psi_energy_monoelec       = ',psi_energy_monoelec
+ write(*, '(A28,X,F16.10)') 'DFT Multi-det correlation = ',Energy_c_md
 
 
 end

@@ -298,14 +298,6 @@ end
 
  end
 
- double precision function power(n,x)
- implicit none
- integer :: i,n
- double precision :: x,accu
- power = x**n
- return
- end
-
  subroutine overlap_bourrin_dipole(A_center,B_center,alpha,beta,power_A,power_B,overlap_x,lower_exp_val,dx,nx)
 ! compute the following integral :
 !  int [-infty ; +infty] of [(x-A_center)^(power_A) * (x-B_center)^power_B * exp(-alpha(x-A_center)^2) * exp(-beta(x-B_center)^2) * x ]

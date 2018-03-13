@@ -27,14 +27,14 @@ BEGIN_PROVIDER [ logical, ao_bielec_integrals_erf_in_map ]
   double precision               :: map_mb
   PROVIDE read_ao_integrals_erf disk_access_ao_integrals_erf
   if (read_ao_integrals_erf) then
-    print*,'Reading the AO integrals_erf'
+    print*,'Reading the AO ERF integrals'
       call map_load_from_disk(trim(ezfio_filename)//'/work/ao_ints_erf',ao_integrals_erf_map)
-      print*, 'AO integrals_erf provided'
+      print*, 'AO ERF integrals provided'
       ao_bielec_integrals_erf_in_map = .True.
       return
   endif
   
-  print*, 'Providing the AO integrals_erf'
+  print*, 'Providing the AO ERF integrals'
   call wall_time(wall_0)
   call wall_time(wall_1)
   call cpu_time(cpu_1)
@@ -79,9 +79,9 @@ BEGIN_PROVIDER [ logical, ao_bielec_integrals_erf_in_map ]
   integer(map_size_kind)         :: get_ao_erf_map_size, ao_erf_map_size
   ao_erf_map_size = get_ao_erf_map_size()
   
-  print*, 'AO integrals provided:'
-  print*, ' Size of AO map :         ', map_mb(ao_integrals_erf_map) ,'MB'
-  print*, ' Number of AO integrals :', ao_erf_map_size
+  print*, 'AO ERF integrals provided:'
+  print*, ' Size of AO ERF map :         ', map_mb(ao_integrals_erf_map) ,'MB'
+  print*, ' Number of AO ERF integrals :', ao_erf_map_size
   print*, ' cpu  time :',cpu_2 - cpu_1, 's'
   print*, ' wall time :',wall_2 - wall_1, 's  ( x ', (cpu_2-cpu_1)/(wall_2-wall_1+tiny(1.d0)), ' )'
   
