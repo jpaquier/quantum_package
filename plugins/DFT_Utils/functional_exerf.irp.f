@@ -101,17 +101,17 @@ end
 
 subroutine ex_pbe_sr(rho_a,rho_b,grd_rho_a_2,grd_rho_b_2,grd_rho_a_b,ex,vx_rho_a,vx_rho_b,vx_grd_rho_a_2,vx_grd_rho_b_2,vx_grd_rho_a_b)
 BEGIN_DOC
- rho_a = density alpha
- rho_b = density beta
- grd_rho_a_2 = (gradient rho_a)^2
- grd_rho_b_2 = (gradient rho_b)^2
- grd_rho_a_b = (gradient rho_a).(gradient rho_b)
- ex = exchange energy density at point r
- vx_rho_a = d ex / d rho_a
- vx_rho_b = d ex / d rho_b
- vx_grd_rho_a_2 = d ex / d grd_rho_a_2
- vx_grd_rho_b_2 = d ex / d grd_rho_b_2
- vx_grd_rho_a_b = d ex / d grd_rho_a_b
+!rho_a = density alpha
+!rho_b = density beta
+!grd_rho_a_2 = (gradient rho_a)^2
+!grd_rho_b_2 = (gradient rho_b)^2
+!grd_rho_a_b = (gradient rho_a).(gradient rho_b)
+!ex = exchange energy density at point r
+!vx_rho_a = d ex / d rho_a
+!vx_rho_b = d ex / d rho_b
+!vx_grd_rho_a_2 = d ex / d grd_rho_a_2
+!vx_grd_rho_b_2 = d ex / d grd_rho_b_2
+!vx_grd_rho_a_b = d ex / d grd_rho_a_b
 END_DOC
 
  implicit none
@@ -159,13 +159,13 @@ END_DOC
 ! spin scaling relation Ex[rho_a,rho_b] = (1/2) (Ex[2rho_a,2rho_a] + Ex[2rho_b,2rho_b])
 
 ! two times spin alpha density
-  rho = max(rho_a,0.d0)*2.d0
+  rho = max(rho_a,tol)*2.d0
 
 ! test on density
   if (rho >= tol) then
 
 !  call srLDA Ex[2*rho_a,2*rho_a]
-   call ex_lda_sr(rho_a_2,rho_a_2,exerflda,vxerflda_a,vxerflda_b)
+   call ex_lda_sr(rho,rho,exerflda,vxerflda_a,vxerflda_b)
    dexerfldadrho = vxerflda_a + vxerflda_b
 
 !  square of two times spin alpha density gradient
@@ -187,13 +187,13 @@ END_DOC
    
 
 ! two times spin beta density
-  rho = max(rho_b,0.d0)*2.d0
+  rho = max(rho_b,tol)*2.d0
 
 ! test on density
   if (rho >= tol) then
 
 !  call srLDA Ex[2*rho_b,2*rho_b]
-   call ex_lda_sr(rho_b_2,rho_b_2,exerflda,vxerflda_a,vxerflda_b)
+   call ex_lda_sr(rho,rho,exerflda,vxerflda_a,vxerflda_b)
    dexerfldadrho = vxerflda_a + vxerflda_b
 
 !  square of two times spin beta density gradient

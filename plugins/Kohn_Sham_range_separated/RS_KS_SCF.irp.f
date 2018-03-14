@@ -20,14 +20,24 @@ end
 subroutine check_coherence_functional
  implicit none
  integer :: ifound_x,ifound_c
- ifound_x = index(exchange_functional,"short_range")
- ifound_c = index(correlation_functional,"short_range")
+ if(exchange_functional.eq."None")then
+  ifound_x = 1
+ else
+  ifound_x = index(exchange_functional,"short_range")
+ endif
+
+ if(correlation_functional.eq."None")then
+  ifound_c = 1
+ else
+  ifound_c = index(correlation_functional,"short_range")
+ endif
+ print*,ifound_x,ifound_c
  if(ifound_x .eq.0 .or. ifound_c .eq. 0)then
-  print*,'YOU ARE USING THE REGULAR KS PROGRAM BUT YOUR INPUT KEYWORD FOR '
+  print*,'YOU ARE USING THE RANGE SEPARATED KS PROGRAM BUT YOUR INPUT KEYWORD FOR '
   print*,'exchange_functional is ',exchange_functional
   print*,'correlation_functional is ',correlation_functional
-  print*,'CHANGE THE exchange_functional and correlation_functional keywords to regular functionals'
-  print*,'or switch to the RS_KS_SCF program that uses range separated functionals'
+  print*,'CHANGE THE exchange_functional and correlation_functional keywords to range separated functionals'
+  print*,'or switch to the KS_SCF program that uses regular functionals'
   stop
  endif
 

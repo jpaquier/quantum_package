@@ -4,9 +4,9 @@ BEGIN_PROVIDER [integer, n_points_integration_angular]
 ! number of angular points per atom for 3d numerical integration, needed for DFT for example
  END_DOC
 !n_points_integration_angular = 266
-!n_points_integration_angular = 590
+ n_points_integration_angular = 590
 !n_points_integration_angular =1202
- n_points_integration_angular = 5810
+!n_points_integration_angular = 5810
 END_PROVIDER 
 
 BEGIN_PROVIDER [integer, n_points_radial_grid]
@@ -35,10 +35,10 @@ END_PROVIDER
  degre_rad = pi/180.d0
  accu = 0.d0
  double precision :: x(n_points_integration_angular),y(n_points_integration_angular),z(n_points_integration_angular),w(n_points_integration_angular)
- call LD5810(X,Y,Z,W,n_points_integration_angular)
+!call LD5810(X,Y,Z,W,n_points_integration_angular)
 !call LD2030(X,Y,Z,W,n_points_integration_angular)
 !call LD1202(X,Y,Z,W,n_points_integration_angular)
-!call LD0590(X,Y,Z,W,n_points_integration_angular)
+ call LD0590(X,Y,Z,W,n_points_integration_angular)
 !call LD0266(X,Y,Z,W,n_points_integration_angular)
  do i = 1, n_points_integration_angular
   angular_quadrature_points(i,1) = x(i)

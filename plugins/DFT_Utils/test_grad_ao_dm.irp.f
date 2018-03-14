@@ -4,7 +4,8 @@ program pouet
 !call test_grad_density
 !call test_v_corel_old
 !call test_v_corel_new
- call test_v_corel
+!call test_v_corel
+ call test_int
 end
 
 subroutine test_grad_ao
@@ -135,3 +136,52 @@ integer :: i,j
  print*,'accu   = ',accu
  print*,'accu/n = ',accu/(dble(ao_num*ao_num))
 end
+
+subroutine test_int
+ implicit none
+ integer            :: power_A(3),power_B(3),power_C(3),power_D(3)
+ double precision   :: alpha,beta,delta,gama
+ double precision   :: A_center(3), B_center(3), C_center(3), D_center(3)
+ double precision :: integral, ao_bielec_integral
+  include 'Utils/constants.include.F'
+
+ double precision               :: P_new(0:max_dim,3),P_center(3),fact_p,pp
+ double precision               :: Q_new(0:max_dim,3),Q_center(3),fact_q,qq
+ integer                        :: iorder_p(3), iorder_q(3)
+ double precision               :: general_primitive_integral
+ double precision               :: p_inv,q_inv
+ double precision               :: ERI
+
+ alpha = 0.5d0
+ beta  = 0.5d0
+ delta = 0.5d0
+ gama  = 0.5d0
+ A_center = 0.d0
+ B_center = 0.d0
+ C_center = 0.d0
+ D_center = 0.d0
+ power_A = 0
+ power_B = 0
+ power_C = 0
+ power_D = 0
+ 
+ call give_explicit_poly_and_gaussian(P_new,P_center,pp,fact_p,iorder_p,&
+     alpha,beta,                 &
+     power_A,power_B,A_center,B_center,n_pt_max_integrals)
+ p_inv = 1.d0/pp
+
+ call give_explicit_poly_and_gaussian(Q_new,Q_center,qq,fact_q,iorder_q,&
+     delta,gama,                 &
+     power_C,power_D,C_center,D_center,n_pt_max_integrals)
+ q_inv = 1.d0/qq
+
+ print*,'fact_p = ',fact_p
+ print*,'fact_q = ',fact_q
+ integral = general_primitive_integral(n_pt_max_integrals,              &
+     P_new,P_center,fact_p,pp,p_inv,iorder_p,             &
+     Q_new,Q_center,fact_q,qq,q_inv,iorder_q)
+ print*,'integral = ',integral
+ integral = ERI(alpha,beta,delta,gama,power_A(1),power_B(1),power_C(1),power_D(1),power_A(2),power_B(2),power_C(2),power_D(2),power_A(3),power_B(3),power_C(3),power_D(3))
+ print*,'integral = ',integral
+end
+
