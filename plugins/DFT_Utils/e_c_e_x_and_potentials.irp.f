@@ -7,11 +7,11 @@
 
  implicit none
  integer :: j,k,l,istate
- integer :: m,n
+ integer :: m,n,p,q
  double precision, allocatable :: aos_array(:)
  double precision, allocatable :: r(:)
  double precision :: rho_a(N_states),rho_b(N_states),ex(N_states),ec(N_states)
- double precision :: vx_a(N_states),vx_b(N_states),vc_a(N_states),vc_b(N_states)
+ double precision :: vx_rho_a(N_states),vx_rho_b(N_states),vc_rho_a(N_states),vc_rho_b(N_states)
  potential_c_alpha_ao = 0.d0
  potential_c_beta_ao = 0.d0
  potential_x_alpha_ao = 0.d0
@@ -36,19 +36,88 @@
      weight = final_weight_functions_at_grid_points(l,k,j)
      if(DFT_TYPE=="LDA")then
       call dm_dft_alpha_beta_and_all_aos_at_r(r,rho_a,rho_b,aos_array)
-      call LDA_type_functional(r,rho_a,rho_b,vx_a,vx_b,vc_a,vc_b,ex,ec)
+      call LDA_type_functional(rho_a,rho_b,vx_rho_a,vx_rho_b,vc_rho_a,vc_rho_b,ex,ec)
       do istate = 1, N_states
        energy_x(istate) += weight *  ex(istate) 
        energy_c(istate) += weight *  ec(istate)
-       vx_a(istate) *= weight
-       vc_a(istate) *= weight
-       vx_b(istate) *= weight
-       vc_b(istate) *= weight
+       vx_rho_a(istate) *= weight
+       vc_rho_a(istate) *= weight
+       vx_rho_b(istate) *= weight
+       vc_rho_b(istate) *= weight
       enddo
-      call update_potentials_scalar_dger(tmp_c_a,tmp_c_b,tmp_x_a,tmp_x_b,vc_a,vc_b,vx_a,vx_b,aos_array)
-     else
-      print*,'GGA'
-      pause
+      call update_potentials_scalar_dger(tmp_c_a,tmp_c_b,tmp_x_a,tmp_x_b,vc_rho_a,vc_rho_b,vx_rho_a,vx_rho_b,aos_array)
+
+     else if (DFT_TYPE=="GGA")then
+      double precision :: dvx_rho_a(3,N_states), dvx_rho_b(3,N_states)
+      double precision :: dvc_rho_a(3,N_states), dvc_rho_b(3,N_states)
+      double precision :: vx_grad_rho_a_2(N_states),vx_grad_rho_b_2(N_states),vx_grad_rho_a_b(N_states)
+      double precision :: vc_grad_rho_a_2(N_states),vc_grad_rho_b_2(N_states),vc_grad_rho_a_b(N_states)
+      double precision :: grad_rho_a_2(N_states),grad_rho_b_2(N_states),grad_rho_a_b(N_states)
+      double precision :: grad_rho_a(3,N_states),grad_rho_b(3,N_states)
+      double precision :: grad_aos_array(3,ao_num)
+      call density_and_grad_alpha_beta_and_all_aos_and_grad_aos_at_r(r,rho_a,rho_b, grad_rho_a, grad_rho_b, aos_array, grad_aos_array)
+      do istate = 1, N_states
+       grad_rho_a_2 = 0.d0
+       grad_rho_b_2 = 0.d0
+       grad_rho_a_b = 0.d0
+       do m = 1, 3
+        grad_rho_a_2 += grad_rho_a(m,istate)*grad_rho_a(m,istate)
+        grad_rho_b_2 += grad_rho_b(m,istate)*grad_rho_b(m,istate)
+        grad_rho_a_b += grad_rho_a(m,istate)*grad_rho_b(m,istate)
+       enddo
+       if(exchange_functional.EQ."short_range_PBE")then
+        call ex_pbe_sr(rho_a(istate),rho_b(istate),grad_rho_a_2(istate),grad_rho_b_2(istate),grad_rho_a_b(istate),ex(istate),vx_rho_a(istate),vx_rho_b(istate),vx_grad_rho_a_2(istate),vx_grad_rho_b_2(istate),vx_grad_rho_a_b(istate))
+       else if(exchange_functional.EQ."None")then
+        ex = 0.d0
+        vx_rho_a = 0.d0
+        vx_rho_b = 0.d0
+        vx_grad_rho_a_2 = 0.d0
+        vx_grad_rho_a_b = 0.d0
+        vx_grad_rho_b_2 = 0.d0
+       else 
+        print*, 'Exchange functional required does not exist ...'
+        print*,'exchange_functional',exchange_functional
+        stop
+       endif
+        
+       if(correlation_functional.EQ."None")then
+        ec = 0.d0
+        vc_rho_a = 0.d0
+        vc_rho_b = 0.d0
+        vc_grad_rho_a_2 = 0.d0
+        vc_grad_rho_a_b = 0.d0
+        vc_grad_rho_b_2 = 0.d0
+       else 
+        print*, 'Correlation functional required does not exist ...'
+        print*, 'correlation_functional',correlation_functional
+        stop
+       endif
+       
+       double precision :: grad_aos_array_transpose(ao_num,3)
+       double precision :: dtmp_x_a(3,N_states),dtmp_x_b(3,N_states)
+       double precision :: dtmp_c_a(3,N_states),dtmp_c_b(3,N_states)
+       call dger(ao_num,ao_num,weight*vx_rho_a(istate),aos_array,1,aos_array,1,tmp_x_a(1,1,istate),size(tmp_x_a,1))
+       call dger(ao_num,ao_num,weight*vx_rho_b(istate),aos_array,1,aos_array,1,tmp_x_b(1,1,istate),size(tmp_x_b,1))
+       call dtranspose(grad_aos_array,3,grad_aos_array_transpose,ao_num,3,ao_num)
+       do m = 1, 3
+        dtmp_x_a(m,istate) = 2.d0 * vx_grad_rho_a_2(istate) *  grad_rho_a(m,istate) + vx_grad_rho_a_b(istate)  * grad_rho_b(m,istate)
+        dtmp_x_b(m,istate) = 2.d0 * vx_grad_rho_b_2(istate) *  grad_rho_b(m,istate) + vx_grad_rho_a_b(istate)  * grad_rho_a(m,istate)
+       enddo
+      !do m = 1, 3
+      ! do n = 1, ao_num
+      !  do p =1, ao_num
+      !   tmp_x_a(p,n,istate) += dtmp_x_a(m,istate) * (aos_array(p) * grad_aos_array_transpose(n,m) + aos_array(n) * grad_aos_array_transpose(p,m))
+      !   tmp_x_b(p,n,istate) += dtmp_x_b(m,istate) * (aos_array(p) * grad_aos_array_transpose(n,m) + aos_array(n) * grad_aos_array_transpose(p,m))
+      !  enddo
+      ! enddo
+      !enddo
+       do m= 1,3
+        call dger(ao_num,ao_num,weight*dtmp_x_a(m,istate),aos_array,1,grad_aos_array_transpose(1,m),1,tmp_x_a(1,1,istate),size(tmp_x_a,1))
+        call dger(ao_num,ao_num,weight*dtmp_x_a(m,istate),grad_aos_array_transpose(1,m),1,aos_array,1,tmp_x_a(1,1,istate),size(tmp_x_a,1))
+        call dger(ao_num,ao_num,weight*dtmp_x_b(m,istate),aos_array,1,grad_aos_array_transpose(1,m),1,tmp_x_b(1,1,istate),size(tmp_x_b,1))
+        call dger(ao_num,ao_num,weight*dtmp_x_b(m,istate),grad_aos_array_transpose(1,m),1,aos_array,1,tmp_x_b(1,1,istate),size(tmp_x_b,1))
+       enddo
+      enddo
      endif
     enddo
     do istate = 1,N_states
@@ -63,12 +132,11 @@
 
 END_PROVIDER 
 
-subroutine LDA_type_functional(r,rho_a,rho_b,vx_a,vx_b,vc_a,vc_b,ex,ec)
+subroutine LDA_type_functional(rho_a,rho_b,vx_a,vx_b,vc_a,vc_b,ex,ec)
  implicit none
- double precision, intent(in)  :: r(3)
+ double precision, intent(in)  :: rho_a(N_states),rho_b(N_states)
  double precision, intent(out) :: ex(N_states),ec(N_states)
  double precision, intent(out) :: vx_a(N_states),vx_b(N_states),vc_a(N_states),vc_b(N_states)
- double precision, intent(in)  :: rho_a(N_states),rho_b(N_states)
  integer          :: istate
 !!!!!!! EXCHANGE PART
  do istate = 1, N_states
@@ -81,11 +149,11 @@ subroutine LDA_type_functional(r,rho_a,rho_b,vx_a,vx_b,vc_a,vc_b,ex,ec)
    vx_a = 0.d0
    vx_b = 0.d0
   else
-   print*, 'Exchange functional required does not exist ...'
-   print*,'exchange_functional',exchange_functional
+   print*,'Exchange functional required does not exist ...'
+   print*,'exchange_functional ',exchange_functional
    stop
   endif
-!!!!!!!! CORRELATION PART
+!!!!!!! CORRELATION PART
   if(correlation_functional.EQ."short_range_LDA")then
    call ec_lda_sr(rho_a(istate),rho_b(istate),ec(istate),vc_a(istate),vc_b(istate))
   else if(correlation_functional.EQ."LDA")then
