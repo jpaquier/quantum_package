@@ -4,8 +4,8 @@ program pouet
 !call test_grad_density
 !call test_v_corel_old
 !call test_v_corel_new
-!call test_v_corel
- call test_int
+ call test_v_corel
+!call test_int
 end
 
 subroutine test_grad_ao
@@ -108,7 +108,7 @@ implicit none
 integer :: i,j
 double precision :: wall_0,wall_1
  call wall_time(wall_0)
- provide potential_c_beta_ao_new
+!provide potential_c_beta_ao_new
  call wall_time(wall_1)
  print*,'time to provide new potential =',dabs(wall_1-wall_0)
 end
@@ -117,20 +117,20 @@ subroutine test_v_corel
 implicit none
 integer :: i,j
  print*,'energy_c    = ',energy_c
- print*,'energy_c_new= ',energy_c_new
+!print*,'energy_c_new= ',energy_c_new
  print*,'energy_x    = ',energy_x
- print*,'energy_x_new= ',energy_x_new
+!print*,'energy_x_new= ',energy_x_new
 !provide potential_c_beta_ao
  double precision :: accu
  accu = 0.d0
  do i = 1, ao_num
   do j = 1, ao_num
-   if(dabs(potential_c_beta_ao(j,i,1)-potential_c_beta_ao_new(j,i,1)).gt.1.d-10)then
-    print*,'AHAHA' 
-    print*,i,j,dabs(potential_c_beta_ao(j,i,1)-potential_c_beta_ao_new(j,i,1))
-    print*,potential_c_beta_ao(j,i,1),potential_c_beta_ao_new(j,i,1)
-    accu += dabs(potential_c_beta_ao(j,i,1)-potential_c_beta_ao_new(j,i,1))
-   endif
+  !if(dabs(potential_c_beta_ao(j,i,1)-potential_c_beta_ao_new(j,i,1)).gt.1.d-10)then
+  ! print*,'AHAHA' 
+  ! print*,i,j,dabs(potential_c_beta_ao(j,i,1)-potential_c_beta_ao_new(j,i,1))
+    print*,potential_c_beta_ao(j,i,1),potential_x_beta_ao(j,i,1)
+  ! accu += dabs(potential_c_beta_ao(j,i,1)-potential_c_beta_ao_new(j,i,1))
+  !endif
   enddo
  enddo
  print*,'accu   = ',accu

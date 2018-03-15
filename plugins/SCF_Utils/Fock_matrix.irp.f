@@ -138,7 +138,6 @@ BEGIN_PROVIDER [ double precision, SCF_energy ]
          (ao_mono_elec_integral(i,j) + Fock_matrix_ao_beta (i,j) ) *  SCF_density_matrix_ao_beta (i,j) )
    enddo
  enddo
- 
  SCF_energy += extra_energy_contrib_from_density
 
 END_PROVIDER

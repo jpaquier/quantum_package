@@ -24,6 +24,7 @@ END_DOC
 
   call write_time(6)
 
+  print*,'Energy of the guess = ',SCF_energy
   write(6,'(A4, 1X, A16, 1X, A16, 1X, A16)')  &
     '====','================','================','================'
   write(6,'(A4, 1X, A16, 1X, A16, 1X, A16)')  &
@@ -32,7 +33,6 @@ END_DOC
     '====','================','================','================'
 
 ! Initialize energies and density matrices
-
   energy_SCF_previous = SCF_energy
   Delta_energy_SCF    = 1.d0
   iteration_SCF       = 0
@@ -100,7 +100,7 @@ END_DOC
     double precision :: level_shift_save
     level_shift_save = level_shift
     mo_coef_save(1:ao_num,1:mo_tot_num) = mo_coef(1:ao_num,1:mo_tot_num)
-    do while (Delta_Energy_SCF .ge. 0.d0)
+    do while (Delta_energy_SCF .ge. 0.d0)
       mo_coef(1:ao_num,1:mo_tot_num) = mo_coef_save
       TOUCH mo_coef
       level_shift = level_shift + 0.1d0
