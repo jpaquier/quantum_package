@@ -1,10 +1,10 @@
 program pouet
  read_wf = .True.
  touch read_wf
-!call test_grad_density
+ call test_grad_density
 !call test_v_corel_old
 !call test_v_corel_new
- call test_v_corel
+!call test_v_corel
 !call test_int
 end
 

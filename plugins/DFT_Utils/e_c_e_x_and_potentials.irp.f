@@ -57,23 +57,25 @@
 
      else if (DFT_TYPE=="GGA")then
       call density_and_grad_alpha_beta_and_all_aos_and_grad_aos_at_r(r,rho_a,rho_b, grad_rho_a, grad_rho_b, aos_array, grad_aos_array)
+      grad_rho_a_2 = 0.d0
+      grad_rho_b_2 = 0.d0
+      grad_rho_a_b = 0.d0
       do istate = 1, N_states
-       grad_rho_a_2 = 0.d0
-       grad_rho_b_2 = 0.d0
-       grad_rho_a_b = 0.d0
        do m = 1, 3
-        grad_rho_a_2 += grad_rho_a(m,istate)*grad_rho_a(m,istate)
-        grad_rho_b_2 += grad_rho_b(m,istate)*grad_rho_b(m,istate)
-        grad_rho_a_b += grad_rho_a(m,istate)*grad_rho_b(m,istate)
+        grad_rho_a_2(istate) += grad_rho_a(m,istate)*grad_rho_a(m,istate)
+        grad_rho_b_2(istate) += grad_rho_b(m,istate)*grad_rho_b(m,istate)
+        grad_rho_a_b(istate) += grad_rho_a(m,istate)*grad_rho_b(m,istate)
        enddo
       enddo
       call GGA_type_functionals(rho_a,rho_b,grad_rho_a_2,grad_rho_b_2,grad_rho_a_b,ex,vx_rho_a,vx_rho_b,vx_grad_rho_a_2,vx_grad_rho_b_2,vx_grad_rho_a_b, &  
-                                                                                  ec,vc_rho_a,vc_rho_b,vc_grad_rho_a_2,vc_grad_rho_b_2,vc_grad_rho_a_b )
+                                                                                   ec,vc_rho_a,vc_rho_b,vc_grad_rho_a_2,vc_grad_rho_b_2,vc_grad_rho_a_b )
       do istate = 1, N_states
        vx_rho_a(istate) *= weight
        vc_rho_a(istate) *= weight
        vx_rho_b(istate) *= weight
        vc_rho_b(istate) *= weight
+       energy_x(istate) += weight *  ex(istate) 
+       energy_c(istate) += weight *  ec(istate)
        do m = 1, 3
         dtmp_x_a(m,istate) = (2.d0 * vx_grad_rho_a_2(istate) *  grad_rho_a(m,istate) + vx_grad_rho_a_b(istate)  * grad_rho_b(m,istate)) * weight
         dtmp_x_b(m,istate) = (2.d0 * vx_grad_rho_b_2(istate) *  grad_rho_b(m,istate) + vx_grad_rho_a_b(istate)  * grad_rho_a(m,istate)) * weight
@@ -136,8 +138,9 @@ subroutine LDA_type_functional(rho_a,rho_b,vx_a,vx_b,vc_a,vc_b,ex,ec)
 
 end
 
-subroutine GGA_type_functionals(rho_a,rho_b,grad_rho_a_2,grad_rho_b_2,grad_rho_a_b,ex,vx_rho_a,vx_rho_b,vx_grad_rho_a_2,vx_grad_rho_b_2,vx_grad_rho_a_b, &  
-                                                                                   ec,vc_rho_a,vc_rho_b,vc_grad_rho_a_2,vc_grad_rho_b_2,vc_grad_rho_a_b )
+subroutine GGA_type_functionals(rho_a,rho_b,grad_rho_a_2,grad_rho_b_2,grad_rho_a_b, & 
+                                ex,vx_rho_a,vx_rho_b,vx_grad_rho_a_2,vx_grad_rho_b_2,vx_grad_rho_a_b, &  
+                                ec,vc_rho_a,vc_rho_b,vc_grad_rho_a_2,vc_grad_rho_b_2,vc_grad_rho_a_b )
  implicit none
  double precision, intent(in)  :: rho_a(N_states),rho_b(N_states),grad_rho_a_2(N_states),grad_rho_b_2(N_states),grad_rho_a_b(N_states)
  double precision, intent(out) :: ex(N_states),vx_rho_a(N_states),vx_rho_b(N_states),vx_grad_rho_a_2(N_states),vx_grad_rho_b_2(N_states),vx_grad_rho_a_b(N_states)
