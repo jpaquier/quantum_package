@@ -70,12 +70,12 @@
       call GGA_type_functionals(rho_a,rho_b,grad_rho_a_2,grad_rho_b_2,grad_rho_a_b,ex,vx_rho_a,vx_rho_b,vx_grad_rho_a_2,vx_grad_rho_b_2,vx_grad_rho_a_b, &  
                                                                                    ec,vc_rho_a,vc_rho_b,vc_grad_rho_a_2,vc_grad_rho_b_2,vc_grad_rho_a_b )
       do istate = 1, N_states
+       energy_x(istate) += weight *  ex(istate) 
+       energy_c(istate) += weight *  ec(istate)
        vx_rho_a(istate) *= weight
        vc_rho_a(istate) *= weight
        vx_rho_b(istate) *= weight
        vc_rho_b(istate) *= weight
-       energy_x(istate) += weight *  ex(istate) 
-       energy_c(istate) += weight *  ec(istate)
        do m = 1, 3
         dtmp_x_a(m,istate) = (2.d0 * vx_grad_rho_a_2(istate) *  grad_rho_a(m,istate) + vx_grad_rho_a_b(istate)  * grad_rho_b(m,istate)) * weight
         dtmp_x_b(m,istate) = (2.d0 * vx_grad_rho_b_2(istate) *  grad_rho_b(m,istate) + vx_grad_rho_a_b(istate)  * grad_rho_a(m,istate)) * weight

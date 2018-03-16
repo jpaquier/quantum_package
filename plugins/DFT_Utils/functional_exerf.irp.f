@@ -165,7 +165,7 @@ END_DOC
   if (rho >= tol) then
 
 !  call srLDA Ex[2*rho_a,2*rho_a]
-   call ex_lda_sr(rho,rho,exerflda,vxerflda_a,vxerflda_b)
+   call ex_lda_sr(rho*0.5d0,rho*0.5d0,exerflda,vxerflda_a,vxerflda_b)
    dexerfldadrho = vxerflda_a + vxerflda_b
 
 !  square of two times spin alpha density gradient
@@ -193,7 +193,7 @@ END_DOC
   if (rho >= tol) then
 
 !  call srLDA Ex[2*rho_b,2*rho_b]
-   call ex_lda_sr(rho,rho,exerflda,vxerflda_a,vxerflda_b)
+   call ex_lda_sr(rho*0.5d0,rho*0.5d0,exerflda,vxerflda_a,vxerflda_b)
    dexerfldadrho = vxerflda_a + vxerflda_b
 
 !  square of two times spin beta density gradient
@@ -217,8 +217,8 @@ END_DOC
   ex = (exerfpbe_a+exerfpbe_b)*0.5d0
   vx_rho_a = dexerfpbedrho_a 
   vx_rho_b = dexerfpbedrho_a 
-  vx_grd_rho_a_2 = 2.d0*dexerfpbeddrho2_a
-  vx_grd_rho_b_2 = 2.d0*dexerfpbeddrho2_b
+  vx_grd_rho_a_2 =   2.d0*dexerfpbeddrho2_a
+  vx_grd_rho_b_2 =   2.d0*dexerfpbeddrho2_b
   vx_grd_rho_a_b = 0.d0
 
   end
