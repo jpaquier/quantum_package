@@ -115,7 +115,6 @@
         vx_rho_b(istate) *= weight
         vc_rho_b(istate) *= weight
 
-
         double precision ::  contrib_grad_xa(3,N_states)
         double precision ::  contrib_grad_xb(3,N_states)
         double precision ::  contrib_grad_ca(3,N_states)
