@@ -155,6 +155,8 @@ END_DOC
   vx_grd_rho_a_2=0.d0
   vx_grd_rho_b_2=0.d0
   vx_grd_rho_a_b=0.d0
+
+  
   
 ! spin scaling relation Ex[rho_a,rho_b] = (1/2) (Ex[2rho_a,2rho_a] + Ex[2rho_b,2rho_b])
 
@@ -165,8 +167,8 @@ END_DOC
   if (rho >= tol) then
 
 !  call srLDA Ex[2*rho_a,2*rho_a]
-   call ex_lda_sr(rho*0.5d0,rho*0.5d0,exerflda,vxerflda_a,vxerflda_b)
-   dexerfldadrho = vxerflda_a + vxerflda_b
+   call ex_lda_sr(rho_a,rho_a,exerflda,vxerflda_a,vxerflda_b)
+   dexerfldadrho = (vxerflda_a + vxerflda_b)*0.5d0
 
 !  square of two times spin alpha density gradient
    drho2=max(grd_rho_a_2,0d0)*4.0d0
@@ -193,8 +195,8 @@ END_DOC
   if (rho >= tol) then
 
 !  call srLDA Ex[2*rho_b,2*rho_b]
-   call ex_lda_sr(rho*0.5d0,rho*0.5d0,exerflda,vxerflda_a,vxerflda_b)
-   dexerfldadrho = vxerflda_a + vxerflda_b
+   call ex_lda_sr(rho_b,rho_b,exerflda,vxerflda_a,vxerflda_b)
+   dexerfldadrho = (vxerflda_a + vxerflda_b)*0.5d0
 
 !  square of two times spin beta density gradient
    drho2=max(grd_rho_b_2,0d0)*4.0d0
