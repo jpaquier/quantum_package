@@ -62,6 +62,7 @@
        double precision :: ao_matrix_vc_b(ao_num,n_points_integration_angular,N_states) 
        double precision :: ao_matrix_vx_b(ao_num,n_points_integration_angular,N_states) 
        do i = 1 , ao_num 
+        ao_matrix(i,l)             = aos_array(i)
         ao_matrix_vc_a(i,l,istate) = vc_rho_a(istate) * aos_array(i)
         ao_matrix_vc_b(i,l,istate) = vc_rho_b(istate) * aos_array(i)
         ao_matrix_vx_a(i,l,istate) = vx_rho_a(istate) * aos_array(i)
@@ -69,13 +70,13 @@
        enddo
       enddo
      enddo 
-     call update_pots_scalar_dgemm(ao_matrix_vc_a,ao_matrix_vx_a,ao_matrix_vc_b,ao_matrix_vx_b,ao_matrix,potential_c_alpha_ao_new,potential_x_alpha_ao_new,potential_c_beta_ao_new,potential_x_beta_ao_new)
-    !do istate = 1 , N_states
-    ! call dgemm('N','T',ao_num,ao_num,n_points_integration_angular,1.d0,ao_matrix_vc_a(1,1,istate),size(ao_matrix_vc_a,1),ao_matrix(1,1),size(ao_matrix,1),1.d0,potential_c_alpha_ao_new(1,1,istate),size(potential_c_alpha_ao_new,1))
-    ! call dgemm('N','T',ao_num,ao_num,n_points_integration_angular,1.d0,ao_matrix_vc_b(1,1,istate),size(ao_matrix_vc_b,1),ao_matrix(1,1),size(ao_matrix,1),1.d0,potential_c_beta_ao_new(1,1,istate),size(potential_c_beta_ao_new,1))
-    ! call dgemm('N','T',ao_num,ao_num,n_points_integration_angular,1.d0,ao_matrix_vx_a(1,1,istate),size(ao_matrix_vx_a,1),ao_matrix(1,1),size(ao_matrix,1),1.d0,potential_x_alpha_ao_new(1,1,istate),size(potential_x_alpha_ao_new,1))
-    ! call dgemm('N','T',ao_num,ao_num,n_points_integration_angular,1.d0,ao_matrix_vx_b(1,1,istate),size(ao_matrix_vx_b,1),ao_matrix(1,1),size(ao_matrix,1),1.d0,potential_x_beta_ao_new(1,1,istate),size(potential_x_beta_ao_new,1))
-    !enddo
+!    call update_pots_scalar_dgemm(ao_matrix_vc_a,ao_matrix_vx_a,ao_matrix_vc_b,ao_matrix_vx_b,ao_matrix,potential_c_alpha_ao_new,potential_x_alpha_ao_new,potential_c_beta_ao_new,potential_x_beta_ao_new)
+     do istate = 1 , N_states
+      call dgemm('N','T',ao_num,ao_num,n_points_integration_angular,1.d0,ao_matrix_vc_a(1,1,istate),size(ao_matrix_vc_a,1),ao_matrix(1,1),size(ao_matrix,1),1.d0,potential_c_alpha_ao_new(1,1,istate),size(potential_c_alpha_ao_new,1))
+      call dgemm('N','T',ao_num,ao_num,n_points_integration_angular,1.d0,ao_matrix_vc_b(1,1,istate),size(ao_matrix_vc_b,1),ao_matrix(1,1),size(ao_matrix,1),1.d0,potential_c_beta_ao_new(1,1,istate),size(potential_c_beta_ao_new,1))
+      call dgemm('N','T',ao_num,ao_num,n_points_integration_angular,1.d0,ao_matrix_vx_a(1,1,istate),size(ao_matrix_vx_a,1),ao_matrix(1,1),size(ao_matrix,1),1.d0,potential_x_alpha_ao_new(1,1,istate),size(potential_x_alpha_ao_new,1))
+      call dgemm('N','T',ao_num,ao_num,n_points_integration_angular,1.d0,ao_matrix_vx_b(1,1,istate),size(ao_matrix_vx_b,1),ao_matrix(1,1),size(ao_matrix,1),1.d0,potential_x_beta_ao_new(1,1,istate),size(potential_x_beta_ao_new,1))
+     enddo
 
     else if (DFT_TYPE=="GGA")then
      do l = 1, n_points_integration_angular 
@@ -108,9 +109,8 @@
       enddo
       weight = final_weight_functions_at_grid_points(l,k,j) 
       do istate=1,N_states
-
-       energy_x(istate) += weight *  ex(istate)
-       energy_c(istate) += weight *  ec(istate)
+       energy_x_new(istate) += weight *  ex(istate)
+       energy_c_new(istate) += weight *  ec(istate)
        vx_rho_a(istate) *= weight
        vc_rho_a(istate) *= weight
        vx_rho_b(istate) *= weight
