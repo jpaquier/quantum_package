@@ -53,6 +53,8 @@ subroutine create_guess
   PROVIDE ezfio_filename
   call ezfio_has_mo_basis_mo_coef(exists)
   if (.not.exists) then
+    print*,'Creating a guess for the MOs'
+    print*,'mo_guess_type = ',mo_guess_type
     if (mo_guess_type == "HCore") then
       mo_coef = ao_ortho_lowdin_coef
       TOUCH mo_coef
