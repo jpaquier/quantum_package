@@ -5,8 +5,8 @@ program pouet
  double precision :: rmax
  nx = 100
  rmax = 3.d0
- call test_grad
-!call test_r12_psi(nx,rmax)
+!call test_grad
+ call test_r12_psi(nx,rmax)
 !call test_one_dm_mo
 !call test_expectation_value_and_coulomb(nx,rmax)
 !call routine3
@@ -169,6 +169,7 @@ end
 
 
 subroutine test_r12_psi(nx,rmax)
+  include 'constants.include.F'
  implicit none
  double precision, intent(in) :: rmax
  integer, intent(in) :: nx
@@ -188,24 +189,57 @@ subroutine test_r12_psi(nx,rmax)
  dr2(2) = dx
 !dr(2) = dx
 
- r1 = 0.d0
 !r1(1) = 0.5d0
  double precision :: integral
  double precision :: integral_erf
  integer :: i,j
  double precision :: mos_array_r1(mo_tot_num)
  double precision :: mos_array_r2(mo_tot_num)
- do j = 1, nx 
-  r2 = 0.d0
-  do i = 1, nx 
-   r2 += dr2
-   call give_all_mos_at_r(r1,mos_array_r1) 
-   call give_all_mos_at_r(r2,mos_array_r2) 
-   r12 = dsqrt((r1(1)-r2(1))**2 + (r1(2)-r2(2))**2 +(r1(3)-r2(3))**2 )
+ double precision :: dtheta,r12max,dr12,theta,r12_test
+ integer :: ntheta,nr12
+ ntheta = 10
+ r12max = 10.d0 
+ nr12 = 100
+ dr12 = r12max/dble(nr12) 
+ dtheta = 2.d0 * pi /dble(ntheta)
+
+ r1 = 0.d0
+ r1(1) = 0.5d0
+ character*(128) :: filename_theta
+ character*(128) :: output_array(1000)
+ do i = 1, ntheta
+  if (i.lt.10)then
+   write (filename_theta, "(I1)")i
+  else
+   write (filename_theta, "(I2)")i
+  endif
+  print*,filename_theta
+  output_array(i)=trim(ezfio_filename)//'.'//trim(filename_theta)//'.r12'
+  output_array(i)=trim(output_array(i))
+  print*,'output = ',trim(output_array(i))
+  i_unit_output_array(i) = getUnitAndOpen(output_array(i),'w')
+ enddo
+ integer :: i_unit_output_array(1000)
+
+ theta = 0.d0
+ do i = 1, ntheta
+  r12 = 0.d0
+  do j = 1, nr12
+   r12 += dr12
+   r2 = r1
+   r2(1) += r12 * dcos(theta)
+   r2(2) += r12 * dsin(theta)
+   r12_test = dsqrt((r1(1)-r2(1))**2 + (r1(2)-r2(2))**2 +(r1(3)-r2(3))**2 )
+   call give_all_mos_at_r(r1,mos_array_r1)
+   call give_all_mos_at_r(r2,mos_array_r2)
+   if(dabs(r12-r12_test).gt.1.d-10)then
+    print*,'error' 
+    print*,r12,r12_test
+   endif
    call local_r12_operator_on_hf(r1,r2,integral)
-   write(i_unit_output,'(100(F16.10,X))')r1(1),r2(2),r12,1.d0/r12,integral
+   write(i_unit_output_array(i),'(100(F16.10,X))')theta,r12,1.d0/r12,integral,mos_array_r1(1)*mos_array_r2(1)
   enddo
-  r1 += dr1
+  theta += dtheta
  enddo
 end
 

@@ -157,7 +157,6 @@ END_DOC
   vx_grd_rho_a_b=0.d0
 
   
-  
 ! spin scaling relation Ex[rho_a,rho_b] = (1/2) (Ex[2rho_a,2rho_a] + Ex[2rho_b,2rho_b])
 
 ! two times spin alpha density
