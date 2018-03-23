@@ -163,8 +163,14 @@ subroutine GGA_type_functionals(rho_a,rho_b,grad_rho_a_2,grad_rho_b_2,grad_rho_a
    print*,'exchange_functional',exchange_functional
    stop
   endif
-   
-  if(correlation_functional.EQ."None")then
+  double precision :: rhoc,rhoo,sigmacc,sigmaco,sigmaoo,vrhoc,vrhoo,vsigmacc,vsigmaco,vsigmaoo
+  if(correlation_functional.EQ."short_range_PBE")then
+   call rho_ab_to_rho_oc(rho_a(istate),rho_b(istate),rhoo,rhoc)
+   call grad_rho_ab_to_grad_rho_oc(grad_rho_a_2(istate),grad_rho_b_2(istate),grad_rho_a_b(istate),sigmaoo,sigmacc,sigmaco)
+   call dftfun_ecerfpbe(rhoc,rhoo,sigmacc,sigmaco,sigmaoo,ec(istate),vrhoc,vrhoo,vsigmacc,vsigmaco,vsigmaoo)
+   call v_rho_oc_to_v_rho_ab(vrhoo,vrhoc,vc_rho_a(istate),vc_rho_b(istate))
+   call v_grad_rho_oc_to_v_grad_rho_ab(vsigmaoo,vsigmacc,vsigmaco,vc_grad_rho_a_2(istate),vc_grad_rho_b_2(istate),vc_grad_rho_a_b(istate))
+  else if(correlation_functional.EQ."None")then
    ec = 0.d0
    vc_rho_a = 0.d0
    vc_rho_b = 0.d0
