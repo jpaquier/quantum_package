@@ -1,5 +1,5 @@
 C****************************************************************************
-      subroutine ESRC_MD_LDAERF (rho_a,rho_b,dospin,e)
+      subroutine ESRC_MD_LDAERF (mu,rho_a,rho_b,dospin,e)
 C*****************************************************************************
 C     Short-range spin-dependent LDA correlation functional with multideterminant reference
 C       for OEP calculations from Section V of 
@@ -17,7 +17,7 @@ C*****************************************************************************
       implicit none
 
       double precision, intent(in) :: rho_a,rho_b
-      logical, intent(in)          :: dospin
+      logical, intent(in)          :: dospin,mu
       double precision, intent(out):: e
 
       double precision             :: e1
@@ -28,8 +28,8 @@ C*****************************************************************************
       rhot = rhoa + rhob
       rhos = rhoa - rhob
 
-      call ec_only_lda_sr(rho_a,rho_b,e1)
-      call DELTA_LRSR_LDAERF (rhot,rhos,mu_erf,dospin,e)
+      call ec_only_lda_sr(mu,rho_a,rho_b,e1)
+      call DELTA_LRSR_LDAERF (rhot,rhos,mu,dospin,e)
       e = e1 + e
 
       end

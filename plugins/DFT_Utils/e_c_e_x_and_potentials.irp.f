@@ -44,7 +44,7 @@
      weight = final_weight_functions_at_grid_points(l,k,j)
      if(DFT_TYPE=="LDA")then
       call dm_dft_alpha_beta_and_all_aos_at_r(r,rho_a,rho_b,aos_array)
-      call LDA_type_functional(rho_a,rho_b,vx_rho_a,vx_rho_b,vc_rho_a,vc_rho_b,ex,ec)
+      call LDA_type_functional(r,rho_a,rho_b,vx_rho_a,vx_rho_b,vc_rho_a,vc_rho_b,ex,ec)
       do istate = 1, N_states
        energy_x(istate) += weight *  ex(istate) 
        energy_c(istate) += weight *  ec(istate)
@@ -67,7 +67,7 @@
         grad_rho_a_b(istate) += grad_rho_a(m,istate)*grad_rho_b(m,istate)
        enddo
       enddo
-      call GGA_type_functionals(rho_a,rho_b,grad_rho_a_2,grad_rho_b_2,grad_rho_a_b,ex,vx_rho_a,vx_rho_b,vx_grad_rho_a_2,vx_grad_rho_b_2,vx_grad_rho_a_b, &  
+      call GGA_type_functionals(r,mu_erf,rho_a,rho_b,grad_rho_a_2,grad_rho_b_2,grad_rho_a_b,ex,vx_rho_a,vx_rho_b,vx_grad_rho_a_2,vx_grad_rho_b_2,vx_grad_rho_a_b, &  
                                                                                    ec,vc_rho_a,vc_rho_b,vc_grad_rho_a_2,vc_grad_rho_b_2,vc_grad_rho_a_b )
 
       do istate = 1, N_states
@@ -102,18 +102,28 @@
 
 END_PROVIDER 
 
-subroutine LDA_type_functional(rho_a,rho_b,vx_a,vx_b,vc_a,vc_b,ex,ec)
+subroutine LDA_type_functional(r,rho_a,rho_b,vx_a,vx_b,vc_a,vc_b,ex,ec)
  implicit none
- double precision, intent(in)  :: rho_a(N_states),rho_b(N_states)
+ double precision, intent(in)  :: r(3),rho_a(N_states),rho_b(N_states)
  double precision, intent(out) :: ex(N_states),ec(N_states)
  double precision, intent(out) :: vx_a(N_states),vx_b(N_states),vc_a(N_states),vc_b(N_states)
  integer          :: istate
+ double precision :: r2(3),dr2(3), local_potential,r12,dx2,mu,mu_coulomb
 !!!!!!! EXCHANGE PART
  do istate = 1, N_states
   if(exchange_functional.EQ."short_range_LDA")then
-   call ex_lda_sr(rho_a(istate),rho_b(istate),ex(istate),vx_a(istate),vx_b(istate))
+   call ex_lda_sr(mu_erf,rho_a(istate),rho_b(istate),ex(istate),vx_a(istate),vx_b(istate))
   else if(exchange_functional.EQ."LDA")then
    call ex_lda(rho_a(istate),rho_b(istate),ex(istate),vx_a(istate),vx_b(istate))
+  else if(exchange_functional.EQ."basis_set_short_range_LDA")then
+   r2 = r
+   r12 = 0.00001d0
+   dx2 = dsqrt(r12**2/3.d0)
+   dr2(:) = dx2
+   r2 += dr2
+   call local_r12_operator_on_hf(r,r2,local_potential)
+   mu =  mu_coulomb(local_potential,r12)
+   call ex_lda_sr(mu,rho_a(istate),rho_b(istate),ex(istate),vx_a(istate),vx_b(istate))
   else if(exchange_functional.EQ."None")then
    ex = 0.d0
    vx_a = 0.d0
@@ -125,9 +135,18 @@ subroutine LDA_type_functional(rho_a,rho_b,vx_a,vx_b,vc_a,vc_b,ex,ec)
   endif
 !!!!!!! CORRELATION PART
   if(correlation_functional.EQ."short_range_LDA")then
-   call ec_lda_sr(rho_a(istate),rho_b(istate),ec(istate),vc_a(istate),vc_b(istate))
+   call ec_lda_sr(mu_erf,rho_a(istate),rho_b(istate),ec(istate),vc_a(istate),vc_b(istate))
   else if(correlation_functional.EQ."LDA")then
    call ec_lda(rho_a(istate),rho_b(istate),ec(istate),vc_a(istate),vc_b(istate))
+  else if(exchange_functional.EQ."basis_set_short_range_LDA")then
+   r2 = r 
+   r12 = 0.00001d0
+   dx2 = dsqrt(r12**2/3.d0)
+   dr2(:) = dx2
+   r2 += dr2
+   call local_r12_operator_on_hf(r,r2,local_potential)
+   mu =  mu_coulomb(local_potential,r12)
+   call ec_lda_sr(mu,rho_a(istate),rho_b(istate),ec(istate),vc_a(istate),vc_b(istate))
   else if(correlation_functional.EQ."None")then
    ec = 0.d0
    vc_a = 0.d0
@@ -141,24 +160,27 @@ subroutine LDA_type_functional(rho_a,rho_b,vx_a,vx_b,vc_a,vc_b,ex,ec)
 
 end
 
-subroutine GGA_type_functionals(rho_a,rho_b,grad_rho_a_2,grad_rho_b_2,grad_rho_a_b, & 
+subroutine GGA_type_functionals(r,rho_a,rho_b,grad_rho_a_2,grad_rho_b_2,grad_rho_a_b, & 
                                 ex,vx_rho_a,vx_rho_b,vx_grad_rho_a_2,vx_grad_rho_b_2,vx_grad_rho_a_b, &  
                                 ec,vc_rho_a,vc_rho_b,vc_grad_rho_a_2,vc_grad_rho_b_2,vc_grad_rho_a_b )
  implicit none
- double precision, intent(in)  :: rho_a(N_states),rho_b(N_states),grad_rho_a_2(N_states),grad_rho_b_2(N_states),grad_rho_a_b(N_states)
+ double precision, intent(in)  :: r(3),rho_a(N_states),rho_b(N_states),grad_rho_a_2(N_states),grad_rho_b_2(N_states),grad_rho_a_b(N_states)
  double precision, intent(out) :: ex(N_states),vx_rho_a(N_states),vx_rho_b(N_states),vx_grad_rho_a_2(N_states),vx_grad_rho_b_2(N_states),vx_grad_rho_a_b(N_states)
  double precision, intent(out) :: ec(N_states),vc_rho_a(N_states),vc_rho_b(N_states),vc_grad_rho_a_2(N_states),vc_grad_rho_b_2(N_states),vc_grad_rho_a_b(N_states)
  integer          :: istate
+ double precision :: r2(3),dr2(3), local_potential,r12,dx2,mu,mu_coulomb
  do istate = 1, N_states
   if(exchange_functional.EQ."short_range_PBE")then
-   call ex_pbe_sr(rho_a(istate),rho_b(istate),grad_rho_a_2(istate),grad_rho_b_2(istate),grad_rho_a_b(istate),ex(istate),vx_rho_a(istate),vx_rho_b(istate),vx_grad_rho_a_2(istate),vx_grad_rho_b_2(istate),vx_grad_rho_a_b(istate))
-
-    ! call rho_ab_to_rho_oc(rho_a(istate),rho_b(istate),rhoo,rhoc)
-    ! call grad_rho_ab_to_grad_rho_oc(grad_rho_a_2(istate),grad_rho_b_2(istate),grad_rho_a_b(istate),sigmaoo,sigmacc,sigmaco)
-    ! call dftfun_exerfpbe(rhoc,rhoo,sigmacc,sigmaco,sigmaoo,ex(istate),vrhoc,vrhoo,vsigmacc,vsigmaco,vsigmaoo)
-    ! call v_rho_oc_to_v_rho_ab(vrhoo,vrhoc,vx_rho_a(istate),vx_rho_b(istate))
-    ! call v_grad_rho_oc_to_v_grad_rho_ab(vsigmaoo,vsigmacc,vsigmaco,vx_grad_rho_a_2(istate),vx_grad_rho_b_2(istate),vx_grad_rho_a_b(istate))
-
+   call ex_pbe_sr(mu_erf,rho_a(istate),rho_b(istate),grad_rho_a_2(istate),grad_rho_b_2(istate),grad_rho_a_b(istate),ex(istate),vx_rho_a(istate),vx_rho_b(istate),vx_grad_rho_a_2(istate),vx_grad_rho_b_2(istate),vx_grad_rho_a_b(istate))
+  else if(exchange_functional.EQ."basis_set_short_range_PBE")then
+   r2 = r
+   r12 = 0.00001d0
+   dx2 = dsqrt(r12**2/3.d0)
+   dr2(:) = dx2
+   r2 += dr2
+   call local_r12_operator_on_hf(r,r2,local_potential)
+   mu =  mu_coulomb(local_potential,r12)
+   call ex_pbe_sr(mu,rho_a(istate),rho_b(istate),grad_rho_a_2(istate),grad_rho_b_2(istate),grad_rho_a_b(istate),ex(istate),vx_rho_a(istate),vx_rho_b(istate),vx_grad_rho_a_2(istate),vx_grad_rho_b_2(istate),vx_grad_rho_a_b(istate))
   else if(exchange_functional.EQ."None")then
    ex = 0.d0
    vx_rho_a = 0.d0
@@ -177,13 +199,14 @@ subroutine GGA_type_functionals(rho_a,rho_b,grad_rho_a_2,grad_rho_b_2,grad_rho_a
    call rho_ab_to_rho_oc(rho_a(istate),rho_b(istate),rhoo,rhoc)
    call grad_rho_ab_to_grad_rho_oc(grad_rho_a_2(istate),grad_rho_b_2(istate),grad_rho_a_b(istate),sigmaoo,sigmacc,sigmaco)
 
-  !call dftfun_ecerfpbe(rhoc,rhoo,sigmacc,sigmaco,sigmaoo,ec(istate),vrhoc,vrhoo,vsigmacc,vsigmaco,vsigmaoo)
-
-   call E_sr_PBE(rhoc,rhoo,sigmacc,sigmaco,sigmaoo,ec(istate))
-   call numerical_derivative_of_sr_pbe_correlation (rhoc,rhoo,sigmacc,sigmaco,sigmaoo,vrhoc,vrhoo,vsigmacc,vsigmaco,vsigmaoo)
+  ! BE AWARE THAT NOW YOU HAVE TO PASS THE VALUE OF MU
+  !call E_sr_PBE(MU,rhoc,rhoo,sigmacc,sigmaco,sigmaoo,ec(istate))
+  !call numerical_derivative_of_sr_pbe_correlation (MU,rhoc,rhoo,sigmacc,sigmaco,sigmaoo,vrhoc,vrhoo,vsigmacc,vsigmaco,vsigmaoo)
  
 
-   call v_rho_oc_to_v_rho_ab(vrhoo,vrhoc,vc_rho_a(istate),vc_rho_b(istate)) 
+  !call v_rho_oc_to_v_rho_ab(vrhoo,vrhoc,vc_rho_a(istate),vc_rho_b(istate)) 
+   call dftfun_ecerfpbe(mu_erf,rhoc,rhoo,sigmacc,sigmaco,sigmaoo,ec(istate),vrhoc,vrhoo,vsigmacc,vsigmaco,vsigmaoo)
+   call v_rho_oc_to_v_rho_ab(vrhoo,vrhoc,vc_rho_a(istate),vc_rho_b(istate))
    call v_grad_rho_oc_to_v_grad_rho_ab(vsigmaoo,vsigmacc,vsigmaco,vc_grad_rho_a_2(istate),vc_grad_rho_b_2(istate),vc_grad_rho_a_b(istate))
   else if(correlation_functional.EQ."None")then
    ec = 0.d0
@@ -286,6 +309,7 @@ END_PROVIDER
  integer :: j,k,l,istate 
  double precision, allocatable :: aos_array(:), r(:), rho_a(:), rho_b(:), ec(:)
  logical :: dospin
+ double precision :: r2(3),dr2(3), local_potential,r12,dx2,mu,mu_coulomb
  dospin = .false.
  allocate(aos_array(ao_num),r(3), rho_a(N_states), rho_b(N_states), ec(N_states))
   do j = 1, nucl_num
@@ -300,7 +324,16 @@ END_PROVIDER
      do istate = 1, N_states
 !!!!!!!!!!!! CORRELATION PART
       if(md_correlation_functional.EQ."short_range_LDA")then
-        call ESRC_MD_LDAERF (rho_a(istate),rho_b(istate),dospin,ec(istate))
+        call ESRC_MD_LDAERF (mu_erf,rho_a(istate),rho_b(istate),dospin,ec(istate))
+      else if(md_correlation_functional.EQ."basis_set_short_range_LDA")then
+       r2 = r
+       r12 = 0.00001d0
+       dx2 = dsqrt(r12**2/3.d0)
+       dr2(:) = dx2
+       r2 += dr2
+       call local_r12_operator_on_hf(r,r2,local_potential)
+       mu =  mu_coulomb(local_potential,r12)
+       call ESRC_MD_LDAERF (mu,rho_a(istate),rho_b(istate),dospin,ec(istate))
       else if(md_correlation_functional.EQ."None")then
        ec = 0.d0
       else
