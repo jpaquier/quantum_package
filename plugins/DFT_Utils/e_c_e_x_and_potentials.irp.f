@@ -151,6 +151,13 @@ subroutine GGA_type_functionals(rho_a,rho_b,grad_rho_a_2,grad_rho_b_2,grad_rho_a
  do istate = 1, N_states
   if(exchange_functional.EQ."short_range_PBE")then
    call ex_pbe_sr(rho_a(istate),rho_b(istate),grad_rho_a_2(istate),grad_rho_b_2(istate),grad_rho_a_b(istate),ex(istate),vx_rho_a(istate),vx_rho_b(istate),vx_grad_rho_a_2(istate),vx_grad_rho_b_2(istate),vx_grad_rho_a_b(istate))
+
+    ! call rho_ab_to_rho_oc(rho_a(istate),rho_b(istate),rhoo,rhoc)
+    ! call grad_rho_ab_to_grad_rho_oc(grad_rho_a_2(istate),grad_rho_b_2(istate),grad_rho_a_b(istate),sigmaoo,sigmacc,sigmaco)
+    ! call dftfun_exerfpbe(rhoc,rhoo,sigmacc,sigmaco,sigmaoo,ex(istate),vrhoc,vrhoo,vsigmacc,vsigmaco,vsigmaoo)
+    ! call v_rho_oc_to_v_rho_ab(vrhoo,vrhoc,vx_rho_a(istate),vx_rho_b(istate))
+    ! call v_grad_rho_oc_to_v_grad_rho_ab(vsigmaoo,vsigmacc,vsigmaco,vx_grad_rho_a_2(istate),vx_grad_rho_b_2(istate),vx_grad_rho_a_b(istate))
+
   else if(exchange_functional.EQ."None")then
    ex = 0.d0
    vx_rho_a = 0.d0
@@ -165,6 +172,7 @@ subroutine GGA_type_functionals(rho_a,rho_b,grad_rho_a_2,grad_rho_b_2,grad_rho_a
   endif
   double precision :: rhoc,rhoo,sigmacc,sigmaco,sigmaoo,vrhoc,vrhoo,vsigmacc,vsigmaco,vsigmaoo
   if(correlation_functional.EQ."short_range_PBE")then
+  ! convertion from (alpha,beta) formalism to (closed, open) formalism
    call rho_ab_to_rho_oc(rho_a(istate),rho_b(istate),rhoo,rhoc)
    call grad_rho_ab_to_grad_rho_oc(grad_rho_a_2(istate),grad_rho_b_2(istate),grad_rho_a_b(istate),sigmaoo,sigmacc,sigmaco)
    call dftfun_ecerfpbe(rhoc,rhoo,sigmacc,sigmaco,sigmaoo,ec(istate),vrhoc,vrhoo,vsigmacc,vsigmaco,vsigmaoo)

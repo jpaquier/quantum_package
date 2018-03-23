@@ -51,7 +51,7 @@ subroutine v_grad_rho_oc_to_v_grad_rho_ab(v_grad_rho_o_2,v_grad_rho_c_2,v_grad_r
  double precision, intent(out) :: v_grad_rho_a_2,v_grad_rho_b_2,v_grad_rho_a_b
  v_grad_rho_a_2 = v_grad_rho_o_2 + v_grad_rho_c_2 + v_grad_rho_o_c
  v_grad_rho_b_2 = v_grad_rho_o_2 + v_grad_rho_c_2 - v_grad_rho_o_c
- v_grad_rho_a_b = 2d0 * v_grad_rho_o_2 + 2d0 * v_grad_rho_c_2
+ v_grad_rho_a_b = -2d0 * v_grad_rho_o_2 + 2d0 * v_grad_rho_c_2
 end
 
 
