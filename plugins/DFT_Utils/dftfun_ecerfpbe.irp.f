@@ -117,7 +117,6 @@ include 'constants.include.F'
 
 !    LDA energy density derivative
      decerfldadrho = vrhoccerflda
-     decldadrho = vrhocclda
 
      decerfpur=(decerfldadrho-ecerflda/rho)/rho
      decpur=(decldadrho-eclda/rho)/rho
@@ -144,7 +143,6 @@ include 'constants.include.F'
 
 !    LDA energy density derivative
      decerfldadrho = vrhoocerflda
-     decldadrho = vrhooclda
 
      decerfpur=decerfldadrho/rho
      decpur=decldadrho/rho

@@ -45,9 +45,9 @@ subroutine ec_lda(rho_a,rho_b,ec,vc_a,vc_b)
       vc_a = vcup
       vc_b = vcdown
       else
-       ec = 0.d0
-       vc_a = 0.d0
-       vc_b = 0.d0
+       ec = 1.d-15
+       vc_a = 1.d-15
+       vc_b = 1.d-15
 
       endif
 
@@ -91,9 +91,9 @@ subroutine ec_lda_sr(rho_a,rho_b,ec,vc_a,vc_b)
       vc_b = vcdown-vclrdown
       
       else
-       ec = 0.d0
-       vc_a = 0.d0
-       vc_b = 0.d0
+       ec = 1.d-15
+       vc_a = 1.d-15
+       vc_b = 1.d-15
        
       endif
 
