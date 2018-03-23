@@ -69,6 +69,7 @@
       enddo
       call GGA_type_functionals(rho_a,rho_b,grad_rho_a_2,grad_rho_b_2,grad_rho_a_b,ex,vx_rho_a,vx_rho_b,vx_grad_rho_a_2,vx_grad_rho_b_2,vx_grad_rho_a_b, &  
                                                                                    ec,vc_rho_a,vc_rho_b,vc_grad_rho_a_2,vc_grad_rho_b_2,vc_grad_rho_a_b )
+
       do istate = 1, N_states
        energy_x(istate) += weight *  ex(istate) 
        energy_c(istate) += weight *  ec(istate)
@@ -175,8 +176,14 @@ subroutine GGA_type_functionals(rho_a,rho_b,grad_rho_a_2,grad_rho_b_2,grad_rho_a
   ! convertion from (alpha,beta) formalism to (closed, open) formalism
    call rho_ab_to_rho_oc(rho_a(istate),rho_b(istate),rhoo,rhoc)
    call grad_rho_ab_to_grad_rho_oc(grad_rho_a_2(istate),grad_rho_b_2(istate),grad_rho_a_b(istate),sigmaoo,sigmacc,sigmaco)
-   call dftfun_ecerfpbe(rhoc,rhoo,sigmacc,sigmaco,sigmaoo,ec(istate),vrhoc,vrhoo,vsigmacc,vsigmaco,vsigmaoo)
-   call v_rho_oc_to_v_rho_ab(vrhoo,vrhoc,vc_rho_a(istate),vc_rho_b(istate))
+
+  !call dftfun_ecerfpbe(rhoc,rhoo,sigmacc,sigmaco,sigmaoo,ec(istate),vrhoc,vrhoo,vsigmacc,vsigmaco,vsigmaoo)
+
+   call E_sr_PBE(rhoc,rhoo,sigmacc,sigmaco,sigmaoo,ec(istate))
+   call numerical_derivative_of_sr_pbe_correlation (rhoc,rhoo,sigmacc,sigmaco,sigmaoo,vrhoc,vrhoo,vsigmacc,vsigmaco,vsigmaoo)
+ 
+
+   call v_rho_oc_to_v_rho_ab(vrhoo,vrhoc,vc_rho_a(istate),vc_rho_b(istate)) 
    call v_grad_rho_oc_to_v_grad_rho_ab(vsigmaoo,vsigmacc,vsigmaco,vc_grad_rho_a_2(istate),vc_grad_rho_b_2(istate),vc_grad_rho_a_b(istate))
   else if(correlation_functional.EQ."None")then
    ec = 0.d0
