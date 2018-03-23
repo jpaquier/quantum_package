@@ -72,7 +72,7 @@ END_PROVIDER
    r(3) = grid_points_per_atom(3,l_angular,k_radial,j_nucl)
    weight = final_weight_functions_at_grid_points(l_angular,k_radial,j_nucl)
    call dm_dft_alpha_beta_and_all_aos_at_r(r,rho_a,rho_b,aos_array)
-   call LDA_type_functional(rho_a,rho_b,vx_rho_a,vx_rho_b,vc_rho_a,vc_rho_b,ex,ec)
+   call LDA_type_functional(r,rho_a,rho_b,vx_rho_a,vx_rho_b,vc_rho_a,vc_rho_b,ex,ec)
    
    do i = 1 , ao_num 
     ao_matrix(i,l_angular) = aos_array(i)
@@ -143,7 +143,7 @@ END_PROVIDER
      grad_rho_a_b(istate) += grad_rho_a(m,istate) * grad_rho_b(m,istate)
     enddo
    enddo
-   call GGA_type_functionals(rho_a,rho_b,grad_rho_a_2,grad_rho_b_2,grad_rho_a_b,ex,vx_rho_a,vx_rho_b,vx_grad_rho_a_2,vx_grad_rho_b_2,vx_grad_rho_a_b, &  
+   call GGA_type_functionals(r,rho_a,rho_b,grad_rho_a_2,grad_rho_b_2,grad_rho_a_b,ex,vx_rho_a,vx_rho_b,vx_grad_rho_a_2,vx_grad_rho_b_2,vx_grad_rho_a_b, &  
                                                                                 ec,vc_rho_a,vc_rho_b,vc_grad_rho_a_2,vc_grad_rho_b_2,vc_grad_rho_a_b )
    do i = 1, ao_num
     ao_matrix(i,l_angular) = aos_array(i)

@@ -5,8 +5,11 @@ program pouet
  double precision :: rmax
  nx = 100
  rmax = 3.d0
+ call test_erf_coulomb_oprerator
+!call test
+!call test_inv_erf
 !call test_grad
- call test_r12_psi(nx,rmax)
+!call test_r12_psi(nx,rmax)
 !call test_one_dm_mo
 !call test_expectation_value_and_coulomb(nx,rmax)
 !call routine3
@@ -21,18 +24,8 @@ end
 
 subroutine test
 implicit none
- double precision :: r1(3),r2(3),coulomb,two_dm
- double precision :: r12
- r1 = 0.d0
- r2 = 0.d0
- r2(1) = 1.d0
- r2(2) = 1.d0
- r12 = dsqrt((r1(1)-r2(1))**2 + (r1(2)-r2(2))**2 +(r1(3)-r2(3))**2 )
-! call expectation_value_in_real_space(r1,r2,coulomb_bis) 
-  call expectation_value_in_real_space_old(r1,r2,coulomb,two_dm) 
-  print*,'coulomb, dm     = ',coulomb,two_dm
-  print*,'coulomb/dm, r12 = ',coulomb/two_dm,0.5d0*1.d0/r12
-
+ print*,'e_c = ',energy_c
+ print*,'e_x = ',energy_x
 end
 
 subroutine routine3
@@ -167,6 +160,24 @@ subroutine test_r12(nx,rmax)
  enddo
 end
 
+subroutine test_inv_erf
+ implicit none
+ integer :: ny
+ double precision :: y,dy,ymax, inverse_erf,x,thr
+ thr = 1.d-10
+ ny = 1000
+ ymax = 1.d0
+ dy = dble(ymax/ny) 
+ integer :: i
+ y = 0.d0
+ do i = 1, ny
+  x = inverse_erf(y,thr)
+  write(33,*)y,x,erf(x) 
+  y+=dy
+ enddo
+
+
+end
 
 subroutine test_r12_psi(nx,rmax)
   include 'constants.include.F'
@@ -266,7 +277,7 @@ subroutine test_erf_coulomb_oprerator
  output=trim(output)
  print*,'output = ',trim(output)
  i_unit_output = getUnitAndOpen(output,'w')
- xmax = 10.d0
+ xmax = 5.d0
  nx = 100
  dx = xmax/dble(nx)
  rinit = 0.d0
@@ -277,7 +288,8 @@ subroutine test_erf_coulomb_oprerator
   r2(1) += dx
   r2(2) += dx
   r12 = dsqrt((r1(1)-r2(1))**2 + (r1(2)-r2(2))**2 +(r1(3)-r2(3))**2 )
-  call erf_coulomb_operator_in_real_space(r1,r2,coulomb) 
+! call erf_coulomb_operator_in_real_space(r1,r2,coulomb) 
+  call local_r12_operator_on_hf(r1,r2,coulomb)
   write(i_unit_output,*)r12,1.d0/r12 * (1.d0 - erfc(mu_erf * r12)) ,coulomb
  enddo
 end

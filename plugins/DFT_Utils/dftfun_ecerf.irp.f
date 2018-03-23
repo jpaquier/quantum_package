@@ -53,12 +53,12 @@ subroutine ec_lda(rho_a,rho_b,ec,vc_a,vc_b)
 
 end
 
-subroutine ec_lda_sr(rho_a,rho_b,ec,vc_a,vc_b)
+subroutine ec_lda_sr(mu,rho_a,rho_b,ec,vc_a,vc_b)
       implicit none
  include 'constants.include.F'
       double precision, intent(out) ::  ec
       double precision, intent(out) ::  vc_a,vc_b
-      double precision, intent(in)  ::  rho_a,rho_b
+      double precision, intent(in)  ::  mu,rho_a,rho_b
 
 ! Double precision numbers
       
@@ -80,13 +80,13 @@ subroutine ec_lda_sr(rho_a,rho_b,ec,vc_a,vc_b)
       z=(rhoa-rhob)/(rhoa+rhob)
 
       call ecPW(rs,z,eccoul,ecd,ecz,ecdd,eczd)
-      call ecorrlr(rs,z,mu_erf,eclr)
+      call ecorrlr(rs,z,mu,eclr)
       ec=(eccoul-eclr)*rho
 
 
       vcup=eccoul-rs/3.d0*ecd-(z-1.d0)*ecz
       vcdown=eccoul-rs/3.d0*ecd-(z+1.d0)*ecz
-      call vcorrlr(rs,z,mu_erf,vclrup,vclrdown,vclrupd,vclrdownd)
+      call vcorrlr(rs,z,mu,vclrup,vclrdown,vclrupd,vclrdownd)
       vc_a = vcup-vclrup
       vc_b = vcdown-vclrdown
       
@@ -99,11 +99,11 @@ subroutine ec_lda_sr(rho_a,rho_b,ec,vc_a,vc_b)
 
 end
 
-subroutine ec_only_lda_sr(rho_a,rho_b,ec)
+subroutine ec_only_lda_sr(mu,rho_a,rho_b,ec)
       implicit none
  include 'constants.include.F'
       double precision, intent(out) ::  ec
-      double precision, intent(in)  ::  rho_a,rho_b
+      double precision, intent(in)  ::  mu,rho_a,rho_b
 
 ! Double precision numbers
       
@@ -123,7 +123,7 @@ subroutine ec_only_lda_sr(rho_a,rho_b,ec)
       z=(rhoa-rhob)/(rhoa+rhob)
 
       call ecPW(rs,z,eccoul,ecd,ecz,ecdd,eczd)
-      call ecorrlr(rs,z,mu_erf,eclr)
+      call ecorrlr(rs,z,mu,eclr)
       ec=(eccoul-eclr)*rho
 
       endif

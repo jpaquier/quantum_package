@@ -338,9 +338,40 @@ subroutine local_erf_r12_operator_on_hf(r1,r2,integral_psi)
  integral_psi = 0.d0
  do k = 1, mo_tot_num
   do l = 1, mo_tot_num
-   integral_psi += get_mo_bielec_integral_erf(1,1,k,l,mo_integrals_erf_map) * mos_array_r2(l) * mos_array_r1(k)
+   integral_psi += integrals_for_hf_potential(l,k) * mos_array_r2(l) * mos_array_r1(k)
   enddo
  enddo
  integral_psi = integral_psi / (mos_array_r1(1) * mos_array_r2(1))
 
+end
+
+BEGIN_PROVIDER [double precision, integrals_for_hf_potential, (mo_tot_num,mo_tot_num)]
+ implicit none
+ integer :: k,l
+ double precision :: get_mo_bielec_integral_erf
+ do k = 1, mo_tot_num
+  do l = 1, mo_tot_num
+   integrals_for_hf_potential(l,k) = get_mo_bielec_integral_erf(1,1,k,l,mo_integrals_erf_map) 
+  enddo
+ enddo
+
+
+END_PROVIDER 
+
+double precision function mu_coulomb(y,x)
+ implicit none
+ BEGIN_DOC
+! finds the correct mu that such that 
+! y = erf(mu_coulomb * x)/x 
+ ENd_DOC
+ double precision, intent(in) :: y,x
+ double precision :: y_tmp,x_tmp,thr,inverse_erf
+ thr = 1.d-10
+ y_tmp = y * x
+ x_tmp =inverse_erf(y_tmp,thr)
+ if(x.ne.0.d0)then
+  mu_coulomb = x_tmp / x
+ else
+  mu_coulomb = x_tmp / 1.d-15
+ endif
 end

@@ -1,9 +1,9 @@
-subroutine ex_lda_sr(rho_a,rho_b,ex,vx_a,vx_b)
+subroutine ex_lda_sr(mu,rho_a,rho_b,ex,vx_a,vx_b)
  include 'constants.include.F'
  implicit none 
  double precision, intent(out) ::  ex
  double precision, intent(out) ::  vx_a,vx_b
- double precision, intent(in)  ::  rho_a,rho_b
+ double precision, intent(in)  ::  rho_a,rho_b,mu
 
 
  double precision ::  rho_a_2,rho_b_2
@@ -37,7 +37,7 @@ subroutine ex_lda_sr(rho_a,rho_b,ex,vx_a,vx_b)
 !Density and kF
  rho_a_2=rho_a*2.D0
  akf = ckf*(rho_a_2**f13)
- a = mu_erf/(z2*akf)
+ a = mu/(z2*akf)
  a2 = a*a
  a3 = a2*a
 
@@ -51,13 +51,13 @@ subroutine ex_lda_sr(rho_a,rho_b,ex,vx_a,vx_b)
 !Intermediate values of a
  elseif (a.le.100d0) then
    ex_a = - (rho_a_2*(z24*rho_a_2/pi)**f13) * (z3/z8-a*(sqpi*derf(f12/a)+(z2*a-z4*a3)*dexp(-f14/a2)-z3*a+z4*a3))
-   vx_a =  -(z3*rho_a_2/pi)**f13 + z2*a*mu_erf/pi*(dexp(-f14/a2)-z1)+mu_erf/sqpi * derf(f12/a)
+   vx_a =  -(z3*rho_a_2/pi)**f13 + z2*a*mu/pi*(dexp(-f14/a2)-z1)+mu/sqpi * derf(f12/a)
 
 
 !Expansion for large a
  elseif (a.lt.1.d+9) then
    ex_a = -(rho_a_2*(z24*rho_a_2/pi)**f13) * z1/(z96*a2)
-   vx_a = -pi*rho_a_2/(z2*mu_erf*mu_erf)
+   vx_a = -pi*rho_a_2/(z2*mu*mu)
 
 !Limit for large a
  else
@@ -68,7 +68,7 @@ subroutine ex_lda_sr(rho_a,rho_b,ex,vx_a,vx_b)
 !Density and kF
  rho_b_2= rho_b * 2.d0
  akf = ckf*(rho_b_2**f13)
- a = mu_erf/(z2*akf)
+ a = mu/(z2*akf)
  a2 = a*a
  a3 = a2*a
 
@@ -82,12 +82,12 @@ subroutine ex_lda_sr(rho_a,rho_b,ex,vx_a,vx_b)
 !Intermediate values of a
  elseif (a.le.100d0) then
    ex_b = - (rho_b_2*(z24*rho_b_2/pi)**f13)*(z3/z8-a*(sqpi*derf(f12/a)+(z2*a-z4*a3)*dexp(-f14/a2)-z3*a+z4*a3))
-   vx_b = -(z3*rho_b_2/pi)**f13+ z2*a*mu_erf/pi*(dexp(-f14/a2)-z1)+mu_erf/sqpi* derf(f12/a)
+   vx_b = -(z3*rho_b_2/pi)**f13+ z2*a*mu/pi*(dexp(-f14/a2)-z1)+mu/sqpi* derf(f12/a)
 
 !Expansion for large a
  elseif (a.lt.1.d+9) then
    ex_b = - (rho_b_2*(z24*rho_b_2/pi)**f13) *z1/(z96*a2)
-   vx_b = - pi*rho_b_2/(z2*mu_erf*mu_erf)
+   vx_b = - pi*rho_b_2/(z2*mu*mu)
 
 !Limit for large a
  else
@@ -99,7 +99,7 @@ subroutine ex_lda_sr(rho_a,rho_b,ex,vx_a,vx_b)
 
 end
 
-subroutine ex_pbe_sr(rho_a,rho_b,grd_rho_a_2,grd_rho_b_2,grd_rho_a_b,ex,vx_rho_a,vx_rho_b,vx_grd_rho_a_2,vx_grd_rho_b_2,vx_grd_rho_a_b)
+subroutine ex_pbe_sr(mu,rho_a,rho_b,grd_rho_a_2,grd_rho_b_2,grd_rho_a_b,ex,vx_rho_a,vx_rho_b,vx_grd_rho_a_2,vx_grd_rho_b_2,vx_grd_rho_a_b)
 BEGIN_DOC
 !rho_a = density alpha
 !rho_b = density beta
@@ -117,7 +117,7 @@ END_DOC
  implicit none
 
 ! input
- double precision, intent(in) :: rho_a, rho_b
+ double precision, intent(in) :: mu,rho_a, rho_b
  double precision, intent(in) :: grd_rho_a_2, grd_rho_b_2, grd_rho_a_b
 
 ! output
@@ -139,14 +139,12 @@ END_DOC
   double precision dexerfpbedrho_a, dexerfpbedrho_b
   double precision dexerfpbeddrho2_a, dexerfpbeddrho2_b
 
-  double precision mu
   double precision rho,drho2
   double precision rho_a_2, rho_b_2
   double precision t1,t2,t3,t4
   double precision kappa,sq,sqs,sqss,fx,fxs,ksig
 
 ! Parameter of the modified interaction
-  mu = mu_erf
 
 ! initialization
   ex=0.d0
@@ -166,7 +164,7 @@ END_DOC
   if (rho >= tol) then
 
 !  call srLDA Ex[2*rho_a,2*rho_a]
-   call ex_lda_sr(rho_a,rho_a,exerflda,vxerflda_a,vxerflda_b)
+   call ex_lda_sr(mu,rho_a,rho_a,exerflda,vxerflda_a,vxerflda_b)
    dexerfldadrho = (vxerflda_a + vxerflda_b)*0.5d0
 
 !  square of two times spin alpha density gradient
@@ -194,7 +192,7 @@ END_DOC
   if (rho >= tol) then
 
 !  call srLDA Ex[2*rho_b,2*rho_b]
-   call ex_lda_sr(rho_b,rho_b,exerflda,vxerflda_a,vxerflda_b)
+   call ex_lda_sr(mu,rho_b,rho_b,exerflda,vxerflda_a,vxerflda_b)
    dexerfldadrho = (vxerflda_a + vxerflda_b)*0.5d0
 
 !  square of two times spin beta density gradient

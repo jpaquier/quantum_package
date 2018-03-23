@@ -67,7 +67,7 @@ include 'constants.include.F'
      rhoa=max((rhoc+rhoo)*.5d0,1.0d-15)
      rhob=max((rhoc-rhoo)*.5d0,1.0d-15)
 
-     call ec_lda_sr(rhoa,rhob,eccerflda,vc_a,vc_b)
+     call ec_lda_sr(mu,rhoa,rhob,eccerflda,vc_a,vc_b)
      ecerflda = eccerflda
      vrhoccerflda = 0.5d0 * (vc_a + vc_b)
      vrhoocerflda = 0.5d0 * (vc_a - vc_b)
@@ -82,7 +82,7 @@ include 'constants.include.F'
 
 !    LDA energy density
      double precision :: vc_a_lda,vc_b_lda
-     call ec_lda(rhoa,rhob,ecclda,vc_a_lda,vc_b_lda)
+     call ec_lda(mu,rhoa,rhob,ecclda,vc_a_lda,vc_b_lda)
      eclda = ecclda
      decldadrho = 0.5d0 * (vc_a_lda+vc_b_lda)
      decldadrho = 0.5d0 * (vc_a_lda-vc_b_lda)
