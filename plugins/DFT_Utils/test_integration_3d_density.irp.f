@@ -198,13 +198,13 @@ subroutine test_r12_psi(nx,rmax)
  double precision :: dtheta,r12max,dr12,theta,r12_test
  integer :: ntheta,nr12
  ntheta = 10
- r12max = 10.d0 
- nr12 = 100
+ r12max = 5.d0 
+ nr12 = 500
  dr12 = r12max/dble(nr12) 
  dtheta = 2.d0 * pi /dble(ntheta)
 
  r1 = 0.d0
- r1(1) = 0.5d0
+ r1(1) = 0.8d0
  character*(128) :: filename_theta
  character*(128) :: output_array(1000)
  do i = 1, ntheta
@@ -237,6 +237,10 @@ subroutine test_r12_psi(nx,rmax)
     print*,r12,r12_test
    endif
    call local_r12_operator_on_hf(r1,r2,integral)
+   if(integral.le.0.d0)then
+    print*,integral,r12,mos_array_r1(1)*mos_array_r2(1) 
+    pause
+   endif
    write(i_unit_output_array(i),'(100(F16.10,X))')theta,r12,1.d0/r12,integral,mos_array_r1(1)*mos_array_r2(1)
   enddo
   theta += dtheta
