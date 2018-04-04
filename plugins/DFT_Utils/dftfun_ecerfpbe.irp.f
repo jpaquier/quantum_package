@@ -82,8 +82,8 @@ include 'constants.include.F'
      double precision :: vc_a_lda,vc_b_lda
      call ec_lda(rhoa,rhob,ecclda,vc_a_lda,vc_b_lda)
      eclda = ecclda
-     decldadrho = 0.5d0 * (vc_a_lda+vc_b_lda)
-     decldadrho = 0.5d0 * (vc_a_lda-vc_b_lda)
+    !decldadrho = 0.5d0 * (vc_a_lda+vc_b_lda)
+    !decldadrho = 0.5d0 * (vc_a_lda-vc_b_lda)
 
      if ((ecerflda/eclda).le.0d0) then
         beta=0d0
@@ -115,6 +115,7 @@ include 'constants.include.F'
 
 !    LDA energy density derivative
      decerfldadrho = vrhoccerflda
+     decldadrho = 0.5d0 * (vc_a_lda+vc_b_lda)
 
      decerfpur=(decerfldadrho-ecerflda/rho)/rho
      decpur=(decldadrho-eclda/rho)/rho
@@ -141,6 +142,7 @@ include 'constants.include.F'
 
 !    LDA energy density derivative
      decerfldadrho = vrhoocerflda
+     decldadrho = 0.5d0 * (vc_a_lda-vc_b_lda)
 
      decerfpur=decerfldadrho/rho
      decpur=decldadrho/rho
