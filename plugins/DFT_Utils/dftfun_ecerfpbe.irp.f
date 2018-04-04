@@ -1,4 +1,4 @@
-subroutine dftfun_ecerfpbe(rhoc,rhoo,sigmacc,sigmaco,sigmaoo,ec,vrhoc,vrhoo,vsigmacc,vsigmaco,vsigmaoo)
+subroutine dftfun_ecerfpbe(mu,rhoc,rhoo,sigmacc,sigmaco,sigmaoo,ec,vrhoc,vrhoo,vsigmacc,vsigmaco,vsigmaoo)
 !************************************************************************
 !     Short-range PBE correlation energy functional for erf interaction
 !
@@ -7,7 +7,7 @@ subroutine dftfun_ecerfpbe(rhoc,rhoo,sigmacc,sigmaco,sigmaoo,ec,vrhoc,vrhoo,vsig
 include 'constants.include.F'
       implicit none
 ! input
-      double precision, intent(in) ::  rhoc,rhoo
+      double precision, intent(in) ::  rhoc,rhoo,mu
       double precision, intent(in) ::  sigmacc,sigmaco,sigmaoo
 ! output
       double precision, intent(out) ::  ec
@@ -28,7 +28,6 @@ include 'constants.include.F'
       double precision vrhooclda
 
       integer i,igrad
-      double precision mu
       double precision rho,drho2,rhoa,rhob
       double precision ecerflda,decerfldadrho
       double precision eclda,decldadrho
@@ -44,7 +43,6 @@ include 'constants.include.F'
 
 
 ! Parameter of the modified interaction
-      mu = mu_erf
 
       ec = 0.d0
       vrhoc  = 0.d0
@@ -82,7 +80,7 @@ include 'constants.include.F'
 
 !    LDA energy density
      double precision :: vc_a_lda,vc_b_lda
-     call ec_lda(mu,rhoa,rhob,ecclda,vc_a_lda,vc_b_lda)
+     call ec_lda(rhoa,rhob,ecclda,vc_a_lda,vc_b_lda)
      eclda = ecclda
      decldadrho = 0.5d0 * (vc_a_lda+vc_b_lda)
      decldadrho = 0.5d0 * (vc_a_lda-vc_b_lda)
