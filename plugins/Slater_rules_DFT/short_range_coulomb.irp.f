@@ -70,6 +70,9 @@ END_PROVIDER
 ! Trace_v_xc  = \sum_{i,j} rho_{ij} v^{xc}_{ij} 
 ! Trace_v_Hxc = \sum_{i,j} rho_{ij} v^{Hxc}_{ij} 
  END_DOC
+! WARNING: I think there is a bug it potential_alpha should be contracted with density_matrix_alpha and 
+! potential_beta should be contracted with density_matrix_beta for opne-shell systems ! JT
+ print *,'WARNING: Trace_v_xc is wrong for open-shell systems: MUST BE CORRECTED'
  do istate = 1, N_states
   tmp = 0.d0
   do i = 1, mo_tot_num

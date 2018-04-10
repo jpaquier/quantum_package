@@ -274,7 +274,9 @@ END_PROVIDER
     two_electron_energy += 0.5d0 * ( ao_bi_elec_integral_alpha(i,j) * SCF_density_matrix_ao_alpha(i,j) & 
                 +ao_bi_elec_integral_beta(i,j) * SCF_density_matrix_ao_beta(i,j) ) 
     one_electron_energy += ao_mono_elec_integral(i,j) * (SCF_density_matrix_ao_alpha(i,j) + SCF_density_matrix_ao_beta (i,j) )
-    trace_potential_xc += (ao_potential_alpha_xc(i,j) + ao_potential_beta_xc(i,j) ) *  (SCF_density_matrix_ao_alpha(i,j) + SCF_density_matrix_ao_beta (i,j) )
+! possible bug fix for open-shell
+!    trace_potential_xc += (ao_potential_alpha_xc(i,j) + ao_potential_beta_xc(i,j) ) *  (SCF_density_matrix_ao_alpha(i,j) + SCF_density_matrix_ao_beta (i,j) )
+    trace_potential_xc += ao_potential_alpha_xc(i,j) * SCF_density_matrix_ao_alpha(i,j) + ao_potential_beta_xc(i,j) *  SCF_density_matrix_ao_beta (i,j)
    enddo
  enddo
  RS_KS_energy +=  e_exchange_dft + e_correlation_dft + one_electron_energy + two_electron_energy
@@ -283,8 +285,9 @@ END_PROVIDER
 
 BEGIN_PROVIDER [double precision, extra_energy_contrib_from_density]
  implicit none
- extra_energy_contrib_from_density = e_exchange_dft + e_correlation_dft - 0.25d0 * trace_potential_xc
-
+! possible bug fix for open-shell:
+! extra_energy_contrib_from_density = e_exchange_dft + e_correlation_dft - 0.25d0 * trace_potential_xc
+ extra_energy_contrib_from_density = e_exchange_dft + e_correlation_dft - 0.5d0 * trace_potential_xc
 END_PROVIDER 
 
 !BEGIN_PROVIDER [ double precision, SCF_energy ]
