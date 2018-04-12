@@ -39,3 +39,13 @@ double precision function on_top_dm_integral_with_mu_correction(mu)
  on_top_dm_integral_with_mu_correction = on_top_dm_integral_with_mu_correction / ( 1d0 + 2d0/(dsqrt(pi)*mu) )
 
 end
+
+
+double precision function Ec_md_mu_inf_corected(mu)
+ implicit none
+ double precision, intent(in) :: mu
+ double precision :: on_top_dm_integral_with_mu_correction 
+ double precision :: pi
+ pi = 4d0 * datan(1d0)
+ Ec_md_mu_inf_corected = ((-2d0+sqrt(2d0))*sqrt(2d0*pi)/(3d0*(mu**3)))*on_top_dm_integral_with_mu_correction(mu)
+end
