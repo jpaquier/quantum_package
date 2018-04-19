@@ -36,6 +36,7 @@ Demo
 * Blas/Lapack
 * unzip
 * g++ (For ninja)
+* curl 
 
 ## Standard installation
 
