@@ -42,6 +42,9 @@ subroutine print_variational_energy_dft
  print*,  '****************************************'
  print*,  ' MR DFT energy with pure correlation part for the DFT '
  write(*, '(A22,X,F16.10)') 'TOTAL ENERGY CORR   = ',elec_energy_dft_pure_corr_funct+nuclear_repulsion
+ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ write(*, '(A22,X,F16.10)') 'CORRECTED E_TOT CORR= ',Energy_c_md_corrected+psi_energy+nuclear_repulsion
+ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  print*, ''
  print*, 'Component of the energy ....'
  print*, ''
@@ -50,6 +53,9 @@ subroutine print_variational_energy_dft
  write(*, '(A28,X,F16.10)') 'psi_energy_bielec         = ',psi_energy_bielec
  write(*, '(A28,X,F16.10)') 'psi_energy_monoelec       = ',psi_energy_monoelec
  write(*, '(A28,X,F16.10)') 'DFT Multi-det correlation = ',Energy_c_md
+ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ write(*, '(A28,X,F16.10)') 'corrected Multi-det correl= ',Energy_c_md_corrected
+ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 end
