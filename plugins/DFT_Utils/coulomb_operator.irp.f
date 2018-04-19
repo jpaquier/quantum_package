@@ -218,6 +218,11 @@ use map_module
    enddo
   enddo
  enddo
+ if(dabs(two_body_dm).gt.1.d-16)then
+  coulomb = coulomb/two_body_dm
+ else
+  coulomb = 0.d0
+ endif
 
 end
 
