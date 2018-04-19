@@ -32,20 +32,22 @@ double precision function on_top_dm_integral_with_mu_correction(mu)
    do l = 1, n_points_integration_angular 
     r(:) = grid_points_per_atom(:,l,k,j)
     weight = final_weight_functions_at_grid_points(l,k,j) 
-    on_top_dm_integral_with_mu_correction += two_dm_in_r(r,r)* weight**2d0
+    on_top_dm_integral_with_mu_correction += two_dm_in_r(r,r) * weight
    enddo
   enddo
  enddo
- on_top_dm_integral_with_mu_correction = on_top_dm_integral_with_mu_correction / ( 1d0 + 2d0/(dsqrt(pi)*mu) )
+ on_top_dm_integral_with_mu_correction = 2d0 * on_top_dm_integral_with_mu_correction / ( 1d0 + 2d0/(dsqrt(pi)*mu) )
 
 end
 
 
-double precision function Ec_md_mu_inf_corected(mu)
- implicit none
- double precision, intent(in) :: mu
+
+
+ BEGIN_PROVIDER [double precision, Energy_c_md_corrected]
+ implicit none 
+ double precision :: pi,mu
  double precision :: on_top_dm_integral_with_mu_correction 
- double precision :: pi
+ mu = mu_erf
  pi = 4d0 * datan(1d0)
- Ec_md_mu_inf_corected = ((-2d0+sqrt(2d0))*sqrt(2d0*pi)/(3d0*(mu**3)))*on_top_dm_integral_with_mu_correction(mu)
-end
+ Energy_c_md_corrected = ((-2d0+sqrt(2d0))*sqrt(2d0*pi)/(3d0*(mu**3)))*on_top_dm_integral_with_mu_correction(mu)
+ END_PROVIDER

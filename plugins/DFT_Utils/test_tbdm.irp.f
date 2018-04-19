@@ -2,7 +2,7 @@ program test
  read_wf = .True.
  touch read_wf
 !call correlation_hole
- call test_Ec_md_mu_inf_corected
+ call normalisation_on_top
 end
 
 
@@ -35,8 +35,25 @@ subroutine correlation_hole
 print*, 'hahah'
 end
 
-subroutine test_Ec_md_mu_inf_corected  
- implicit none 
- double precision :: Ec_md_mu_inf_corected
- print*, "Ec_md_mu_inf_corected =   ", Ec_md_mu_inf_corected(mu_erf)
+
+subroutine normalisation_on_top
+ implicit none
+ integer :: i,j,k,l 
+ double precision :: r(3), rho_a, rho_b, rho, aos_array(ao_num)
+ double precision :: two_dm_in_r,dif,tdm
+
+ do j = 1, nucl_num
+  do k = 1, n_points_radial_grid  -1
+   do l = 1, n_points_integration_angular 
+    r(:) = grid_points_per_atom(:,l,k,j)
+    call dm_dft_alpha_beta_and_all_aos_at_r(r,rho_a,rho_b,aos_array)
+    rho = rho_a + rho_b
+    tdm = two_dm_in_r(r,r)
+    dif = (rho**2d0)/4d0  - tdm    
+!    if( abs(dif) > 1d-8 )then
+     print*,(rho**2d0)/4d0,tdm,dif
+!    endif
+   enddo
+  enddo
+ enddo
 end
