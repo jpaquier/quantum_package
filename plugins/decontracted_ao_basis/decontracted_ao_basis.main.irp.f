@@ -3,7 +3,10 @@ program decontracted_ao_basis
   BEGIN_DOC
 ! TODO
   END_DOC
-  integer :: i,j,l,l_type
+  integer :: i,j,l,l_type,index_uniq
+ 
+!Print each aos on each nuclei, and labem them.
+ 
  !do i = 1, nucl_num
  ! print*,'nucleus number ',i
  ! do l_type = 0,7
@@ -14,5 +17,18 @@ program decontracted_ao_basis
  !  enddo
  ! enddo 
  !enddo
- provide number_of_uniq_expo_per_l_shell_per_atom
+
+ do i = 1, nucl_num
+  print*,''
+  print*,'**************************************************'
+  print*,'nucleus = ',i
+  do l_type = 0,7
+   print*,"l_type = ",l_type
+   print*,'number_of_uniq_expo_per_l_shell_per_atom = ', number_of_uniq_expo_per_l_shell_per_atom(l_type,i)
+   do index_uniq = 1, number_of_uniq_expo_per_l_shell_per_atom(l_type,i)
+    print*, uniq_expo_per_l_shell_per_atom(index_uniq,l_type,i)
+   enddo
+  enddo
+ enddo
+
 end

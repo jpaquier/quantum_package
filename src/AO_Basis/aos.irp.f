@@ -300,7 +300,69 @@ END_PROVIDER
 END_PROVIDER
 
 
-BEGIN_PROVIDER [ character*(4), ao_l_char_space, (ao_num) ]
+ BEGIN_PROVIDER [ integer, Nucl_list_l_type_Aos, (ao_num,0:7,nucl_num)]
+ &BEGIN_PROVIDER [ integer, Nucl_num_l_type_Aos, (0:7,nucl_num)]
+ implicit none
+ integer :: i,j,k
+ BEGIN_DOC
+ ! Number of l_type Aos per nucleus i, and list of the l_type Aos per nucleus i.
+ END_DOC
+ Nucl_list_l_type_Aos(:,:,:) = 0
+ Nucl_num_l_type_Aos(:,:) = 0
+ do i = 1, nucl_num
+  do j = 1, Nucl_N_Aos(i)
+   if(ao_l(Nucl_Aos(i,j))==0)then
+   ! S type function
+   Nucl_num_l_type_Aos(0,i)+=1
+   Nucl_list_l_type_Aos(Nucl_num_l_type_Aos(0,i),0,i)=Nucl_Aos(i,j)
+   elseif(ao_l(Nucl_Aos(i,j))==1)then
+   ! P type function
+    if(ao_power(Nucl_Aos(i,j),1)==1)then
+     Nucl_num_l_type_Aos(1,i)+=1
+     Nucl_list_l_type_Aos(Nucl_num_l_type_Aos(1,i),1,i)=Nucl_Aos(i,j)
+    endif
+   elseif(ao_l(Nucl_Aos(i,j))==2)then
+   ! D type function
+    if(ao_power(Nucl_Aos(i,j),1)==2)then
+     Nucl_num_l_type_Aos(2,i)+=1
+     Nucl_list_l_type_Aos(Nucl_num_l_type_Aos(2,i),2,i)=Nucl_Aos(i,j)
+    endif
+   elseif(ao_l(Nucl_Aos(i,j))==3)then
+   ! F type function
+    if(ao_power(Nucl_Aos(i,j),1)==3)then
+     Nucl_num_l_type_Aos(3,i)+=1
+     Nucl_list_l_type_Aos(Nucl_num_l_type_Aos(3,i),3,i)=Nucl_Aos(i,j)
+    endif
+   elseif(ao_l(Nucl_Aos(i,j))==4)then
+   ! G type function
+    if(ao_power(Nucl_Aos(i,j),1)==4)then
+     Nucl_num_l_type_Aos(4,i)+=1
+     Nucl_list_l_type_Aos(Nucl_num_l_type_Aos(4,i),4,i)=Nucl_Aos(i,j)
+    endif
+   elseif(ao_l(Nucl_Aos(i,j))==5)then
+   ! H type function
+    if(ao_power(Nucl_Aos(i,j),1)==5)then
+     Nucl_num_l_type_Aos(5,i)+=1
+     Nucl_list_l_type_Aos(Nucl_num_l_type_Aos(5,i),5,i)=Nucl_Aos(i,j)
+    endif 
+   elseif(ao_l(Nucl_Aos(i,j))==6)then
+   ! I type function
+    if(ao_power(Nucl_Aos(i,j),1)==6)then
+     Nucl_num_l_type_Aos(6,i)+=1
+     Nucl_list_l_type_Aos(Nucl_num_l_type_Aos(6,i),6,i)=Nucl_Aos(i,j)
+    endif
+   elseif(ao_l(Nucl_Aos(i,j))==7)then
+   ! J type function
+    if(ao_power(Nucl_Aos(i,j),1)==7)then
+     Nucl_num_l_type_Aos(7,i)+=1
+     Nucl_list_l_type_Aos(Nucl_num_l_type_Aos(7,i),7,i)=Nucl_Aos(i,j)
+    endif
+   endif
+  enddo
+ enddo
+ END_PROVIDER
+
+ BEGIN_PROVIDER [ character*(4), ao_l_char_space, (ao_num) ]
  implicit none
  integer :: i
  character*(4) :: give_ao_character_space
