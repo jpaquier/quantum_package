@@ -197,6 +197,11 @@ use map_module
 
  two_body_dm = 0.d0
  coulomb = 0.d0
+ !$OMP PARALLEL DO &
+ !$OMP DEFAULT (NONE)  &
+ !$OMP PRIVATE (i,j,m,n,a1,c1,a2,c2,a3,c3,a4,c4) & 
+ !$OMP SHARED (mo_tot_num,mos_array_r1,mos_array_r2,threshold,two_bod_alpha_beta_mo_transposed,two_bod_alpha_beta_mo_contracted) & 
+ !$OMP REDUCTION (+:coulomb,two_body_dm)       
  do i = 1, mo_tot_num
   a1 = mos_array_r1(i) 
   c1 = dabs(a1)
@@ -218,7 +223,8 @@ use map_module
    enddo
   enddo
  enddo
- if(dabs(two_body_dm).gt.1.d-16)then
+ !$OMP END PARALLEL DO
+ if(dabs(two_body_dm).gt.1.d-16.and.coulomb.gt.0.d0)then
   coulomb = coulomb/two_body_dm
  else
   coulomb = 0.d0
