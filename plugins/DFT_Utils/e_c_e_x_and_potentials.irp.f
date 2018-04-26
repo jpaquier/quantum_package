@@ -1,9 +1,9 @@
- BEGIN_PROVIDER [double precision, energy_x, (N_states)]
-&BEGIN_PROVIDER [double precision, energy_c, (N_states)]
-&BEGIN_PROVIDER [double precision, potential_x_alpha_ao,(ao_num,ao_num,N_states)]
-&BEGIN_PROVIDER [double precision, potential_x_beta_ao,(ao_num,ao_num,N_states)]
-&BEGIN_PROVIDER [double precision, potential_c_alpha_ao,(ao_num,ao_num,N_states)]
-&BEGIN_PROVIDER [double precision, potential_c_beta_ao,(ao_num,ao_num,N_states)]
+ BEGIN_PROVIDER [double precision, energy_x_new, (N_states)]
+&BEGIN_PROVIDER [double precision, energy_c_new, (N_states)]
+&BEGIN_PROVIDER [double precision, potential_x_alpha_ao_new,(ao_num,ao_num,N_states)]
+&BEGIN_PROVIDER [double precision, potential_x_beta_ao_new,(ao_num,ao_num,N_states)]
+&BEGIN_PROVIDER [double precision, potential_c_alpha_ao_new,(ao_num,ao_num,N_states)]
+&BEGIN_PROVIDER [double precision, potential_c_beta_ao_new,(ao_num,ao_num,N_states)]
 
  implicit none
  integer :: j,k,l,istate
@@ -24,12 +24,12 @@
  double precision :: grad_aos_array_transpose(ao_num,3)
  double precision :: dtmp_x_a(3,N_states),dtmp_x_b(3,N_states)
  double precision :: dtmp_c_a(3,N_states),dtmp_c_b(3,N_states)
-  energy_x = 0.d0
-  energy_c = 0.d0
-  potential_c_alpha_ao = 0.d0
-  potential_c_beta_ao = 0.d0
-  potential_x_alpha_ao = 0.d0
-  potential_x_beta_ao = 0.d0
+  energy_x_new = 0.d0
+  energy_c_new = 0.d0
+  potential_c_alpha_ao_new = 0.d0
+  potential_c_beta_ao_new = 0.d0
+  potential_x_alpha_ao_new = 0.d0
+  potential_x_beta_ao_new = 0.d0
   do j = 1, nucl_num
    do k = 1, n_points_radial_grid  -1
     allocate(tmp_c_a(ao_num,ao_num,N_states),tmp_c_b(ao_num,ao_num,N_states),tmp_x_a(ao_num,ao_num,N_states),tmp_x_b(ao_num,ao_num,N_states),aos_array(ao_num),r(3))
@@ -46,8 +46,8 @@
       call dm_dft_alpha_beta_and_all_aos_at_r(r,rho_a,rho_b,aos_array)
       call LDA_type_functional(r,rho_a,rho_b,vx_rho_a,vx_rho_b,vc_rho_a,vc_rho_b,ex,ec)
       do istate = 1, N_states
-       energy_x(istate) += weight *  ex(istate) 
-       energy_c(istate) += weight *  ec(istate)
+       energy_x_new(istate) += weight *  ex(istate) 
+       energy_c_new(istate) += weight *  ec(istate)
        vx_rho_a(istate) *= weight
        vc_rho_a(istate) *= weight
        vx_rho_b(istate) *= weight
@@ -71,8 +71,8 @@
                                                                                    ec,vc_rho_a,vc_rho_b,vc_grad_rho_a_2,vc_grad_rho_b_2,vc_grad_rho_a_b )
 
       do istate = 1, N_states
-       energy_x(istate) += weight *  ex(istate) 
-       energy_c(istate) += weight *  ec(istate)
+       energy_x_new(istate) += weight *  ex(istate) 
+       energy_c_new(istate) += weight *  ec(istate)
        vx_rho_a(istate) *= weight
        vc_rho_a(istate) *= weight
        vx_rho_b(istate) *= weight
@@ -91,10 +91,10 @@
     enddo ! angular points 
 
     do istate = 1,N_states
-     potential_c_alpha_ao(:,:,istate) = potential_c_alpha_ao(:,:,istate) + tmp_c_a(:,:,istate)
-     potential_x_alpha_ao(:,:,istate) = potential_x_alpha_ao(:,:,istate) + tmp_x_a(:,:,istate)
-     potential_c_beta_ao(:,:,istate)  =  potential_c_beta_ao(:,:,istate) + tmp_c_b(:,:,istate)
-     potential_x_beta_ao(:,:,istate)  =  potential_x_beta_ao(:,:,istate) + tmp_x_b(:,:,istate)
+     potential_c_alpha_ao_new(:,:,istate) = potential_c_alpha_ao_new(:,:,istate) + tmp_c_a(:,:,istate)
+     potential_x_alpha_ao_new(:,:,istate) = potential_x_alpha_ao_new(:,:,istate) + tmp_x_a(:,:,istate)
+     potential_c_beta_ao_new(:,:,istate)  =  potential_c_beta_ao_new(:,:,istate) + tmp_c_b(:,:,istate)
+     potential_x_beta_ao_new(:,:,istate)  =  potential_x_beta_ao_new(:,:,istate) + tmp_x_b(:,:,istate)
     enddo
     deallocate(tmp_x_a,tmp_x_b,tmp_c_a,tmp_c_b,aos_array,r)
    enddo
@@ -308,7 +308,7 @@ END_PROVIDER
  double precision, allocatable :: aos_array(:), r(:), rho_a(:), rho_b(:), ec(:)
  logical :: dospin
  double precision :: r2(3),dr2(3), local_potential,r12,dx2,mu,mu_coulomb
- dospin = .false.
+ dospin = .false. ! JT dospin have to be set to true for open shell
  allocate(aos_array(ao_num),r(3), rho_a(N_states), rho_b(N_states), ec(N_states))
   do j = 1, nucl_num
    do k = 1, n_points_radial_grid  -1
