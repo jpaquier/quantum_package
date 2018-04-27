@@ -60,22 +60,27 @@
  END_PROVIDER
 
 
- BEGIN_PROVIDER [double precision, dirac_ao_kinetic_integral, (small_ao_num,ao_num)]
+ BEGIN_PROVIDER [double complex, dirac_ao_kinetic_integral_z, (small_ao_num,ao_num)]
+&BEGIN_PROVIDER [double complex, dirac_ao_kinetic_integral_plus, (small_ao_num,ao_num)]
+&BEGIN_PROVIDER [double complex, dirac_ao_kinetic_integral_minus, (small_ao_num,ao_num)]
  BEGIN_DOC
  ! array of the priminitve basis kinetic integrals
- !  \langle \chi_i |\hat{T}| \chi_j \rangle
+ !  \langle \chi_i |c{\alpha}.\hat_{p}| \chi_j \rangle
+ ! for AO_i within the small component basis and AO_j within the large component basis
  END_DOC
  integer :: i,j
 !if (read_ao_one_integrals) then
 ! call read_one_e_integrals('ao_kinetic_integral', ao_kinetic_integral, size(ao_kinetic_integral,1), size(ao_kinetic_integral,2))
 !   print *,  'AO kinetic integrals read from disk'
 ! else
-!   print *,  'Computing AO kinetic integrals '
-! do j = 1, small_ao_num
-!  do i = 1, ao_num
-!   ao_kinetic_integral(i,j) = -0.5d0 * (ao_deriv2_x(i,j) + ao_deriv2_y(i,j) + ao_deriv2_z(i,j) )
-!  enddo
-! enddo
+  print *,  'Computing AO kinetic integrals (SL bloc)'
+  do j = 1, ao_num
+   do i = 1, small_ao_num
+    dirac_ao_kinetic_integral_z(i,j) = -(0,1) * small_ao_deriv_1_z(i,j)
+    dirac_ao_kinetic_integral_plus(i,j) = -(0,1) * (small_ao_deriv_1_x(i,j) + (0,1)*small_ao_deriv_1_y(i,j))
+    dirac_ao_kinetic_integral_minus(i,j) = -(0,1) * (small_ao_deriv_1_x(i,j) - (0,1)*small_ao_deriv_1_y(i,j))
+    enddo
+  enddo
 !endif
 ! if (write_ao_one_integrals) then
 !  call write_one_e_integrals('ao_kinetic_integral', ao_kinetic_integral, size(ao_kinetic_integral,1), size(ao_kinetic_integral,2))

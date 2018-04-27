@@ -22,6 +22,9 @@ program Dirac_SCF
    print*,'small_ao_deriv_1_x =', small_ao_deriv_1_x(j,i)
    print*,'small_ao_deriv_1_y =', small_ao_deriv_1_y(j,i) 
    print*,'small_ao_deriv_1_z =', small_ao_deriv_1_z(j,i) 
+   print*,'dirac_ao_kinetic_integral_z =', dirac_ao_kinetic_integral_plus(j,i)
+   print*,'dirac_ao_kinetic_integral_z =', dirac_ao_kinetic_integral_minus(j,i)
+   print*,'dirac_ao_kinetic_integral_z =', dirac_ao_kinetic_integral_z(j,i)
    print*,'******************'
   enddo
  enddo
