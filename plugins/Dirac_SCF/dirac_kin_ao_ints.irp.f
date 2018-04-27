@@ -29,7 +29,7 @@
    power_A(1)  = ao_power( j, 1 )
    power_A(2)  = ao_power( j, 2 )
    power_A(3)  = ao_power( j, 3 )
-   alpha   = small_ao_expo(j)
+   alpha   = ao_expo_ordered_transp(1,j)
    do i= 1,small_ao_num
     B_center(1) = nucl_coord( small_ao_nucl(i), 1 )
     B_center(2) = nucl_coord( small_ao_nucl(i), 2 )
