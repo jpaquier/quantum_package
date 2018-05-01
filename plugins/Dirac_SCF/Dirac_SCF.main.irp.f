@@ -52,7 +52,7 @@ program Dirac_SCF
 
 
  print*,'small_ao_num =', small_ao_num
- do i = 1, small_ao_num 
+ do i = 1, 5 
  print*,'*********************************************'
   print*,'nucleus =',small_ao_nucl(i) 
  !print*,'nuclear_coordinate =', nucl_coord( small_ao_nucl(i), 1 ), nucl_coord( small_ao_nucl(i), 2 ), nucl_coord(small_ao_nucl(i), 3 )
@@ -60,7 +60,7 @@ program Dirac_SCF
   print*,'small_ao_power =', small_ao_power(i,1), small_ao_power(i,2), small_ao_power(i,3)
  !print*,'small_ao_coef_normalized =', small_ao_coef_normalized(i) 
   print*,'******************'
-   do j= 1, small_ao_num
+   do j= 1, 5
    print*,'nucleus =',small_ao_nucl(j) 
   !print*,'nuclear_coordinate =', nucl_coord( small_ao_nucl(j), 1 ), nucl_coord( small_ao_nucl(j), 2 ), nucl_coord(small_ao_nucl(j), 3 )
    print*, 'small_ao_expo =', small_ao_expo(j)
@@ -71,8 +71,11 @@ program Dirac_SCF
   !print*,'small_ao_overlap_z =', small_ao_overlap_z(i,j)
    print*,'small_ao_overlap =', small_ao_overlap(i,j)
   !print*,'small_ao_mass_energy =', small_ao_mass_energy(i,j)
-   print*,'small_ao_nucl_elec_integral =', small_ao_nucl_elec_integral(i,j) 
-   print*,'******************'
+   print*,'small_ao_nucl_elec_integral =', small_ao_nucl_elec_integral(i,j)
+  do k = 1, nucl_num 
+    print*,'small_ao_nucl_elec_integral_per_atom =', small_ao_nucl_elec_integral_per_atom(i,j,k) 
+   enddo 
+  print*,'******************'
   enddo
  enddo
 

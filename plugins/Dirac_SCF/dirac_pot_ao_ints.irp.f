@@ -49,7 +49,7 @@
  END_PROVIDER
 
 
- BEGIN_PROVIDER [ double precision, small_ao_nucl_elec_integral_per_atom,(small_ao_num,small_ao_num)]
+ BEGIN_PROVIDER [ double precision, small_ao_nucl_elec_integral_per_atom,(small_ao_num,small_ao_num,nucl_num)]
    BEGIN_DOC
    ! interaction nuclear electron for the AOs within the small component basis
    ! set in unrestricted kinetic balance
@@ -66,8 +66,8 @@
 !   call read_one_e_integrals('ao_ne_integral', ao_nucl_elec_integral, size(ao_nucl_elec_integral,1), size(ao_nucl_elec_integral,2))
 !    print *,  'AO N-e integrals read from disk'
 !  else
-   print*,' computing the small_ao_nucl_elec_integral'
-     small_ao_nucl_elec_integral = 0.d0
+   print*,' computing the small_ao_nucl_elec_integral_per_atom'
+     small_ao_nucl_elec_integral_per_atom = 0.d0
      !        _
      ! /|  / |_)
      !  | /  | \
@@ -85,11 +85,12 @@
      beta = small_ao_expo(i)
      c = 0.d0
      do k = 1, nucl_num
+      c = 0d0
       Z = nucl_charge(k)
       C_center(1:3) = nucl_coord(k,1:3)
       c -= Z*NAI_pol_mult(A_center,B_center,power_A,power_B,alpha,beta,C_center,n_pt_in)
+      small_ao_nucl_elec_integral_per_atom(i,j,k) += c*small_ao_coef_normalized(j)*small_ao_coef_normalized(i)
      enddo
-    small_ao_nucl_elec_integral(i,j) += c*small_ao_coef_normalized(j)*small_ao_coef_normalized(i)
     enddo
    enddo
 !  endif
