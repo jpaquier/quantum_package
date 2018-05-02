@@ -52,7 +52,7 @@ program Dirac_SCF
 
 
  print*,'small_ao_num =', small_ao_num
- do i = 1, 5 
+ do i = 1,5 
  print*,'*********************************************'
   print*,'nucleus =',small_ao_nucl(i) 
  !print*,'nuclear_coordinate =', nucl_coord( small_ao_nucl(i), 1 ), nucl_coord( small_ao_nucl(i), 2 ), nucl_coord(small_ao_nucl(i), 3 )
@@ -60,7 +60,7 @@ program Dirac_SCF
   print*,'small_ao_power =', small_ao_power(i,1), small_ao_power(i,2), small_ao_power(i,3)
  !print*,'small_ao_coef_normalized =', small_ao_coef_normalized(i) 
   print*,'******************'
-   do j= 1, 5
+   do j= 1,small_ao_num
    print*,'nucleus =',small_ao_nucl(j) 
   !print*,'nuclear_coordinate =', nucl_coord( small_ao_nucl(j), 1 ), nucl_coord( small_ao_nucl(j), 2 ), nucl_coord(small_ao_nucl(j), 3 )
    print*, 'small_ao_expo =', small_ao_expo(j)
