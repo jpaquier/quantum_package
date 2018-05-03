@@ -48,7 +48,7 @@ end
  BEGIN_PROVIDER [double precision, Energy_c_md_on_top, (N_states)]
  BEGIN_DOC
   ! Give the Ec_md energy with a good large mu behaviour in function of the on top pair density.
-  ! Ec_md_on_top_correctec = (alpha/mu**3) * int n2(r,r) dr  where alpha = (sqrt(2pi)*(-2+sqrt(2)))/(3mu**3) 
+  ! Ec_md_on_top = (alpha/mu**3) * int n2(r,r) dr  where alpha = (sqrt(2pi)*(-2+sqrt(2)))/(3mu**3) 
  END_DOC
  implicit none 
  integer :: istate
