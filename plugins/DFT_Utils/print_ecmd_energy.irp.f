@@ -8,9 +8,18 @@ program print_ecmd_energy
  touch disk_access_mo_integrals
  disk_access_ao_integrals = "None"
  touch disk_access_ao_integrals
- call ecmd_energy_printer
+!call ecmd_energy_printe 
+ call pouet 
 end
 
+
+subroutine pouet
+ implicit none
+
+ write(*, '(A22,X,F16.10)') 'EC_MD_ON_TOP_PBE    = ',Energy_c_md_on_top_PBE(1)
+ write(*, '(A22,X,F16.10)') 'EC_MD_ON_TOP_PBE_cycle',Energy_c_md_on_top_PBE_cycle(1)
+
+end
 
 subroutine ecmd_energy_printer
  implicit none
@@ -21,6 +30,7 @@ subroutine ecmd_energy_printer
  write(*, '(A22,X,F16.10)') 'EC_MD_LDA           = ',Energy_c_md+psi_energy+nuclear_repulsion
  write(*, '(A22,X,F16.10)') 'EC_MD_ON_TOP        = ',Energy_c_md_on_top(1)+psi_energy+nuclear_repulsion
  write(*, '(A22,X,F16.10)') 'EC_MD_ON_TOP_PBE    = ',Energy_c_md_on_top_PBE(1)+psi_energy+nuclear_repulsion
+ write(*, '(A22,X,F16.10)') 'EC_MD_ON_TOP_PBE    = ',Energy_c_md_on_top_PBE_cycle(1)+psi_energy+nuclear_repulsion
  print*, ''
  print*, 'Component of the energy ....'
  print*, ''

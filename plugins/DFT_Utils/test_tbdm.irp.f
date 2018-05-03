@@ -2,7 +2,8 @@ program test
  read_wf = .True.
  touch read_wf
 !call correlation_hole
- call normalisation_on_top
+!call normalisation_on_top
+ call print_weight
 end
 
 
@@ -56,4 +57,29 @@ subroutine normalisation_on_top
    enddo
   enddo
  enddo
+end
+
+subroutine print_weight
+ implicit none
+ integer :: i,j,k
+ double precision :: r(3),distance
+ double precision :: dm_a(N_states),dm_b(N_states)
+ double precision :: accu_dm(N_states),accu_weight
+ do i = 1, n_points_radial_grid - 1
+  accu_dm = 0.d0
+  accu_weight = 0.d0
+  do j = 1, n_points_integration_angular
+   r(:) = grid_points_per_atom(:,1,i,1)
+   distance = 0.d0
+   do k = 1, 3
+    distance += r(k)**2
+   enddo
+   distance = dsqrt(distance)
+   call dm_dft_alpha_beta_at_r(r,dm_a,dm_b)
+   accu_weight += final_weight_functions_at_grid_points(j,i,1) 
+   accu_dm += dm_a * final_weight_functions_at_grid_points(j,i,1)
+  enddo
+  write(33,*) distance, accu_dm,accu_weight, final_weight_functions_at_grid_points(1,i,1), dm_a+dm_b
+ enddo
+
 end

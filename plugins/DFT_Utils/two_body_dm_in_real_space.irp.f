@@ -19,6 +19,35 @@ double precision function two_dm_in_r(r1,r2,istate)
  enddo
 end
 
+
+double precision function on_top_two_dm_in_r(r,istate)
+ implicit none
+ integer, intent(in) :: istate
+ double precision, intent(in) :: r(3)
+ double precision :: mos_array_r(mo_tot_num)
+ integer :: i,j,k,l
+ double precision :: accu,threshold
+ threshold = 1.d-10
+ call give_all_mos_at_r(r,mos_array_r) 
+ on_top_two_dm_in_r = 0.d0
+ do i = 1, mo_tot_num
+  accu = dabs(mos_array_r(i))
+  if(accu.lt.threshold)cycle
+  do j = 1, mo_tot_num
+  accu *= dabs(mos_array_r(j))
+  if(accu.lt.threshold)cycle
+   do k = 1, mo_tot_num
+   accu *= dabs(mos_array_r(k))
+   if(accu.lt.threshold)cycle
+    do l = 1, mo_tot_num
+     on_top_two_dm_in_r += two_bod_alpha_beta_mo_transposed(l,k,j,i,istate) * mos_array_r(i) * mos_array_r(l) * mos_array_r(k) * mos_array_r(j)
+    enddo
+   enddo
+  enddo
+ enddo
+ on_top_two_dm_in_r = max(on_top_two_dm_in_r,1.d-12)
+end
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 double precision function on_top_dm_integral_with_mu_correction(mu,istate)
@@ -69,7 +98,7 @@ end
   implicit none
   double precision, intent(in)  :: mu , r(3)
   double precision, intent(out) :: eps_c_md_on_top_PBE(N_states)
-  double precision :: two_dm_in_r, pi, e_pbe(N_states),beta(N_states)
+  double precision :: two_dm_in_r, pi, e_pbe(N_states),beta(N_states),on_top_two_dm_in_r
   double precision :: aos_array(ao_num), grad_aos_array(3,ao_num)
   double precision :: rho_a(N_states),rho_b(N_states)
   double precision :: grad_rho_a(3,N_states),grad_rho_b(3,N_states)
@@ -95,7 +124,8 @@ end
    call rho_ab_to_rho_oc(rho_a(istate),rho_b(istate),rhoo,rhoc)
    call grad_rho_ab_to_grad_rho_oc(grad_rho_a_2(istate),grad_rho_b_2(istate),grad_rho_a_b(istate),sigmaoo,sigmacc,sigmaco)
    call Ec_sr_PBE(0d0,rhoc,rhoo,sigmacc,sigmaco,sigmaoo,e_PBE(istate))
-   beta(istate) = (3d0*e_PBE(istate))/( (-2d0+sqrt(2d0))*sqrt(2d0*pi)*2d0*two_dm_in_r(r,r,istate) )
+!  beta(istate) = (3d0*e_PBE(istate))/( (-2d0+sqrt(2d0))*sqrt(2d0*pi)*2d0*two_dm_in_r(r,r,istate) )
+   beta(istate) = (3d0*e_PBE(istate))/( (-2d0+sqrt(2d0))*sqrt(2d0*pi)*2d0*on_top_two_dm_in_r(r,istate) )
    eps_c_md_on_top_PBE(istate)=e_PBE(istate)/(1d0+beta(istate)*mu**3d0)
   enddo
  end
@@ -111,6 +141,8 @@ end
  double precision :: two_dm_in_r, r(3)
  double precision :: weight,mu
  integer :: j,k,l,istate
+ double precision :: wall1,wall0  
+ call cpu_time(wall0)
  mu = mu_erf
  Energy_c_md_on_top_PBE = 0d0
   
@@ -126,6 +158,47 @@ end
    enddo
   enddo
  enddo
+ call cpu_time(wall1)
+ print*,'cpu time for Energy_c_md_on_top_PBE       '
+ print*,wall1 - wall0
+ 
+ END_PROVIDER
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+ BEGIN_PROVIDER [double precision, Energy_c_md_on_top_PBE_cycle, (N_states)]
+ BEGIN_DOC
+  ! Give the Ec_md energy with a good large mu behaviour in function of the on top pair density coupled to the PBE correlation energy at mu=0
+  ! Ec_md_on_top_PBE = Int epsilon_c_PBE_mu=0 / ( 1 + beta*mu**3 ) = Int eps_c_md_on_top_PBE  with beta chosen to recover the good large mu behaviour of the Energy_c_md_on_top functional
+ END_DOC
+ implicit none
+ double precision :: eps_c_md_on_top_PBE(N_states)
+ double precision :: two_dm_in_r, r(3)
+ double precision :: weight,mu
+ integer :: j,k,l,istate
+ double precision :: dm_a,dm_b
+ double precision :: wall1,wall0  
+ call cpu_time(wall0)
+ mu = mu_erf
+ Energy_c_md_on_top_PBE_cycle = 0d0
+ do j = 1, nucl_num
+  do k = 1, n_points_radial_grid  -1
+   do l = 1, n_points_integration_angular 
+    r(:) = grid_points_per_atom(:,l,k,j)
+    weight = final_weight_functions_at_grid_points(l,k,j) 
+    call dm_dft_alpha_beta_at_r(r,dm_a,dm_b)
+    if(weight * one_body_dm_mo_alpha_at_grid_points(l,k,j,1).lt.threshold_grid_dft)cycle
+    call give_epsilon_c_md_on_top_PBE(mu,r,eps_c_md_on_top_PBE)
+    do istate = 1, N_states
+     Energy_c_md_on_top_PBE_cycle(istate) += eps_c_md_on_top_PBE(istate) * weight
+    enddo
+   enddo
+  enddo
+ enddo
+ call cpu_time(wall1)
+ print*,'cpu time for Energy_c_md_on_top_PBE_cycle '
+ print*,wall1 - wall0
  
  END_PROVIDER
 
@@ -156,3 +229,28 @@ end
 
 
  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
