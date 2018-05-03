@@ -1,9 +1,9 @@
- BEGIN_PROVIDER [double precision, energy_x_new, (N_states)]
-&BEGIN_PROVIDER [double precision, energy_c_new, (N_states)]
-&BEGIN_PROVIDER [double precision, potential_x_alpha_ao_new,(ao_num,ao_num,N_states)]
-&BEGIN_PROVIDER [double precision, potential_x_beta_ao_new,(ao_num,ao_num,N_states)]
-&BEGIN_PROVIDER [double precision, potential_c_alpha_ao_new,(ao_num,ao_num,N_states)]
-&BEGIN_PROVIDER [double precision, potential_c_beta_ao_new,(ao_num,ao_num,N_states)]
+ BEGIN_PROVIDER [double precision, energy_x, (N_states)]
+&BEGIN_PROVIDER [double precision, energy_c, (N_states)]
+&BEGIN_PROVIDER [double precision, potential_x_alpha_ao,(ao_num,ao_num,N_states)]
+&BEGIN_PROVIDER [double precision, potential_x_beta_ao,(ao_num,ao_num,N_states)]
+&BEGIN_PROVIDER [double precision, potential_c_alpha_ao,(ao_num,ao_num,N_states)]
+&BEGIN_PROVIDER [double precision, potential_c_beta_ao,(ao_num,ao_num,N_states)]
 
  implicit none
  integer :: j,k
@@ -24,12 +24,12 @@
  double precision :: grad_ao_matrix_dvx_a(ao_num,n_points_integration_angular,3,N_states) 
  double precision :: grad_ao_matrix_dvc_b(ao_num,n_points_integration_angular,3,N_states) 
  double precision :: grad_ao_matrix_dvx_b(ao_num,n_points_integration_angular,3,N_states) 
-  energy_x_new = 0.d0
-  energy_c_new = 0.d0
-  potential_c_alpha_ao_new = 0.d0
-  potential_x_alpha_ao_new = 0.d0
-  potential_c_beta_ao_new = 0.d0
-  potential_x_beta_ao_new = 0.d0
+  energy_x = 0.d0
+  energy_c = 0.d0
+  potential_c_alpha_ao = 0.d0
+  potential_x_alpha_ao = 0.d0
+  potential_c_beta_ao = 0.d0
+  potential_x_beta_ao = 0.d0
 
   do j = 1, nucl_num
    do k = 1, n_points_radial_grid  -1
@@ -40,13 +40,13 @@
     tmp_x_b = 0.d0
 
     if(DFT_TYPE=="LDA")then
-     call create_matrix_for_LDA_potential_update_energy(k,j,ao_matrix,ao_matrix_vc_a,ao_matrix_vc_b,ao_matrix_vx_a,ao_matrix_vx_b,energy_x_new,energy_c_new)
-     call update_pots_scalar_dgemm(ao_matrix_vc_a,ao_matrix_vx_a,ao_matrix_vc_b,ao_matrix_vx_b,ao_matrix,potential_c_alpha_ao_new,potential_x_alpha_ao_new,potential_c_beta_ao_new,potential_x_beta_ao_new)
+     call create_matrix_for_LDA_potential_update_energy(k,j,ao_matrix,ao_matrix_vc_a,ao_matrix_vc_b,ao_matrix_vx_a,ao_matrix_vx_b,energy_x,energy_c)
+     call update_pots_scalar_dgemm(ao_matrix_vc_a,ao_matrix_vx_a,ao_matrix_vc_b,ao_matrix_vx_b,ao_matrix,potential_c_alpha_ao,potential_x_alpha_ao,potential_c_beta_ao,potential_x_beta_ao)
 
     else if (DFT_TYPE=="GGA")then
-     call create_matrix_for_GGA_potential_update_energy(k,j,ao_matrix,ao_matrix_vc_a,ao_matrix_vc_b,ao_matrix_vx_a,ao_matrix_vx_b,ao_matrix_dvc_a,ao_matrix_dvc_b,ao_matrix_dvx_a,ao_matrix_dvx_b,grad_ao_matrix,grad_ao_matrix_dvc_a,grad_ao_matrix_dvc_b,grad_ao_matrix_dvx_a,grad_ao_matrix_dvx_b,energy_x_new,energy_c_new)
-     call update_pots_scalar_dgemm(ao_matrix_vc_a,ao_matrix_vx_a,ao_matrix_vc_b,ao_matrix_vx_b,ao_matrix,potential_c_alpha_ao_new,potential_x_alpha_ao_new,potential_c_beta_ao_new,potential_x_beta_ao_new)
-     call update_pots_gradient_dgemm(ao_matrix,ao_matrix_dvc_a,ao_matrix_dvc_b,ao_matrix_dvx_a,ao_matrix_dvx_b,grad_ao_matrix,grad_ao_matrix_dvc_a,grad_ao_matrix_dvc_b,grad_ao_matrix_dvx_a,grad_ao_matrix_dvx_b,potential_c_alpha_ao_new,potential_x_alpha_ao_new,potential_c_beta_ao_new,potential_x_beta_ao_new )
+     call create_matrix_for_GGA_potential_update_energy(k,j,ao_matrix,ao_matrix_vc_a,ao_matrix_vc_b,ao_matrix_vx_a,ao_matrix_vx_b,ao_matrix_dvc_a,ao_matrix_dvc_b,ao_matrix_dvx_a,ao_matrix_dvx_b,grad_ao_matrix,grad_ao_matrix_dvc_a,grad_ao_matrix_dvc_b,grad_ao_matrix_dvx_a,grad_ao_matrix_dvx_b,energy_x,energy_c)
+     call update_pots_scalar_dgemm(ao_matrix_vc_a,ao_matrix_vx_a,ao_matrix_vc_b,ao_matrix_vx_b,ao_matrix,potential_c_alpha_ao,potential_x_alpha_ao,potential_c_beta_ao,potential_x_beta_ao)
+     call update_pots_gradient_dgemm(ao_matrix,ao_matrix_dvc_a,ao_matrix_dvc_b,ao_matrix_dvx_a,ao_matrix_dvx_b,grad_ao_matrix,grad_ao_matrix_dvc_a,grad_ao_matrix_dvc_b,grad_ao_matrix_dvx_a,grad_ao_matrix_dvx_b,potential_c_alpha_ao,potential_x_alpha_ao,potential_c_beta_ao,potential_x_beta_ao )
     endif
     deallocate(tmp_x_a,tmp_x_b,tmp_c_a,tmp_c_b)
    enddo
