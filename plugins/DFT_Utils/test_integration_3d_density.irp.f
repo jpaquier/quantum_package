@@ -5,13 +5,13 @@ program pouet
  double precision :: rmax
  nx = 100
  rmax = 3.d0
- call test_erf_coulomb_oprerator
+!call test_erf_coulomb_oprerator
 !call test
 !call test_inv_erf
 !call test_grad
 !call test_r12_psi(nx,rmax)
 !call test_one_dm_mo
-!call test_expectation_value_and_coulomb(nx,rmax)
+ call test_expectation_value_and_coulomb(nx,rmax)
 !call routine3
 !call test_rho2
 !call test_one_dm_ao
@@ -353,23 +353,24 @@ subroutine test_expectation_value_and_coulomb(nx,xmax)
  rinit(2) = nucl_coord(1,2)
  rinit(3) = nucl_coord(1,3)
  r1 = rinit
- r1(1) = 0.5d0
+!r1(1) = 0.5d0
 
  dr = 0.d0
  dr(1) = dx
  dr(2) = dx
 
  r2 = r1
- do i = 1, nx 
-  r2 += dr
+!do i = 1, nx 
+! r2 += dr
   r12 = dsqrt((r1(1)-r2(1))**2 + (r1(2)-r2(2))**2 +(r1(3)-r2(3))**2 )
   call expectation_value_in_real_space_old(r1,r2,coulomb_bis,two_dm) 
-  double precision :: two_dm,aos_array(ao_num),rho_a,rho_b
-  call dm_dft_alpha_beta_and_all_aos_at_r(r2,rho_a,rho_b,aos_array)
-  call expectation_value_in_real_space(r1,r2,coulomb) 
+  double precision :: two_dm,aos_array(ao_num),rho_a,rho_b,two_body_dm
+! call dm_dft_alpha_beta_and_all_aos_at_r(r2,rho_a,rho_b,aos_array)
+  call expectation_value_in_real_space(r1,r2,coulomb,two_body_dm) 
 ! call coulomb_operator_in_real_space(r1,r2,coulomb) 
-  write(i_unit_output,'(100(F16.10,X))')r12,1.d0/r12,coulomb_bis,coulomb,two_dm,rho_a+rho_b,coulomb_bis*two_dm
- enddo
+  write(i_unit_output,'(100(F32.20,X))')r12,1.d0/r12,coulomb,two_body_dm,coulomb/two_body_dm
+  write(i_unit_output,'(100(F32.20,X))')r12,1.d0/r12,coulomb_bis,two_dm,coulomb_bis/two_dm
+!enddo
 end
 
 

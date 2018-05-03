@@ -116,13 +116,15 @@ subroutine LDA_type_functional(r,rho_a,rho_b,vx_a,vx_b,vc_a,vc_b,ex,ec)
   else if(exchange_functional.EQ."LDA")then
    call ex_lda(rho_a(istate),rho_b(istate),ex(istate),vx_a(istate),vx_b(istate))
   else if(exchange_functional.EQ."basis_set_short_range_LDA")then
-   r2 = r
-   r12 = 0.00001d0
-   dx2 = dsqrt(r12**2/3.d0)
-   dr2(:) = dx2
-   r2 += dr2
-   call local_r12_operator_on_hf(r,r2,local_potential)
-   mu =  mu_coulomb(local_potential,r12)
+  !r2 = r
+  !r12 = 0.00001d0
+  !dx2 = dsqrt(r12**2/3.d0)
+  !dr2(:) = dx2
+  !r2 += dr2
+  !call local_r12_operator_on_hf(r,r2,local_potential)
+  !mu =  mu_coulomb(local_potential,r12)
+   call local_r12_operator_on_hf(r,r,local_potential)
+   mu =  local_potential * dsqrt(dacos(-1.d0)) * 0.5d0
    call ex_lda_sr(mu,rho_a(istate),rho_b(istate),ex(istate),vx_a(istate),vx_b(istate))
   else if(exchange_functional.EQ."None")then
    ex = 0.d0
@@ -178,8 +180,10 @@ subroutine GGA_type_functionals(r,rho_a,rho_b,grad_rho_a_2,grad_rho_b_2,grad_rho
    dx2 = dsqrt(r12**2/3.d0)
    dr2(:) = dx2
    r2 += dr2
-   call local_r12_operator_on_hf(r,r2,local_potential)
-   mu =  mu_coulomb(local_potential,r12)
+  !call local_r12_operator_on_hf(r,r2,local_potential)
+  !mu =  mu_coulomb(local_potential,r12)
+   call local_r12_operator_on_hf(r,r,local_potential)
+   mu =  local_potential * dsqrt(dacos(-1.d0)) * 0.5d0
    call ex_pbe_sr(mu,rho_a(istate),rho_b(istate),grad_rho_a_2(istate),grad_rho_b_2(istate),grad_rho_a_b(istate),ex(istate),vx_rho_a(istate),vx_rho_b(istate),vx_grad_rho_a_2(istate),vx_grad_rho_b_2(istate),vx_grad_rho_a_b(istate))
   else if(exchange_functional.EQ."None")then
    ex = 0.d0
@@ -324,13 +328,13 @@ END_PROVIDER
       if(md_correlation_functional.EQ."short_range_LDA")then
         call ESRC_MD_LDAERF (mu_erf,rho_a(istate),rho_b(istate),dospin,ec(istate))
       else if(md_correlation_functional.EQ."basis_set_short_range_LDA")then
-       r2 = r
-       r12 = 0.00001d0
-       dx2 = dsqrt(r12**2/3.d0)
-       dr2(:) = dx2
-       r2 += dr2
-       call local_r12_operator_on_hf(r,r2,local_potential)
-       mu =  mu_coulomb(local_potential,r12)
+      !r2 = r
+      !r12 = 0.00001d0
+      !dx2 = dsqrt(r12**2/3.d0)
+      !dr2(:) = dx2
+      !r2 += dr2
+       call local_r12_operator_on_hf(r,r,local_potential)
+       mu =  local_potential * dsqrt(dacos(-1.d0)) * 0.5d0
        call ESRC_MD_LDAERF (mu,rho_a(istate),rho_b(istate),dospin,ec(istate))
       else if(md_correlation_functional.EQ."None")then
        ec = 0.d0
