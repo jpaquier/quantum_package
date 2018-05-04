@@ -3,7 +3,8 @@ program test
  touch read_wf
 !call correlation_hole
 !call normalisation_on_top
- call print_weight
+!call print_weight
+ call test_opt_on_top
 end
 
 
@@ -83,3 +84,64 @@ subroutine print_weight
  enddo
 
 end
+
+subroutine test_opt_on_top
+ implicit none
+ integer :: i,j,k,l
+ double precision :: on_top_two_dm_in_r_with_symmetry , on_top_two_dm_in_r, r(3), wall1, wall2, accu1 ,accu2
+
+ accu1 = 0d0
+ call cpu_time(wall1)
+ do j = 1, nucl_num
+  do k = 1, n_points_radial_grid  -1
+   do l = 1, n_points_integration_angular 
+    r(:) = grid_points_per_atom(:,l,k,j)
+    accu1 += on_top_two_dm_in_r(r,1)
+   enddo
+  enddo
+ enddo
+ call cpu_time(wall2)
+ print*, "cpu time without symmetry :", wall2-wall1 
+
+
+ accu2 = 0d0
+ call cpu_time(wall1)
+ do j = 1, nucl_num
+  do k = 1, n_points_radial_grid  -1
+   do l = 1, n_points_integration_angular 
+    r(:) = grid_points_per_atom(:,l,k,j)
+    accu2 += on_top_two_dm_in_r_with_symmetry(r,1)
+   enddo
+  enddo
+ enddo
+ call cpu_time(wall2)
+ print*, "cpu time with symmetry :", wall2-wall1 
+
+ print*, accu1-accu2
+    
+end
+
+       
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

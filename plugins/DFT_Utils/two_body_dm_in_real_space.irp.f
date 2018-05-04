@@ -19,7 +19,6 @@ double precision function two_dm_in_r(r1,r2,istate)
  enddo
 end
 
-
 double precision function on_top_two_dm_in_r(r,istate)
  implicit none
  integer, intent(in) :: istate
@@ -27,7 +26,7 @@ double precision function on_top_two_dm_in_r(r,istate)
  double precision :: mos_array_r(mo_tot_num)
  integer :: i,j,k,l
  double precision :: accu,threshold
- threshold = 1.d-10
+ threshold = 0d0    !1.d-10
  call give_all_mos_at_r(r,mos_array_r) 
  on_top_two_dm_in_r = 0.d0
  do i = 1, mo_tot_num
@@ -45,8 +44,56 @@ double precision function on_top_two_dm_in_r(r,istate)
    enddo
   enddo
  enddo
- on_top_two_dm_in_r = max(on_top_two_dm_in_r,1.d-12)
+!on_top_two_dm_in_r = max(on_top_two_dm_in_r,1.d-12)
 end
+
+
+double precision function on_top_two_dm_in_r_with_symmetry(r,istate)
+ implicit none
+ integer, intent(in) :: istate
+ double precision, intent(in) :: r(3)
+ double precision :: mos_array_r(mo_tot_num)
+ integer :: i,j,k,l
+ double precision :: accu,threshold
+ threshold = 1.d-10
+ call give_all_mos_at_r(r,mos_array_r) 
+ on_top_two_dm_in_r_with_symmetry = 0.d0
+
+ do i = 1, mo_tot_num
+  do j = 1, mo_tot_num
+   on_top_two_dm_in_r_with_symmetry += two_bod_alpha_beta_mo_transposed(i,j,j,i,istate) * mos_array_r(i) * mos_array_r(i) * mos_array_r(j) * mos_array_r(j)
+  enddo
+ enddo
+
+ do i = 1, mo_tot_num
+  do j = 1, mo_tot_num
+   do k = (j+1), mo_tot_num
+    on_top_two_dm_in_r_with_symmetry += 2d0 * two_bod_alpha_beta_mo_transposed(i,k,j,i,istate) * mos_array_r(i) * mos_array_r(i) * mos_array_r(k) * mos_array_r(j)
+   enddo
+  enddo
+ enddo
+
+ do i = 1, mo_tot_num
+  do j = 1, mo_tot_num
+   do l = (i+1), mo_tot_num
+    on_top_two_dm_in_r_with_symmetry += 2d0 * two_bod_alpha_beta_mo_transposed(l,j,j,i,istate) * mos_array_r(i) * mos_array_r(l) * mos_array_r(j) * mos_array_r(j)
+   enddo
+  enddo
+ enddo
+
+ do i = 1, mo_tot_num
+  do j = 1, mo_tot_num
+   do k = (j+1), mo_tot_num
+    do l = (i+1), mo_tot_num
+     on_top_two_dm_in_r_with_symmetry += 4d0 * two_bod_alpha_beta_mo_transposed(l,k,j,i,istate) * mos_array_r(i) * mos_array_r(l) * mos_array_r(k) * mos_array_r(j)
+    enddo
+   enddo
+  enddo
+ enddo
+end
+
+
+
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -181,6 +228,7 @@ end
  double precision :: wall1,wall0  
  call cpu_time(wall0)
  mu = mu_erf
+
  Energy_c_md_on_top_PBE_cycle = 0d0
  do j = 1, nucl_num
   do k = 1, n_points_radial_grid  -1
@@ -196,6 +244,7 @@ end
    enddo
   enddo
  enddo
+
  call cpu_time(wall1)
  print*,'cpu time for Energy_c_md_on_top_PBE_cycle '
  print*,wall1 - wall0
