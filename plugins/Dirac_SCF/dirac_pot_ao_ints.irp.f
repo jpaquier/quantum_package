@@ -192,45 +192,44 @@
 !  accu +=  d(i) * rint(i/2,const)
 ! enddo
 ! NAI_pol_mult = accu * coeff
-
 !end
 
 
 
- double precision function G_V_e_n(a_x,a_y,a_z,b_x,b_y,b_z,alpha,beta)
- implicit none
- !!! primitive nuclear attraction between the two primitives centered on the same atom ::
- !!!!         primitive_1 = x**(a_x) y**(a_y) z**(a_z) exp(-alpha * r**2)
- !!!!         primitive_2 = x**(b_x) y**(b_y) z**(b_z) exp(- beta * r**2)
- !!! for gaussian charge density of the nucleus
- integer :: a_x,a_y,a_z,b_x,b_y,b_z
- double precision :: alpha ,beta
- double precision :: G_V_r, V_phi, V_theta
- if(iand((a_x+b_x),1)==1.or.iand(a_y+b_y,1)==1.or.iand((a_z+b_z),1)==1)then
-  G_V_e_n = 0.d0
- else
-  G_V_e_n =   G_V_r(a_x+b_x+a_y+b_y+a_z+b_z+1,alpha+beta)    &
- &          * V_phi(a_x+b_x,a_y+b_y)                         &
- &          * V_theta(a_z+b_z,a_x+b_x+a_y+b_y+1)
- endif
- end
- 
- double precision function G_V_r(n,alpha)
- !!!! calculate the radial part of the nuclear attraction integral which is the following integral :
- !!     integral on "r" with boundaries ( 0 ; + infinity) of [ erf(G*r)  r**n  exp(-alpha * r**2) ]
- !!! CAUTION  :: this function requires the constant sqpi = dsqrt(pi)
- implicit none
- double precision ::  alpha , fact 
- integer :: n
- include 'Utils/constants.include.F'
- if(iand(n,1)==1)then
-  G_V_r = 0
- !V_r = 0.5d0 * fact(ishft(n,-1)) / (alpha ** (ishft(n,-1) + 1)) 
- else
-  G_V_r = 0
- !V_r = sqpi * fact(n) / fact(ishft(n,-1)) * (0.5d0/sqrt(alpha)) ** (n+1)
- endif
- end
+!double precision function G_V_e_n(a_x,a_y,a_z,b_x,b_y,b_z,alpha,beta)
+!implicit none
+!!!! primitive nuclear attraction between the two primitives centered on the same atom ::
+!!!!!         primitive_1 = x**(a_x) y**(a_y) z**(a_z) exp(-alpha * r**2)
+!!!!!         primitive_2 = x**(b_x) y**(b_y) z**(b_z) exp(- beta * r**2)
+!!!! for gaussian charge density of the nucleus
+!integer :: a_x,a_y,a_z,b_x,b_y,b_z
+!double precision :: alpha ,beta
+!double precision :: G_V_r, V_phi, V_theta
+!if(iand((a_x+b_x),1)==1.or.iand(a_y+b_y,1)==1.or.iand((a_z+b_z),1)==1)then
+! G_V_e_n = 0.d0
+!else
+! G_V_e_n =   G_V_r(a_x+b_x+a_y+b_y+a_z+b_z+1,alpha+beta)    &
+!&          * V_phi(a_x+b_x,a_y+b_y)                         &
+!&          * V_theta(a_z+b_z,a_x+b_x+a_y+b_y+1)
+!endif
+!end
+!
+!double precision function G_V_r(n,alpha)
+!!!!! calculate the radial part of the nuclear attraction integral which is the following integral :
+!!!     integral on "r" with boundaries ( 0 ; + infinity) of [ erf(G*r)  r**n  exp(-alpha * r**2) ]
+!!!! CAUTION  :: this function requires the constant sqpi = dsqrt(pi)
+!implicit none
+!double precision ::  alpha , fact 
+!integer :: n
+!include 'Utils/constants.include.F'
+!if(iand(n,1)==1)then
+! G_V_r = 0
+!!V_r = 0.5d0 * fact(ishft(n,-1)) / (alpha ** (ishft(n,-1) + 1)) 
+!else
+! G_V_r = 0
+!!V_r = sqpi * fact(n) / fact(ishft(n,-1)) * (0.5d0/sqrt(alpha)) ** (n+1)
+!endif
+!end
 
 
 

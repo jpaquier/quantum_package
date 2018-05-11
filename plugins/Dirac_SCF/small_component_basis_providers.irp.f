@@ -192,9 +192,18 @@
    call overlap_gaussian_xyz(C_A,C_A,small_ao_expo(i),small_ao_expo(i),powA,powA,small_overlap_x,small_overlap_y,small_overlap_z,small_norm,nz)
    small_ao_coef_normalized(i) = small_ao_coef(i)/sqrt(small_norm)
   enddo
-  
-      
-   
-   
  END_PROVIDER
+
+!BEGIN_PROVIDER [double complex, Big_fock_matrix_eigenvalues,(2*(ao_num+small_ao_num))]
+!BEGIN_PROVIDER [double complex, Big_fock_matrix_eigenvectors, (2*(ao_num+small_ao_num),2*(ao_num+small_ao_num))]
+!implicit none 
+!integer :: n,nmax
+!n = 2*(ao_num+small_ao_num)
+!nmax = n
+!call lapack_diagd(,eigvectors,H,nmax,n)
+
+
+!ND_PROVIDER 
+
+
 
