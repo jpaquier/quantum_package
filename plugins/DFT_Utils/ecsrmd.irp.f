@@ -16,8 +16,8 @@ C     Created: 26-08-11, J. Toulouse
 C*****************************************************************************
       implicit none
 
-      double precision, intent(in) :: rho_a,rho_b
-      logical, intent(in)          :: dospin,mu
+      double precision, intent(in) :: rho_a,rho_b,mu
+      logical, intent(in)          :: dospin
       double precision, intent(out):: e
 
       double precision             :: e1

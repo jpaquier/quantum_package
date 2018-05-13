@@ -25,20 +25,23 @@ double precision function on_top_two_dm_in_r(r,istate)
  double precision, intent(in) :: r(3)
  double precision :: mos_array_r(mo_tot_num)
  integer :: i,j,k,l
- double precision :: accu,threshold
- threshold = 0d0    !1.d-10
+ double precision :: accu1,accu2,accu3,accu4,threshold
+ threshold = 1.d-10
  call give_all_mos_at_r(r,mos_array_r) 
+
  on_top_two_dm_in_r = 0.d0
  do i = 1, mo_tot_num
-  accu = dabs(mos_array_r(i))
-  if(accu.lt.threshold)cycle
+! accu1 = dabs(mos_array_r(i))
+! if(accu1.lt.threshold)cycle
   do j = 1, mo_tot_num
-  accu *= dabs(mos_array_r(j))
-  if(accu.lt.threshold)cycle
+! accu2 = accu1 * dabs(mos_array_r(j))
+! if(accu2.lt.threshold)cycle
    do k = 1, mo_tot_num
-   accu *= dabs(mos_array_r(k))
-   if(accu.lt.threshold)cycle
+!  accu3 = accu2 *  dabs(mos_array_r(k))
+!  if(accu3.lt.threshold)cycle
     do l = 1, mo_tot_num
+!    accu4 = accu3 *  dabs(mos_array_r(l))
+!    if(accu4.lt.threshold)cycle
      on_top_two_dm_in_r += two_bod_alpha_beta_mo_transposed(l,k,j,i,istate) * mos_array_r(i) * mos_array_r(l) * mos_array_r(k) * mos_array_r(j)
     enddo
    enddo
@@ -54,42 +57,68 @@ double precision function on_top_two_dm_in_r_with_symmetry(r,istate)
  double precision, intent(in) :: r(3)
  double precision :: mos_array_r(mo_tot_num)
  integer :: i,j,k,l
- double precision :: accu,threshold
+ double precision :: accu1,accu2,accu3,accu4,threshold
  threshold = 1.d-10
  call give_all_mos_at_r(r,mos_array_r) 
  on_top_two_dm_in_r_with_symmetry = 0.d0
 
  do i = 1, mo_tot_num
+! accu1 = dabs(mos_array_r(i))**2d0
+! if(accu1.lt.threshold)cycle
   do j = 1, mo_tot_num
+!  accu2 = accu1 * dabs(mos_array_r(j))**2d0
+!  if(accu2.lt.threshold)cycle
    on_top_two_dm_in_r_with_symmetry += two_bod_alpha_beta_mo_transposed(i,j,j,i,istate) * mos_array_r(i) * mos_array_r(i) * mos_array_r(j) * mos_array_r(j)
   enddo
  enddo
 
  do i = 1, mo_tot_num
+! accu1 = dabs(mos_array_r(i))**2d0
+! if(accu1.lt.threshold)cycle
   do j = 1, mo_tot_num
+!  accu2 = accu1 * dabs(mos_array_r(j))
+!  if(accu2.lt.threshold)cycle
    do k = (j+1), mo_tot_num
+!   accu3 = accu2 *  dabs(mos_array_r(k))
+!   if(accu3.lt.threshold)cycle
     on_top_two_dm_in_r_with_symmetry += 2d0 * two_bod_alpha_beta_mo_transposed(i,k,j,i,istate) * mos_array_r(i) * mos_array_r(i) * mos_array_r(k) * mos_array_r(j)
    enddo
   enddo
  enddo
 
  do i = 1, mo_tot_num
+! accu1 = dabs(mos_array_r(i))
+! if(accu1.lt.threshold)cycle
   do j = 1, mo_tot_num
+!  accu2 = accu1 * dabs(mos_array_r(j))**2d0
+!  if(accu2.lt.threshold)cycle
    do l = (i+1), mo_tot_num
+!   accu3 = accu2 *  dabs(mos_array_r(l))
+!   if(accu3.lt.threshold)cycle
     on_top_two_dm_in_r_with_symmetry += 2d0 * two_bod_alpha_beta_mo_transposed(l,j,j,i,istate) * mos_array_r(i) * mos_array_r(l) * mos_array_r(j) * mos_array_r(j)
    enddo
   enddo
  enddo
 
  do i = 1, mo_tot_num
+! accu1 = dabs(mos_array_r(i))
+! if(accu1.lt.threshold)cycle
   do j = 1, mo_tot_num
+!  accu2 = accu1 * dabs(mos_array_r(j))
+!  if(accu2.lt.threshold)cycle
    do k = (j+1), mo_tot_num
+!   accu3 = accu2 *  dabs(mos_array_r(k))
+!   if(accu3.lt.threshold)cycle
     do l = (i+1), mo_tot_num
+!    accu4 = accu3 *  dabs(mos_array_r(l))
+!    if(accu4.lt.threshold)cycle
      on_top_two_dm_in_r_with_symmetry += 4d0 * two_bod_alpha_beta_mo_transposed(l,k,j,i,istate) * mos_array_r(i) * mos_array_r(l) * mos_array_r(k) * mos_array_r(j)
     enddo
    enddo
   enddo
  enddo
+
+!on_top_two_dm_in_r_with_symmetry = max(on_top_two_dm_in_r_with_symmetry,1.d-12)
 end
 
 

@@ -5,6 +5,7 @@ program test
 !call normalisation_on_top
 !call print_weight
  call test_opt_on_top
+!call test_tbdm_with_symmetry
 end
 
 
@@ -88,7 +89,23 @@ end
 subroutine test_opt_on_top
  implicit none
  integer :: i,j,k,l
- double precision :: on_top_two_dm_in_r_with_symmetry , on_top_two_dm_in_r, r(3), wall1, wall2, accu1 ,accu2
+ double precision :: two_dm_in_r, on_top_two_dm_in_r_with_symmetry , on_top_two_dm_in_r, r(3), wall1, wall2, accu1, accu2, accu3, weight
+
+
+ accu3 = 0d0
+ call cpu_time(wall1)
+ do j = 1, nucl_num
+  do k = 1, n_points_radial_grid  -1
+   do l = 1, n_points_integration_angular 
+    r(:) = grid_points_per_atom(:,l,k,j)
+    weight = final_weight_functions_at_grid_points(l,k,j)
+    accu3 += two_dm_in_r(r,r,1) * weight
+   enddo
+  enddo
+ enddo
+ call cpu_time(wall2)
+ print*, "cpu time tbdm :", wall2-wall1 
+
 
  accu1 = 0d0
  call cpu_time(wall1)
@@ -96,12 +113,13 @@ subroutine test_opt_on_top
   do k = 1, n_points_radial_grid  -1
    do l = 1, n_points_integration_angular 
     r(:) = grid_points_per_atom(:,l,k,j)
-    accu1 += on_top_two_dm_in_r(r,1)
+    weight = final_weight_functions_at_grid_points(l,k,j)
+    accu1 += on_top_two_dm_in_r(r,1) * weight
    enddo
   enddo
  enddo
  call cpu_time(wall2)
- print*, "cpu time without symmetry :", wall2-wall1 
+ print*, "cpu time without symmetry with cycle :", wall2-wall1 
 
 
  accu2 = 0d0
@@ -110,19 +128,43 @@ subroutine test_opt_on_top
   do k = 1, n_points_radial_grid  -1
    do l = 1, n_points_integration_angular 
     r(:) = grid_points_per_atom(:,l,k,j)
-    accu2 += on_top_two_dm_in_r_with_symmetry(r,1)
+    weight = final_weight_functions_at_grid_points(l,k,j)
+    accu2 += on_top_two_dm_in_r_with_symmetry(r,1) * weight
    enddo
   enddo
  enddo
  call cpu_time(wall2)
- print*, "cpu time with symmetry :", wall2-wall1 
+ print*, "cpu time with symmetry with cycle :", wall2-wall1 
 
- print*, accu1-accu2
+ print*,accu3, accu1 ,accu2
+ print*,accu1-accu3 ,accu2-accu3
     
 end
 
        
 
+subroutine test_tbdm_with_symmetry
+ implicit none
+ integer :: i,j,k,l
+ double precision :: two_dm_in_r, on_top_two_dm_in_r, on_top_two_dm_in_r_with_symmetry,r(3)
+ double precision :: pouet , toto, tata
+ 
+ do j = 1, nucl_num
+  do k = 1, n_points_radial_grid  -1
+   do l = 1, n_points_integration_angular 
+    print*,"pts :", j,k,l
+    r(:) = grid_points_per_atom(:,l,k,j)
+    print*,'r :' , r 
+    pouet = two_dm_in_r(r,r,1)
+    toto = on_top_two_dm_in_r(r,1)
+    tata = on_top_two_dm_in_r_with_symmetry(r,1)
+    print*,'on top : ',pouet,toto,tata
+    print*," "
+   enddo
+  enddo
+ enddo
+
+end
 
 
 
