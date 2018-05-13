@@ -312,8 +312,12 @@ END_PROVIDER
  double precision, allocatable :: aos_array(:), r(:), rho_a(:), rho_b(:), ec(:)
  logical :: dospin
  double precision :: r2(3),dr2(3), local_potential,r12,dx2,mu,mu_coulomb,coulomb,two_body_dm
+ double precision :: threshold
  dospin = .false. ! JT dospin have to be set to true for open shell
+ threshold = 1.d-07
+ double precision :: cpu0,cpu1
  allocate(aos_array(ao_num),r(3), rho_a(N_states), rho_b(N_states), ec(N_states))
+ call cpu_time(cpu0)
   do j = 1, nucl_num
    do k = 1, n_points_radial_grid  -1
     do l = 1, n_points_integration_angular 
@@ -322,24 +326,25 @@ END_PROVIDER
      r(2) = grid_points_per_atom(2,l,k,j)
      r(3) = grid_points_per_atom(3,l,k,j)
      call dm_dft_alpha_beta_and_all_aos_at_r(r,rho_a,rho_b,aos_array)
+     if(dabs(final_weight_functions_at_grid_points(l,k,j) * (rho_a(1)+rho_b(1))).lt.threshold)cycle
 
      do istate = 1, N_states
 !!!!!!!!!!!! CORRELATION PART
       if(md_correlation_functional.EQ."short_range_LDA")then
         call ESRC_MD_LDAERF (mu_erf,rho_a(istate),rho_b(istate),dospin,ec(istate))
-      else if(md_correlation_functional.EQ."basis_set_short_range_LDA")then
-      !r2 = r
-      !r12 = 0.00001d0
-      !dx2 = dsqrt(r12**2/3.d0)
-      !dr2(:) = dx2
-      !r2 += dr2
+      else if(md_correlation_functional.EQ."basis_set_short_range_LDA".or.md_correlation_functional.EQ."basis_set_short_range_PBE_2dm")then
        if(basis_set_hf_potential)then
         call local_r12_operator_on_hf(r,r,local_potential)
+!       call local_r12_operator_with_one_e_int_on_1s(r,r,local_potential)
        else
         call expectation_value_in_real_space(r,r,local_potential,two_body_dm)
        endif
        mu =  local_potential * dsqrt(dacos(-1.d0)) * 0.5d0
-       call ESRC_MD_LDAERF (mu,rho_a(istate),rho_b(istate),dospin,ec(istate))
+       if(md_correlation_functional.EQ."basis_set_short_range_LDA")then
+        call ESRC_MD_LDAERF (mu,rho_a(istate),rho_b(istate),dospin,ec(istate))
+       else if(md_correlation_functional.EQ."basis_set_short_range_PBE_2dm")then
+        call give_epsilon_c_md_on_top_PBE(mu,r,ec) 
+       endif
       else if(md_correlation_functional.EQ."None")then
        ec = 0.d0
       else
@@ -356,4 +361,6 @@ END_PROVIDER
    enddo
   enddo
  deallocate(aos_array,r,rho_a,rho_b, ec)
+ call cpu_time(cpu1)
+ print*,'Time for the ec_md integration :',cpu1-cpu0
 END_PROVIDER

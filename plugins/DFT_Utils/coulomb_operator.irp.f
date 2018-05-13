@@ -172,7 +172,7 @@ use map_module
  enddo
 !coulomb = coulomb * 0.5d0 
 !print*,coulomb,two_dm
-!coulomb = coulomb / two_dm
+ coulomb = coulomb / two_dm
 !coulomb = exp(log(coulomb) - log(two_dm))
 
 end
@@ -233,6 +233,57 @@ use map_module
 end
 
 
+subroutine pure_expectation_value_in_real_space(r1,r2,coulomb)
+use map_module
+ implicit none
+ double precision, intent(in) :: r1(3), r2(3)
+ double precision, intent(out):: coulomb
+ integer :: i,j,k,l,m,n  
+ double precision :: integrals_array(mo_tot_num,mo_tot_num)
+ double precision :: mos_array_r1(mo_tot_num)
+ double precision :: mos_array_r2(mo_tot_num)
+ double precision :: a1,a2,a3,a4
+ double precision :: c1,c2,c3,c4
+ double precision :: threshold
+ double precision :: integral,get_mo_bielec_integral
+ threshold = 0.d0
+
+ call give_all_mos_at_r(r1,mos_array_r1) 
+ call give_all_mos_at_r(r2,mos_array_r2) 
+
+ coulomb = 0.d0
+ !$OMP PARALLEL DO &
+ !$OMP DEFAULT (NONE)  &
+ !$OMP PRIVATE (i,j,m,n,a1,c1,a2,c2,a3,c3,a4,c4) & 
+ !$OMP SHARED (mo_tot_num,mos_array_r1,mos_array_r2,threshold,two_bod_alpha_beta_mo_transposed,two_bod_alpha_beta_mo_contracted) & 
+ !$OMP REDUCTION (+:coulomb)       
+ do i = 1, mo_tot_num
+  a1 = mos_array_r1(i) 
+  c1 = dabs(a1)
+  if(c1.le.threshold)cycle
+  do j = 1, mo_tot_num 
+   a2 = a1 * mos_array_r2(j)
+   c2 = dabs(a2)
+   if(c2.le.threshold)cycle
+   do m = 1, mo_tot_num
+    a3 = a2 * mos_array_r1(m)
+    c3 = dabs(a3)
+    if(c3.le.threshold)cycle
+    do n = 1, mo_tot_num
+     a4 = a3 * mos_array_r2(n)
+     c4 = dabs(a4)
+     coulomb += a4 * two_bod_alpha_beta_mo_contracted(n,m,j,i,1)
+    enddo
+   enddo
+  enddo
+ enddo
+ !$OMP END PARALLEL DO
+
+end
+
+
+
+
 subroutine numerical_delta_function_coulomb(r1,r2,integral)
  implicit none
  BEGIN_DOC
@@ -284,7 +335,7 @@ subroutine local_r12_operator_on_hf(r1,r2,integral_psi)
  integral_psi = 0.d0
  do k = 1, mo_tot_num
   do l = 1, mo_tot_num
-   integral_psi += get_mo_bielec_integral(1,1,k,l,mo_integrals_map) * mos_array_r2(l) * mos_array_r1(k)
+   integral_psi +=  integrals_for_hf_potential(l,k) * mos_array_r2(l) * mos_array_r1(k)
   enddo
  enddo
  integral_psi = integral_psi / (mos_array_r1(1) * mos_array_r2(1))
@@ -292,43 +343,68 @@ subroutine local_r12_operator_on_hf(r1,r2,integral_psi)
 end
 
 
-subroutine local_erf_r12_operator_on_hf(r1,r2,integral_psi)
+subroutine local_r12_operator_with_one_e_int(r1,r2,integral)
  implicit none
- BEGIN_DOC
-! computes the following ANALYTICAL integral
-! \sum_{k,l} phi_l(r1) phi_k(r2) int_{r,r'} phi_k(r) phi_l(r') 1s(r) 1s(r') * erf(mu_erf |r-r'|) /|r-r'|
- END_DOC
  double precision, intent(in) :: r1(3), r2(3)
- double precision, intent(out):: integral_psi
- integer :: k,l
- double precision :: mo_bielec_integral
- double precision :: mos_array_r1(mo_tot_num)
+ double precision, intent(out):: integral(mo_tot_num)
+ integer :: i,j
  double precision :: mos_array_r2(mo_tot_num)
- double precision :: get_mo_bielec_integral_erf
- call give_all_mos_at_r(r1,mos_array_r1) 
+ double precision :: mos_array_ints(mo_tot_num,mo_tot_num)
+ BEGIN_DOC 
+ ! computes the following integral for all mos 
+ ! integral(i) = 1/phi_i(r2) * \sum_{j} phi_j(r2) * \int d_r phi_j(r) phi_i(r1) 1 / |r - r1| 
+ END_DOC
+ call potential_mono_elec_integral_mo_at_r(r1,mos_array_ints)
+ call give_all_mos_at_r(r2,mos_array_r2) 
+ do i = 1, mo_tot_num
+  integral(i) = 0.d0
+  do j = 1, mo_tot_num
+   integral(i) += mos_array_r2(j) * mos_array_ints(j,i)
+  enddo
+  integral(i) = integral(i) / mos_array_r2(i)
+ enddo
+
+end
+
+subroutine local_r12_operator_with_one_e_int_on_1s(r1,r2,integral)
+ implicit none
+ double precision, intent(in) :: r1(3), r2(3)
+ double precision, intent(out):: integral
+ integer :: i,j
+ double precision :: mos_array_r2(mo_tot_num)
+ BEGIN_DOC 
+ ! computes the following integral for all mos 
+ ! integral(i) = 1/phi_i(r2) * \sum_{j} phi_j(r2) * \int d_r phi_j(r) phi_i(r1) 1 / |r - r1| 
+ END_DOC
+ integral = 0.d0
  call give_all_mos_at_r(r2,mos_array_r2) 
 
- integral_psi = 0.d0
- do k = 1, mo_tot_num
-  do l = 1, mo_tot_num
-   integral_psi += integrals_for_hf_potential(l,k) * mos_array_r2(l) * mos_array_r1(k)
-  enddo
+ call potential_mono_elec_integral_mo_at_r(r1,mos_array_ints)
+ double precision :: mos_array_ints(mo_tot_num,mo_tot_num)
+ do j = 1, mo_tot_num
+  integral += mos_array_r2(j) * mos_array_ints(j,1)
  enddo
- integral_psi = integral_psi / (mos_array_r1(1) * mos_array_r2(1))
+
+!double precision :: mos_array_ints(mo_tot_num)
+!call potential_mono_elec_integral_mo_at_r_on_1s(r1,mos_array_ints)
+!do j = 1, mo_tot_num
+! integral += mos_array_r2(j) * mos_array_ints(j)
+!enddo
+
+
+ integral = integral / mos_array_r2(1)
 
 end
 
 BEGIN_PROVIDER [double precision, integrals_for_hf_potential, (mo_tot_num,mo_tot_num)]
  implicit none
  integer :: k,l
- double precision :: get_mo_bielec_integral_erf
+ double precision :: get_mo_bielec_integral
  do k = 1, mo_tot_num
   do l = 1, mo_tot_num
-   integrals_for_hf_potential(l,k) = get_mo_bielec_integral_erf(1,1,k,l,mo_integrals_erf_map) 
+   integrals_for_hf_potential(l,k) = get_mo_bielec_integral(1,1,k,l,mo_integrals_map) 
   enddo
  enddo
-
-
 END_PROVIDER 
 
 double precision function mu_coulomb(y,x)
@@ -348,3 +424,5 @@ double precision function mu_coulomb(y,x)
   mu_coulomb = x_tmp / 1.d-15
  endif
 end
+
+
