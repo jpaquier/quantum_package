@@ -663,7 +663,7 @@
   do istate = 1, N_states
    do i = 1, n_occ_ab(2)
     h2 = occ(i,2)
-    big_array(h1,p1,h2,h2,istate) += c_1(istate) * c_2(istate) * phase
+    big_array(h1,p1,h2,h2,istate) += 1.d0 * c_1(istate) * c_2(istate) * phase
     enddo 
   enddo
  else 
@@ -673,7 +673,7 @@
   do istate = 1, N_states
    do i = 1, n_occ_ab(1)
     h2 = occ(i,1)
-    big_array(h2,h2,h1,p1,istate) += c_1(istate) * c_2(istate) * phase
+    big_array(h2,h2,h1,p1,istate) += 1.d0 * c_1(istate) * c_2(istate) * phase
     enddo 
   enddo
  endif

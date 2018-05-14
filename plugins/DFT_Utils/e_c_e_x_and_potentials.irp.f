@@ -312,7 +312,7 @@ END_PROVIDER
  double precision, allocatable :: aos_array(:), r(:), rho_a(:), rho_b(:), ec(:)
  logical :: dospin
  double precision :: r2(3),dr2(3), local_potential,r12,dx2,mu,mu_coulomb,coulomb,two_body_dm
- dospin = .false. ! JT dospin have to be set to true for open shell
+ dospin = .True. ! JT dospin have to be set to true for open shell
  allocate(aos_array(ao_num),r(3), rho_a(N_states), rho_b(N_states), ec(N_states))
   do j = 1, nucl_num
    do k = 1, n_points_radial_grid  -1

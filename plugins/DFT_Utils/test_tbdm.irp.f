@@ -89,7 +89,9 @@ end
 subroutine test_opt_on_top
  implicit none
  integer :: i,j,k,l
- double precision :: two_dm_in_r, on_top_two_dm_in_r_with_symmetry , on_top_two_dm_in_r, r(3), wall1, wall2, accu1, accu2, accu3, weight
+ double precision :: two_dm_in_r, on_top_two_dm_in_r_with_symmetry , on_top_two_dm_in_r, on_top_two_dm_in_r_new, r(3), wall1, wall2, accu1, accu2, accu3, weight
+ double precision :: accu4,two_dm_in_r_new
+ double precision :: accu5,on_top_two_dm_in_r_sym,accu6
 
 
  accu3 = 0d0
@@ -99,12 +101,27 @@ subroutine test_opt_on_top
    do l = 1, n_points_integration_angular 
     r(:) = grid_points_per_atom(:,l,k,j)
     weight = final_weight_functions_at_grid_points(l,k,j)
-    accu3 += two_dm_in_r(r,r,1) * weight
+    accu3 +=  max(two_dm_in_r(r,r,1) * weight,1d-20)
    enddo
   enddo
  enddo
  call cpu_time(wall2)
  print*, "cpu time tbdm :", wall2-wall1 
+
+
+!accu4 = 0d0
+!call cpu_time(wall1)
+!do j = 1, nucl_num
+! do k = 1, n_points_radial_grid  -1
+!  do l = 1, n_points_integration_angular 
+!   r(:) = grid_points_per_atom(:,l,k,j)
+!   weight = final_weight_functions_at_grid_points(l,k,j)
+!   accu4 +=  max(two_dm_in_r_new(r,r,1) * weight,1d-20)
+!  enddo
+! enddo
+!enddo
+!call cpu_time(wall2)
+!print*, "cpu time tbdm new :", wall2-wall1 
 
 
  accu1 = 0d0
@@ -114,12 +131,27 @@ subroutine test_opt_on_top
    do l = 1, n_points_integration_angular 
     r(:) = grid_points_per_atom(:,l,k,j)
     weight = final_weight_functions_at_grid_points(l,k,j)
-    accu1 += on_top_two_dm_in_r(r,1) * weight
+    accu1 += max(on_top_two_dm_in_r(r,1) * weight,1d-20)
    enddo
   enddo
  enddo
  call cpu_time(wall2)
  print*, "cpu time without symmetry with cycle :", wall2-wall1 
+
+
+ accu6 = 0d0
+ call cpu_time(wall1)
+ do j = 1, nucl_num
+  do k = 1, n_points_radial_grid  -1
+   do l = 1, n_points_integration_angular 
+    r(:) = grid_points_per_atom(:,l,k,j)
+    weight = final_weight_functions_at_grid_points(l,k,j)
+    accu6 += max(on_top_two_dm_in_r_new(r,1) * weight,1d-20)
+   enddo
+  enddo
+ enddo
+ call cpu_time(wall2)
+ print*, "cpu time new without symmetry with cycle :", wall2-wall1 
 
 
  accu2 = 0d0
@@ -129,15 +161,35 @@ subroutine test_opt_on_top
    do l = 1, n_points_integration_angular 
     r(:) = grid_points_per_atom(:,l,k,j)
     weight = final_weight_functions_at_grid_points(l,k,j)
-    accu2 += on_top_two_dm_in_r_with_symmetry(r,1) * weight
+    accu2 += max(on_top_two_dm_in_r_with_symmetry(r,1) * weight,1d-20)
    enddo
   enddo
  enddo
  call cpu_time(wall2)
- print*, "cpu time with symmetry with cycle :", wall2-wall1 
+ print*, "cpu time with symmetry :", wall2-wall1 
 
- print*,accu3, accu1 ,accu2
- print*,accu1-accu3 ,accu2-accu3
+
+ accu5 = 0d0
+ call cpu_time(wall1)
+ do j = 1, nucl_num
+  do k = 1, n_points_radial_grid  -1
+   do l = 1, n_points_integration_angular 
+    r(:) = grid_points_per_atom(:,l,k,j)
+    weight = final_weight_functions_at_grid_points(l,k,j)
+    accu5 +=  max(on_top_two_dm_in_r_sym(r,1) * weight,1d-20)
+   enddo
+  enddo
+ enddo
+ call cpu_time(wall2)
+ print*, "cpu time tbdm new with symmetry and cycle :", wall2-wall1 
+
+
+ print*, accu3
+ print*, accu1
+ print*, accu6
+ print*, accu2
+ print*, accu5
+ print*, accu3-accu1 ,accu3-accu6 ,accu3-accu2 ,accu3-accu5
     
 end
 
@@ -146,20 +198,23 @@ end
 subroutine test_tbdm_with_symmetry
  implicit none
  integer :: i,j,k,l
- double precision :: two_dm_in_r, on_top_two_dm_in_r, on_top_two_dm_in_r_with_symmetry,r(3)
+ double precision :: two_dm_in_r, on_top_two_dm_in_r, on_top_two_dm_in_r_with_symmetry,r(3),on_top_two_dm_in_r_sym
  double precision :: pouet , toto, tata
  
  do j = 1, nucl_num
   do k = 1, n_points_radial_grid  -1
    do l = 1, n_points_integration_angular 
-    print*,"pts :", j,k,l
     r(:) = grid_points_per_atom(:,l,k,j)
-    print*,'r :' , r 
-    pouet = two_dm_in_r(r,r,1)
-    toto = on_top_two_dm_in_r(r,1)
-    tata = on_top_two_dm_in_r_with_symmetry(r,1)
-    print*,'on top : ',pouet,toto,tata
-    print*," "
+  ! pouet = two_dm_in_r(r,r,1)
+  ! toto = on_top_two_dm_in_r(r,1)
+  ! tata = on_top_two_dm_in_r_with_symmetry(r,1)
+    tata = on_top_two_dm_in_r_sym(r,1)
+  ! if (abs(toto-tata)>1d-10) then
+     print*,"pts :", j,k,l
+     print*,'r :' , r 
+     print*,'on top : ',tata
+     print*," "
+!   endif
    enddo
   enddo
  enddo
