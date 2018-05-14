@@ -5,14 +5,15 @@ subroutine lapack_diag_complex(eigvalues,eigvectors,H,nmax,n)
  double complex, intent(out) :: eigvectors(nmax,n)
  double complex, intent(out) :: eigvalues(n)
 
- double precision,allocatable   :: A(:,:)
- double precision,allocatable   :: work(:)
+ double complex,allocatable   :: A(:,:)
+ double complex,allocatable   :: work(:)
  integer         ,allocatable   :: iwork(:)
  integer                        :: lwork, info, i,j,l,k, liwork
  double precision :: rwork(max(1, 3*n-2))
  character*1 :: jobz 
  jobz='V'
  !if jobz = "N" then it computes only the eigenvalues 
+ lwork = 2*n*n + 6*n+ 1
 
  allocate(A(nmax,n),work(lwork),iwork(liwork))
 
@@ -25,7 +26,6 @@ subroutine lapack_diag_complex(eigvalues,eigvectors,H,nmax,n)
     print *, irp_here, ': zheev: the ',-info,'-th argument had an illegal value'
     stop 2
   endif
-  lwork  = int( work( 1 ) )
-  deallocate (A,work,iwork)
   eigvectors = A
+  deallocate (A,work,iwork)
 end

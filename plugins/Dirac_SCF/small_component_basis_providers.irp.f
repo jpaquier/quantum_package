@@ -356,16 +356,21 @@
  end
 
 
-!BEGIN_PROVIDER [double complex, Big_fock_matrix_eigenvalues,(2*(ao_num+small_ao_num))]
-!BEGIN_PROVIDER [double complex, Big_fock_matrix_eigenvectors, (2*(ao_num+small_ao_num),2*(ao_num+small_ao_num))]
-!implicit none 
-!integer :: n,nmax
-!n = 2*(ao_num+small_ao_num)
-!nmax = n
-!call lapack_diagd(,eigvectors,H,nmax,n)
-
-
-!ND_PROVIDER 
+ BEGIN_PROVIDER [double complex, dirac_fock_matrix_eigenvalues,(2*(mo_tot_num+small_mo_tot_num))]
+ &BEGIN_PROVIDER [double complex, dirac_fock_matrix_eigenvectors, (2*(mo_tot_num+small_mo_tot_num),2*(mo_tot_num+small_mo_tot_num))]
+ implicit none 
+ integer :: n,nmax
+ double complex :: eigenvectors(2*(mo_tot_num+small_mo_tot_num),2*(mo_tot_num+small_mo_tot_num)), eigenvalues( 2*(mo_tot_num+small_mo_tot_num))
+ n = 2*(mo_tot_num+small_mo_tot_num)
+ nmax = n
+ dirac_fock_matrix_eigenvalues = 0.d0
+ dirac_fock_matrix_eigenvectors = 0.d0
+ eigenvalues = 0.d0 
+ eigenvectors = 0.d0
+ call lapack_diag_complex(eigenvalues,eigenvectors,dirac_mo_mono_elec_integral,nmax,n)
+ dirac_fock_matrix_eigenvalues = eigenvalues
+ dirac_fock_matrix_eigenvectors = eigenvectors
+ END_PROVIDER 
 
 
 

@@ -92,7 +92,7 @@
 ! call read_one_e_integrals('ao_kinetic_integral', ao_kinetic_integral, size(ao_kinetic_integral,1), size(ao_kinetic_integral,2))
 !   print *,  'AO kinetic integrals read from disk'
 ! else
-  print *,  'Computing AO kinetic integrals (SL bloc)'
+ print *,  'Computing AO kinetic integrals (SL bloc)'
   do j = 1, ao_num
    do i = 1, small_ao_num
     dirac_ao_kinetic_integral_z(i,j) = - c * (0,1) * small_ao_deriv1_z(i,j)
