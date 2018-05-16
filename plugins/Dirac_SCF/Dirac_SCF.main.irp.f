@@ -7,16 +7,20 @@ program Dirac_SCF
   double precision :: fact
   include 'Utils/constants.include.F'
 
+ 
+ 
+ 
+!print*,'************'
  print*,'mo_tot_num =', mo_tot_num
  print*,'small_mo_tot_num =', small_mo_tot_num
  do j = 1,2*(mo_tot_num+small_mo_tot_num)
   print*,j, dirac_fock_matrix_eigenvalues(j)
-! print*,'**************************************************'
-! do i = 1,2*(mo_tot_num+small_mo_tot_num)
-! !print*, 'dirac_ao_mono_elec_integral =',i, j, dirac_ao_mono_elec_integral(i,j)
-! !print*,i,j, dirac_mo_coef(j,i) 
-! !print*, 'dirac_mo_mono_elec_integral =',i, j, dirac_mo_mono_elec_integral(i,j)
-! enddo
+ !print*,'**************************************************'
+ !do i = 1,2*(mo_tot_num+small_mo_tot_num)
+ !!print*, 'dirac_ao_mono_elec_integral =',i, j, dirac_ao_mono_elec_integral(i,j)
+ !!print*,i,j, dirac_mo_coef(j,i) 
+ !!print*, 'dirac_mo_mono_elec_integral =',i, j, dirac_mo_mono_elec_integral(i,j)
+ !enddo
  enddo
 
 

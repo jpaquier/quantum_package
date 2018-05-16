@@ -95,9 +95,9 @@
  print *,  'Computing AO kinetic integrals (SL bloc)'
   do j = 1, ao_num
    do i = 1, small_ao_num
-    dirac_ao_kinetic_integral_z(i,j) = - c * (0,1) * small_ao_deriv1_z(i,j)
-    dirac_ao_kinetic_integral_plus(i,j) = - c * (0,1) * (small_ao_deriv1_x(i,j) + (0,1)*small_ao_deriv1_y(i,j))
-    dirac_ao_kinetic_integral_minus(i,j) = - c * (0,1) * (small_ao_deriv1_x(i,j) - (0,1)*small_ao_deriv1_y(i,j))
+    dirac_ao_kinetic_integral_z(i,j) = - c * (0.d0,1.d0) * small_ao_deriv1_z(i,j)
+    dirac_ao_kinetic_integral_plus(i,j) = - c * (0.d0,1.d0) * (small_ao_deriv1_x(i,j) + (0.d0,1.d0)*small_ao_deriv1_y(i,j))
+    dirac_ao_kinetic_integral_minus(i,j) = - c * (0.d0,1.d0) * (small_ao_deriv1_x(i,j) - (0.d0,1.d0)*small_ao_deriv1_y(i,j))
     enddo
   enddo
 !endif

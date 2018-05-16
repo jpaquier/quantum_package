@@ -3,7 +3,7 @@ subroutine lapack_diag_complex(eigvalues,eigvectors,H,nmax,n)
  integer :: n,nmax
  double complex, intent(in)  :: H(nmax,nmax)
  double complex, intent(out) :: eigvectors(nmax,n)
- double complex, intent(out) :: eigvalues(n)
+ double precision, intent(out) :: eigvalues(n)
 
  double complex,allocatable   :: A(:,:)
  double complex,allocatable   :: work(:)
