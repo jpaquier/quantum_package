@@ -77,9 +77,9 @@
  END_PROVIDER
 
 
- BEGIN_PROVIDER [double complex, dirac_ao_kinetic_integral_z, (small_ao_num,ao_num)]
- &BEGIN_PROVIDER [double complex, dirac_ao_kinetic_integral_plus, (small_ao_num,ao_num)]
- &BEGIN_PROVIDER [double complex, dirac_ao_kinetic_integral_minus, (small_ao_num,ao_num)]
+ BEGIN_PROVIDER [complex*16, dirac_ao_kinetic_integral_z, (small_ao_num,ao_num)]
+ &BEGIN_PROVIDER [complex*16, dirac_ao_kinetic_integral_plus, (small_ao_num,ao_num)]
+ &BEGIN_PROVIDER [complex*16, dirac_ao_kinetic_integral_minus, (small_ao_num,ao_num)]
  BEGIN_DOC
  ! array of the priminitve basis kinetic integrals
  !  \langle \chi_i |c{\alpha}.\hat_{p}| \chi_j \rangle

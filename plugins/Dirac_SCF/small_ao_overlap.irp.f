@@ -1,12 +1,12 @@
-BEGIN_PROVIDER [ double precision, small_ao_overlap,(small_ao_num,small_ao_num) ]
-&BEGIN_PROVIDER [ double precision, small_ao_overlap_x,(small_ao_num,small_ao_num) ]
-&BEGIN_PROVIDER [ double precision, small_ao_overlap_y,(small_ao_num,small_ao_num) ]
-&BEGIN_PROVIDER [ double precision, small_ao_overlap_z,(small_ao_num,small_ao_num) ]
+ BEGIN_PROVIDER [ double precision, small_ao_overlap,(small_ao_num,small_ao_num) ]
+ &BEGIN_PROVIDER [ double precision, small_ao_overlap_x,(small_ao_num,small_ao_num) ]
+ &BEGIN_PROVIDER [ double precision, small_ao_overlap_y,(small_ao_num,small_ao_num) ]
+ &BEGIN_PROVIDER [ double precision, small_ao_overlap_z,(small_ao_num,small_ao_num) ]
   implicit none
   BEGIN_DOC
-! Overlap between atomic basis functions of the small component:
-! :math:`\int \chi_i(r) \chi_j(r) dr)`
-! with correct overlap_x*overlap_y*overlap_z=overlap
+ !Overlap between atomic basis functions of the small component:
+ !:math:`\int \chi_i(r) \chi_j(r) dr)`
+ !with correct overlap_x*overlap_y*overlap_z=overlap
   END_DOC
   integer :: i,j,n,l
   double precision :: f
@@ -46,7 +46,5 @@ BEGIN_PROVIDER [ double precision, small_ao_overlap,(small_ao_num,small_ao_num) 
    enddo
   enddo
  END_PROVIDER
-
-
 
 

@@ -1,15 +1,18 @@
  BEGIN_PROVIDER [ integer, number_of_small_component_expo_per_shell_per_atom,(0:7,nucl_num)] 
-&BEGIN_PROVIDER [ integer, nmax_of_small_component_expo] 
-&BEGIN_PROVIDER [ integer, number_of_small_component_ao_per_shell_per_atom,(0:7,nucl_num)]
-&BEGIN_PROVIDER [ integer, number_of_small_component_ao_per_atom,(nucl_num)]
-&BEGIN_PROVIDER [ integer, small_ao_num]
+ &BEGIN_PROVIDER [ integer, nmax_of_small_component_expo] 
+ &BEGIN_PROVIDER [ integer, number_of_small_component_ao_per_shell_per_atom,(0:7,nucl_num)]
+ &BEGIN_PROVIDER [ integer, number_of_small_component_ao_per_atom,(nucl_num)]
+ &BEGIN_PROVIDER [ integer, small_ao_num]
  implicit none
  BEGIN_DOC
-! number_of_small_component_expo_per_shell_per_atom = number of ao exponents in
-! the shell "i" of the nucleus "j" for the small component basis 
+ ! number_of_small_component_expo_per_shell_per_atom = number of ao exponents in
+ ! the shell "i" of the nucleus "j" for the small component basis in the 
+ ! unrestricted kinetic balance scheme
  END_DOC                                                                                                 
- integer :: i,i_count,l_type,j,index_ao,k,l,l_count                                                      
+ integer :: i,i_count,l_type,j,index_ao_previous,index_ao,k,l,l_count                                                      
  integer :: imax
+ index_ao_previous = 0 
+ index_ao = 0
  imax = 0
  number_of_small_component_expo_per_shell_per_atom(:,:) = 0
  number_of_small_component_ao_per_shell_per_atom(:,:) = 0
@@ -21,6 +24,7 @@
    do j = 1, Nucl_num_l_type_Aos(l_type,i)
     ! "physical" index of all the AO corresponding to the shell type l_type                              
     ! attached to atom i                                                                                 
+    index_ao_previous = index_ao
     index_ao = Nucl_list_l_type_Aos(j,l_type,i)                                                          
     if (l_type == 0) then
      number_of_small_component_expo_per_shell_per_atom(l_type+1,i) += 1
@@ -28,13 +32,14 @@
      if (j == 1) then
       number_of_small_component_expo_per_shell_per_atom(l_type-1,i) += 1
       number_of_small_component_expo_per_shell_per_atom(l_type+1,i) += 1
-     elseif ( j /= 1 .and. ao_expo_ordered_transp(1,index_ao) /= ao_expo_ordered_transp(1,Nucl_list_l_type_Aos(j-1,l_type,i))) then
+     elseif ( j /= 1 .and. ao_expo_ordered_transp(1,index_ao) /= ao_expo_ordered_transp(1,index_ao_previous)) then
       number_of_small_component_expo_per_shell_per_atom(l_type-1,i) += 1
       number_of_small_component_expo_per_shell_per_atom(l_type+1,i) += 1
      endif                                  
     endif
    enddo
   enddo 
+  !Second loop to count the number of AOs of the small component basis
   do l_type = 0,7  
    if(imax .lt. number_of_small_component_expo_per_shell_per_atom(l_type,i)) then
     imax =  number_of_small_component_expo_per_shell_per_atom(l_type,i)
@@ -42,25 +47,27 @@
    number_of_small_component_ao_per_shell_per_atom(l_type,i) += number_of_small_component_expo_per_shell_per_atom(l_type,i)*(l_type+1)*(l_type+2)/2 
    number_of_small_component_ao_per_atom(i) += number_of_small_component_ao_per_shell_per_atom(l_type,i) 
   enddo
- small_ao_num += number_of_small_component_ao_per_atom(i)
+  small_ao_num += number_of_small_component_ao_per_atom(i)
  enddo
  nmax_of_small_component_expo = imax
  END_PROVIDER
 
+
  BEGIN_PROVIDER [ double precision, small_component_expo_per_shell_per_atom,(nmax_of_small_component_expo,0:7,nucl_num)]
  implicit none
  BEGIN_DOC
-! Arrays containing the values of the exponents for the small component in 
-! Unrestricted Kinetic Balance, taken from the uncontracted gaussian forming
-! the large component basis
+ !Arrays containing the values of the exponents for the small component in the
+ !unrestricted kinetic balance scheme
  END_DOC                                                                       
- integer :: i,l_type,j,index_ao,k,l,l_count
+ integer :: i,l_type,j,index_ao_previous,index_ao,k,l,l_count
  integer :: expo_count(0:7) 
  integer :: iorder(nmax_of_small_component_expo)
  double precision :: small_component_expo_per_shell(nmax_of_small_component_expo,0:7)
  double precision :: small_component_expo(nmax_of_small_component_expo)
  small_component_expo_per_shell_per_atom(:,:,:) = 0
  small_component_expo_per_shell(:,:) = 0
+ index_ao_previous = 0
+ index_ao = 0
  do i = 1, nucl_num
   iorder(:) = 0
   expo_count(:) = 0
@@ -68,7 +75,8 @@
    if(Nucl_num_l_type_Aos(l_type,i) == 0)cycle
    do j = 1, Nucl_num_l_type_Aos(l_type,i)
     ! "physical" index of all the AO corresponding to the shell type l_type
-    ! attached to atom i 
+    ! attached to atom i
+    index_ao_previous = index_ao 
     index_ao = Nucl_list_l_type_Aos(j,l_type,i)
     if (l_type == 0) then
      expo_count(l_type+1) += 1
@@ -79,7 +87,7 @@
       small_component_expo_per_shell(expo_count(l_type-1),l_type-1) = ao_expo_ordered_transp(1,index_ao) 
       expo_count(l_type+1) += 1
       small_component_expo_per_shell(expo_count(l_type+1),l_type+1) = ao_expo_ordered_transp(1,index_ao) 
-     elseif ( j /= 1 .and. ao_expo_ordered_transp(1,index_ao) /=ao_expo_ordered_transp(1,Nucl_list_l_type_Aos(j-1,l_type,i))) then
+     elseif ( j /= 1 .and. ao_expo_ordered_transp(1,index_ao) /=ao_expo_ordered_transp(1,index_ao_previous)) then
       expo_count(l_type-1) += 1
       small_component_expo_per_shell(expo_count(l_type-1),l_type-1) = ao_expo_ordered_transp(1,index_ao)
       expo_count(l_type+1) += 1
@@ -88,7 +96,7 @@
     endif
    enddo
   enddo 
- ! Second loop to sort the ao exponent in the right order
+  !Second loop to sort the AO exponents in the right order
   do l_type = 0,7
    small_component_expo(:)=0
    do k = 1, expo_count(l_type)
@@ -105,12 +113,13 @@
 
 
  BEGIN_PROVIDER [ integer, small_ao_l, (small_ao_num) ]
-&BEGIN_PROVIDER [ integer, small_ao_l_max  ]
-&BEGIN_PROVIDER [ integer, small_ao_nucl, (small_ao_num) ]  
-&BEGIN_PROVIDER [ double precision, small_ao_expo, (small_ao_num) ]
+ &BEGIN_PROVIDER [ integer, small_ao_l_max  ]
+ &BEGIN_PROVIDER [ integer, small_ao_nucl, (small_ao_num) ]  
+ &BEGIN_PROVIDER [ double precision, small_ao_expo, (small_ao_num) ]
  implicit none
  BEGIN_DOC
-! small_ao_l = l value of the small component AO: a+b+c in x^a y^b z^c
+ !small_ao_l = l value of : a+b+c in x^a y^b z^c for the AOs of 
+ !the small component basis
  END_DOC
  integer :: i,l,l_type,j,j_count,k,k_count
  j_count = 0
@@ -137,7 +146,8 @@
  BEGIN_PROVIDER [ integer, small_ao_power, (small_ao_num,3)]
  implicit none
  BEGIN_DOC
-  The AO power for x,y,z for the small component ao basis
+ !small_ao_power is the AO power for x,y,z for the AOs of 
+ !the small component ao basis
  END_DOC
  integer :: i,j,j_count,k,k_count,k_j,l,l_type,l_count
  small_ao_power(:,:) = 0
@@ -165,10 +175,10 @@
   enddo 
  enddo  
  END_PROVIDER
-
+ 
  
  BEGIN_PROVIDER [ double precision, small_ao_coef_normalized, (small_ao_num)]
-&BEGIN_PROVIDER [ double precision, small_ao_coef, (small_ao_num)]
+ &BEGIN_PROVIDER [ double precision, small_ao_coef, (small_ao_num)]
  BEGIN_DOC
   ! Normalized and ordered coefficient of the small component AOs in the
   ! unrestricted kinetic balance
@@ -192,15 +202,16 @@
    small_ao_coef_normalized(i) = small_ao_coef(i)/sqrt(small_norm)
   enddo
  END_PROVIDER
+ 
 
  BEGIN_PROVIDER [ double precision, small_ao_ortho_canonical_coef, (small_ao_num,small_ao_num)]
-&BEGIN_PROVIDER [ integer, small_ao_ortho_canonical_num ]
+ &BEGIN_PROVIDER [ integer, small_ao_ortho_canonical_num ]
   implicit none
   BEGIN_DOC
-! matrix of the coefficients of the small component mos generated by the 
-! orthonormalization by the S^{-1/2} canonical transformation of the small
-! component aos. small_ao_ortho_canonical_coef(i,j) = coefficient of the ith ao on the jth
-! small_ao_ortho_canonical orbital
+ !matrix of the coefficients of the small component mos generated by the 
+ !orthonormalization by the S^{-1/2} canonical transformation of the small
+ !component aos. small_ao_ortho_canonical_coef(i,j) = coefficient of the ith ao on the jth
+ !small_ao_ortho_canonical orbital
   END_DOC
   integer :: i
   small_ao_ortho_canonical_coef = 0.d0
@@ -266,124 +277,5 @@
     enddo
   enddo
  END_PROVIDER
-
- BEGIN_PROVIDER [ double complex, dirac_mo_coef,(2*(ao_num+small_ao_num),2*(mo_tot_num+small_mo_tot_num))
- implicit none
-  BEGIN_DOC
-  ! Molecular orbital coefficients on AO basis set
-  ! dirac_mo_coef(i,j) = coefficient of the ith ao on the jth mo
-  ! mo_label : Label characterizing the MOS (local, canonical, natural, etc)
-  END_DOC
-  integer                        :: i, j, k, l
-  double precision, allocatable  :: buffer(:,:)
-  logical                        :: exists
-  PROVIDE ezfio_filename
-  do i=1, 2*(mo_tot_num+small_mo_tot_num)
-   if (i .le. mo_tot_num) then
-    l = i - 0
-    do j=1, 2*(ao_num+small_ao_num)
-     if (j .le. ao_num) then
-      k = j - 0
-      dirac_mo_coef(j,i) = (1.d0,0.d0)*mo_coef(k,l)
-     elseif (j .gt. mo_tot_num) then
-      dirac_mo_coef(j,i) = (1.d0,0.d0)*0.d0
-     endif
-    enddo
-   elseif (i.gt. mo_tot_num .and. i .le. 2*mo_tot_num) then
-    l = i - mo_tot_num
-    do j=1, 2*(ao_num+small_ao_num)
-     if (j .le. ao_num) then
-      dirac_mo_coef(j,i) = (1.d0,0.d0)*0.d0
-     elseif (j .gt. ao_num .and. j .le. 2*ao_num) then
-      k = j - ao_num
-      dirac_mo_coef(j,i) = (1.d0,0.d0)*mo_coef(k,l)
-     elseif (j .gt. 2*ao_num) then
-      dirac_mo_coef(j,i) = (1.d0,0.d0)*0.d0
-     endif
-    enddo
-   elseif (i.gt. 2*mo_tot_num .and. i .le. (2*mo_tot_num+small_mo_tot_num)) then
-    l = i - 2*mo_tot_num
-    do j=1, 2*(ao_num+small_ao_num)
-     if (j .le. 2*ao_num) then
-      dirac_mo_coef(j,i) = (1.d0,0.d0)*0.d0
-     elseif (j .gt. 2*ao_num .and. j .le. (2*ao_num+small_ao_num)) then
-      k = j - 2*ao_num
-      dirac_mo_coef(j,i) = (1.d0,0.d0)*small_mo_coef(k,l)
-     elseif (j .gt. (2*ao_num+small_ao_num)) then
-      dirac_mo_coef(j,i) = (1.d0,0.d0)*0.d0
-     endif
-    enddo
-   else 
-    l = i - (2*mo_tot_num+small_mo_tot_num)
-    do j=1, 2*(ao_num+small_ao_num)
-     if (j .le. (2*ao_num+small_ao_num)) then
-      dirac_mo_coef(j,i) = (1.d0,0.d0)*0.d0
-     else
-      k = j - (2*ao_num+small_ao_num)
-      dirac_mo_coef(j,i) = (1.d0,0.d0)*small_mo_coef(k,l)
-     endif
-    enddo
-   endif
-  enddo
- END_PROVIDER
-
-
- subroutine dirac_ao_to_mo(A_ao,LDA_ao,A_mo,LDA_mo)
-  implicit none
-  BEGIN_DOC
-  ! Transform A from the AO basis to the MO basis
-  !
-  ! Ct.A_ao.C
-  END_DOC
-  integer, intent(in)            :: LDA_ao,LDA_mo
-  complex*16, intent(in)         :: A_ao(LDA_ao,2*(ao_num+small_ao_num))
-  double precision, intent(out)  :: A_mo(LDA_mo,2*(mo_tot_num+small_mo_tot_num))
-  complex*16, allocatable        :: T(:,:)
-
-  allocate ( T(2*(ao_num+small_ao_num),2*(mo_tot_num+small_mo_tot_num)) )
-  !DIR$ ATTRIBUTES ALIGN : $IRP_ALIGN :: T
-  call zgemm('N','N', 2*(ao_num+small_ao_num), 2*(mo_tot_num+small_mo_tot_num), 2*(ao_num+small_ao_num), &
-      (1.d0,0.d0), A_ao,LDA_ao,                                             &
-      dirac_mo_coef, size(dirac_mo_coef,1),                          &
-      (0.d0,0.d0), T, size(T,1))                                            
-  call zgemm('T','N', 2*(mo_tot_num+small_mo_tot_num), 2*(mo_tot_num+small_mo_tot_num), 2*(ao_num+small_ao_num), &
-      (1.d0,0.d0), dirac_mo_coef,size(dirac_mo_coef,1),                     &
-      T, 2*(ao_num+small_ao_num),                                                     &
-      (0.d0,0.d0), A_mo, size(A_mo,1))
-  deallocate(T)
- end
-
-
- BEGIN_PROVIDER [double precision, dirac_fock_matrix_eigenvalues,(2*(mo_tot_num+small_mo_tot_num))]
- &BEGIN_PROVIDER [complex*16, dirac_fock_matrix_eigenvectors, (2*(mo_tot_num+small_mo_tot_num),2*(mo_tot_num+small_mo_tot_num))]
- implicit none 
- integer :: n,nmax
- double precision :: eigenvalues( 2*(mo_tot_num+small_mo_tot_num))
- complex*16       :: eigenvectors(2*(mo_tot_num+small_mo_tot_num),2*(mo_tot_num+small_mo_tot_num))
- n = 2*(mo_tot_num+small_mo_tot_num)
- nmax = n
- call lapack_diag_complex(eigenvalues,eigenvectors,dirac_mo_mono_elec_integral,nmax,n)
- dirac_fock_matrix_eigenvalues = eigenvalues
- dirac_fock_matrix_eigenvectors = eigenvectors
- END_PROVIDER 
-
- BEGIN_PROVIDER [double complex, Atest, (2,2)]
- implicit none
- integer :: i,j
- Atest(1,1) = (1.d0,0.d0)
- Atest(1,2) = (0.d0,5.d0)
- Atest(2,2) = (1.d0,0.d0)
- END_PROVIDER
-
- BEGIN_PROVIDER [double precision, Atest_eigenvalues,(2)]
- &BEGIN_PROVIDER [double complex, Atest_eigenvectors, (2,2)]
- implicit none 
- integer :: n,nmax
- double complex :: eigennvectors(2,2)
- double precision :: eigennvalues(2)
- call lapack_diag_complex(eigennvalues,eigennvectors,Atest,2,2)
- Atest_eigenvalues = eigennvalues
- Atest_eigenvectors = eigennvectors
- END_PROVIDER 
 
 
