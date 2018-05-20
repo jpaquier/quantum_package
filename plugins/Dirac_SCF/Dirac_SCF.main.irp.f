@@ -5,17 +5,51 @@ program Dirac_SCF
   END_DOC
   integer :: i,j,k,l_type,n
   double precision :: fact
+  double precision :: integral, dirac_ao_bielec_integral
   include 'Utils/constants.include.F'
 
- 
- 
- 
- print*,'************'
- print*,'mo_tot_num =', mo_tot_num
- print*,'small_mo_tot_num =', small_mo_tot_num
- do j = 1,2*(mo_tot_num+small_mo_tot_num)
-  print*,j, dirac_fock_matrix_eigenvalues(j)
+
+ print*,'**************'
+ print*,'dirac_ao_num =', dirac_ao_num
+ do i = 1, dirac_ao_num
+  print*,'*****************************************************************'
+  print*,'nucleus =', dirac_ao_nucl(i)
+  print*,'dirac_ao_expo =', dirac_ao_expo(i)
+  print*,'dirac_ao_power =', dirac_ao_power (i,1), dirac_ao_power(i,2), dirac_ao_power(i,3)
+  integral = dirac_ao_bielec_integral(i,i,i,i)
+  print*,"dirac_ao_bielec_integral =",integral
  enddo
+!print*,'small_ao_num =', small_ao_num 
+!do i = 1,dirac_small_ao_num
+! print*,'*****************************************************************'
+! print*,'nucleus =',small_ao_nucl(i)
+! print*,'small_ao_expo =', small_ao_expo(i)
+! print*,'small_ao_power =', small_ao_power (i,1),small_ao_power(i,2),small_ao_power(i,3)
+! integral = small_ao_bielec_integral(i,i,i,i)
+! print*,"small_ao_bielec_integral =",integral
+! print*,'*************************************' 
+!!do j = 1, small_ao_num
+!! print*,'nucleus =',small_ao_nucl(j)
+!! print*,'small_ao_expo =', small_ao_expo(j)
+!! print*,'small_ao_power =', small_ao_power (j,1),small_ao_power(j,2),small_ao_power(j,3)
+!! integral = small_ao_bielec_integral(i,i,i,j)
+!! print*,"small_ao_bielec_integral =",integral
+!!!integral = small_ao_bielec_integral(i,i,j,i)
+!!!print*,"small_ao_bielec_integral =",integral
+!!!integral = small_ao_bielec_integral(i,j,i,i)
+!!!print*,"small_ao_bielec_integral =",integral
+!!!integral = small_ao_bielec_integral(j,i,i,i)
+!!!print*,"small_ao_bielec_integral =",integral
+!! print*,'************'
+!!enddo
+!enddo
+ 
+!print*,'************'
+!print*,'mo_tot_num =', mo_tot_num
+!print*,'small_mo_tot_num =', small_mo_tot_num
+!do j = 1,2*(mo_tot_num+small_mo_tot_num)
+! print*,j, dirac_fock_matrix_eigenvalues(j)
+!enddo
 !print*,'**************************************************'
 !do j = 1,2*(mo_tot_num+small_mo_tot_num) 
 ! print*,'**************************************************'
