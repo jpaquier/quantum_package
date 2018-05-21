@@ -103,18 +103,10 @@
 
 !dirac_ao_bi_elec_integral = (0.d0,0.d0)
 !if (do_direct_integrals) then
-   !$OMP PARALLEL DEFAULT(NONE)                                      &
-       !$OMP PRIVATE(i,j,l,k1,k,integral,ii,jj,kk,ll,i8,keys,values,p,q,r,s,i0,j0,k0,l0, &
-       !$OMP ao_bi_elec_integral_alpha_tmp,ao_bi_elec_integral_beta_tmp, c0, c1, c2, &
-       !$OMP local_threshold)&
-       !$OMP SHARED(ao_num,SCF_density_matrix_ao_alpha,SCF_density_matrix_ao_beta,&
-       !$OMP ao_integrals_map,ao_integrals_threshold, ao_bielec_integral_schwartz, &
-       !$OMP ao_overlap_abs, ao_bi_elec_integral_alpha, ao_bi_elec_integral_beta)
 !  allocate(keys(1), values(1))
 !  allocate(dirac_ao_bi_elec_integral(2*dirac_ao_num,2*dirac_ao_num))
 !  dirac_ao_bi_elec_integral = (0.d0,0.d0)
 !  q = 2*dirac_ao_num * 2*dirac_ao_num * 2*dirac_ao_num * 2*dirac_ao_num
-!  !$OMP DO SCHEDULE(dynamic)
 !  do p=1_8,q
 !          call bielec_integrals_index_reverse(kk,ii,ll,jj,p)
 !          if ( (kk(1)>ao_num)∨ &
@@ -267,6 +259,36 @@
     do k = 1, 3
      dirac_ao_power(i,k) = small_ao_power(j,k)
     enddo
+   endif
+  enddo
+ END_PROVIDER
+
+ BEGIN_PROVIDER [double precision, dirac_ao_overlap_abs, (dirac_ao_num,dirac_ao_num) ]
+ implicit none
+  BEGIN_DOC
+  ! Concatenation of the large and small component
+  ! overlap_abs 
+  END_DOC
+  integer                        :: i,j,k,l
+  do i = 1, dirac_ao_num
+   if (i .le. ao_num) then
+    do j = 1, dirac_ao_num
+     if (j .le. ao_num) then
+      dirac_ao_overlap_abs(i,j) = ao_overlap_abs(i,j)
+     else 
+      dirac_ao_overlap_abs(i,j) = 0.d0
+     endif
+    enddo
+   else
+    k = i - ao_num
+    do j = 1, dirac_ao_num
+     if (j .le. ao_num) then
+     dirac_ao_overlap_abs(i,j) = 0.d0
+     else
+     l = j - ao_num
+     dirac_ao_overlap_abs(i,j) = small_ao_overlap_abs(k,l)
+     endif
+    enddo 
    endif
   enddo
  END_PROVIDER

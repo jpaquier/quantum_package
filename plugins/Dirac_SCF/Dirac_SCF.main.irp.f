@@ -8,17 +8,24 @@ program Dirac_SCF
   double precision :: integral, dirac_ao_bielec_integral
   include 'Utils/constants.include.F'
 
+!print*,'**************'
+!print*,'dirac_ao_num =', dirac_ao_num
+!do i = 1, dirac_ao_num
+! print*,'*****************************************************************'
+! print*,'nucleus =', dirac_ao_nucl(i)
+! print*,'dirac_ao_expo =', dirac_ao_expo(i)
+! print*,'dirac_ao_power =', dirac_ao_power (i,1), dirac_ao_power(i,2), dirac_ao_power(i,3)
+! do j = 1, dirac_ao_num
+!  print*,'*******************************'
+!  print*,'nucleus =', dirac_ao_nucl(j)
+!  print*,'dirac_ao_expo =', dirac_ao_expo(j)
+!  print*,'dirac_ao_power =', dirac_ao_power (j,1), dirac_ao_power(j,2), dirac_ao_power(j,3)
+!  print*,j,i,dirac_ao_overlap_abs(i,j)
+! enddo
+!!integral = dirac_ao_bielec_integral(i,i,i,i)
+!!print*,"dirac_ao_bielec_integral =",integral
+!enddo
 
- print*,'**************'
- print*,'dirac_ao_num =', dirac_ao_num
- do i = 1, dirac_ao_num
-  print*,'*****************************************************************'
-  print*,'nucleus =', dirac_ao_nucl(i)
-  print*,'dirac_ao_expo =', dirac_ao_expo(i)
-  print*,'dirac_ao_power =', dirac_ao_power (i,1), dirac_ao_power(i,2), dirac_ao_power(i,3)
-  integral = dirac_ao_bielec_integral(i,i,i,i)
-  print*,"dirac_ao_bielec_integral =",integral
- enddo
 !print*,'small_ao_num =', small_ao_num 
 !do i = 1,dirac_small_ao_num
 ! print*,'*****************************************************************'
@@ -51,11 +58,12 @@ program Dirac_SCF
 ! print*,j, dirac_fock_matrix_eigenvalues(j)
 !enddo
 !print*,'**************************************************'
-!do j = 1,2*(mo_tot_num+small_mo_tot_num) 
+!do j = 1,2*dirac_ao_num
 ! print*,'**************************************************'
-! do i = 1,2*(mo_tot_num+small_mo_tot_num)
-!  print*, 'dirac_ao_mono_elec_integral =',i, j, dirac_ao_mono_elec_integral(i,j)
-! !print*,i,j, dirac_mo_coef(j,i) 
+! do i = 1,2*dirac_ao_num
+!  print*,i, j, dirac_SCF_density_matrix_ao(j,i)
+! !print*, 'dirac_ao_mono_elec_integral =',i, j, dirac_ao_mono_elec_integral(i,j)
+! !print*,i,j, dirac_mo_coef(i,j) 
 ! !print*, 'dirac_mo_mono_elec_integral =',i, j, dirac_mo_mono_elec_integral(i,j)
 ! enddo
 !enddo
@@ -110,7 +118,7 @@ program Dirac_SCF
 ! !do k = 1, nucl_num 
 ! ! print*,'small_ao_nucl_elec_integral_per_atom =', small_ao_nucl_elec_integral_per_atom(i,j,k) 
 ! !enddo 
-!  print*,'small_ao_overlap =',i,j, small_ao_overlap(i,j)
+!  print*,i,j,small_ao_overlap_abs(i,j)
 !  print*,'******************'
 ! enddo
 !enddo
@@ -136,7 +144,8 @@ program Dirac_SCF
 ! !print*,'ao_ortho_canonical_overlap =', ao_ortho_canonical_overlap(j,i)
 ! !print*,'mo_mono_elec_integral =', mo_mono_elec_integral(i,j)
 ! !print*,'ao_mono_elec_integral =', ao_mono_elec_integral(i,j)
-!  print*,'ao_overlap =',i,j, ao_overlap(i,j)
+! ! print*,i,j,mo_coef(i,j)
+!  print*,i,j,dirac_SCF_density_matrix_ao(j,i) 
 !  print*,'******************'
 ! enddo
 !enddo
