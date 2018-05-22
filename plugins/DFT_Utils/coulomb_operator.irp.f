@@ -342,6 +342,38 @@ subroutine local_r12_operator_on_hf(r1,r2,integral_psi)
 
 end
 
+subroutine local_r12_operator_with_two_dm_on_hf(r1,r2,integral_psi,two_bod)
+ implicit none
+ BEGIN_DOC
+! computes the following ANALYTICAL integral
+! \sum_{k,l} phi_l(r1) phi_k(r2) int_{r,r'} phi_k(x) phi_l(x') 1s(x) 1s(x') * 1 /|x-x'|
+ END_DOC
+ double precision, intent(in) :: r1(3), r2(3)
+ double precision, intent(out):: integral_psi,two_bod
+ integer :: k,l,i,j
+ double precision :: mo_bielec_integral
+ double precision :: mos_array_r1(mo_tot_num)
+ double precision :: mos_array_r2(mo_tot_num)
+ double precision :: get_mo_bielec_integral
+ call give_all_mos_at_r(r1,mos_array_r1) 
+ call give_all_mos_at_r(r2,mos_array_r2) 
+
+ integral_psi = 0.d0
+ two_bod = 0.d0
+ do i = 1, elec_alpha_num
+  do j = 1, elec_beta_num
+   two_bod += mos_array_r2(i) *mos_array_r2(i) * mos_array_r1(j)* mos_array_r1(j)
+  enddo
+ enddo
+ do k = 1, mo_tot_num
+  do l = 1, mo_tot_num
+   integral_psi +=  integrals_for_hf_potential(l,k) * mos_array_r2(l) * mos_array_r1(k)
+  enddo
+ enddo
+ integral_psi = integral_psi / (mos_array_r1(1) * mos_array_r2(1))
+
+end
+
 
 subroutine local_r12_operator_with_one_e_int(r1,r2,integral)
  implicit none
@@ -407,6 +439,22 @@ BEGIN_PROVIDER [double precision, integrals_for_hf_potential, (mo_tot_num,mo_tot
  enddo
 END_PROVIDER 
 
+
+BEGIN_PROVIDER [double precision, integrals_for_hf_potential_general, (mo_tot_num,mo_tot_num,elec_beta_num,elec_alpha_num)]
+ implicit none
+ integer :: i,j,k,l
+ double precision :: get_mo_bielec_integral
+ do i = 1, elec_alpha_num ! electron 1 
+  do j = 1, elec_beta_num ! electron 2 
+   do k = 1, mo_tot_num   ! electron 1 
+    do l = 1, mo_tot_num  ! electron 2 
+     integrals_for_hf_potential_general(l,k,j,i) = get_mo_bielec_integral(i,j,k,l,mo_integrals_map) 
+    enddo
+   enddo
+  enddo
+ enddo
+END_PROVIDER 
+
 double precision function mu_coulomb(y,x)
  implicit none
  BEGIN_DOC
@@ -425,4 +473,36 @@ double precision function mu_coulomb(y,x)
  endif
 end
 
+
+subroutine local_r12_operator_on_hf_general(r1,r2,integral_psi)
+ implicit none
+ BEGIN_DOC
+! computes the following ANALYTICAL integral
+! \sum_{m,n,i,j} V_{ij}^{mn} phi_i(1) * phi_j(2) * phi_m(1) * phi_n(2) / rho_alpha^{HF}(1)*rho_beta^{HF}(2)
+ END_DOC
+ double precision, intent(in) :: r1(3), r2(3)
+ double precision, intent(out):: integral_psi
+ integer :: k,l,i,j,m,n
+ double precision :: mo_bielec_integral,two_bod
+ double precision :: mos_array_r1(mo_tot_num)
+ double precision :: mos_array_r2(mo_tot_num)
+ double precision :: get_mo_bielec_integral
+ call give_all_mos_at_r(r1,mos_array_r1) 
+ call give_all_mos_at_r(r2,mos_array_r2) 
+
+ integral_psi = 0.d0
+ two_bod = 0.d0
+ do m = 1, elec_alpha_num
+  do n = 1, elec_beta_num 
+   two_bod += mos_array_r1(n) * mos_array_r1(n) * mos_array_r2(m) * mos_array_r2(m) 
+   do i = 1, mo_tot_num
+    do j = 1, mo_tot_num
+     integral_psi +=  integrals_for_hf_potential_general(j,i,n,m) * mos_array_r1(i) * mos_array_r2(j) * mos_array_r1(m) * mos_array_r2(n) 
+    enddo
+   enddo
+  enddo
+ enddo
+ integral_psi = integral_psi /  two_bod
+
+end
 

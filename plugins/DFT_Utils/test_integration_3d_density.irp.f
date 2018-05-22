@@ -225,7 +225,7 @@ subroutine test_r12_psi(nx,rmax)
    write (filename_theta, "(I2)")i
   endif
   print*,filename_theta
-  output_array(i)=trim(ezfio_filename)//'.'//trim(filename_theta)//'.r12'
+  output_array(i)=trim(ezfio_filename)//'.'//trim(filename_theta)//'.r12_theta'
   output_array(i)=trim(output_array(i))
   print*,'output = ',trim(output_array(i))
   i_unit_output_array(i) = getUnitAndOpen(output_array(i),'w')
@@ -366,47 +366,10 @@ subroutine test_expectation_value_and_coulomb(nx,xmax)
   call expectation_value_in_real_space_old(r1,r2,coulomb_bis,two_dm) 
   double precision :: two_dm,aos_array(ao_num),rho_a,rho_b,two_body_dm
 ! call dm_dft_alpha_beta_and_all_aos_at_r(r2,rho_a,rho_b,aos_array)
-  call expectation_value_in_real_space(r1,r2,coulomb,two_body_dm) 
 ! call coulomb_operator_in_real_space(r1,r2,coulomb) 
   write(i_unit_output,'(100(F32.20,X))')r12,1.d0/r12,coulomb,two_body_dm,coulomb/two_body_dm
   write(i_unit_output,'(100(F32.20,X))')r12,1.d0/r12,coulomb_bis,two_dm,coulomb_bis/two_dm
 !enddo
-end
-
-
-subroutine test_expectation_value
- implicit none
- double precision :: r1(3),r2(3)
- integer :: i,j,nx
- double precision :: dx, xmax
- double precision :: rinit(3)
- double precision :: coulomb,coulomb_bis
- double precision :: r12
- character*(128) :: output
- character*(128) :: filename
- integer :: i_unit_output,getUnitAndOpen
- provide ezfio_filename 
- output=trim(ezfio_filename)//'.r12_psi'
- output=trim(output)
- print*,'output = ',trim(output)
- i_unit_output = getUnitAndOpen(output,'w')
- xmax = 2.d0
- nx = 100
- dx = xmax/dble(nx)
- rinit = 0.d0
- rinit(1) = nucl_coord(1,1)
- rinit(2) = nucl_coord(1,2)
- rinit(3) = nucl_coord(1,3)
- r1 = rinit
-
- r2 = r1
- do i = 1, nx 
-  r2(1) += dx
-  r2(2) += dx
-  r12 = dsqrt((r1(1)-r2(1))**2 + (r1(2)-r2(2))**2 +(r1(3)-r2(3))**2 )
-  call expectation_value_in_real_space(r1,r2,coulomb) 
-  write(i_unit_output,*)r12,1.d0/r12,coulomb
- enddo
 end
 
 

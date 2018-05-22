@@ -304,6 +304,7 @@ END_PROVIDER
 
 
  BEGIN_PROVIDER [double precision, Energy_c_md, (N_states)]
+&BEGIN_PROVIDER [double precision, mu_average]
  implicit none
  BEGIN_DOC
  ! Corelation energy for the multi determinent short range LDA. PRB 73 155111 2006
@@ -315,6 +316,7 @@ END_PROVIDER
  double precision :: threshold
  dospin = .false. ! JT dospin have to be set to true for open shell
  threshold = 1.d-07
+ mu_average = 0.d0
  double precision :: cpu0,cpu1
  allocate(aos_array(ao_num),r(3), rho_a(N_states), rho_b(N_states), ec(N_states))
  call cpu_time(cpu0)
@@ -340,6 +342,7 @@ END_PROVIDER
         call expectation_value_in_real_space(r,r,local_potential,two_body_dm)
        endif
        mu =  local_potential * dsqrt(dacos(-1.d0)) * 0.5d0
+       mu_average +=  final_weight_functions_at_grid_points(l,k,j) * mu * (one_body_dm_mo_alpha_at_grid_points(l,k,j,1) + one_body_dm_mo_beta_at_grid_points(l,k,j,1))
        if(md_correlation_functional.EQ."basis_set_short_range_LDA")then
         call ESRC_MD_LDAERF (mu,rho_a(istate),rho_b(istate),dospin,ec(istate))
        else if(md_correlation_functional.EQ."basis_set_short_range_PBE_2dm")then
@@ -360,6 +363,7 @@ END_PROVIDER
     enddo
    enddo
   enddo
+ mu_average = mu_average / dble(elec_alpha_num + elec_beta_num)
  deallocate(aos_array,r,rho_a,rho_b, ec)
  call cpu_time(cpu1)
  print*,'Time for the ec_md integration :',cpu1-cpu0
