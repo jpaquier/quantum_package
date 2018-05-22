@@ -1,4 +1,4 @@
- BEGIN_PROVIDER [double complex, dirac_SCF_density_matrix_ao, (2*dirac_ao_num,2*dirac_ao_num) ]
+ BEGIN_PROVIDER [complex*16, dirac_SCF_density_matrix_ao, (2*dirac_ao_num,2*dirac_ao_num) ]
    implicit none
    BEGIN_DOC
    ! S^{-1}.P.S^{-1}  where P = C.C^t
