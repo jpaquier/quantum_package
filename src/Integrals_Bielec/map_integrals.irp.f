@@ -728,4 +728,5 @@ end
 SUBST [ ao_integrals_map, ao_integrals, ao_num ]
 ao_integrals_map ; ao_integrals ; ao_num ;;
 mo_integrals_map ; mo_integrals ; mo_tot_num ;;
+dirac_ao_integrals_map ; dirac_ao_integrals ; dirac_ao_num ;;
 END_TEMPLATE

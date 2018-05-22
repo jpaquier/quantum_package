@@ -51,7 +51,7 @@ program Dirac_SCF
 !!enddo
 !enddo
  
- print*,'************'
+!print*,'************'
  print*,'mo_tot_num =', mo_tot_num
  print*,'small_mo_tot_num =', small_mo_tot_num
  do j = 1,2*(mo_tot_num+small_mo_tot_num)

@@ -1,4 +1,4 @@
- BEGIN_PROVIDER [ double complex,dirac_mo_coef,(2*(ao_num+small_ao_num),2*(mo_tot_num+small_mo_tot_num))
+ BEGIN_PROVIDER [ complex*16,dirac_mo_coef,(2*(ao_num+small_ao_num),2*(mo_tot_num+small_mo_tot_num))
  implicit none
   BEGIN_DOC
   ! Molecular orbital coefficients on AO basis set
