@@ -42,9 +42,9 @@ Demo
 
 ### 1) Configure
 
-    $ ./configure <config_file> 
+    $ ./configure.py <config_file> 
     
-For example you can type `./configure config/gfortran.cfg`
+For example you can type `./configure.py config/gfortran.cfg`
 
 This command has two purposes :
 
@@ -164,3 +164,6 @@ It's caused when we call the DGEMM routine of LAPACK.
 
 Set `ulimit -s unlimited`, before runing `qp_run`. It seems to fix the problem.
 
+#### Error: f77zmq not symbol found
+
+In the Makefile of the f77zmq, you should NOT use ar but `libtool -static`
