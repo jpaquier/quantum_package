@@ -43,22 +43,26 @@
   ! Concatenation of the large and small components orbital properties
   ! in general arrays, for use in the bi-electronic integrals
   END_DOC
-  integer                        :: i,j,k
+  integer                        :: i,j,k,l
   do i = 1, dirac_ao_num
    if (i <= ao_num) then
     dirac_ao_nucl(i) = ao_nucl(i)
-    dirac_ao_coef_normalized(i) = ao_coef_normalized_ordered_transp(1,i)
-    dirac_ao_expo(i) = ao_expo_ordered_transp(1,i)
-    do k = 1, 3
-     dirac_ao_power(i,k) = ao_power(i,k)
+    do k = 1, ao_prim_num(i)
+     dirac_ao_coef_normalized_ordered_transp(k,i) = ao_coef_normalized_ordered_transp(k,i)
+     dirac_ao_expo_ordered_transp(k,i) = ao_expo_ordered_transp(k,i)
+    enddo
+    do l = 1, 3
+     dirac_ao_power(i,l) = ao_power(i,l)
     enddo
    else
     j = i - ao_num
     dirac_ao_nucl(i) = small_ao_nucl(j)
-    dirac_ao_coef_normalized(i) = small_ao_coef_normalized(j)
-    dirac_ao_expo(i) = small_ao_expo(j)
-    do k = 1, 3
-     dirac_ao_power(i,k) = small_ao_power(j,k)
+    do k = 1, small_ao_prim_num(j)
+     dirac_ao_coef_normalized_ordered_transp(k,i) = small_ao_coef_normalized_ordered_transp(k,j)
+     dirac_ao_expo_ordered_transp(k,i) = small_ao_expo_ordered_transp(k,j)
+    enddo
+    do l = 1, 3
+     dirac_ao_power(i,l) = small_ao_power(j,l)
     enddo
    endif
   enddo

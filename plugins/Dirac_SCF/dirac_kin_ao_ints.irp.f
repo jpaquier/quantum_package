@@ -44,37 +44,38 @@
       power_A(1) = power_A(1)-1
       if (power_A(1)>-1) then
       call overlap_gaussian_xyz(A_center,B_center,alpha,beta,power_A,power_B,deriv_tmp1,overlap_y,overlap_z,overlap,dim1)
-    else
-     deriv_tmp1 = 0.d0
-    endif
-    power_A(1) = power_A(1)+2 
-    call overlap_gaussian_xyz(A_center,B_center,alpha,beta,power_A,power_B,deriv_tmp2,overlap_y,overlap_z,overlap,dim1)
-    power_A(1) = power_A(1)-1   
-    small_ao_deriv1_x(i,j) += c*(Power_A(1)*deriv_tmp1 - 2.d0*alpha*deriv_tmp2) * overlap_y0 * overlap_z0
- 
-    power_A(2) = power_A(2)-1
-    if (power_A(2)>-1) then
-     call overlap_gaussian_xyz(A_center,B_center,alpha,beta,power_A,power_B,overlap_x,deriv_tmp1,overlap_z,overlap,dim1)
-    else
-     deriv_tmp1 = 0.d0
-    endif
-    power_A(2) = power_A(2)+2 
-    call overlap_gaussian_xyz(A_center,B_center,alpha,beta,power_A,power_B,overlap_x,deriv_tmp2,overlap_z,overlap,dim1)
-    power_A(2) = power_A(2)-1   
-    small_ao_deriv1_y(i,j) += c*(Power_A(2)*deriv_tmp1 - 2.d0*alpha*deriv_tmp2) * overlap_x0 * overlap_z0
-
-    power_A(3) = power_A(3)-1
-    if (power_A(3)>-1) then
-     call overlap_gaussian_xyz(A_center,B_center,alpha,beta,power_A,power_B,overlap_x,overlap_y,deriv_tmp1,overlap,dim1)
-    else
-     deriv_tmp1 = 0.d0
-    endif
-    power_A(3) = power_A(3)+2 
-    call overlap_gaussian_xyz(A_center,B_center,alpha,beta,power_A,power_B,overlap_x,overlap_y,deriv_tmp2,overlap,dim1)
-    power_A(3) = power_A(3)-1   
-    small_ao_deriv1_z(i,j) += c*(Power_A(3)*deriv_tmp1 - 2.d0*alpha*deriv_tmp2) * overlap_x0 * overlap_y0
+      else
+       deriv_tmp1 = 0.d0
+      endif
+      power_A(1) = power_A(1)+2 
+      call overlap_gaussian_xyz(A_center,B_center,alpha,beta,power_A,power_B,deriv_tmp2,overlap_y,overlap_z,overlap,dim1)
+      power_A(1) = power_A(1)-1   
+      small_ao_deriv1_x(i,j) += c*(Power_A(1)*deriv_tmp1 - 2.d0*alpha*deriv_tmp2) * overlap_y0 * overlap_z0
+      power_A(2) = power_A(2)-1
+      if (power_A(2)>-1) then
+       call overlap_gaussian_xyz(A_center,B_center,alpha,beta,power_A,power_B,overlap_x,deriv_tmp1,overlap_z,overlap,dim1)
+      else
+       deriv_tmp1 = 0.d0
+      endif
+      power_A(2) = power_A(2)+2 
+      call overlap_gaussian_xyz(A_center,B_center,alpha,beta,power_A,power_B,overlap_x,deriv_tmp2,overlap_z,overlap,dim1)
+      power_A(2) = power_A(2)-1   
+      small_ao_deriv1_y(i,j) += c*(Power_A(2)*deriv_tmp1 - 2.d0*alpha*deriv_tmp2) * overlap_x0 * overlap_z0
+      power_A(3) = power_A(3)-1
+      if (power_A(3)>-1) then
+       call overlap_gaussian_xyz(A_center,B_center,alpha,beta,power_A,power_B,overlap_x,overlap_y,deriv_tmp1,overlap,dim1)
+      else
+       deriv_tmp1 = 0.d0
+      endif
+      power_A(3) = power_A(3)+2 
+      call overlap_gaussian_xyz(A_center,B_center,alpha,beta,power_A,power_B,overlap_x,overlap_y,deriv_tmp2,overlap,dim1)
+      power_A(3) = power_A(3)-1   
+      small_ao_deriv1_z(i,j) += c*(Power_A(3)*deriv_tmp1 - 2.d0*alpha*deriv_tmp2) * overlap_x0 * overlap_y0
+     enddo 
+    enddo
    enddo
   enddo
+  
  END_PROVIDER
 
 

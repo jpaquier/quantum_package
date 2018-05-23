@@ -111,11 +111,12 @@
  enddo
  END_PROVIDER
 
- BEGIN_PROVIDER [ integer, small_ao_prim_num (small_ao_num) ]
+ BEGIN_PROVIDER [ integer, small_ao_prim_num, (small_ao_num) ]
  implicit none
  BEGIN_DOC
  ! max number of primitives
  END_DOC
+ integer :: i
  do i = 1, small_ao_num
   small_ao_prim_num(i) = 1
  enddo
