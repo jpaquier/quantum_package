@@ -28,7 +28,6 @@
    power_A(1)  = ao_power( j, 1 )
    power_A(2)  = ao_power( j, 2 )
    power_A(3)  = ao_power( j, 3 )
-   alpha   = ao_expo_ordered_transp(1,j)
    do i= 1,small_ao_num
     B_center(1) = nucl_coord( small_ao_nucl(i), 1 )
     B_center(2) = nucl_coord( small_ao_nucl(i), 2 )
@@ -36,13 +35,15 @@
     power_B(1)  = small_ao_power( i, 1 )
     power_B(2)  = small_ao_power( i, 2 )
     power_B(3)  = small_ao_power( i, 3 )
-    beta  = small_ao_expo(i)
-    call overlap_gaussian_xyz(A_center,B_center,alpha,beta,power_A,power_B,overlap_x0,overlap_y0,overlap_z0,overlap,dim1)
-    c = small_ao_coef_normalized(i) * ao_coef_normalized_ordered_transp(1,j)
-
-    power_A(1) = power_A(1)-1
-    if (power_A(1)>-1) then
-     call overlap_gaussian_xyz(A_center,B_center,alpha,beta,power_A,power_B,deriv_tmp1,overlap_y,overlap_z,overlap,dim1)
+    do n = 1,ao_prim_num(j)
+     alpha  = ao_expo_ordered_transp(n,j)
+     do l = 1, small_ao_prim_num(i)
+      beta  = small_ao_expo_ordered_transp(l,i)
+      call overlap_gaussian_xyz(A_center,B_center,alpha,beta,power_A,power_B,overlap_x0,overlap_y0,overlap_z0,overlap,dim1)
+      c = small_ao_coef_normalized_ordered_transp(l,i) * ao_coef_normalized_ordered_transp(n,j)
+      power_A(1) = power_A(1)-1
+      if (power_A(1)>-1) then
+      call overlap_gaussian_xyz(A_center,B_center,alpha,beta,power_A,power_B,deriv_tmp1,overlap_y,overlap_z,overlap,dim1)
     else
      deriv_tmp1 = 0.d0
     endif

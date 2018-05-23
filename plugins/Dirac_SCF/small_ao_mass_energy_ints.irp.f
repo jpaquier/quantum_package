@@ -6,7 +6,7 @@
   END_DOC
   integer :: i,j
   double precision :: m,c
-  m = 1
+  m = 1.d0
   c = 137.0359895  
   do i = 1, small_ao_num
    do j = 1, small_ao_num

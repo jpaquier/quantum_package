@@ -111,11 +111,31 @@
  enddo
  END_PROVIDER
 
+ BEGIN_PROVIDER [ integer, small_ao_prim_num (small_ao_num) ]
+ implicit none
+ BEGIN_DOC
+ ! max number of primitives
+ END_DOC
+ do i = 1, small_ao_num
+  small_ao_prim_num(i) = 1
+ enddo
+ END_PROVIDER
+
+ BEGIN_PROVIDER [ integer, small_ao_prim_num_max ]
+ implicit none
+ BEGIN_DOC
+ ! max number of primitives
+ END_DOC
+ small_ao_prim_num_max = maxval(small_ao_prim_num)
+ END_PROVIDER
+
+
 
  BEGIN_PROVIDER [ integer, small_ao_l, (small_ao_num) ]
  &BEGIN_PROVIDER [ integer, small_ao_l_max  ]
  &BEGIN_PROVIDER [ integer, small_ao_nucl, (small_ao_num) ]  
  &BEGIN_PROVIDER [ double precision, small_ao_expo, (small_ao_num) ]
+ &BEGIN_PROVIDER [ double precision, small_ao_expo_ordered_transp, (small_ao_prim_num_max, small_ao_num) ]
  implicit none
  BEGIN_DOC
  !small_ao_l = l value of : a+b+c in x^a y^b z^c for the AOs of 
@@ -138,6 +158,9 @@
     enddo
    enddo
   enddo
+ enddo
+ do i = 1, small_ao_num
+  small_ao_expo_ordered_transp(1,i) = small_ao_expo (i)
  enddo
  small_ao_l_max = maxval(small_ao_l)
  END_PROVIDER
@@ -176,9 +199,9 @@
  enddo  
  END_PROVIDER
  
- 
- BEGIN_PROVIDER [ double precision, small_ao_coef_normalized, (small_ao_num)]
- &BEGIN_PROVIDER [ double precision, small_ao_coef, (small_ao_num)]
+  
+ BEGIN_PROVIDER [ double precision, small_ao_coef, (small_ao_num,small_ao_prim_num_max)]
+ &BEGIN_PROVIDER [ double precision, small_ao_coef_normalized_ordered_transp, (small_ao_prim_num_max,small_ao_num)]
  BEGIN_DOC
   ! Normalized and ordered coefficient of the small component AOs in the
   ! unrestricted kinetic balance
@@ -187,19 +210,21 @@
   integer                        :: l, powA(3), nz
   integer                        :: i,j,k
   do i = 1, small_ao_num
-   small_ao_coef(i) = 1.d0
+   small_ao_coef(i,1) = 1.d0
   enddo
   nz=100
   C_A(1) = 0.d0
   C_A(2) = 0.d0
   C_A(3) = 0.d0
-  small_ao_coef_normalized = 0.d0
+  small_ao_coef_normalized_ordered_transp = 0.d0
   do i=1, small_ao_num
    powA(1) = small_ao_power(i,1)
    powA(2) = small_ao_power(i,2)
-   powA(3) = small_ao_power(i,3)
-   call overlap_gaussian_xyz(C_A,C_A,small_ao_expo(i),small_ao_expo(i),powA,powA,small_overlap_x,small_overlap_y,small_overlap_z,small_norm,nz)
-   small_ao_coef_normalized(i) = small_ao_coef(i)/sqrt(small_norm)
+   powA(3) = small_ao_power(i,3) 
+   do j = 1, small_ao_prim_num(i)
+    call overlap_gaussian_xyz(C_A,C_A,small_ao_expo_ordered_transp(j,i),small_ao_expo_ordered_transp(j,i),powA,powA,small_overlap_x,small_overlap_y,small_overlap_z,small_norm,nz)
+    small_ao_coef_normalized_ordered_transp(j,i) = small_ao_coef(i,j)/sqrt(small_norm)
+   enddo
   enddo
  END_PROVIDER
  

@@ -54,7 +54,8 @@ program Dirac_SCF
 !print*,'************'
  print*,'mo_tot_num =', mo_tot_num
  print*,'small_mo_tot_num =', small_mo_tot_num
- do j = 1,2*(mo_tot_num+small_mo_tot_num)
+ print*,'dirac_mo_tot_num =', dirac_mo_tot_num
+ do j = 1,2*(dirac_mo_tot_num)
   print*,j, dirac_fock_matrix_eigenvalues(j)
  enddo
 !print*,'**************************************************'
