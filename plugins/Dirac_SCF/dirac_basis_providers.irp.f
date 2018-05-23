@@ -38,6 +38,7 @@
  &BEGIN_PROVIDER [ double precision, dirac_ao_coef_normalized_ordered_transp, (dirac_ao_prim_num_max,dirac_ao_num) ]
  &BEGIN_PROVIDER [ double precision, dirac_ao_expo_ordered_transp, (dirac_ao_prim_num_max,dirac_ao_num) ]
  &BEGIN_PROVIDER [ integer, dirac_ao_power, (dirac_ao_num,3) ]
+ &BEGIN_PROVIDER [ integer, dirac_ao_l, (dirac_ao_num) ]
   implicit none
   BEGIN_DOC
   ! Concatenation of the large and small components orbital properties
@@ -47,6 +48,7 @@
   do i = 1, dirac_ao_num
    if (i <= ao_num) then
     dirac_ao_nucl(i) = ao_nucl(i)
+    dirac_ao_l(i) = ao_l(i)
     do k = 1, ao_prim_num(i)
      dirac_ao_coef_normalized_ordered_transp(k,i) = ao_coef_normalized_ordered_transp(k,i)
      dirac_ao_expo_ordered_transp(k,i) = ao_expo_ordered_transp(k,i)
@@ -57,6 +59,7 @@
    else
     j = i - ao_num
     dirac_ao_nucl(i) = small_ao_nucl(j)
+    dirac_ao_l(i) = small_ao_l(j)
     do k = 1, small_ao_prim_num(j)
      dirac_ao_coef_normalized_ordered_transp(k,i) = small_ao_coef_normalized_ordered_transp(k,j)
      dirac_ao_expo_ordered_transp(k,i) = small_ao_expo_ordered_transp(k,j)
@@ -66,6 +69,14 @@
     enddo
    endif
   enddo
+ END_PROVIDER
+
+ BEGIN_PROVIDER [ double precision, dirac_ao_integrals_threshold  ]
+  implicit none
+  BEGIN_DOC
+  ! If |<pq|rs>| < ao_integrals_threshold then <pq|rs> is zero
+  END_DOC
+ dirac_ao_integrals_threshold =  1.0E-015
  END_PROVIDER
 
  BEGIN_PROVIDER [double precision, dirac_ao_overlap_abs, (dirac_ao_num,dirac_ao_num) ]
@@ -97,4 +108,5 @@
    endif
   enddo
  END_PROVIDER
+
 

@@ -289,7 +289,7 @@
     buffer_value(i) = 0._integral_kind
     cycle
    endif
-   !DIR$ FORCEINLINE
+ !DIR$ FORCEINLINE
    buffer_value(i) = dirac_ao_bielec_integral(i,k,j,l)
   enddo
  end
@@ -346,14 +346,14 @@
    print *,  irp_here, ': Failed in zmq_set_running'
   endif
   PROVIDE nproc
-  !$OMP PARALLEL DEFAULT(shared) private(i) num_threads(nproc+1)
+ !$OMP PARALLEL DEFAULT(shared) private(i) num_threads(nproc+1)
       i = omp_get_thread_num()
       if (i==0) then
         call dirac_ao_bielec_integrals_in_map_collector(zmq_socket_pull)
       else
         call dirac_ao_bielec_integrals_in_map_slave_inproc(i)
       endif
-  !$OMP END PARALLEL
+ !$OMP END PARALLEL
   call end_parallel_job(zmq_to_qp_run_socket, zmq_socket_pull, 'dirac_ao_integrals')
   print*, 'Sorting the map'
   call map_sort(dirac_ao_integrals_map)
@@ -379,141 +379,118 @@
   BEGIN_DOC
   !  Needed to compute Schwartz inequalities
   END_DOC
-  
   integer                        :: i,k
   double precision               :: dirac_ao_bielec_integral,cpu_1,cpu_2, wall_1, wall_2
-  
   dirac_ao_bielec_integral_schwartz(1,1) = dirac_ao_bielec_integral(1,1,1,1)
+ !$OMP PARALLEL DO PRIVATE(i,k)                                     &
+ !$OMP DEFAULT(NONE)                                            &
+ !$OMP SHARED (dirac_ao_num,dirac_ao_bielec_integral_schwartz)              &
+ !$OMP SCHEDULE(dynamic)
   do i=1,dirac_ao_num
     do k=1,i
       dirac_ao_bielec_integral_schwartz(i,k) = dsqrt(dirac_ao_bielec_integral(i,k,i,k))
       dirac_ao_bielec_integral_schwartz(k,i) = dirac_ao_bielec_integral_schwartz(i,k)
     enddo
   enddo
+    !$OMP END PARALLEL DO
  END_PROVIDER
 
-!subroutine dirac_ao_bielec_integrals_in_map_collector(zmq_socket_pull)
-! use map_module
-! use f77_zmq
-! implicit none
-! BEGIN_DOC
-!!Collects results from the AO integral calculation
-! END_DOC
+ subroutine dirac_ao_bielec_integrals_in_map_collector(zmq_socket_pull)
+  use map_module
+  use f77_zmq
+  implicit none
+  BEGIN_DOC
+ !Collects results from the AO integral calculation
+  END_DOC
+  integer(ZMQ_PTR), intent(in)   :: zmq_socket_pull
+  integer                        :: j,l,n_integrals
+  integer                        :: rc
+  real(integral_kind), allocatable :: buffer_value(:)
+  integer(key_kind), allocatable :: buffer_i(:)
+  integer(ZMQ_PTR),external      :: new_zmq_to_qp_run_socket
+  integer(ZMQ_PTR)               :: zmq_to_qp_run_socket
+  integer(ZMQ_PTR), external     :: new_zmq_pull_socket
+  integer*8                      :: control, accu, sze
+  integer                        :: task_id, more
+  zmq_to_qp_run_socket = new_zmq_to_qp_run_socket()
+  sze = dirac_ao_num*dirac_ao_num
+  allocate ( buffer_i(sze), buffer_value(sze) )
+  accu = 0_8
+  more = 1
+  do while (more == 1)
+   rc = f77_zmq_recv( zmq_socket_pull, n_integrals, 4, 0)
+   if (rc == -1) then
+    n_integrals = 0
+    return
+   endif
+   if (rc /= 4) then
+    print *, irp_here,  ': f77_zmq_recv( zmq_socket_pull, n_integrals, 4, 0)'
+    stop 'error'
+   endif
+   if (n_integrals >= 0) then
+    if (n_integrals > sze) then
+     deallocate (buffer_value, buffer_i)
+     sze = n_integrals
+     allocate (buffer_value(sze), buffer_i(sze))
+    endif
+    rc = f77_zmq_recv( zmq_socket_pull, buffer_i, key_kind*n_integrals, 0)
+    if (rc /= key_kind*n_integrals) then
+     print *,  rc, key_kind, n_integrals
+     print *, irp_here,  ': f77_zmq_recv( zmq_socket_pull, buffer_i, key_kind*n_integrals, 0)'
+     stop 'error'
+    endif
+    rc = f77_zmq_recv( zmq_socket_pull, buffer_value, integral_kind*n_integrals, 0)
+    if (rc /= integral_kind*n_integrals) then
+     print *, irp_here,  ': f77_zmq_recv( zmq_socket_pull, buffer_value, integral_kind*n_integrals, 0)'
+     stop 'error'
+    endif
+    rc = f77_zmq_recv( zmq_socket_pull, task_id, 4, 0)
+ IRP_IF ZMQ_PUSH
+ IRP_ELSE
+    rc = f77_zmq_send( zmq_socket_pull, 0, 4, 0)
+    if (rc /= 4) then
+     print *,  irp_here, ' : f77_zmq_send (zmq_socket_pull,...'
+     stop 'error'
+    endif
+ IRP_ENDIF
+    call insert_into_dirac_ao_integrals_map(n_integrals,buffer_i,buffer_value)
+    accu += n_integrals
+    if (task_id /= 0) then
+     integer, external :: zmq_delete_task
+     if (zmq_delete_task(zmq_to_qp_run_socket,zmq_socket_pull,task_id,more) == -1) then
+      stop 'Unable to delete task'
+     endif
+    endif
+   endif
+  enddo
+  deallocate( buffer_i, buffer_value )
+  integer (map_size_kind) :: get_dirac_ao_map_size 
+  control = get_dirac_ao_map_size(dirac_ao_integrals_map)
+  if (control /= accu) then
+   print *, ''
+   print *, irp_here
+   print *, 'Control : ', control
+   print *, 'Accu    : ', accu
+   print *, 'Some integrals were lost during the parallel computation.'
+   print *, 'Try to reduce the number of threads.'
+   stop
+  endif
+  call end_zmq_to_qp_run_socket(zmq_to_qp_run_socket)
+ end
 
-! integer(ZMQ_PTR), intent(in)   :: zmq_socket_pull
-! integer                        :: j,l,n_integrals
-! integer                        :: rc
-! 
-! real(integral_kind), allocatable :: buffer_value(:)
-! integer(key_kind), allocatable :: buffer_i(:)
-! 
-! integer(ZMQ_PTR),external      :: new_zmq_to_qp_run_socket
-! integer(ZMQ_PTR)               :: zmq_to_qp_run_socket
-! 
-! integer(ZMQ_PTR), external     :: new_zmq_pull_socket
-! 
-! integer*8                      :: control, accu, sze
-! integer                        :: task_id, more
-
-! zmq_to_qp_run_socket = new_zmq_to_qp_run_socket()
-
-! sze = dirac_ao_num*dirac_ao_num
-! allocate ( buffer_i(sze), buffer_value(sze) )
-
-! accu = 0_8
-! more = 1
-! do while (more == 1)
-!   
-!   rc = f77_zmq_recv( zmq_socket_pull, n_integrals, 4, 0)
-!   if (rc == -1) then
-!     n_integrals = 0
-!     return
-!   endif
-!   if (rc /= 4) then
-!     print *, irp_here,  ': f77_zmq_recv( zmq_socket_pull, n_integrals, 4, 0)'
-!     stop 'error'
-!   endif
-!   
-!   if (n_integrals >= 0) then
-!     
-!     if (n_integrals > sze) then
-!       deallocate (buffer_value, buffer_i)
-!       sze = n_integrals
-!       allocate (buffer_value(sze), buffer_i(sze))
-!     endif
-
-!     rc = f77_zmq_recv( zmq_socket_pull, buffer_i, key_kind*n_integrals, 0)
-!     if (rc /= key_kind*n_integrals) then
-!       print *,  rc, key_kind, n_integrals
-!       print *, irp_here,  ': f77_zmq_recv( zmq_socket_pull, buffer_i, key_kind*n_integrals, 0)'
-!       stop 'error'
-!     endif
-!     
-!     rc = f77_zmq_recv( zmq_socket_pull, buffer_value, integral_kind*n_integrals, 0)
-!     if (rc /= integral_kind*n_integrals) then
-!       print *, irp_here,  ': f77_zmq_recv( zmq_socket_pull, buffer_value, integral_kind*n_integrals, 0)'
-!       stop 'error'
-!     endif
-
-!     rc = f77_zmq_recv( zmq_socket_pull, task_id, 4, 0)
-
-!IRP_IF ZMQ_PUSH
-!IRP_ELSE
-!     rc = f77_zmq_send( zmq_socket_pull, 0, 4, 0)
-!     if (rc /= 4) then
-!       print *,  irp_here, ' : f77_zmq_send (zmq_socket_pull,...'
-!       stop 'error'
-!     endif
-!IRP_ENDIF
-
-!     
-!     call insert_into_dirac_ao_integrals_map(n_integrals,buffer_i,buffer_value)
-!     accu += n_integrals
-!     if (task_id /= 0) then
-!       integer, external :: zmq_delete_task
-!       if (zmq_delete_task(zmq_to_qp_run_socket,zmq_socket_pull,task_id,more) == -1) then
-!         stop 'Unable to delete task'
-!       endif
-!     endif
-!   endif
-
-! enddo
-
-! deallocate( buffer_i, buffer_value )
-
-! integer (map_size_kind) :: get_dirac_ao_map_size 
-! control = get_dirac_ao_map_size(dirac_ao_integrals_map)
-
-! if (control /= accu) then
-!     print *, ''
-!     print *, irp_here
-!     print *, 'Control : ', control
-!     print *, 'Accu    : ', accu
-!     print *, 'Some integrals were lost during the parallel computation.'
-!     print *, 'Try to reduce the number of threads.'
-!     stop
-! endif
-
-! call end_zmq_to_qp_run_socket(zmq_to_qp_run_socket)
-!end
-
-!subroutine insert_into_ao_integrals_map(n_integrals,buffer_i, buffer_values)
-! use map_module
-! implicit none
-! BEGIN_DOC
-! ! Create new entry into AO map
-! END_DOC
-! 
-! integer, intent(in)                :: n_integrals
-! integer(key_kind), intent(inout)   :: buffer_i(n_integrals)
-! real(integral_kind), intent(inout) :: buffer_values(n_integrals)
-! 
-! call map_append(dirac_ao_integrals_map, buffer_i, buffer_values, n_integrals)
-!end
-
-
-
-
+ subroutine insert_into_ao_integrals_map(n_integrals,buffer_i, buffer_values)
+  use map_module
+  implicit none
+  BEGIN_DOC
+  ! Create new entry into AO map
+  END_DOC
+  integer, intent(in)                :: n_integrals
+  integer(key_kind), intent(inout)   :: buffer_i(n_integrals)
+  real(integral_kind), intent(inout) :: buffer_values(n_integrals)
+  call map_append(dirac_ao_integrals_map, buffer_i, buffer_values, n_integrals)
+ end
+ 
+ 
  ! AO Map
  ! ======
 
@@ -531,151 +508,139 @@
  END_PROVIDER
 
 
+ BEGIN_PROVIDER [ integer, dirac_ao_integrals_cache_min ]
+ &BEGIN_PROVIDER [ integer, dirac_ao_integrals_cache_max ]
+  implicit none
+  BEGIN_DOC
+  ! Min and max values of the AOs for which the integrals are in the cache
+  END_DOC
+  dirac_ao_integrals_cache_min = max(1,dirac_ao_num - 63)
+  dirac_ao_integrals_cache_max = dirac_ao_num
+ END_PROVIDER
 
-!BEGIN_PROVIDER [ integer, dirac_ao_integrals_cache_min ]
-!&BEGIN_PROVIDER [ integer, dirac_ao_integrals_cache_max ]
-!implicit none
-!BEGIN_DOC
-!! Min and max values of the AOs for which the integrals are in the cache
-!END_DOC
-!dirac_ao_integrals_cache_min = max(1,dirac_ao_num - 63)
-!dirac_ao_integrals_cache_max = dirac_ao_num
-
-!END_PROVIDER
-
-!BEGIN_PROVIDER [ double precision, dirac_ao_integrals_cache, (0:64*64*64*64) ]
-!implicit none
-!BEGIN_DOC
-!! Cache of AO integrals for fast access
-!END_DOC
-!PROVIDE dirac_ao_bielec_integrals_in_map
-!integer                        :: i,j,k,l,ii
-!integer(key_kind)              :: idx
-!real(integral_kind)            :: integral
-!!$OMP PARALLEL DO PRIVATE (i,j,k,l,idx,ii,integral)
-!do l=dirac_ao_integrals_cache_min,dirac_ao_integrals_cache_max
-!  do k=dirac_ao_integrals_cache_min,dirac_ao_integrals_cache_max
-!    do j=dirac_ao_integrals_cache_min,dirac_ao_integrals_cache_max
-!      do i=dirac_ao_integrals_cache_min,dirac_ao_integrals_cache_max
-!        !DIR$ FORCEINLINE
-!        call bielec_integrals_index(i,j,k,l,idx)
-!        !DIR$ FORCEINLINE
-!        call map_get(dirac_ao_integrals_map,idx,integral)
-!        ii = l-dirac_ao_integrals_cache_min
-!        ii = ior( ishft(ii,6), k-dirac_ao_integrals_cache_min)
-!        ii = ior( ishft(ii,6), j-dirac_ao_integrals_cache_min)
-!        ii = ior( ishft(ii,6), i-dirac_ao_integrals_cache_min)
-!        dirac_ao_integrals_cache(ii) = integral
-!      enddo
-!    enddo
-!  enddo
-!enddo
-!!$OMP END PARALLEL DO
-!
-!END_PROVIDER
+ BEGIN_PROVIDER [ double precision, dirac_ao_integrals_cache, (0:64*64*64*64) ]
+  implicit none
+  BEGIN_DOC
+  ! Cache of AO integrals for fast access
+  END_DOC
+  PROVIDE dirac_ao_bielec_integrals_in_map
+  integer                        :: i,j,k,l,ii
+  integer(key_kind)              :: idx
+  real(integral_kind)            :: integral
+ !$OMP PARALLEL DO PRIVATE (i,j,k,l,idx,ii,integral)
+  do l=dirac_ao_integrals_cache_min,dirac_ao_integrals_cache_max
+   do k=dirac_ao_integrals_cache_min,dirac_ao_integrals_cache_max
+    do j=dirac_ao_integrals_cache_min,dirac_ao_integrals_cache_max
+     do i=dirac_ao_integrals_cache_min,dirac_ao_integrals_cache_max
+ !DIR$ FORCEINLINE
+      call bielec_integrals_index(i,j,k,l,idx)
+ !DIR$ FORCEINLINE
+      call map_get(dirac_ao_integrals_map,idx,integral)
+      ii = l-dirac_ao_integrals_cache_min
+      ii = ior( ishft(ii,6), k-dirac_ao_integrals_cache_min)
+      ii = ior( ishft(ii,6), j-dirac_ao_integrals_cache_min)
+      ii = ior( ishft(ii,6), i-dirac_ao_integrals_cache_min)
+      dirac_ao_integrals_cache(ii) = integral
+     enddo
+    enddo
+   enddo
+  enddo
+ !$OMP END PARALLEL DO
+ END_PROVIDER
 
 
-!subroutine get_dirac_ao_bielec_integrals(j,k,l,sze,out_val)
-! use map_module
-! BEGIN_DOC
-! ! Gets multiple AO bi-electronic integral from the AO map .
-! ! All i are retrieved for j,k,l fixed.
-! ! j,l :: r1  ;;; l :: r2
-! END_DOC
-! implicit none
-! integer, intent(in)            :: j,k,l, sze
-! real(integral_kind), intent(out) :: out_val(sze)
-! 
-! integer                        :: i
-! integer(key_kind)              :: hash
-! double precision               :: thresh
-! PROVIDE dirac_ao_bielec_integrals_in_map dirac_ao_integrals_map
-! thresh = dirac_ao_integrals_threshold
-! 
-! if (dirac_ao_overlap_abs(j,l) < thresh) then
-!   out_val = 0.d0
-!   return
-! endif
-! 
-! double precision :: get_dirac_ao_bielec_integral
-! do i=1,sze
-!   out_val(i) = get_dirac_ao_bielec_integral(i,j,k,l,dirac_ao_integrals_map)
-! enddo
-!end
+ subroutine get_dirac_ao_bielec_integrals(j,k,l,sze,out_val)
+  use map_module
+  BEGIN_DOC
+  ! Gets multiple AO bi-electronic integral from the AO map .
+  ! All i are retrieved for j,k,l fixed.
+  ! j,l :: r1  ;;; l :: r2
+  END_DOC
+  implicit none
+  integer, intent(in)            :: j,k,l, sze
+  real(integral_kind), intent(out) :: out_val(sze)
+  integer                        :: i
+  integer(key_kind)              :: hash
+  double precision               :: thresh
+  PROVIDE dirac_ao_bielec_integrals_in_map dirac_ao_integrals_map
+  thresh = dirac_ao_integrals_threshold
+  if (dirac_ao_overlap_abs(j,l) < thresh) then
+   out_val = 0.d0
+   return
+  endif
+  double precision :: get_dirac_ao_bielec_integral
+  do i=1,sze
+   out_val(i) = get_dirac_ao_bielec_integral(i,j,k,l,dirac_ao_integrals_map)
+  enddo
+ end
 
-!subroutine get_dirac_ao_bielec_integrals_non_zero(j,k,l,sze,out_val,out_val_index,non_zero_int)
-! use map_module
-! implicit none
-! BEGIN_DOC
-! ! Gets multiple AO bi-electronic integral from the AO map .
-! ! All non-zero i are retrieved for j,k,l fixed.
-! END_DOC
-! integer, intent(in)            :: j,k,l, sze
-! real(integral_kind), intent(out) :: out_val(sze)
-! integer, intent(out)           :: out_val_index(sze),non_zero_int
-! 
-! integer                        :: i
-! integer(key_kind)              :: hash
-! double precision               :: thresh,tmp
-! PROVIDE dirac_ao_bielec_integrals_in_map
-! thresh = dirac_ao_integrals_threshold
-! 
-! non_zero_int = 0
-! if (dirac_ao_overlap_abs(j,l) < thresh) then
-!   out_val = 0.d0
-!   return
-! endif
-!
-! non_zero_int = 0
-! do i=1,sze
-!   integer, external :: dirac_ao_l4
-!   double precision, external :: dirac_ao_bielec_integral
-!   !DIR$ FORCEINLINE
-!   if (dirac_ao_bielec_integral_schwartz(i,k)*dirac_ao_bielec_integral_schwartz(j,l) < thresh) then
-!     cycle
-!   endif
-!   call bielec_integrals_index(i,j,k,l,hash)
-!   call map_get(dirac_ao_integrals_map, hash,tmp)
-!   if (dabs(tmp) < thresh ) cycle
-!   non_zero_int = non_zero_int+1
-!   out_val_index(non_zero_int) = i
-!   out_val(non_zero_int) = tmp
-! enddo
-! 
-!end
+ subroutine get_dirac_ao_bielec_integrals_non_zero(j,k,l,sze,out_val,out_val_index,non_zero_int)
+  use map_module
+  implicit none
+  BEGIN_DOC
+  ! Gets multiple AO bi-electronic integral from the AO map .
+  ! All non-zero i are retrieved for j,k,l fixed.
+  END_DOC
+  integer, intent(in)            :: j,k,l, sze
+  real(integral_kind), intent(out) :: out_val(sze)
+  integer, intent(out)           :: out_val_index(sze),non_zero_int
+  integer                        :: i
+  integer(key_kind)              :: hash
+  double precision               :: thresh,tmp
+  PROVIDE dirac_ao_bielec_integrals_in_map
+  thresh = dirac_ao_integrals_threshold
+  non_zero_int = 0
+  if (dirac_ao_overlap_abs(j,l) < thresh) then
+   out_val = 0.d0
+   return
+  endif
+  non_zero_int = 0
+  do i=1,sze
+   integer, external :: dirac_ao_l4
+   double precision, external :: dirac_ao_bielec_integral
+ !DIR$ FORCEINLINE
+   if (dirac_ao_bielec_integral_schwartz(i,k)*dirac_ao_bielec_integral_schwartz(j,l) < thresh) then
+    cycle
+   endif
+   call bielec_integrals_index(i,j,k,l,hash)
+   call map_get(dirac_ao_integrals_map, hash,tmp)
+   if (dabs(tmp) < thresh ) cycle
+   non_zero_int = non_zero_int+1
+   out_val_index(non_zero_int) = i
+   out_val(non_zero_int) = tmp
+  enddo
+ end
 
 
-!function get_dirac_ao_map_size()
-! implicit none
-! integer (map_size_kind) :: get_dirac_ao_map_size
-! BEGIN_DOC
-! ! Returns the number of elements in the AO map
-! END_DOC
-! get_dirac_ao_map_size = dirac_ao_integrals_map % n_elements
-!end
-!
-!subroutine clear_dirac_ao_map
-! implicit none
-! BEGIN_DOC
-! ! Frees the memory of the AO map
-! END_DOC
-! call map_deinit(dirac_ao_integrals_map)
-! FREE dirac_ao_integrals_map
-!end
+ function get_dirac_ao_map_size()
+  implicit none
+  integer (map_size_kind) :: get_dirac_ao_map_size
+  BEGIN_DOC
+  ! Returns the number of elements in the AO map
+  END_DOC
+  get_dirac_ao_map_size = dirac_ao_integrals_map % n_elements
+ end
+ 
+ subroutine clear_dirac_ao_map
+  implicit none
+  BEGIN_DOC
+  ! Frees the memory of the AO map
+  END_DOC
+  call map_deinit(dirac_ao_integrals_map)
+  FREE dirac_ao_integrals_map
+ end
 
-!subroutine insert_into_dirac_ao_integrals_map(n_integrals,buffer_i, buffer_values)
-! use map_module
-! implicit none
-! BEGIN_DOC
-! ! Create new entry into AO map
-! END_DOC
-! 
-! integer, intent(in)                :: n_integrals
-! integer(key_kind), intent(inout)   :: buffer_i(n_integrals)
-! real(integral_kind), intent(inout) :: buffer_values(n_integrals)
-! 
-! call map_append(dirac_ao_integrals_map, buffer_i, buffer_values, n_integrals)
-!end
+ subroutine insert_into_dirac_ao_integrals_map(n_integrals,buffer_i, buffer_values)
+  use map_module
+  implicit none
+  BEGIN_DOC
+  ! Create new entry into AO map
+  END_DOC
+  integer, intent(in)                :: n_integrals
+  integer(key_kind), intent(inout)   :: buffer_i(n_integrals)
+  real(integral_kind), intent(inout) :: buffer_values(n_integrals)
+  call map_append(dirac_ao_integrals_map, buffer_i, buffer_values, n_integrals)
+ end
 
 
 !BEGIN_PROVIDER [ complex*16, dirac_ao_bi_elec_integral, (2*dirac_ao_num, 2*dirac_ao_num) ]
