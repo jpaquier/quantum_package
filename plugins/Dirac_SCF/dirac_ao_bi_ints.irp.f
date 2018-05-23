@@ -1,4 +1,4 @@
-!use map_module
+ use map_module
 
  double precision function dirac_ao_bielec_integral(i,j,k,l)
   implicit none
@@ -15,13 +15,11 @@
   double precision               :: P_new(0:max_dim,3),P_center(3),fact_p,pp
   double precision               :: Q_new(0:max_dim,3),Q_center(3),fact_q,qq
   integer                        :: iorder_p(3), iorder_q(3)
-  double precision               :: ao_bielec_integral_schwartz_accel
-
-   if (dirac_ao_prim_num(i) * dirac_ao_prim_num(j) * dirac_ao_prim_num(k) * dirac_ao_prim_num(l) > 1024 ) then
-     dirac_ao_bielec_integral = dirac_ao_bielec_integral_schwartz_accel(i,j,k,l)
-     return
-   endif
-
+  double precision               :: dirac_ao_bielec_integral_schwartz_accel
+  if (dirac_ao_prim_num(i) * dirac_ao_prim_num(j) * dirac_ao_prim_num(k) * dirac_ao_prim_num(l) > 1024 ) then
+   dirac_ao_bielec_integral = dirac_ao_bielec_integral_schwartz_accel(i,j,k,l)
+   return
+  endif
   dim1 = n_pt_max_integrals
   num_i = dirac_ao_nucl(i)
   num_j = dirac_ao_nucl(j)
@@ -42,22 +40,30 @@
   double precision               :: coef1, coef2, coef3, coef4
   double precision               :: p_inv,q_inv
   double precision               :: general_primitive_integral
-   coef1 = dirac_ao_coef_normalized(i)
-   coef2 = coef1*dirac_ao_coef_normalized(j)
-   call give_explicit_poly_and_gaussian(P_new,P_center,pp,fact_p,iorder_p,&
-        dirac_ao_expo(i),dirac_ao_expo(j),                 &
-        I_power,J_power,I_center,J_center,dim1)
-   p_inv = 1.d0/pp
-   coef3 = coef2*dirac_ao_coef_normalized(k)
-   coef4 = coef3*dirac_ao_coef_normalized(l)
-   call give_explicit_poly_and_gaussian(Q_new,Q_center,qq,fact_q,iorder_q,&
-        dirac_ao_expo(k),dirac_ao_expo(l),             &
-        K_power,L_power,K_center,L_center,dim1)
-   q_inv = 1.d0/qq
-   integral = general_primitive_integral(dim1,              &
-              P_new,P_center,fact_p,pp,p_inv,iorder_p,             &
-              Q_new,Q_center,fact_q,qq,q_inv,iorder_q)
-   dirac_ao_bielec_integral +=+  coef4 * integral
+  do p = 1, dirac_ao_prim_num(i)  
+   coef1 = dirac_ao_coef_normalized_ordered_transp(p,i)
+   do q = 1, dirac_ao_prim_num(j)
+    coef2 = coef1*dirac_ao_coef_normalized_ordered_transp(q,j)
+    call give_explicit_poly_and_gaussian(P_new,P_center,pp,fact_p,iorder_p,   &
+         dirac_ao_expo_ordered_transp(p,i),dirac_ao_expo_ordered_transp(q,j), &
+         I_power,J_power,I_center,J_center,dim1)
+    p_inv = 1.d0/pp
+    do r = 1, dirac_ao_prim_num(k)
+     coef3 = coef2*dirac_ao_coef_normalized_ordered_transp(r,k)
+     do s = 1, dirac_ao_prim_num(l)
+      coef4 = coef3*dirac_ao_coef_normalized_ordered_transp(s,l)
+      call give_explicit_poly_and_gaussian(Q_new,Q_center,qq,fact_q,iorder_q,   &
+           dirac_ao_expo_ordered_transp(r,k),dirac_ao_expo_ordered_transp(s,l), &
+           K_power,L_power,K_center,L_center,dim1)
+      q_inv = 1.d0/qq
+      integral = general_primitive_integral(dim1,           &
+                 P_new,P_center,fact_p,pp,p_inv,iorder_p,   &
+                 Q_new,Q_center,fact_q,qq,q_inv,iorder_q)
+      dirac_ao_bielec_integral +=+  coef4 * integral
+     enddo ! s
+    enddo  ! r
+   enddo   ! q
+  enddo    ! p
   else
    do p = 1, 3
     I_power(p) = dirac_ao_power(i,p)
@@ -66,16 +72,24 @@
     L_power(p) = dirac_ao_power(l,p)
    enddo
   double  precision              :: ERI
-   coef1 = dirac_ao_coef_normalized(i)
-   coef2 = coef1*dirac_ao_coef_normalized(j)
-   coef3 = coef2*dirac_ao_coef_normalized(k)
-   coef4 = coef3*dirac_ao_coef_normalized(l)
-   integral = ERI(                                          &
-              dirac_ao_expo(i),dirac_ao_expo(j),dirac_ao_expo(k),dirac_ao_expo(l),&
-              I_power(1),J_power(1),K_power(1),L_power(1),         &
-              I_power(2),J_power(2),K_power(2),L_power(2),         &
-              I_power(3),J_power(3),K_power(3),L_power(3))
-   dirac_ao_bielec_integral += coef4 * integral
+   do p = 1, dirac_ao_prim_num(i)
+    coef1 = dirac_ao_coef_normalized_ordered_transp(p,i)
+    do q = 1, dirac_ao_prim_num(j)
+     coef2 = coef1*dirac_ao_coef_normalized_ordered_transp(q,j)
+     do r = 1, dirac_ao_prim_num(k)
+      coef3 = coef2*dirac_ao_coef_normalized_ordered_transp(r,k)
+      do s = 1, dirac_ao_prim_num(l)
+       coef4 = coef3*dirac_ao_coef_normalized_ordered_transp(s,l)
+       integral = ERI(                                                 &
+                  dirac_ao_expo_ordered_transp(p,i),dirac_ao_expo_ordered_transp(q,j),dirac_ao_expo_ordered_transp(r,k),dirac_ao_expo_ordered_transp(s,l),&
+                  I_power(1),J_power(1),K_power(1),L_power(1),         &
+                  I_power(2),J_power(2),K_power(2),L_power(2),         &
+                  I_power(3),J_power(3),K_power(3),L_power(3))
+       dirac_ao_bielec_integral += coef4 * integral
+      enddo ! s
+     enddo  ! r
+    enddo   ! q
+   enddo    ! p
   endif
  end
 
@@ -96,9 +110,7 @@
   integer                        :: iorder_p(3), iorder_q(3)
   double precision, allocatable  :: schwartz_kl(:,:)
   double precision               :: schwartz_ij
-  
   dim1 = n_pt_max_integrals
-  
   num_i = dirac_ao_nucl(i)
   num_j = dirac_ao_nucl(j)
   num_k = dirac_ao_nucl(k)
@@ -106,315 +118,279 @@
   dirac_ao_bielec_integral_schwartz_accel = 0.d0
   double precision               :: thr
   thr = ao_integrals_threshold*ao_integrals_threshold
-  
   allocate(schwartz_kl(0:dirac_ao_prim_num(l),0:dirac_ao_prim_num(k)))
-
-
   if (num_i /= num_j .or. num_k /= num_l .or. num_j /= num_k)then
-    do p = 1, 3
-      I_power(p) = dirac_ao_power(i,p)
-      J_power(p) = dirac_ao_power(j,p)
-      K_power(p) = dirac_ao_power(k,p)
-      L_power(p) = dirac_ao_power(l,p)
-      I_center(p) = nucl_coord(num_i,p)
-      J_center(p) = nucl_coord(num_j,p)
-      K_center(p) = nucl_coord(num_k,p)
-      L_center(p) = nucl_coord(num_l,p)
+   do p = 1, 3
+    I_power(p) = dirac_ao_power(i,p)
+    J_power(p) = dirac_ao_power(j,p)
+    K_power(p) = dirac_ao_power(k,p)
+    L_power(p) = dirac_ao_power(l,p)
+    I_center(p) = nucl_coord(num_i,p)
+    J_center(p) = nucl_coord(num_j,p)
+    K_center(p) = nucl_coord(num_k,p)
+    L_center(p) = nucl_coord(num_l,p)
+   enddo
+   schwartz_kl(0,0) = 0.d0
+   do r = 1, dirac_ao_prim_num(k)
+    coef1 = dirac_ao_coef_normalized_ordered_transp(r,k)*dirac_ao_coef_normalized_ordered_transp(r,k)
+    schwartz_kl(0,r) = 0.d0
+    do s = 1, dirac_ao_prim_num(l)
+     coef2 = coef1 * dirac_ao_coef_normalized_ordered_transp(s,l) * dirac_ao_coef_normalized_ordered_transp(s,l)
+     call give_explicit_poly_and_gaussian(Q_new,Q_center,qq,fact_q,iorder_q,&
+          dirac_ao_expo_ordered_transp(r,k),dirac_ao_expo_ordered_transp(s,l),                 &
+          K_power,L_power,K_center,L_center,dim1)
+     q_inv = 1.d0/qq
+     schwartz_kl(s,r) = general_primitive_integral(dim1,          &
+                        Q_new,Q_center,fact_q,qq,q_inv,iorder_q,                 &
+                        Q_new,Q_center,fact_q,qq,q_inv,iorder_q)                 &
+                        * coef2 
+     schwartz_kl(0,r) = max(schwartz_kl(0,r),schwartz_kl(s,r))
     enddo
-    
-    schwartz_kl(0,0) = 0.d0
-    do r = 1, dirac_ao_prim_num(k)
-      coef1 = dirac_ao_coef_normalized_ordered_transp(r,k)*dirac_ao_coef_normalized_ordered_transp(r,k)
-      schwartz_kl(0,r) = 0.d0
+    schwartz_kl(0,0) = max(schwartz_kl(0,r),schwartz_kl(0,0))
+   enddo
+   do p = 1, dirac_ao_prim_num(i)
+   double precision               :: coef1
+    coef1 = dirac_ao_coef_normalized_ordered_transp(p,i)
+    do q = 1, dirac_ao_prim_num(j)
+     double precision               :: coef2
+     coef2 = coef1*dirac_ao_coef_normalized_ordered_transp(q,j)
+     double precision               :: p_inv,q_inv
+     call give_explicit_poly_and_gaussian(P_new,P_center,pp,fact_p,iorder_p,&
+          dirac_ao_expo_ordered_transp(p,i),dirac_ao_expo_ordered_transp(q,j),                 &
+          I_power,J_power,I_center,J_center,dim1)
+     p_inv = 1.d0/pp
+     schwartz_ij = general_primitive_integral(dim1,               &
+                   P_new,P_center,fact_p,pp,p_inv,iorder_p,                 &
+                   P_new,P_center,fact_p,pp,p_inv,iorder_p)                 &
+                   *coef2*coef2
+     if (schwartz_kl(0,0)*schwartz_ij < thr) then
+      cycle
+     endif
+     do r = 1, dirac_ao_prim_num(k)
+      if (schwartz_kl(0,r)*schwartz_ij < thr) then
+       cycle
+      endif
+      double precision               :: coef3
+      coef3 = coef2*dirac_ao_coef_normalized_ordered_transp(r,k)
       do s = 1, dirac_ao_prim_num(l)
-        coef2 = coef1 * dirac_ao_coef_normalized_ordered_transp(s,l) * dirac_ao_coef_normalized_ordered_transp(s,l)
-        call give_explicit_poly_and_gaussian(Q_new,Q_center,qq,fact_q,iorder_q,&
-            dirac_ao_expo_ordered_transp(r,k),dirac_ao_expo_ordered_transp(s,l),                 &
+       double precision               :: coef4
+       if (schwartz_kl(s,r)*schwartz_ij < thr) then
+        cycle
+       endif
+       coef4 = coef3*dirac_ao_coef_normalized_ordered_transp(s,l)
+       double precision               :: general_primitive_integral
+       call give_explicit_poly_and_gaussian(Q_new,Q_center,qq,fact_q,iorder_q,&
+            dirac_ao_expo_ordered_transp(r,k),dirac_ao_expo_ordered_transp(s,l),             &
             K_power,L_power,K_center,L_center,dim1)
-        q_inv = 1.d0/qq
-        schwartz_kl(s,r) = general_primitive_integral(dim1,          &
-            Q_new,Q_center,fact_q,qq,q_inv,iorder_q,                 &
-            Q_new,Q_center,fact_q,qq,q_inv,iorder_q)                 &
-            * coef2 
-        schwartz_kl(0,r) = max(schwartz_kl(0,r),schwartz_kl(s,r))
-      enddo
-      schwartz_kl(0,0) = max(schwartz_kl(0,r),schwartz_kl(0,0))
-    enddo
-
-    do p = 1, dirac_ao_prim_num(i)
-      double precision               :: coef1
-      coef1 = dirac_ao_coef_normalized_ordered_transp(p,i)
-      do q = 1, dirac_ao_prim_num(j)
-        double precision               :: coef2
-        coef2 = coef1*dirac_ao_coef_normalized_ordered_transp(q,j)
-        double precision               :: p_inv,q_inv
-        call give_explicit_poly_and_gaussian(P_new,P_center,pp,fact_p,iorder_p,&
-            dirac_ao_expo_ordered_transp(p,i),dirac_ao_expo_ordered_transp(q,j),                 &
-            I_power,J_power,I_center,J_center,dim1)
-        p_inv = 1.d0/pp
-        schwartz_ij = general_primitive_integral(dim1,               &
-            P_new,P_center,fact_p,pp,p_inv,iorder_p,                 &
-            P_new,P_center,fact_p,pp,p_inv,iorder_p) *               &
-            coef2*coef2
-        if (schwartz_kl(0,0)*schwartz_ij < thr) then
-           cycle
-        endif
-        do r = 1, dirac_ao_prim_num(k)
-          if (schwartz_kl(0,r)*schwartz_ij < thr) then
-             cycle
-          endif
-          double precision               :: coef3
-          coef3 = coef2*dirac_ao_coef_normalized_ordered_transp(r,k)
-          do s = 1, dirac_ao_prim_num(l)
-            double precision               :: coef4
-            if (schwartz_kl(s,r)*schwartz_ij < thr) then
-               cycle
-            endif
-            coef4 = coef3*dirac_ao_coef_normalized_ordered_transp(s,l)
-            double precision               :: general_primitive_integral
-            call give_explicit_poly_and_gaussian(Q_new,Q_center,qq,fact_q,iorder_q,&
-                dirac_ao_expo_ordered_transp(r,k),dirac_ao_expo_ordered_transp(s,l),             &
-                K_power,L_power,K_center,L_center,dim1)
-            q_inv = 1.d0/qq
-            integral = general_primitive_integral(dim1,              &
-                P_new,P_center,fact_p,pp,p_inv,iorder_p,             &
-                Q_new,Q_center,fact_q,qq,q_inv,iorder_q)
-            dirac_ao_bielec_integral_schwartz_accel = dirac_ao_bielec_integral_schwartz_accel + coef4 * integral
-          enddo ! s
-        enddo  ! r
-      enddo   ! q
-    enddo    ! p
-    
+       q_inv = 1.d0/qq
+       integral = general_primitive_integral(dim1,              &
+                  P_new,P_center,fact_p,pp,p_inv,iorder_p,             &
+                  Q_new,Q_center,fact_q,qq,q_inv,iorder_q)
+       dirac_ao_bielec_integral_schwartz_accel = dirac_ao_bielec_integral_schwartz_accel + coef4 * integral
+      enddo ! s
+     enddo  ! r
+    enddo   ! q
+   enddo    ! p
   else
-    
-    do p = 1, 3
-      I_power(p) = dirac_ao_power(i,p)
-      J_power(p) = dirac_ao_power(j,p)
-      K_power(p) = dirac_ao_power(k,p)
-      L_power(p) = dirac_ao_power(l,p)
+   do p = 1, 3
+    I_power(p) = dirac_ao_power(i,p)
+    J_power(p) = dirac_ao_power(j,p)
+    K_power(p) = dirac_ao_power(k,p)
+    L_power(p) = dirac_ao_power(l,p)
+   enddo
+   double  precision              :: ERI
+   schwartz_kl(0,0) = 0.d0
+   do r = 1, dirac_ao_prim_num(k)
+    coef1 = dirac_ao_coef_normalized_ordered_transp(r,k)*dirac_ao_coef_normalized_ordered_transp(r,k)
+    schwartz_kl(0,r) = 0.d0
+    do s = 1, dirac_ao_prim_num(l)
+     coef2 = coef1*dirac_ao_coef_normalized_ordered_transp(s,l)*dirac_ao_coef_normalized_ordered_transp(s,l)
+     schwartz_kl(s,r) = ERI(                                      &
+                        dirac_ao_expo_ordered_transp(r,k),dirac_ao_expo_ordered_transp(s,l),dirac_ao_expo_ordered_transp(r,k),dirac_ao_expo_ordered_transp(s,l),&
+                        K_power(1),L_power(1),K_power(1),L_power(1),             &
+                        K_power(2),L_power(2),K_power(2),L_power(2),             &
+                        K_power(3),L_power(3),K_power(3),L_power(3))             &
+                        *coef2
+     schwartz_kl(0,r) = max(schwartz_kl(0,r),schwartz_kl(s,r))
     enddo
-    double  precision              :: ERI
-
-    schwartz_kl(0,0) = 0.d0
-    do r = 1, dirac_ao_prim_num(k)
-      coef1 = dirac_ao_coef_normalized_ordered_transp(r,k)*dirac_ao_coef_normalized_ordered_transp(r,k)
-      schwartz_kl(0,r) = 0.d0
+    schwartz_kl(0,0) = max(schwartz_kl(0,r),schwartz_kl(0,0))
+   enddo
+   do p = 1, dirac_ao_prim_num(i)
+    coef1 = dirac_ao_coef_normalized_ordered_transp(p,i)
+    do q = 1, dirac_ao_prim_num(j)
+     coef2 = coef1*dirac_ao_coef_normalized_ordered_transp(q,j)
+     schwartz_ij = ERI(                                          &
+                   dirac_ao_expo_ordered_transp(p,i),dirac_ao_expo_ordered_transp(q,j),dirac_ao_expo_ordered_transp(p,i),dirac_ao_expo_ordered_transp(q,j),&
+                   I_power(1),J_power(1),I_power(1),J_power(1),         &
+                   I_power(2),J_power(2),I_power(2),J_power(2),         &
+                   I_power(3),J_power(3),I_power(3),J_power(3))*coef2*coef2
+     if (schwartz_kl(0,0)*schwartz_ij < thr) then
+      cycle
+     endif
+     do r = 1, dirac_ao_prim_num(k)
+      if (schwartz_kl(0,r)*schwartz_ij < thr) then
+       cycle
+      endif
+      coef3 = coef2*dirac_ao_coef_normalized_ordered_transp(r,k)
       do s = 1, dirac_ao_prim_num(l)
-        coef2 = coef1*dirac_ao_coef_normalized_ordered_transp(s,l)*dirac_ao_coef_normalized_ordered_transp(s,l)
-        schwartz_kl(s,r) = ERI(                                      &
-            dirac_ao_expo_ordered_transp(r,k),dirac_ao_expo_ordered_transp(s,l),dirac_ao_expo_ordered_transp(r,k),dirac_ao_expo_ordered_transp(s,l),&
-            K_power(1),L_power(1),K_power(1),L_power(1),             &
-            K_power(2),L_power(2),K_power(2),L_power(2),             &
-            K_power(3),L_power(3),K_power(3),L_power(3)) * &
-            coef2
-        schwartz_kl(0,r) = max(schwartz_kl(0,r),schwartz_kl(s,r))
-      enddo
-      schwartz_kl(0,0) = max(schwartz_kl(0,r),schwartz_kl(0,0))
-    enddo
-
-    do p = 1, dirac_ao_prim_num(i)
-      coef1 = dirac_ao_coef_normalized_ordered_transp(p,i)
-      do q = 1, dirac_ao_prim_num(j)
-        coef2 = coef1*dirac_ao_coef_normalized_ordered_transp(q,j)
-        schwartz_ij = ERI(                                          &
-                dirac_ao_expo_ordered_transp(p,i),dirac_ao_expo_ordered_transp(q,j),dirac_ao_expo_ordered_transp(p,i),dirac_ao_expo_ordered_transp(q,j),&
-                I_power(1),J_power(1),I_power(1),J_power(1),         &
-                I_power(2),J_power(2),I_power(2),J_power(2),         &
-                I_power(3),J_power(3),I_power(3),J_power(3))*coef2*coef2
-        if (schwartz_kl(0,0)*schwartz_ij < thr) then
-           cycle
-        endif
-        do r = 1, dirac_ao_prim_num(k)
-          if (schwartz_kl(0,r)*schwartz_ij < thr) then
-             cycle
-          endif
-          coef3 = coef2*dirac_ao_coef_normalized_ordered_transp(r,k)
-          do s = 1, dirac_ao_prim_num(l)
-            if (schwartz_kl(s,r)*schwartz_ij < thr) then
-               cycle
-            endif
-            coef4 = coef3*dirac_ao_coef_normalized_ordered_transp(s,l)
-            integral = ERI(                                          &
-                dirac_ao_expo_ordered_transp(p,i),dirac_ao_expo_ordered_transp(q,j),dirac_ao_expo_ordered_transp(r,k),dirac_ao_expo_ordered_transp(s,l),&
-                I_power(1),J_power(1),K_power(1),L_power(1),         &
-                I_power(2),J_power(2),K_power(2),L_power(2),         &
-                I_power(3),J_power(3),K_power(3),L_power(3))
-            dirac_ao_bielec_integral_schwartz_accel = dirac_ao_bielec_integral_schwartz_accel +  coef4 * integral
-          enddo ! s
-        enddo  ! r
-      enddo   ! q
-    enddo    ! p
-    
+       if (schwartz_kl(s,r)*schwartz_ij < thr) then
+        cycle
+       endif
+       coef4 = coef3*dirac_ao_coef_normalized_ordered_transp(s,l)
+       integral = ERI(                                          &
+                  dirac_ao_expo_ordered_transp(p,i),dirac_ao_expo_ordered_transp(q,j),dirac_ao_expo_ordered_transp(r,k),dirac_ao_expo_ordered_transp(s,l),&
+                  I_power(1),J_power(1),K_power(1),L_power(1),         &
+                  I_power(2),J_power(2),K_power(2),L_power(2),         &
+                  I_power(3),J_power(3),K_power(3),L_power(3))
+       dirac_ao_bielec_integral_schwartz_accel = dirac_ao_bielec_integral_schwartz_accel +  coef4 * integral
+      enddo ! s
+     enddo  ! r
+    enddo   ! q
+   enddo    ! p
   endif
   deallocate (schwartz_kl)
   
  end
 
-!integer function dirac_ao_l4(i,j,k,l)
-! implicit none
-! BEGIN_DOC
-!!Computes the product of l values of i,j,k,and l
-! END_DOC
-! integer, intent(in) :: i,j,k,l
-! dirac_ao_l4 = dirac_ao_l(i)*dirac_ao_l(j)*dirac_ao_l(k)*dirac_ao_l(l)
-!end
+ integer function dirac_ao_l4(i,j,k,l)
+  implicit none
+  BEGIN_DOC
+ !Computes the product of l values of i,j,k,and l
+  END_DOC
+  integer, intent(in) :: i,j,k,l
+  dirac_ao_l4 = dirac_ao_l(i)*dirac_ao_l(j)*dirac_ao_l(k)*dirac_ao_l(l)
+ end
 
-!subroutine compute_dirac_ao_bielec_integrals(j,k,l,sze,buffer_value)
-! implicit none
-! use map_module
-! 
-! BEGIN_DOC
-! ! Compute AO 1/r12 integrals for all i and fixed j,k,l
-! END_DOC
-! 
-! include 'Utils/constants.include.F'
-! integer, intent(in)            :: j,k,l,sze
-! real(integral_kind), intent(out) :: buffer_value(sze)
-! double precision               :: dirac_ao_bielec_integral
-! 
-! integer                        :: i
-! 
-! if (dirac_ao_overlap_abs(j,l) < thresh) then
-!   buffer_value = 0._integral_kind
-!   return
-! endif
-! if (dirac_ao_bielec_integral_schwartz(j,l) < thresh ) then
-!   buffer_value = 0._integral_kind
-!   return
-! endif
-! 
-! do i = 1, dirac_ao_num
-!   if (dirac_ao_overlap_abs(i,k)*dirac_ao_overlap_abs(j,l) < thresh) then
-!     buffer_value(i) = 0._integral_kind
-!     cycle
-!   endif
-!   if (dirac_ao_bielec_integral_schwartz(i,k)*dirac_ao_bielec_integral_schwartz(j,l) < thresh ) then
-!     buffer_value(i) = 0._integral_kind
-!     cycle
-!   endif
-!   !DIR$ FORCEINLINE
-!   buffer_value(i) = dirac_ao_bielec_integral(i,k,j,l)
-! enddo
-!end
+ subroutine compute_dirac_ao_bielec_integrals(j,k,l,sze,buffer_value)
+  implicit none
+  use map_module
+  BEGIN_DOC
+  ! Compute AO 1/r12 integrals for all i and fixed j,k,l
+  END_DOC
+  include 'Utils/constants.include.F'
+  integer, intent(in)            :: j,k,l,sze
+  real(integral_kind), intent(out) :: buffer_value(sze)
+  double precision               :: dirac_ao_bielec_integral
+  integer                        :: i
+  if (dirac_ao_overlap_abs(j,l) < thresh) then
+   buffer_value = 0._integral_kind
+   return
+  endif
+  if (dirac_ao_bielec_integral_schwartz(j,l) < thresh ) then
+   buffer_value = 0._integral_kind
+   return
+  endif
+  do i = 1, dirac_ao_num
+   if (dirac_ao_overlap_abs(i,k)*dirac_ao_overlap_abs(j,l) < thresh) then
+    buffer_value(i) = 0._integral_kind
+    cycle
+   endif
+   if (dirac_ao_bielec_integral_schwartz(i,k)*dirac_ao_bielec_integral_schwartz(j,l) < thresh ) then
+    buffer_value(i) = 0._integral_kind
+    cycle
+   endif
+   !DIR$ FORCEINLINE
+   buffer_value(i) = dirac_ao_bielec_integral(i,k,j,l)
+  enddo
+ end
 
 
-!BEGIN_PROVIDER [ logical, dirac_ao_bielec_integrals_in_map ]
-! implicit none
-! use f77_zmq
-! use map_module
-! BEGIN_DOC
-! !  Map of Atomic integrals
-! !     i(r1) j(r2) 1/r12 k(r1) l(r2)
-! END_DOC
-! 
-! integer                        :: i,j,k,l
-! double precision               :: dirac_ao_bielec_integral,cpu_1,cpu_2, wall_1, wall_2
-! double precision               :: integral, wall_0
-! include 'Utils/constants.include.F'
-! 
-! ! For integrals file
-! integer(key_kind),allocatable  :: buffer_i(:)
-! integer,parameter              :: size_buffer = 1024*64
-! real(integral_kind),allocatable :: buffer_value(:)
-! 
-! integer                        :: n_integrals, rc
-! integer                        :: kk, m, j1, i1, lmax
-! character*(64)                 :: fmt
-! 
-! integral = ao_bielec_integral(1,1,1,1)
-! 
-! double precision               :: map_mb
-!!PROVIDE read_ao_integrals disk_access_ao_integrals
-!!if (read_ao_integrals) then
-!!  print*,'Reading the AO integrals'
-!!    call map_load_from_disk(trim(ezfio_filename)//'/work/ao_ints',ao_integrals_map)
-!!    print*, 'AO integrals provided'
-!!    ao_bielec_integrals_in_map = .True.
-!!    return
-!!endif
-! 
-! print*, 'Providing the AO integrals'
-! call wall_time(wall_0)
-! call wall_time(wall_1)
-! call cpu_time(cpu_1)
+ BEGIN_PROVIDER [ logical, dirac_ao_bielec_integrals_in_map ]
+  implicit none
+  use f77_zmq
+  use map_module
+  BEGIN_DOC
+ ! Map of Atomic integrals
+ ! i(r1) j(r2) 1/r12 k(r1) l(r2)
+  END_DOC
+  integer                        :: i,j,k,l
+  double precision               :: dirac_ao_bielec_integral,cpu_1,cpu_2, wall_1, wall_2
+  double precision               :: integral, wall_0
+  include 'Utils/constants.include.F'
+  ! For integrals file
+  integer(key_kind),allocatable  :: buffer_i(:)
+  integer,parameter              :: size_buffer = 1024*64
+  real(integral_kind),allocatable :: buffer_value(:)
+  integer                        :: n_integrals, rc
+  integer                        :: kk, m, j1, i1, lmax
+  character*(64)                 :: fmt
+  integral = dirac_ao_bielec_integral(1,1,1,1)
+  double precision               :: map_mb
+ !PROVIDE read_ao_integrals disk_access_ao_integrals
+ !if (read_ao_integrals) then
+ ! print*,'Reading the AO integrals'
+ ! call map_load_from_disk(trim(ezfio_filename)//'/work/ao_ints',ao_integrals_map)
+ ! print*, 'AO integrals provided'
+ ! ao_bielec_integrals_in_map = .True.
+ ! return
+ !endif
+  print*, 'Providing the AO integrals'
+  call wall_time(wall_0)
+  call wall_time(wall_1)
+  call cpu_time(cpu_1)
+  integer(ZMQ_PTR) :: zmq_to_qp_run_socket, zmq_socket_pull
+  call new_parallel_job(zmq_to_qp_run_socket,zmq_socket_pull,'dirac_ao_integrals')
+  character(len=:), allocatable :: task
+  allocate(character(len=dirac_ao_num*12) :: task)
+  write(fmt,*) '(', ao_num, '(I5,X,I5,''|''))'
+  do l=1,dirac_ao_num
+   write(task,fmt) (i,l, i=1,l)
+   integer, external :: add_task_to_taskserver
+   if (add_task_to_taskserver(zmq_to_qp_run_socket,trim(task)) == -1) then
+    stop 'Unable to add task to server'
+   endif
+  enddo
+  deallocate(task)
+  integer, external :: zmq_set_running
+  if (zmq_set_running(zmq_to_qp_run_socket) == -1) then
+   print *,  irp_here, ': Failed in zmq_set_running'
+  endif
+  PROVIDE nproc
+  !$OMP PARALLEL DEFAULT(shared) private(i) num_threads(nproc+1)
+      i = omp_get_thread_num()
+      if (i==0) then
+        call dirac_ao_bielec_integrals_in_map_collector(zmq_socket_pull)
+      else
+        call dirac_ao_bielec_integrals_in_map_slave_inproc(i)
+      endif
+  !$OMP END PARALLEL
+  call end_parallel_job(zmq_to_qp_run_socket, zmq_socket_pull, 'dirac_ao_integrals')
+  print*, 'Sorting the map'
+  call map_sort(dirac_ao_integrals_map)
+  call cpu_time(cpu_2)
+  call wall_time(wall_2)
+  integer(map_size_kind)         :: get_dirac_ao_map_size, dirac_ao_map_size
+  dirac_ao_map_size = get_dirac_ao_map_size()
+  print*, 'DIRAC AO integrals provided:'
+  print*, ' Size of DIRAC AO map :         ', map_mb(dirac_ao_integrals_map) ,'MB'
+  print*, ' Number of DIRAC AO integrals  :', dirac_ao_map_size
+  print*, ' cpu  time :',cpu_2 - cpu_1, 's'
+  print*, ' wall time :',wall_2 - wall_1, 's  ( x ', (cpu_2-cpu_1)/(wall_2-wall_1+tiny(1.d0)), ' )'
+  dirac_ao_bielec_integrals_in_map = .True.
+ !if (write_dirac_ao_integrals.and.mpi_master) then
+ !  call ezfio_set_work_empty(.False.)
+ !  call map_save_to_disk(trim(ezfio_filename)//'/work/ao_ints',ao_integrals_map)
+ !  call ezfio_set_integrals_bielec_disk_access_ao_integrals("Read")
+ !endif
+ END_PROVIDER
 
-! integer(ZMQ_PTR) :: zmq_to_qp_run_socket, zmq_socket_pull
-! call new_parallel_job(zmq_to_qp_run_socket,zmq_socket_pull,'dirac_ao_integrals')
-
-! character(len=:), allocatable :: task
-! allocate(character(len=dirac_ao_num*12) :: task)
-! write(fmt,*) '(', ao_num, '(I5,X,I5,''|''))'
-! do l=1,dirac_ao_num
-!   write(task,fmt) (i,l, i=1,l)
-!   integer, external :: add_task_to_taskserver
-!   if (add_task_to_taskserver(zmq_to_qp_run_socket,trim(task)) == -1) then
-!     stop 'Unable to add task to server'
-!   endif
-! enddo
-! deallocate(task)
-! 
-! integer, external :: zmq_set_running
-! if (zmq_set_running(zmq_to_qp_run_socket) == -1) then
-!   print *,  irp_here, ': Failed in zmq_set_running'
-! endif
-
-! PROVIDE nproc
-! !$OMP PARALLEL DEFAULT(shared) private(i) num_threads(nproc+1)
-!     i = omp_get_thread_num()
-!     if (i==0) then
-!       call dirac_ao_bielec_integrals_in_map_collector(zmq_socket_pull)
-!     else
-!       call dirac_ao_bielec_integrals_in_map_slave_inproc(i)
-!     endif
-! !$OMP END PARALLEL
-
-! call end_parallel_job(zmq_to_qp_run_socket, zmq_socket_pull, 'dirac_ao_integrals')
-
-
-! print*, 'Sorting the map'
-! call map_sort(dirac_ao_integrals_map)
-! call cpu_time(cpu_2)
-! call wall_time(wall_2)
-! integer(map_size_kind)         :: get_dirac_ao_map_size, dirac_ao_map_size
-! dirac_ao_map_size = get_dirac_ao_map_size()
-! 
-! print*, 'DIRAC AO integrals provided:'
-! print*, ' Size of DIRAC AO map :         ', map_mb(dirac_ao_integrals_map) ,'MB'
-! print*, ' Number of DIRAC AO integrals  :', dirac_ao_map_size
-! print*, ' cpu  time :',cpu_2 - cpu_1, 's'
-! print*, ' wall time :',wall_2 - wall_1, 's  ( x ', (cpu_2-cpu_1)/(wall_2-wall_1+tiny(1.d0)), ' )'
-! 
-! dirac_ao_bielec_integrals_in_map = .True.
-
-!!if (write_dirac_ao_integrals.and.mpi_master) then
-!!  call ezfio_set_work_empty(.False.)
-!!  call map_save_to_disk(trim(ezfio_filename)//'/work/ao_ints',ao_integrals_map)
-!!  call ezfio_set_integrals_bielec_disk_access_ao_integrals("Read")
-!!endif
-!END_PROVIDER
-
-!BEGIN_PROVIDER [ double precision, dirac_ao_bielec_integral_schwartz,(dirac_ao_num,dirac_ao_num)  ]
-! implicit none
-! BEGIN_DOC
-! !  Needed to compute Schwartz inequalities
-! END_DOC
-! 
-! integer                        :: i,k
-! double precision               :: dirac_ao_bielec_integral,cpu_1,cpu_2, wall_1, wall_2
-! 
-! dirac_ao_bielec_integral_schwartz(1,1) = dirac_ao_bielec_integral(1,1,1,1)
-! !$OMP PARALLEL DO PRIVATE(i,k)                                     &
-!     !$OMP DEFAULT(NONE)                                            &
-!     !$OMP SHARED (dirac_ao_num,dirac_ao_bielec_integral_schwartz)              &
-!     !$OMP SCHEDULE(dynamic)
-! do i=1,dirac_ao_num
-!   do k=1,i
-!     dirac_ao_bielec_integral_schwartz(i,k) = dsqrt(dirac_ao_bielec_integral(i,k,i,k))
-!     dirac_ao_bielec_integral_schwartz(k,i) = dirac_ao_bielec_integral_schwartz(i,k)
-!   enddo
-! enddo
-! !$OMP END PARALLEL DO
-!END_PROVIDER
+ BEGIN_PROVIDER [ double precision, dirac_ao_bielec_integral_schwartz,(dirac_ao_num,dirac_ao_num)  ]
+  implicit none
+  BEGIN_DOC
+  !  Needed to compute Schwartz inequalities
+  END_DOC
+  
+  integer                        :: i,k
+  double precision               :: dirac_ao_bielec_integral,cpu_1,cpu_2, wall_1, wall_2
+  
+  dirac_ao_bielec_integral_schwartz(1,1) = dirac_ao_bielec_integral(1,1,1,1)
+  do i=1,dirac_ao_num
+    do k=1,i
+      dirac_ao_bielec_integral_schwartz(i,k) = dsqrt(dirac_ao_bielec_integral(i,k,i,k))
+      dirac_ao_bielec_integral_schwartz(k,i) = dirac_ao_bielec_integral_schwartz(i,k)
+    enddo
+  enddo
+ END_PROVIDER
 
 !subroutine dirac_ao_bielec_integrals_in_map_collector(zmq_socket_pull)
 ! use map_module
@@ -538,21 +514,21 @@
 
 
 
-!! AO Map
-!! ======
+ ! AO Map
+ ! ======
 
-!BEGIN_PROVIDER [ type(map_type), dirac_ao_integrals_map ]
-! implicit none
-! BEGIN_DOC
-! ! AO integrals
-! END_DOC
-! integer(key_kind)              :: key_max
-! integer(map_size_kind)         :: sze
-! call bielec_integrals_index(dirac_ao_num,dirac_ao_num,dirac_ao_num,dirac_ao_num,key_max)
-! sze = key_max
-! call map_init(dirac_ao_integrals_map,sze)
-! print*,  'DIRAC AO map initialized : ', sze
-!END_PROVIDER
+ BEGIN_PROVIDER [ type(map_type), dirac_ao_integrals_map ]
+  implicit none
+  BEGIN_DOC
+  ! AO integrals
+  END_DOC
+  integer(key_kind)              :: key_max
+  integer(map_size_kind)         :: sze
+  call bielec_integrals_index(dirac_ao_num,dirac_ao_num,dirac_ao_num,dirac_ao_num,key_max)
+  sze = key_max
+  call map_init(dirac_ao_integrals_map,sze)
+  print*,  'DIRAC AO map initialized : ', sze
+ END_PROVIDER
 
 
 
