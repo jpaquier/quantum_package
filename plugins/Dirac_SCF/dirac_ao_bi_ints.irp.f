@@ -630,16 +630,5 @@
   FREE dirac_ao_integrals_map
  end
 
- subroutine insert_into_dirac_ao_integrals_map(n_integrals,buffer_i, buffer_values)
-  use map_module
-  implicit none
-  BEGIN_DOC
-  ! Create new entry into AO map
-  END_DOC
-  integer, intent(in)                :: n_integrals
-  integer(key_kind), intent(inout)   :: buffer_i(n_integrals)
-  real(integral_kind), intent(inout) :: buffer_values(n_integrals)
-  call map_append(dirac_ao_integrals_map, buffer_i, buffer_values, n_integrals)
- end
 
 
