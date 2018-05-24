@@ -10,25 +10,23 @@ program Dirac_SCF
 
  
  print*,'************'
- print*,ao_integrals_threshold
- print*,dirac_ao_integrals_threshold
-
 !print*,'mo_tot_num =', mo_tot_num
 !print*,'small_mo_tot_num =', small_mo_tot_num
 !print*,'dirac_mo_tot_num =', dirac_mo_tot_num
 !do j = 1,2*(dirac_mo_tot_num)
 ! print*,j, dirac_fock_matrix_eigenvalues(j)
 !enddo
-!print*,'**************************************************'
-!do j = 1,2*dirac_ao_num
-! print*,'**************************************************'
-! do i = 1,2*dirac_ao_num
-!  print*,i, j, dirac_SCF_density_matrix_ao(j,i)
-! !print*, 'dirac_ao_mono_elec_integral =',i, j, dirac_ao_mono_elec_integral(i,j)
-! !print*,i,j, dirac_mo_coef(i,j) 
-! !print*, 'dirac_mo_mono_elec_integral =',i, j, dirac_mo_mono_elec_integral(i,j)
-! enddo
-!enddo
+ print*,'**************************************************'
+ do j = 1,2*dirac_ao_num
+  print*,'**************************************************'
+  do i = 1,2*dirac_ao_num
+   print*, i, j, dirac_ao_bi_elec_integralnaive(i,j)
+  !print*,i, j, dirac_SCF_density_matrix_ao(j,i)
+  !print*, 'dirac_ao_mono_elec_integral =',i, j, dirac_ao_mono_elec_integral(i,j)
+  !print*,i,j, dirac_mo_coef(i,j) 
+  !print*, 'dirac_mo_mono_elec_integral =',i, j, dirac_mo_mono_elec_integral(i,j)
+  enddo
+ enddo
 
 
 !print*,''
