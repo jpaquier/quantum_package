@@ -58,7 +58,7 @@
      k = kk(k2)
      l = ll(k2)
      c0 = dirac_SCF_density_matrix_ao(k,l)
-     if ( dabs(c0)  < local_threshold) then
+     if ( zabs(c0)  < local_threshold) then
       cycle
      endif
      if (values(1) == 0.d0) then
