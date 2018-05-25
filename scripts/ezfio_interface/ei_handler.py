@@ -334,7 +334,6 @@ def create_ezfio_provider(dict_ezfio_cfg):
 
             # (nuclei.nucl_num,pseudo.klocmax) => (nucl_num,klocmax)
             ez_p.set_size(re.sub(r'\w+\.', "", dict_info['size']))
-
             dict_code_provider[provider_name] = str(ez_p) + "\n"
 
     return dict_code_provider

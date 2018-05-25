@@ -88,7 +88,11 @@ def get_l_module_descendant(d_child, l_module):
             except KeyError:
                 print >> sys.stderr, "Error: "
                 print >> sys.stderr, "`{0}` is not a submodule".format(module)
-                print >> sys.stderr, "Check the typo (spelling, case, '/', etc.) "
+                print >> sys.stderr, ""
+                print >> sys.stderr, "Usually, this solves the problem:"
+                print >> sys.stderr, "  qp_module.py install {0}".format(module)
+                print >> sys.stderr, "or"
+                print >> sys.stderr, "  qp_module.py uninstall {0}".format(module)
                 sys.exit(1)
 
     return list(set(l))

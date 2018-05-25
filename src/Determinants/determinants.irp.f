@@ -848,3 +848,4 @@ subroutine apply_hole(det, s1, h1, res, ok, Nint)
   
   ok = .true.
 end subroutine
+

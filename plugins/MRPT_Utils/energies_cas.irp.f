@@ -212,11 +212,15 @@ BEGIN_PROVIDER [ double precision, one_anhil_one_creat, (n_act_orb,n_act_orb,2,2
  integer(bit_kind), allocatable :: psi_in_out(:,:,:)
  double precision, allocatable :: psi_in_out_coef(:,:)
  use bitmasks
+ BEGIN_DOC
+! corresponds to the excitation energy of one_anhil_one_creat(a,b,ispin,jspin) = a^{\dagger}_{a,ispin} a_{b,jspin}
+ END_DOC
 
  allocate (psi_in_out(N_int,2,n_det_ref),psi_in_out_coef(n_det_ref,N_states))
  integer :: iorb,jorb
  integer :: state_target
  double precision :: energies(n_states)
+ print*,'one_anhil_one_creat ....'
  do iorb = 1,n_act_orb
   do ispin = 1,2
    orb_i = list_act(iorb)
@@ -253,6 +257,7 @@ BEGIN_PROVIDER [ double precision, one_anhil_one_creat, (n_act_orb,n_act_orb,2,2
    enddo
   enddo
  enddo
+ print*,'one_anhil_one_creat provided !' 
 
 END_PROVIDER
 
@@ -531,12 +536,17 @@ END_PROVIDER
 
 
 
+ print*,'providing one_anhil_one_creat_inact_virt ...'
  do vorb = 1,n_virt_orb
   orb_v = list_virt(vorb)
   do iorb = 1, n_inact_orb
    orb_i = list_inact(iorb)
     norm = 0.d0
     norm_bis = 0.d0
+    if(dabs(mo_mono_elec_integral(orb_i,orb_v)).le.1.d-6)then
+     one_anhil_one_creat_inact_virt(orb_i,orb_v,:) = 0.d0
+    endif
+
     do ispin = 1,2
      do state_target  =1 , N_states
       one_anhil_one_creat_inact_virt_norm(iorb,vorb,state_target,ispin) = 0.d0
@@ -592,11 +602,6 @@ END_PROVIDER
     enddo ! ispin 
    do state_target = 1, N_states
     if((norm_no_inv(state_target,1) + norm_no_inv(state_target,2)) .ne. 0.d0)then
-!    one_anhil_one_creat_inact_virt(iorb,vorb,state_target) = 0.5d0 * & 
-!   ( energy_cas_dyall(state_target)  -  energies_alpha_beta(state_target,1) + & 
-!     energy_cas_dyall(state_target)  -  energies_alpha_beta(state_target,2) )
-!    print*, energies_alpha_beta(state_target,1) , energies_alpha_beta(state_target,2) 
-!    print*,  norm_bis(state_target,1) ,  norm_bis(state_target,2)
      one_anhil_one_creat_inact_virt(iorb,vorb,state_target) =  energy_cas_dyall(state_target) - &
       ( energies_alpha_beta(state_target,1) + energies_alpha_beta(state_target,2) ) & 
      /( norm_bis(state_target,1) +  norm_bis(state_target,2) )
@@ -607,6 +612,7 @@ END_PROVIDER
   enddo
  enddo
  deallocate(psi_in_out,psi_in_out_coef)
+ print*,'one_anhil_one_creat_inact_virt provided ! '
 
 END_PROVIDER
 
@@ -681,8 +687,8 @@ BEGIN_PROVIDER [ double precision, one_anhil_inact, (n_inact_orb,n_act_orb,N_Sta
         norm_bis(j,ispin) +=  psi_in_out_coef(i,j)* psi_in_out_coef(i,j)
        enddo
        do j = 1, N_int
-        psi_in_out(j,1,i) = iand(psi_in_out(j,1,i),cas_bitmask(j,1,1))
-        psi_in_out(j,2,i) = iand(psi_in_out(j,2,i),cas_bitmask(j,1,1))
+        psi_in_out(j,1,i) = iand(psi_in_out(j,1,i),act_bitmask(j,1))
+        psi_in_out(j,2,i) = iand(psi_in_out(j,2,i),act_bitmask(j,1))
        enddo
      enddo
      do state_target = 1, N_states
@@ -779,8 +785,8 @@ BEGIN_PROVIDER [ double precision, one_creat_virt, (n_act_orb,n_virt_orb,N_State
         norm_bis(j,ispin) +=  psi_in_out_coef(i,j)* psi_in_out_coef(i,j)
        enddo
        do j = 1, N_int
-        psi_in_out(j,1,i) = iand(psi_in_out(j,1,i),cas_bitmask(j,1,1))
-        psi_in_out(j,2,i) = iand(psi_in_out(j,2,i),cas_bitmask(j,1,1))
+        psi_in_out(j,1,i) = iand(psi_in_out(j,1,i),act_bitmask(j,1))
+        psi_in_out(j,2,i) = iand(psi_in_out(j,2,i),act_bitmask(j,1))
        enddo
      enddo
      do state_target = 1, N_states

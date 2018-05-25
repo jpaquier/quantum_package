@@ -157,6 +157,7 @@ double precision function get_ao_bielec_integral(i,j,k,l,map) result(result)
   implicit none
   BEGIN_DOC
   ! Gets one AO bi-electronic integral from the AO map
+  ! i,k :: r1, j,l :: r2
   END_DOC
   integer, intent(in)            :: i,j,k,l
   integer(key_kind)              :: idx
@@ -196,6 +197,7 @@ subroutine get_ao_bielec_integrals(j,k,l,sze,out_val)
   BEGIN_DOC
   ! Gets multiple AO bi-electronic integral from the AO map .
   ! All i are retrieved for j,k,l fixed.
+  ! j,l :: r1  ;;; l :: r2
   END_DOC
   implicit none
   integer, intent(in)            :: j,k,l, sze

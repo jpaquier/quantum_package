@@ -277,22 +277,22 @@ subroutine give_all_mos_at_r(r,mos_array)
  implicit none
  double precision, intent(in) :: r(3)
  double precision, intent(out) :: mos_array(mo_tot_num)
- call give_specific_mos_at_r(r,mos_array, mo_coef)
+ double precision :: aos_array(ao_num)
+ call give_all_aos_at_r(r,aos_array)
+ call dgemv('N',mo_tot_num,ao_num,1.d0,mo_coef_transp,mo_tot_num,aos_array,1,0.d0,mos_array,1)
 end
 
-subroutine give_specific_mos_at_r(r,mos_array, mo_coef_specific)
+BEGIN_PROVIDER [double precision, mo_to_ao_matrix, (mo_tot_num,ao_num)]
  implicit none
- double precision, intent(in) :: r(3)
- double precision, intent(in)  :: mo_coef_specific(ao_num, mo_tot_num)
- double precision, intent(out) :: mos_array(mo_tot_num)
- double precision :: aos_array(ao_num),accu
- integer :: i,j
- call give_all_aos_at_r(r,aos_array)
- do i = 1, mo_tot_num
-  accu = 0.d0
-  do j = 1, ao_num
-   accu += mo_coef_specific(j,i) * aos_array(j) 
-  enddo
-  mos_array(i) = accu
- enddo
-end
+ BEGIN_DOC 
+! matrix to go from the MOs to the AOs: AO_k(r) = \sum_{i=1, mo_tot_num} mo_to_ao_matrix(i,k) * mo_i(r)
+! mo_to_ao_matrix(i,k) = \sum_{l= 1, ao_num} mo_coef_transp(l,i) * ao_overlap(l,k) == MO_coef * S
+ END_DOC
+ if (ao_cartesian) then
+  call dgemm('N','N',mo_tot_num,ao_num,ao_num,1.d0,mo_coef_transp,mo_tot_num,ao_overlap,ao_num,0.d0,mo_to_ao_matrix,mo_tot_num) 
+ else 
+! call dgemm('N','N',mo_tot_num,ao_num,ao_num,1.d0,mo_coef_transp,mo_tot_num,ao_cart_to_sphe_overlap,ao_num,0.d0,mo_to_ao_matrix,mo_tot_num) 
+ endif
+
+
+END_PROVIDER 

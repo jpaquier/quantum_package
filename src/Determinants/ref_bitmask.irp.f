@@ -21,6 +21,8 @@
   kinetic_ref_bitmask_energy   = 0.d0
   nucl_elec_ref_bitmask_energy = 0.d0
   bi_elec_ref_bitmask_energy = 0.d0
+
+  call debug_det(ref_bitmask,N_int)
   
   do i = 1, elec_beta_num
     ref_bitmask_energy += mo_mono_elec_integral(occ(i,1),occ(i,1)) + mo_mono_elec_integral(occ(i,2),occ(i,2))

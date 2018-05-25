@@ -256,6 +256,7 @@ subroutine make_s2_eigenfunction
   integer                        :: N_det_new, ithread, omp_get_thread_num
   integer, parameter             :: bufsze = 1000
   logical, external              :: is_in_wavefunction
+  return
 
   call write_int(6,N_occ_pattern,'Number of occupation patterns')
 

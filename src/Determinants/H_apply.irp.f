@@ -260,8 +260,8 @@ subroutine remove_duplicates_in_psi_det(found_duplicates)
         psi_det(:,:,k) = psi_det_sorted_bit (:,:,i)
         psi_coef(k,:)  = psi_coef_sorted_bit(i,:)
       else
-        call debug_det(psi_det_sorted_bit(1,1,i),N_int)
-        stop 'duplicates in psi_det'
+!       call debug_det(psi_det_sorted_bit(1,1,i),N_int)
+!       stop 'duplicates in psi_det'
       endif
     enddo
     N_det = k
@@ -363,16 +363,12 @@ subroutine push_pt2(zmq_socket_push,pt2,norm_pert,H_pert_diag,i_generator,N_st,t
   endif
 
 ! Activate if zmq_socket_push is a REQ
-IRP_IF ZMQ_PUSH
-IRP_ELSE
   integer :: idummy
   rc = f77_zmq_recv( zmq_socket_push, idummy, 4, 0)
   if (rc /= 4) then
     print *, irp_here, 'f77_zmq_send( zmq_socket_push, idummy, 4, 0)'
     stop 'error'
   endif
-IRP_ENDIF
-
 end
 
 subroutine pull_pt2(zmq_socket_pull,pt2,norm_pert,H_pert_diag,i_generator,N_st,n,task_id)
@@ -438,14 +434,11 @@ subroutine pull_pt2(zmq_socket_pull,pt2,norm_pert,H_pert_diag,i_generator,N_st,n
   endif
 
 ! Activate if zmq_socket_pull is a REP
-IRP_IF ZMQ_PUSH
-IRP_ELSE
   rc = f77_zmq_send( zmq_socket_pull, 0, 4, 0)
   if (rc /= 4) then
     print *, irp_here,  'f77_zmq_send( zmq_socket_pull, 0, 4, 0)'
     stop 'error'
   endif
-IRP_ENDIF
 
 end
 

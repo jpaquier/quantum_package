@@ -12,7 +12,10 @@ subroutine collect_lmct(hole_particle,n_couples)
  print*,'COLLECTING THE PERTINENT LMCT (1h)'
  double precision, allocatable :: tmp(:,:)
  allocate(tmp(size(one_body_dm_mo_alpha_osoci,1),size(one_body_dm_mo_alpha_osoci,2)))
- tmp =  one_body_dm_mo_alpha_osoci + one_body_dm_mo_beta_osoci
+ integer :: k
+ do k = 1, N_states
+  tmp =  one_body_dm_mo_alpha_osoci(:,:,k) * state_average_weight(k) + one_body_dm_mo_beta_osoci(:,:,k) * state_average_weight(k)
+ enddo
  integer :: i,j,iorb,jorb
  n_couples = 0
  do i = 1,n_act_orb
@@ -48,7 +51,10 @@ subroutine collect_mlct(hole_particle,n_couples)
  print*,'COLLECTING THE PERTINENT MLCT (1p)'
  double precision, allocatable :: tmp(:,:)
  allocate(tmp(size(one_body_dm_mo_alpha_osoci,1),size(one_body_dm_mo_alpha_osoci,2)))
- tmp =  one_body_dm_mo_alpha_osoci + one_body_dm_mo_beta_osoci
+ integer :: k
+ do k = 1, N_states
+  tmp =  one_body_dm_mo_alpha_osoci(:,:,k) * state_average_weight(k) + one_body_dm_mo_beta_osoci(:,:,k) * state_average_weight(k)
+ enddo
  integer :: i,j,iorb,jorb
  n_couples = 0
  do i = 1,n_act_orb
@@ -85,8 +91,11 @@ subroutine collect_lmct_mlct(hole_particle,n_couples)
  print*,'COLLECTING THE PERTINENT LMCT (1h)'
  print*,'AND THE PERTINENT MLCT (1p)'
  allocate(tmp(size(one_body_dm_mo_alpha_osoci,1),size(one_body_dm_mo_alpha_osoci,2)))
- tmp =  one_body_dm_mo_alpha_osoci + one_body_dm_mo_beta_osoci
  integer :: i,j,iorb,jorb
+ integer :: k
+ do k = 1, N_states
+  tmp =  one_body_dm_mo_alpha_osoci(:,:,k) * state_average_weight(k) + one_body_dm_mo_beta_osoci(:,:,k) * state_average_weight(k)
+ enddo
  n_couples = 0
  do i = 1,n_act_orb
   iorb = list_act(i)
@@ -131,7 +140,10 @@ subroutine collect_1h1p(hole_particle,n_couples)
  double precision, allocatable :: tmp(:,:)
  print*,'COLLECTING THE PERTINENT 1h1p'
  allocate(tmp(size(one_body_dm_mo_alpha_osoci,1),size(one_body_dm_mo_alpha_osoci,2)))
- tmp =  one_body_dm_mo_alpha_osoci + one_body_dm_mo_beta_osoci
+ integer :: k
+ do k = 1, N_states
+  tmp =  one_body_dm_mo_alpha_osoci(:,:,k) * state_average_weight(k) + one_body_dm_mo_beta_osoci(:,:,k) * state_average_weight(k)
+ enddo
  integer :: i,j,iorb,jorb
  n_couples = 0
  do i = 1,n_virt_orb
@@ -375,6 +387,7 @@ subroutine set_lmct_mlct_to_psi_det
  SOFT_TOUCH N_det psi_det psi_coef
  logical :: found_duplicates
  call remove_duplicates_in_psi_det(found_duplicates)
+ call reorder_wf
 end
 
 subroutine set_1h1p_to_psi_det
@@ -432,5 +445,6 @@ subroutine set_1h1p_to_psi_det
  SOFT_TOUCH N_det psi_det psi_coef
  logical :: found_duplicates
  call remove_duplicates_in_psi_det(found_duplicates)
+  call reorder_wf
 end
 

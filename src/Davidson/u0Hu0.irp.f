@@ -3,13 +3,12 @@ BEGIN_PROVIDER [ double precision, psi_energy, (N_states) ]
   BEGIN_DOC
 ! Energy of the current wave function
   END_DOC
+  integer :: i,j
   call u_0_H_u_0(psi_energy,psi_coef,N_det,psi_det,N_int,N_states,psi_det_size)
-  integer :: i
   do i=N_det+1,N_states
     psi_energy(i) = 0.d0
   enddo
 END_PROVIDER
-
 
 
 subroutine H_S2_u_0_nstates_openmp(v_0,s_0,u_0,N_st,sze)

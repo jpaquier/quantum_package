@@ -140,6 +140,177 @@ subroutine set_bitmask_particl_as_input(input_bimask)
 
 end
 
+subroutine set_bitmask_for_1h
+ implicit none
+ integer :: i,j,k,l,m
+ integer :: ispin
+ BEGIN_DOC
+! set the generators_bitmask for the particles 
+! as the input_bimask
+ END_DOC
+
+ ! single excitations 
+ do k=1,N_generators_bitmask
+  do ispin=1,2
+   do j = 1, N_int
+    generators_bitmask(j,ispin,s_hole,k) =  inact_bitmask(j,ispin) 
+    generators_bitmask(j,ispin,s_part,k) =  act_bitmask(j,ispin) 
+   enddo
+  enddo
+ enddo
+
+ ! double excitations 
+ do k=1,N_generators_bitmask
+  do ispin=1,2
+   do j = 1, N_int
+    generators_bitmask(j,ispin,d_hole1,k) = reunion_of_inact_act_bitmask(j,ispin) 
+    generators_bitmask(j,ispin,d_part1,k) = act_bitmask(j,ispin) 
+    generators_bitmask(j,ispin,d_hole2,k) = act_bitmask(j,ispin) 
+    generators_bitmask(j,ispin,d_part2,k) = act_bitmask(j,ispin) 
+   enddo
+  enddo
+ enddo
+ touch generators_bitmask
+
+end
+
+subroutine set_bitmask_for_1p
+ implicit none
+ integer :: i,j,k,l,m
+ integer :: ispin
+ BEGIN_DOC
+! set the generators_bitmask for the particles 
+! as the input_bimask
+ END_DOC
+
+ ! single excitations 
+ do k=1,N_generators_bitmask
+  do ispin=1,2
+   do j = 1, N_int
+    generators_bitmask(j,ispin,s_hole,k) =  act_bitmask(j,ispin)  
+    generators_bitmask(j,ispin,s_part,k) =  virt_bitmask(j,ispin) 
+   enddo
+  enddo
+ enddo
+
+ ! double excitations 
+ do k=1,N_generators_bitmask
+  do ispin=1,2
+   do j = 1, N_int
+    generators_bitmask(j,ispin,d_hole1,k) = act_bitmask(j,ispin) 
+    generators_bitmask(j,ispin,d_part1,k) = reunion_of_virt_act_bitmask(j,ispin)
+    generators_bitmask(j,ispin,d_hole2,k) = act_bitmask(j,ispin) 
+    generators_bitmask(j,ispin,d_part2,k) = reunion_of_virt_act_bitmask(j,ispin)
+
+   enddo
+  enddo
+ enddo
+ touch generators_bitmask
+
+end
+
+subroutine set_bitmask_for_1h1p
+ implicit none
+ integer :: i,j,k,l,m
+ integer :: ispin
+ BEGIN_DOC
+! set the generators_bitmask for the particles 
+! as the input_bimask
+ END_DOC
+
+ ! single excitations 
+ do k=1,N_generators_bitmask
+  do ispin=1,2
+   do j = 1, N_int
+    generators_bitmask(j,ispin,s_hole,k) =  inact_bitmask(j,ispin) 
+    generators_bitmask(j,ispin,s_part,k) =  virt_bitmask(j,ispin)
+   enddo
+  enddo
+ enddo
+
+ ! double excitations 
+ do k=1,N_generators_bitmask
+  do ispin=1,2
+   do j = 1, N_int
+    generators_bitmask(j,ispin,d_hole1,k) =  reunion_of_inact_act_bitmask(j,ispin) 
+    generators_bitmask(j,ispin,d_part1,k) =  reunion_of_virt_act_bitmask(j,ispin)
+    generators_bitmask(j,ispin,d_hole2,k) =  act_bitmask(j,ispin) 
+    generators_bitmask(j,ispin,d_part2,k) =  reunion_of_virt_act_bitmask(j,ispin)
+   enddo
+  enddo
+ enddo
+ touch generators_bitmask
+
+end
+
+subroutine set_bitmask_for_2h
+ implicit none
+ integer :: i,j,k,l,m
+ integer :: ispin
+ BEGIN_DOC
+! set the generators_bitmask for the particles 
+! as the input_bimask
+ END_DOC
+
+ ! single excitations 
+ do k=1,N_generators_bitmask
+  do ispin=1,2
+   do j = 1, N_int
+    generators_bitmask(j,ispin,s_hole,k) =  0_bit_kind
+    generators_bitmask(j,ispin,s_part,k) =  0_bit_kind
+   enddo
+  enddo
+ enddo
+
+ ! double excitations 
+ do k=1,N_generators_bitmask
+  do ispin=1,2
+   do j = 1, N_int
+    generators_bitmask(j,ispin,d_hole1,k) =  reunion_of_inact_act_bitmask(j,ispin) 
+    generators_bitmask(j,ispin,d_part1,k) =  act_bitmask(j,ispin)
+    generators_bitmask(j,ispin,d_hole2,k) =  reunion_of_inact_act_bitmask(j,ispin) 
+    generators_bitmask(j,ispin,d_part2,k) =  act_bitmask(j,ispin)
+   enddo
+  enddo
+ enddo
+ touch generators_bitmask
+
+end
+
+subroutine set_bitmask_for_2p
+ implicit none
+ integer :: i,j,k,l,m
+ integer :: ispin
+ BEGIN_DOC
+! set the generators_bitmask for the particles 
+! as the input_bimask
+ END_DOC
+
+ ! single excitations 
+ do k=1,N_generators_bitmask
+  do ispin=1,2
+   do j = 1, N_int
+    generators_bitmask(j,ispin,s_hole,k) = 0_bit_kind 
+    generators_bitmask(j,ispin,s_part,k) = 0_bit_kind  
+   enddo
+  enddo
+ enddo
+
+ ! double excitations 
+ do k=1,N_generators_bitmask
+  do ispin=1,2
+   do j = 1, N_int
+    generators_bitmask(j,ispin,d_hole1,k) =  act_bitmask(j,ispin) 
+    generators_bitmask(j,ispin,d_part1,k) =  reunion_of_virt_act_bitmask(j,ispin) 
+    generators_bitmask(j,ispin,d_hole2,k) =  act_bitmask(j,ispin) 
+    generators_bitmask(j,ispin,d_part2,k) =  reunion_of_virt_act_bitmask(j,ispin) 
+   enddo
+  enddo
+ enddo
+ touch generators_bitmask
+
+end
+
 
 subroutine set_bitmask_hole_as_input(input_bimask)
  implicit none

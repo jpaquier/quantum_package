@@ -199,3 +199,4 @@ BEGIN_PROVIDER [ double precision, pt2_workload, (N_det_generators) ]
   pt2_workload = pt2_workload / sum(pt2_workload)
 END_PROVIDER
             
+

@@ -1,7 +1,7 @@
 subroutine give_2h1p_contrib(matrix_2h1p)
   use bitmasks
  implicit none
- double precision , intent(inout) :: matrix_2h1p(N_det,N_det,*)
+ double precision , intent(inout) :: matrix_2h1p(N_det_ref,N_det_ref,N_states)
  integer :: i,j,r,a,b
  integer :: iorb, jorb, rorb, aorb, borb
  integer :: ispin,jspin
@@ -18,6 +18,7 @@ subroutine give_2h1p_contrib(matrix_2h1p)
  double precision :: get_mo_bielec_integral
  double precision :: active_int(n_act_orb,2)
  double precision :: hij,phase
+ double precision, allocatable :: matrix_2h1p_tmp(:,:,:)
 !matrix_2h1p = 0.d0
  
  elec_num_tab_local = 0
@@ -25,6 +26,18 @@ subroutine give_2h1p_contrib(matrix_2h1p)
   elec_num_tab_local(1) += popcnt(psi_ref(inint,1,1))
   elec_num_tab_local(2) += popcnt(psi_ref(inint,2,1))
  enddo
+
+ !$OMP PARALLEL &
+ !$OMP DEFAULT (NONE) &
+ !$OMP PRIVATE (i,iorb,j,jorb,r,rorb,a,aorb,b,borb,istate,degree,idx,delta_e,idet,ispin,jspin,det_tmp,inint,accu_elec, & 
+ !$OMP         perturb_dets_phase ,perturb_dets_hij,coef_perturb_from_idet,perturb_dets,phase,active_int,jdet,index_orb_act_mono, & 
+ !$OMP         kspin,hja,exc,matrix_2h1p_tmp) & 
+ !$OMP SHARED  (N_det_ref,psi_ref,N_int,n_act_orb,list_act,elec_num_tab_local,N_states,list_virt,n_virt_orb,list_act_reverse, & 
+ !$OMP         one_creat,fock_virt_total_spin_trace,fock_core_inactive_total_spin_trace,n_inact_orb,list_inact,mo_integrals_map,matrix_2h1p)
+ allocate(matrix_2h1p_tmp(N_det_ref,N_det_ref,N_states))
+ matrix_2h1p_tmp = 0.d0
+ !$OMP DO SCHEDULE(dynamic)
+
  do i = 1, n_inact_orb  ! First inactive 
   iorb = list_inact(i)
    do j = 1, n_inact_orb  ! Second inactive 
@@ -42,10 +55,10 @@ subroutine give_2h1p_contrib(matrix_2h1p)
   integer           :: idx(0:N_det)
   double precision :: delta_e(n_act_orb,2,N_states)
   integer :: istate
-  integer :: index_orb_act_mono(N_det,3)
+  integer :: index_orb_act_mono(N_det_ref,3)
 
-      do idet = 1, N_det
-        call get_excitation_degree_vector_mono(psi_ref,psi_ref(1,1,idet),degree,N_int,N_det,idx)
+      do idet = 1, N_det_ref
+        call get_excitation_degree_vector_mono(psi_ref,psi_ref(1,1,idet),degree,N_int,N_det_ref,idx)
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Precomputation of matrix elements 
         do ispin = 1, 2  ! spin of the couple a-a^dagger (i,r)
          do jspin = 1, 2   ! spin of the couple z-a^dagger (j,a)
@@ -158,7 +171,7 @@ subroutine give_2h1p_contrib(matrix_2h1p)
           endif
 
           do istate = 1, N_states
-           matrix_2h1p(idx(jdet),idet,istate) += hja * coef_perturb_from_idet(aorb,kspin,ispin,istate)
+           matrix_2h1p_tmp(idx(jdet),idet,istate) += hja * coef_perturb_from_idet(aorb,kspin,ispin,istate)
           enddo
          enddo ! ispin 
 
@@ -171,7 +184,7 @@ subroutine give_2h1p_contrib(matrix_2h1p)
            if(ispin == kspin .and. iorb.le.jorb)cycle ! condition not to double count 
            do a = 1, n_act_orb      ! First active 
             do istate = 1, N_states
-             matrix_2h1p(idet,idet,istate) += coef_perturb_from_idet(a,kspin,ispin,istate) * perturb_dets_hij(a,kspin,ispin) 
+             matrix_2h1p_tmp(idet,idet,istate) += coef_perturb_from_idet(a,kspin,ispin,istate) * perturb_dets_hij(a,kspin,ispin) 
             enddo
            enddo
           enddo
@@ -187,6 +200,14 @@ subroutine give_2h1p_contrib(matrix_2h1p)
 
 
 
+ !$OMP END DO NOWAIT
+ !$OMP CRITICAL
+ matrix_2h1p(:,:,:) = matrix_2h1p(:,:,:) + matrix_2h1p_tmp(:,:,:)
+ !$OMP END CRITICAL
+ deallocate(matrix_2h1p_tmp)
+ !$OMP END PARALLEL
+
+
 
 
 end
@@ -195,7 +216,7 @@ end
 subroutine give_1h2p_contrib(matrix_1h2p)
   use bitmasks
  implicit none
- double precision , intent(inout) :: matrix_1h2p(N_det,N_det,*)
+ double precision , intent(inout) :: matrix_1h2p(N_det_ref,N_det_ref,N_states)
  integer :: i,v,r,a,b
  integer :: iorb, vorb, rorb, aorb, borb
  integer :: ispin,jspin
@@ -212,13 +233,25 @@ subroutine give_1h2p_contrib(matrix_1h2p)
  double precision :: get_mo_bielec_integral
  double precision :: active_int(n_act_orb,2)
  double precision :: hij,phase
-!matrix_1h2p = 0.d0
+ double precision, allocatable :: matrix_1h2p_tmp(:,:,:)
+ logical :: is_a_1h2p
  
  elec_num_tab_local = 0
  do inint = 1, N_int
   elec_num_tab_local(1) += popcnt(psi_ref(inint,1,1))
   elec_num_tab_local(2) += popcnt(psi_ref(inint,2,1))
  enddo
+
+ !$OMP PARALLEL &
+ !$OMP DEFAULT (NONE) &
+ !$OMP PRIVATE (i,iorb,v,vorb,r,rorb,a,aorb,b,borb,istate,degree,idx,delta_e,idet,ispin,jspin,det_tmp,inint,accu_elec, & 
+ !$OMP         perturb_dets_phase ,perturb_dets_hij,coef_perturb_from_idet,perturb_dets,phase,active_int,jdet,index_orb_act_mono, & 
+ !$OMP         kspin,hja,exc,matrix_1h2p_tmp) & 
+ !$OMP SHARED  (N_det_ref,psi_ref,N_int,n_act_orb,list_act,elec_num_tab_local,N_states,list_virt,n_virt_orb,list_act_reverse, & 
+ !$OMP         one_anhil,fock_virt_total_spin_trace,fock_core_inactive_total_spin_trace,n_inact_orb,list_inact,mo_integrals_map,matrix_1h2p)
+ allocate(matrix_1h2p_tmp(N_det_ref,N_det_ref,N_states))
+ matrix_1h2p_tmp = 0.d0
+ !$OMP DO SCHEDULE(dynamic)
  do i = 1, n_inact_orb  ! First inactive 
   iorb = list_inact(i)
    do v = 1, n_virt_orb  ! First virtual 
@@ -232,14 +265,14 @@ subroutine give_1h2p_contrib(matrix_1h2p)
       active_int(a,2) = get_mo_bielec_integral(iorb,aorb,vorb,rorb,mo_integrals_map) ! exchange
      enddo
      
-  integer           :: degree(N_det)
-  integer           :: idx(0:N_det)
   double precision :: delta_e(n_act_orb,2,N_states)
   integer :: istate
-  integer :: index_orb_act_mono(N_det,3)
+  integer :: index_orb_act_mono(N_det_ref,3)
 
-      do idet = 1, N_det
-        call get_excitation_degree_vector_mono(psi_ref,psi_ref(1,1,idet),degree,N_int,N_det,idx)
+      do idet = 1, N_det_ref
+  integer           :: degree(N_det_ref)
+  integer           :: idx(0:N_det_ref)
+        call get_excitation_degree_vector_mono(psi_ref,psi_ref(1,1,idet),degree,N_int,N_det_ref,idx)
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Precomputation of matrix elements 
         do ispin = 1, 2  ! spin of the couple a-a^dagger (iorb,rorb)
          do jspin = 1, 2   ! spin of the couple a-a^dagger (aorb,vorb)
@@ -281,6 +314,11 @@ subroutine give_1h2p_contrib(matrix_1h2p)
            enddo
             
            call get_double_excitation(psi_ref(1,1,idet),det_tmp,exc,phase,N_int)
+           if(.not.is_a_1h2p(det_tmp))then
+            print*, 'AHAHAH problem in give_1h2p_contrib'
+            call debug_det(det_tmp,N_int)
+            pause
+           endif
            perturb_dets_phase(a,jspin,ispin) = phase
            do istate = 1, N_states
             delta_e(a,jspin,istate) = one_anhil(a,jspin,istate)                                                          &
@@ -293,8 +331,8 @@ subroutine give_1h2p_contrib(matrix_1h2p)
            else 
             perturb_dets_hij(a,jspin,ispin) = phase * active_int(a,1) 
            endif
-!!!!!!!!!!!!!!!!!!!!!1 Computation of the coefficient at first order coming from idet 
-!!!!!!!!!!!!!!!!!!!!!  for the excitation (i,j)(ispin,jspin)  ---> (r,a)(ispin,jspin)
+ !!!!!!!!!!!!!!!!!!!!1 Computation of the coefficient at first order coming from idet 
+ !!!!!!!!!!!!!!!!!!!!  for the excitation (i,j)(ispin,jspin)  ---> (r,a)(ispin,jspin)
            do istate = 1, N_states
             coef_perturb_from_idet(a,jspin,ispin,istate) = perturb_dets_hij(a,jspin,ispin) / delta_e(a,jspin,istate)
            enddo
@@ -303,9 +341,9 @@ subroutine give_1h2p_contrib(matrix_1h2p)
         enddo
        enddo
        
-!!!!!!!!!!!!!!!!!!!!!!!!!!! determination of the connections between I and the other J determinants mono excited in the CAS
-!!!!!!!!!!!!!!!!!!!!!!!!!!!! the determinants I and J must be connected by the following operator 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!! <Jdet | a^{\dagger}_b a_{a}  | Idet> 
+ !!!!!!!!!!!!!!!!!!!!!!!!!! determination of the connections between I and the other J determinants mono excited in the CAS
+ !!!!!!!!!!!!!!!!!!!!!!!!!!! the determinants I and J must be connected by the following operator 
+ !!!!!!!!!!!!!!!!!!!!!!!!!!! <Jdet | a^{\dagger}_b a_{a}  | Idet> 
        do jdet = 1, idx(0)
          if(idx(jdet).ne.idet)then
           call get_mono_excitation(psi_ref(1,1,idet),psi_ref(1,1,idx(jdet)),exc,phase,N_int)
@@ -351,6 +389,11 @@ subroutine give_1h2p_contrib(matrix_1h2p)
           ! hja = < det_tmp | H | Jdet >
 
           call get_double_excitation(psi_ref(1,1,idx(jdet)),det_tmp,exc,phase,N_int)
+           if(.not.is_a_1h2p(det_tmp))then
+            print*, 'AHAHAH problem in give_1h2p_contrib'
+            call debug_det(det_tmp,N_int)
+            pause
+           endif
           if(kspin == ispin)then
            hja = phase * (active_int(borb,1) - active_int(borb,2) )
           else
@@ -358,7 +401,7 @@ subroutine give_1h2p_contrib(matrix_1h2p)
           endif
 
           do istate = 1, N_states
-           matrix_1h2p(idx(jdet),idet,istate) += hja * coef_perturb_from_idet(aorb,kspin,ispin,istate)
+           matrix_1h2p_tmp(idx(jdet),idet,istate) += hja * coef_perturb_from_idet(aorb,kspin,ispin,istate)
           enddo
          enddo ! ispin 
 
@@ -372,7 +415,7 @@ subroutine give_1h2p_contrib(matrix_1h2p)
             aorb = list_act(a)
             if(ispin == kspin .and. vorb.le.rorb)cycle ! condition not to double count 
             do istate = 1, N_states
-             matrix_1h2p(idet,idet,istate) += coef_perturb_from_idet(a,kspin,ispin,istate) * perturb_dets_hij(a,kspin,ispin) 
+             matrix_1h2p_tmp(idet,idet,istate) += coef_perturb_from_idet(a,kspin,ispin,istate) * perturb_dets_hij(a,kspin,ispin) 
             enddo
            enddo
           enddo
@@ -386,6 +429,12 @@ subroutine give_1h2p_contrib(matrix_1h2p)
    enddo
  enddo
 
+ !$OMP END DO NOWAIT
+ !$OMP CRITICAL
+ matrix_1h2p(:,:,:) = matrix_1h2p(:,:,:) + matrix_1h2p_tmp(:,:,:)
+ !$OMP END CRITICAL
+ deallocate(matrix_1h2p_tmp)
+ !$OMP END PARALLEL
 
 
 
@@ -396,7 +445,7 @@ end
 subroutine give_1h1p_contrib(matrix_1h1p)
   use bitmasks
  implicit none
- double precision , intent(inout) :: matrix_1h1p(N_det,N_det,*)
+ double precision , intent(inout) :: matrix_1h1p(N_det_ref,N_det_ref,*)
  integer :: i,j,r,a,b
  integer :: iorb, jorb, rorb, aorb, borb
  integer :: ispin,jspin
@@ -409,8 +458,8 @@ subroutine give_1h1p_contrib(matrix_1h1p)
  double precision :: get_mo_bielec_integral
  double precision :: active_int(n_act_orb,2)
  double precision :: hij,phase
- integer           :: degree(N_det)
- integer           :: idx(0:N_det)
+ integer           :: degree(N_det_ref)
+ integer           :: idx(0:N_det_ref)
  integer :: istate
  double precision :: hja,delta_e_inact_virt(N_states)
  integer :: kspin,degree_scalar
@@ -429,8 +478,8 @@ subroutine give_1h1p_contrib(matrix_1h1p)
       delta_e_inact_virt(j) = fock_core_inactive_total_spin_trace(iorb,j) & 
                             - fock_virt_total_spin_trace(rorb,j) 
      enddo
-      do idet = 1, N_det
-        call get_excitation_degree_vector_mono(psi_ref,psi_ref(1,1,idet),degree,N_int,N_det,idx)
+      do idet = 1, N_det_ref
+        call get_excitation_degree_vector_mono(psi_ref,psi_ref(1,1,idet),degree,N_int,N_det_ref,idx)
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Precomputation of matrix elements 
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Case of the mono excitations
            do jdet = 1, idx(0)
@@ -446,8 +495,8 @@ subroutine give_1h1p_contrib(matrix_1h1p)
                call  i_H_j(psi_ref(1,1,idet),det_tmp,N_int,himono)
                
                do state_target = 1, N_states
-!               delta_e(state_target) = one_anhil_one_creat_inact_virt(i,r,state_target) + delta_e_inact_virt(state_target)
-                delta_e(state_target) = one_anhil_one_creat_inact_virt_bis(i,r,idet,state_target)
+                delta_e(state_target) = one_anhil_one_creat_inact_virt(i,r,state_target) + delta_e_inact_virt(state_target)
+!               delta_e(state_target) = one_anhil_one_creat_inact_virt(i,r,idet,state_target)
                 coef_mono(state_target) = himono / delta_e(state_target)
                enddo
                if(idx(jdet).ne.idet)then
@@ -516,7 +565,7 @@ end
 subroutine give_1h1p_sec_order_singles_contrib(matrix_1h1p)
   use bitmasks
  implicit none
- double precision , intent(inout) :: matrix_1h1p(N_det,N_det,*)
+ double precision , intent(inout) :: matrix_1h1p(N_det_ref,N_det_ref,*)
  integer :: i,j,r,a,b
  integer :: iorb, jorb, rorb, aorb, borb,s,sorb
  integer :: ispin,jspin
@@ -533,8 +582,8 @@ subroutine give_1h1p_sec_order_singles_contrib(matrix_1h1p)
  double precision :: get_mo_bielec_integral
  double precision :: active_int(n_act_orb,2)
  double precision :: hij,phase
- integer           :: degree(N_det)
- integer           :: idx(0:N_det)
+ integer           :: degree(N_det_ref)
+ integer           :: idx(0:N_det_ref)
  integer :: istate
  double precision :: hja,delta_e_inact_virt(N_states)
  integer :: kspin,degree_scalar
@@ -547,8 +596,8 @@ subroutine give_1h1p_sec_order_singles_contrib(matrix_1h1p)
  enddo
  double precision :: himono,delta_e(N_states),coef_mono(N_states)
  integer  :: state_target
- do idet = 1, N_det
-    call get_excitation_degree_vector_mono(psi_ref,psi_ref(1,1,idet),degree,N_int,N_det,idx)
+ do idet = 1, N_det_ref
+    call get_excitation_degree_vector_mono(psi_ref,psi_ref(1,1,idet),degree,N_int,N_det_ref,idx)
     do i = 1, n_inact_orb  ! First inactive 
      iorb = list_inact(i)
       do r = 1, n_virt_orb    ! First virtual
@@ -676,7 +725,7 @@ end
 subroutine give_1p_sec_order_singles_contrib(matrix_1p)
   use bitmasks
  implicit none
- double precision , intent(inout) :: matrix_1p(N_det,N_det,*)
+ double precision , intent(inout) :: matrix_1p(N_det_ref,N_det_ref,*)
  integer :: i,j,r,a,b
  integer :: iorb, jorb, rorb, aorb, borb,s,sorb
  integer :: ispin,jspin
@@ -692,8 +741,8 @@ subroutine give_1p_sec_order_singles_contrib(matrix_1p)
  integer :: accu_elec
  double precision :: get_mo_bielec_integral
  double precision :: hij,phase
- integer           :: degree(N_det)
- integer           :: idx(0:N_det)
+ integer           :: degree(N_det_ref)
+ integer           :: idx(0:N_det_ref)
  integer :: istate
  double precision :: hja,delta_e_act_virt(N_states)
  integer :: kspin,degree_scalar
@@ -706,8 +755,8 @@ subroutine give_1p_sec_order_singles_contrib(matrix_1p)
  enddo
  double precision :: himono,delta_e(N_states),coef_mono(N_states)
  integer  :: state_target
- do idet = 1, N_det
-    call get_excitation_degree_vector_mono(psi_ref,psi_ref(1,1,idet),degree,N_int,N_det,idx)
+ do idet = 1, N_det_ref
+    call get_excitation_degree_vector_mono(psi_ref,psi_ref(1,1,idet),degree,N_int,N_det_ref,idx)
     do i = 1, n_act_orb  ! First active 
      iorb = list_act(i)
       do r = 1, n_virt_orb    ! First virtual
@@ -801,7 +850,7 @@ subroutine give_1p_sec_order_singles_contrib(matrix_1p)
          det_tmp(inint,1) = det_pert(inint,1,i,r,ispin)
          det_tmp(inint,2) = det_pert(inint,2,i,r,ispin)
         enddo
-        do jdet = 1,N_det
+        do jdet = 1,N_det_ref
          double precision :: coef_array(N_states),hij_test
          call  i_H_j(det_tmp,psi_ref(1,1,jdet),N_int,himono)
          call get_delta_e_dyall(psi_ref(1,1,jdet),det_tmp,delta_e)
@@ -822,7 +871,7 @@ end
 subroutine give_1h1p_only_doubles_spin_cross(matrix_1h1p)
   use bitmasks
  implicit none
- double precision , intent(inout) :: matrix_1h1p(N_det,N_det,*)
+ double precision , intent(inout) :: matrix_1h1p(N_det_ref,N_det_ref,*)
  integer :: i,j,r,a,b
  integer :: iorb, jorb, rorb, aorb, borb
  integer :: ispin,jspin
@@ -835,8 +884,8 @@ subroutine give_1h1p_only_doubles_spin_cross(matrix_1h1p)
  double precision :: get_mo_bielec_integral
  double precision :: active_int(n_act_orb,2)
  double precision :: hij,phase
- integer           :: degree(N_det)
- integer           :: idx(0:N_det)
+ integer           :: degree(N_det_ref)
+ integer           :: idx(0:N_det_ref)
  integer :: istate
  double precision :: hja,delta_e_inact_virt(N_states)
  integer(bit_kind) :: pert_det(N_int,2,n_act_orb,n_act_orb,2)
@@ -861,8 +910,8 @@ subroutine give_1h1p_only_doubles_spin_cross(matrix_1h1p)
       delta_e_inact_virt(j) = fock_core_inactive_total_spin_trace(iorb,j) & 
                             - fock_virt_total_spin_trace(rorb,j) 
      enddo
-      do idet = 1, N_det
-        call get_excitation_degree_vector_double_alpha_beta(psi_ref,psi_ref(1,1,idet),degree,N_int,N_det,idx)
+      do idet = 1, N_det_ref
+        call get_excitation_degree_vector_double_alpha_beta(psi_ref,psi_ref(1,1,idet),degree,N_int,N_det_ref,idx)
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Precomputation of matrix elements 
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Case of the mono excitations
            do ispin = 1, 2 

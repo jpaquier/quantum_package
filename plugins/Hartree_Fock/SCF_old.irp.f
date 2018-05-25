@@ -47,7 +47,7 @@ subroutine run
   double precision               :: EHF
   integer                        :: i_it, i, j, k
    
-  EHF = HF_energy 
+  EHF = SCF_energy 
 
   mo_label = "Canonical"
 

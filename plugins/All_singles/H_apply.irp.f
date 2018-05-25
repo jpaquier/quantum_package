@@ -14,6 +14,24 @@ s.filter_only_2p()
 print s
 
 
+s = H_apply("just_1h2p")
+s.set_selection_pt2("epstein_nesbet")
+s.filter_only_1h2p()
+print s
+
+s = H_apply("PT2_just_1h2p_jmmrpt")
+s.set_perturbation("jm_mrpt")
+s.filter_only_1h2p()
+print s
+
+s = H_apply("PT2_just_1h2p")
+s.set_perturbation("epstein_nesbet")
+s.filter_only_1h2p()
+print s
+
+
+
+
 s = H_apply("just_1p")
 s.set_selection_pt2("epstein_nesbet_2x2")
 s.filter_only_1p()
@@ -30,6 +48,7 @@ print s
 s = H_apply("just_mono",do_double_exc=False)
 s.set_selection_pt2("epstein_nesbet_2x2")
 print s
+
 
 END_SHELL
 

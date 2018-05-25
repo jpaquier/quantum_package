@@ -53,3 +53,57 @@ logical function is_the_particl_in_det(key_in,ispin,i_particl)
  endif
 
 end
+
+subroutine find_hole_in_det(key_in,i_hole)
+ use bitmasks
+ implicit none
+ integer(bit_kind), intent(in) :: key_in(N_int,2)
+ integer, intent(out) :: i_hole(0:mo_tot_num,2)
+ integer :: i
+ integer(bit_kind) :: key_tmp(N_int,2)
+ integer :: occ(N_int*bit_kind_size), itest
+ do i = 1, N_int
+  key_tmp(i,1) = xor(reunion_of_core_inact_bitmask(i,1),iand(reunion_of_core_inact_bitmask(i,1),key_in(i,1)))
+  key_tmp(i,2) = xor(reunion_of_core_inact_bitmask(i,1),iand(reunion_of_core_inact_bitmask(i,2),key_in(i,2)))
+ enddo
+ 
+ call bitstring_to_list(key_tmp(1,1), occ, itest, N_int)
+ i_hole(0,1) = itest
+ do i = 1, itest
+  i_hole(i,1) = occ(i)
+ enddo
+
+ call bitstring_to_list(key_tmp(1,2), occ, itest, N_int)
+ i_hole(0,2) = itest
+ do i = 1, itest
+  i_hole(i,2) = occ(i)
+ enddo
+
+end
+
+subroutine find_particle_in_det(key_in,i_part)
+ use bitmasks
+ implicit none
+ integer(bit_kind), intent(in) :: key_in(N_int,2)
+ integer, intent(out) :: i_part(0:mo_tot_num,2)
+ integer :: i
+ integer(bit_kind) :: key_tmp(N_int,2)
+ integer :: occ(N_int*bit_kind_size), itest
+ do i = 1, N_int
+  key_tmp(i,1) = iand(virt_bitmask(i,1),key_in(i,1))
+  key_tmp(i,2) = iand(virt_bitmask(i,2),key_in(i,2))
+ enddo
+ 
+ call bitstring_to_list(key_tmp(1,1), occ, itest, N_int)
+ i_part(0,1) = itest
+ do i = 1, itest
+  i_part(i,1) = occ(i)
+ enddo
+
+ call bitstring_to_list(key_tmp(1,2), occ, itest, N_int)
+ i_part(0,2) = itest
+ do i = 1, itest
+  i_part(i,2) = occ(i)
+ enddo
+
+end

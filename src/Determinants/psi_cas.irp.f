@@ -11,33 +11,23 @@ use bitmasks
   END_DOC
   integer                        :: i, k, l
   logical                        :: good
+  integer :: number_of_holes,number_of_particles
   N_det_cas = 0
   do i=1,N_det
     do l = 1, N_states
      psi_cas_coef(i,l) = 0.d0
     enddo
-    do l=1,n_cas_bitmask
-      good = .True.
-      do k=1,N_int
-        good = good .and. (                                          &
-            iand(not(cas_bitmask(k,1,l)), psi_det(k,1,i)) ==         &
-            iand(not(cas_bitmask(k,1,l)), hf_bitmask(k,1)) ) .and. (  &
-            iand(not(cas_bitmask(k,2,l)), psi_det(k,2,i)) ==         &
-            iand(not(cas_bitmask(k,2,l)), hf_bitmask(k,2)) )
-      enddo
-      if (good) then
-        exit
-      endif
-    enddo
+    good = .True.
+    good = good .and. ( number_of_holes(psi_det_sorted(1,1,i)) ==0 .and. number_of_particles(psi_det_sorted(1,1,i))==0 )
     if (good) then
       N_det_cas = N_det_cas+1
       do k=1,N_int
-        psi_cas(k,1,N_det_cas) = psi_det(k,1,i)
-        psi_cas(k,2,N_det_cas) = psi_det(k,2,i)
+        psi_cas(k,1,N_det_cas) = psi_det_sorted(k,1,i)
+        psi_cas(k,2,N_det_cas) = psi_det_sorted(k,2,i)
       enddo
       idx_cas(N_det_cas) = i
       do k=1,N_states
-        psi_cas_coef(N_det_cas,k) = psi_coef(i,k)
+        psi_cas_coef(N_det_cas,k) = psi_coef_sorted(i,k)
       enddo
     endif
   enddo
@@ -73,25 +63,19 @@ END_PROVIDER
  integer                        :: i_non_cas,j,k
  integer                        :: degree
  logical                        :: in_cas
+ integer :: number_of_holes,number_of_particles
  i_non_cas =0
  do k=1,N_det
-   in_cas = .False.
-   do j=1,N_det_cas
-     call get_excitation_degree(psi_cas(1,1,j), psi_det(1,1,k), degree, N_int)
-     if (degree == 0) then
-       in_cas = .True.
-       exit
-     endif
-   enddo
+   in_cas = ( number_of_holes(psi_det_sorted(1,1,k)) == 0 .and. number_of_particles(psi_det_sorted(1,1,k)) == 0 )
    if (.not.in_cas) then
      double precision :: hij
      i_non_cas += 1
      do j=1,N_int
-       psi_non_cas(j,1,i_non_cas) = psi_det(j,1,k)
-       psi_non_cas(j,2,i_non_cas) = psi_det(j,2,k)
+       psi_non_cas(j,1,i_non_cas) = psi_det_sorted(j,1,k)
+       psi_non_cas(j,2,i_non_cas) = psi_det_sorted(j,2,k)
      enddo
      do j=1,N_states
-       psi_non_cas_coef(i_non_cas,j) = psi_coef(k,j)
+       psi_non_cas_coef(i_non_cas,j) = psi_coef_sorted(k,j)
      enddo
      idx_non_cas(i_non_cas) = k
    endif

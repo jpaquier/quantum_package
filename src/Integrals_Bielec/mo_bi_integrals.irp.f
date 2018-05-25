@@ -24,6 +24,8 @@ BEGIN_PROVIDER [ logical, mo_bielec_integrals_in_map ]
   implicit none
   integer(bit_kind)              :: mask_ijkl(N_int,4)
   integer(bit_kind)              :: mask_ijk(N_int,3)
+
+  real                           :: map_mb
   
   BEGIN_DOC
   ! If True, the map of MO bielectronic integrals is provided
@@ -143,6 +145,9 @@ BEGIN_PROVIDER [ logical, mo_bielec_integrals_in_map ]
     mo_map_size = get_mo_map_size()
     
     print*,'Molecular integrals provided'
+    print*,' Size of MO map           ', map_mb(mo_integrals_map) ,'MB'
+    print*,' Number of MO integrals: ',  mo_map_size
+
   endif
   if (write_mo_integrals.and.mpi_master) then
     call ezfio_set_work_empty(.False.)
@@ -322,7 +327,7 @@ subroutine add_integrals_to_map(mask_ijkl)
     do k1 = 1,ao_num
       bielec_tmp_2 = 0.d0
       do j1 = 1,ao_num
-        call get_ao_bielec_integrals(j1,k1,l1,ao_num,bielec_tmp_0(1,j1))
+        call get_ao_bielec_integrals(j1,k1,l1,ao_num,bielec_tmp_0(1,j1)) ! all integrals for a given l1, k1
         ! call compute_ao_bielec_integrals(j1,k1,l1,ao_num,bielec_tmp_0(1,j1))
       enddo
       do j1 = 1,ao_num
@@ -343,6 +348,7 @@ subroutine add_integrals_to_map(mask_ijkl)
         
         bielec_tmp_1 = 0.d0
         ii1=1
+        ! sum_m c_m^i (m)
         do ii1 = 1,kmax-4,4
           i1 = bielec_tmp_0_idx(ii1)
           i2 = bielec_tmp_0_idx(ii1+1)

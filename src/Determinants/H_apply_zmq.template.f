@@ -52,7 +52,6 @@ subroutine $subroutine($params_main)
   endif
 
   do i_generator=1,N_det_generators
-    $skip
     write(task,*) i_generator
     integer, external :: add_task_to_taskserver
     if (add_task_to_taskserver(zmq_to_qp_run_socket,trim(task)) == -1) then

@@ -132,6 +132,8 @@ BEGIN_PROVIDER [double precision, ao_kinetic_integral, (ao_num,ao_num)]
         size(ao_kinetic_integral,1), size(ao_kinetic_integral,2))
     print *,  'AO kinetic integrals read from disk'
   else
+    print *,  'Computing AO kinetic integrals '
+    
     !$OMP PARALLEL DO DEFAULT(NONE) &
     !$OMP  PRIVATE(i,j) &
     !$OMP  SHARED(ao_num, ao_kinetic_integral,ao_deriv2_x,ao_deriv2_y,ao_deriv2_z)

@@ -1,8 +1,11 @@
 program osoci_program
 implicit none
-   do_it_perturbative = .True.
-   touch do_it_perturbative
-   call FOBOCI_lmct_mlct_old_thr
+ double precision :: norm_total(N_States)
+!  do_it_perturbative = .True.
+!  touch do_it_perturbative
+!  threshold_perturbative = 1.d0
+!  touch threshold_perturbative
+   call FOBOCI_lmct_mlct_old_thr(1,norm_total)
    call provide_all_the_rest
 end
 subroutine provide_all_the_rest

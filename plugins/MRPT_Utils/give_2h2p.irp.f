@@ -9,6 +9,13 @@ subroutine give_2h2p(contrib_2h2p)
  double precision               :: numerator,denominator(N_states)
 
  contrib_2h2p = 0.d0
+
+ !$OMP PARALLEL DO &
+ !$OMP DEFAULT (NONE)  &
+ !$OMP PRIVATE (i,j,k,l,m,iorb,jorb,korb,lorb,direct_int,exchange_int,numerator,denominator) &
+ !$OMP SHARED (n_inact_orb,n_virt_orb,fock_core_inactive_total_spin_trace,fock_virt_total_spin_trace, &  
+ !$OMP        list_virt,mo_integrals_map,list_inact,N_states) &
+ !$OMP REDUCTION (+:contrib_2h2p)       
  do i = 1, n_inact_orb
   iorb = list_inact(i)
   do j = 1, n_inact_orb
@@ -29,6 +36,7 @@ subroutine give_2h2p(contrib_2h2p)
    enddo
   enddo
  enddo
+ !$OMP END PARALLEL DO
  contrib_2h2p = contrib_2h2p*0.5d0
 
 end
