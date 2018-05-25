@@ -63,6 +63,33 @@ subroutine print_variational_energy_dft
 end
 
 
+subroutine print_variational_energy_dft_mu_of_r
+ implicit none
+
+ print*,  '****************************************'
+ print*,  '****************************************'
+ print*,  ' MR DFT energy with pure correlation part for the DFT '
+ write(*, '(A28,X,F16.10)') 'TOTAL ENERGY CORR         = ',psi_energy+Energy_c_md+nuclear_repulsion
+ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ print*, ''
+ write(*, '(A28,X,F16.10)') 'Variational energy of Psi = ',psi_energy
+ print*, 'Component of the energy ....'
+ print*, ''
+ write(*, '(A28,X,F16.10)') 'nuclear_repulsion         = ',nuclear_repulsion
+ write(*, '(A28,X,F16.10)') 'psi_energy_bielec         = ',psi_energy_bielec
+ write(*, '(A28,X,F16.10)') 'psi_energy_monoelec       = ',psi_energy_monoelec
+ write(*, '(A28,X,F16.10)') 'DFT mu(r)     correlation = ',Energy_c_md
+ print*, ''
+ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ write(*, '(A28,X,F16.10)') 'mu_average for basis set  = ',mu_average
+ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+end
+
+
+
 subroutine print_variational_energy_dft_no_ecmd
  implicit none
 
