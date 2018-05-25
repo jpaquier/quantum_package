@@ -324,7 +324,7 @@
  ! ao_bielec_integrals_in_map = .True.
  ! return
  !endif
-  print*, 'Providing the AO integrals'
+  print*, 'Providing the Dirac AO integrals'
   call wall_time(wall_0)
   call wall_time(wall_1)
   call cpu_time(cpu_1)
@@ -332,7 +332,7 @@
   call new_parallel_job(zmq_to_qp_run_socket,zmq_socket_pull,'dirac_ao_integrals')
   character(len=:), allocatable :: task
   allocate(character(len=dirac_ao_num*12) :: task)
-  write(fmt,*) '(', ao_num, '(I5,X,I5,''|''))'
+  write(fmt,*) '(', dirac_ao_num, '(I5,X,I5,''|''))'
   do l=1,dirac_ao_num
    write(task,fmt) (i,l, i=1,l)
    integer, external :: add_task_to_taskserver

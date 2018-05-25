@@ -22,7 +22,7 @@
  BEGIN_DOC
  ! max number of primitives
  END_DOC
- ao_prim_num_max = maxval(dirac_ao_prim_num)
+ dirac_ao_prim_num_max = maxval(dirac_ao_prim_num)
  END_PROVIDER
 
  BEGIN_PROVIDER [ integer, dirac_mo_tot_num ]
