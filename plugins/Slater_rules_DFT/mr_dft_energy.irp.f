@@ -56,6 +56,8 @@ subroutine print_variational_energy_dft
  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  write(*, '(A28,X,F16.10)') 'corrected Multi-det correl= ',Energy_c_md_on_top(1)
  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ write(*, '(A28,X,F16.10)') 'mu_average for basis set  = ',mu_average
+ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 end

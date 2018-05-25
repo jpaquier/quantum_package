@@ -304,6 +304,7 @@ END_PROVIDER
 
 
  BEGIN_PROVIDER [double precision, Energy_c_md, (N_states)]
+&BEGIN_PROVIDER [double precision, mu_average]
  implicit none
  BEGIN_DOC
  ! Corelation energy for the multi determinent short range LDA. PRB 73 155111 2006
@@ -313,6 +314,9 @@ END_PROVIDER
  logical :: dospin
  double precision :: r2(3),dr2(3), local_potential,r12,dx2,mu,mu_coulomb,coulomb,two_body_dm
  double precision :: threshold
+ dospin = .false. ! JT dospin have to be set to true for open shell
+ threshold = 1.d-07
+ mu_average = 0.d0
  double precision :: cpu0,cpu1
  dospin = .True. ! JT dospin have to be set to true for open shell
  threshold = 1.d-07
@@ -332,7 +336,7 @@ END_PROVIDER
 !!!!!!!!!!!! CORRELATION PART
       if(md_correlation_functional.EQ."short_range_LDA")then
         call ESRC_MD_LDAERF (mu_erf,rho_a(istate),rho_b(istate),dospin,ec(istate))
-      else if(md_correlation_functional.EQ."basis_set_short_range_LDA".or.md_correlation_functional.EQ."basis_set_short_range_PBE_2dm")then
+      else if(md_correlation_functional.EQ."basis_set_short_range_LDA".or.md_correlation_functional.EQ."basis_set_short_range_PBE_2dm".or.md_correlation_functional.EQ."basis_set_sr_PBE_2dm_mu_corr")then
        if(basis_set_hf_potential)then
         call local_r12_operator_on_hf(r,r,local_potential)
 !       call local_r12_operator_with_one_e_int_on_1s(r,r,local_potential)
@@ -340,10 +344,13 @@ END_PROVIDER
         call expectation_value_in_real_space(r,r,local_potential,two_body_dm)
        endif
        mu =  local_potential * dsqrt(dacos(-1.d0)) * 0.5d0
+       mu_average +=  final_weight_functions_at_grid_points(l,k,j) * mu * (one_body_dm_mo_alpha_at_grid_points(l,k,j,1) + one_body_dm_mo_beta_at_grid_points(l,k,j,1))
        if(md_correlation_functional.EQ."basis_set_short_range_LDA")then
         call ESRC_MD_LDAERF (mu,rho_a(istate),rho_b(istate),dospin,ec(istate))
        else if(md_correlation_functional.EQ."basis_set_short_range_PBE_2dm")then
         call give_epsilon_c_md_on_top_PBE(mu,r,ec) 
+       else if(md_correlation_functional.EQ."basis_set_sr_PBE_2dm_mu_corr")then
+        call give_epsilon_c_md_on_top_PBE_mu_corrected(mu,r,ec)
        endif
       else if(md_correlation_functional.EQ."None")then
        ec = 0.d0
@@ -360,6 +367,7 @@ END_PROVIDER
     enddo
    enddo
   enddo
+ mu_average = mu_average / dble(elec_alpha_num + elec_beta_num)
  deallocate(aos_array,r,rho_a,rho_b, ec)
  call cpu_time(cpu1)
  print*,'Time for the ec_md integration :',cpu1-cpu0
