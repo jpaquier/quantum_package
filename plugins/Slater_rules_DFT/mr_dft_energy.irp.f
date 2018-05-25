@@ -67,6 +67,7 @@ subroutine print_variational_energy_dft_mu_of_r
  implicit none
 
  print*,  '****************************************'
+ print*, 'Functional used = ',md_correlation_functional
  print*,  '****************************************'
  print*,  ' MR DFT energy with pure correlation part for the DFT '
  write(*, '(A28,X,F16.10)') 'TOTAL ENERGY CORR         = ',psi_energy+Energy_c_md+nuclear_repulsion
