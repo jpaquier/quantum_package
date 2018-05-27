@@ -109,4 +109,34 @@
   enddo
  END_PROVIDER
 
-
+ BEGIN_PROVIDER [ double precision, d_L, (2*dirac_ao_num) ]
+ &BEGIN_PROVIDER [ double precision, d_L_I, (dirac_ao_num, 2) ]
+ implicit none
+ BEGIN_DOC
+ ! d_L = d_List, d_L_I = d_list_inverse
+ ! mappings between the real index of the d_ao_num AOs and 
+ ! the (2*d_ao_num)*(2*d_ao_num) positions in the 
+ ! dirac Fock matrix
+ END_DOC
+ integer   ::     i
+ do i = 1, 2*dirac_ao_num
+  if (i .le. ao_num) then
+   d_L(i) = i
+  elseif (i .gt. ao_num .and. i .le. (2*ao_num)) then
+   d_L(i) = i - ao_num
+  elseif (i .gt. (2*ao_num) .and. i .le. (2*ao_num+small_ao_num)) then
+   d_L(i) = i - (2*ao_num)
+  elseif (i .gt. (2*ao_num+small_ao_num)) then
+   d_L(i) = i - (2*ao_num+small_ao_num)
+  endif
+ enddo
+ do i = 1, dirac_ao_num
+  if (i .le. ao_num) then
+   d_L_I(i,1) = (i)
+   d_L_I(i,2) = (i+ao_num)
+  elseif (i .gt. ao_num) then
+   d_L_I(i,1) = (i+2*ao_num)
+   d_L_I(i,2) = (i+(2*ao_num+small_ao_num))
+  endif
+ enddo
+ END_PROVIDER
