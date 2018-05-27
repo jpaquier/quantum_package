@@ -1,4 +1,4 @@
- BEGIN_PROVIDER [ complex*16,dirac_mo_coef,(2*(dirac_ao_num),2*(dirac_mo_tot_num))
+ BEGIN_PROVIDER [ complex*16, dirac_mo_coef, (2*(dirac_ao_num),2*(dirac_mo_tot_num))
  implicit none
   BEGIN_DOC
   ! Molecular orbital coefficients on AO basis set
@@ -6,53 +6,32 @@
   ! mo_label : Label characterizing the MOS (local, canonical, natural,
   ! etc)
   END_DOC
-  integer                        :: i, j, k, l
-  double precision, allocatable  :: buffer(:,:)
-  logical                        :: exists
+  integer                        :: i, j
   PROVIDE ezfio_filename
+  dirac_mo_coef = (0.d0,0.d0)
   do i=1, 2*(dirac_mo_tot_num)
    if (i .le. mo_tot_num) then
-    l = i - 0
     do j=1, 2*(dirac_ao_num)
      if (j .le. ao_num) then
-      k = j - 0
-      dirac_mo_coef(j,i) = (1.d0,0.d0)*mo_coef(k,l)
-     elseif (j .gt. mo_tot_num) then
-      dirac_mo_coef(j,i) = (1.d0,0.d0)*0.d0
+      dirac_mo_coef(i,j) = (1.d0,0.d0)*mo_coef(d_L(i),d_L(j))
      endif
     enddo
    elseif (i.gt. mo_tot_num .and. i .le. 2*mo_tot_num) then
-    l = i - mo_tot_num
     do j=1, 2*(ao_num+small_ao_num)
-     if (j .le. ao_num) then
-      dirac_mo_coef(j,i) = (1.d0,0.d0)*0.d0
-     elseif (j .gt. ao_num .and. j .le. 2*ao_num) then
-      k = j - ao_num
-      dirac_mo_coef(j,i) = (1.d0,0.d0)*mo_coef(k,l)
-     elseif (j .gt. 2*ao_num) then
-      dirac_mo_coef(j,i) = (1.d0,0.d0)*0.d0
+     if (j .gt. ao_num .and. j .le. 2*ao_num) then
+      dirac_mo_coef(i,j) = (1.d0,0.d0)*mo_coef(d_L(i),d_L(j))
      endif
     enddo
    elseif (i.gt. 2*mo_tot_num .and. i .le. (2*mo_tot_num+small_mo_tot_num)) then
-    l = i - 2*mo_tot_num
     do j=1, 2*(ao_num+small_ao_num)
-     if (j .le. 2*ao_num) then
-      dirac_mo_coef(j,i) = (1.d0,0.d0)*0.d0
-     elseif (j .gt. 2*ao_num .and. j .le. (2*ao_num+small_ao_num)) then
-      k = j - 2*ao_num
-      dirac_mo_coef(j,i) = (1.d0,0.d0)*small_mo_coef(k,l)
-     elseif (j .gt. (2*ao_num+small_ao_num)) then
-      dirac_mo_coef(j,i) = (1.d0,0.d0)*0.d0
+     if (j .gt. 2*ao_num .and. j .le. (2*ao_num+small_ao_num)) then
+      dirac_mo_coef(i,j) = (1.d0,0.d0)*small_mo_coef(d_L(i),d_L(j))
      endif
     enddo
    else
-    l = i - (2*mo_tot_num+small_mo_tot_num)
     do j=1, 2*(ao_num+small_ao_num)
-     if (j .le. (2*ao_num+small_ao_num)) then
-      dirac_mo_coef(j,i) = (1.d0,0.d0)*0.d0
-     else
-      k = j - (2*ao_num+small_ao_num)
-      dirac_mo_coef(j,i) = (1.d0,0.d0)*small_mo_coef(k,l)
+     if (j .gt. (2*ao_num+small_ao_num)) then
+      dirac_mo_coef(i,j) = (1.d0,0.d0)*small_mo_coef(d_L(i),d_L(j))
      endif
     enddo
    endif

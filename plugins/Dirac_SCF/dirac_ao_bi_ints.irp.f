@@ -1,5 +1,4 @@
  use map_module
-
  double precision function dirac_ao_bielec_integral(i,j,k,l)
   implicit none
   BEGIN_DOC
