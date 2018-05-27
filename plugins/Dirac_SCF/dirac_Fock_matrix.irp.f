@@ -191,9 +191,9 @@
    do j = 1, ao_num
     do k = 1, 2*dirac_ao_num
      do l = 1, 2*dirac_ao_num
-      D = dirac_SCF_density_matrix_ao(k,l)
-       if (k .le. ao_num .and. l .gt. ao_num .and. l .le. 2*ao_num) then
-        dirac_ao_bi_elec_integral_L_beta_L_alpha(i,j) += D*(- dirac_ao_bielec_integral(i,d_L(l),d_L(k),j))
+      if (k .le. ao_num .and. l .gt. ao_num .and. l .le. 2*ao_num) then
+       D = dirac_SCF_density_matrix_ao(k,l)
+       dirac_ao_bi_elec_integral_L_beta_L_alpha(i,j) += D*(- dirac_ao_bielec_integral(i,d_L(l),d_L(k),j))
       endif
      enddo
     enddo
@@ -229,7 +229,7 @@
  BEGIN_PROVIDER [ complex*16, dirac_ao_bi_elec_integral_S_alpha_S_alpha, (small_ao_num, small_ao_num) ]
   implicit none
   BEGIN_DOC
-  ! L_alpha L_alpha bloc of the bi-electronic Fock matrix in dirac AO basis set
+  ! S_alpha S_alpha bloc of the bi-electronic Fock matrix in dirac AO basis set
    END_DOC
   integer                        :: i,j,k,l 
   complex*16                     :: D
@@ -241,7 +241,7 @@
      do l = 1, 2*dirac_ao_num
       D = dirac_SCF_density_matrix_ao(k,l)
       if (k .gt. (2*ao_num) .and. k .le. (2*ao_num+small_ao_num) .and. l .gt. (2*ao_num) .and. l .le. (2*ao_num+small_ao_num)) then
-       dirac_ao_bi_elec_integral_L_alpha_L_alpha(i,j) += D*(dirac_ao_bielec_integral(i,j,d_L(k),d_L(l)) - dirac_ao_bielec_integral(i,d_L(l),d_L(k),j))
+       dirac_ao_bi_elec_integral_S_alpha_S_alpha(i,j) += D*(dirac_ao_bielec_integral(i,j,d_L(k),d_L(l)) - dirac_ao_bielec_integral(i,d_L(l),d_L(k),j))
       elseif ((k .le. ao_num .and. l .le. ao_num) .or. &
               (k .gt. ao_num .and. k .le. (2*ao_num) .and. l.gt. ao_num .and. l.le. (2*ao_num)) .or. &
               (k .gt. (2*ao_num+small_ao_num) .and. l.gt.(2*ao_num+small_ao_num))) then
@@ -254,59 +254,82 @@
  END_PROVIDER 
 
 
+ BEGIN_PROVIDER [ complex*16, dirac_ao_bi_elec_integral_S_beta_S_beta, (small_ao_num, small_ao_num) ]
+  implicit none
+  BEGIN_DOC
+  ! S_beta S_beta bloc of the bi-electronic Fock matrix in dirac AO basis set
+   END_DOC
+  integer                        :: i,j,k,l 
+  complex*16                     :: D
+  double precision               :: dirac_ao_bielec_integral
+  dirac_ao_bi_elec_integral_S_beta_S_beta = (0.d0,0.d0)
+  do i = 1, small_ao_num
+   do j = 1, small_ao_num
+    do k = 1, 2*dirac_ao_num
+     do l = 1, 2*dirac_ao_num
+      D = dirac_SCF_density_matrix_ao(k,l)
+      if (k .gt. (2*ao_num+small_ao_num) .and. l .gt. (2*ao_num+small_ao_num)) then
+       dirac_ao_bi_elec_integral_S_beta_S_beta(i,j) += D*(dirac_ao_bielec_integral(i,j,d_L(k),d_L(l)) - dirac_ao_bielec_integral(i,d_L(l),d_L(k),j))
+      elseif ((k .le. ao_num .and. l .le. ao_num) .or. &
+              (k .gt. ao_num .and. k .le. (2*ao_num) .and. l.gt. ao_num .and. l.le. (2*ao_num)) .or. &
+              (k .gt. (2*ao_num) .and. k .le. (2*ao_num+small_ao_num) .and. l .gt. (2*ao_num) .and. l .le. (2*ao_num+small_ao_num))) then
+       dirac_ao_bi_elec_integral_S_beta_S_beta(i,j) += D*dirac_ao_bielec_integral(i,j,d_L(k),d_L(l))
+      endif
+     enddo
+    enddo
+   enddo
+  enddo
+ END_PROVIDER 
 
-!  elseif (i .gt. 2*ao_num .and. i .le. (2*ao_num+small_ao_num) .and. j .gt. 2*ao_num .and. j .le. (2*ao_num+small_ao_num)) then
-!!5 S_alpha S_alpha 
-!   do k = 1, 2*dirac_ao_num 
-!    do l = 1, 2*dirac_ao_num 
-!     D = dirac_SCF_density_matrix_ao(k,l)
-!     if (k .le. ao_num .and. l .le. ao_num) then
-!      dirac_ao_bi_elec_integralnaive(i,j) += D * (dirac_ao_bielec_integral(i,j,k,l))
-!     elseif (k .gt. ao_num .and. k .le. 2*ao_num .and. l.gt. ao_num .and. l .le. 2*ao_num) then
-!      dirac_ao_bi_elec_integralnaive(i,j) += D * (dirac_ao_bielec_integral(i,j,k,l)) 
-!     elseif (k .gt. 2*ao_num .and. k .le. (2*ao_num+small_ao_num) .and. l.gt. 2*ao_num .and. l .le. (2*ao_num+small_ao_num)) then
-!      dirac_ao_bi_elec_integralnaive(i,j) += D * (dirac_ao_bielec_integral(i,j,k,l) - dirac_ao_bielec_integral(i,l,k,j))
-!     elseif (k .gt. (2*ao_num+small_ao_num) .and. l.gt. (2*ao_num+small_ao_num)) then
-!      dirac_ao_bi_elec_integralnaive(i,j) += D * (dirac_ao_bielec_integral(i,j,k,l))
-!     endif  
-!    enddo
-!   enddo
-!  elseif(i .gt. (2*ao_num+small_ao_num) .and. j .gt. (2*ao_num+small_ao_num)) then
-!!6 S_beta S_beta 
-!    do k = 1, 2*dirac_ao_num
-!    do l = 1, 2*dirac_ao_num
-!     D = dirac_SCF_density_matrix_ao(k,l)
-!     if (k .le. ao_num .and. l .le. ao_num) then
-!      dirac_ao_bi_elec_integralnaive(i,j) += D *(dirac_ao_bielec_integral(i,j,k,l))
-!     elseif (k .gt. ao_num .and. k .le. 2*ao_num .and. l.gt. ao_num .and. l.le. 2*ao_num) then
-!      dirac_ao_bi_elec_integralnaive(i,j) += D *(dirac_ao_bielec_integral(i,j,k,l)) 
-!     elseif (k .gt. 2*ao_num .and. k .le. (2*ao_num+small_ao_num) .and. l.gt. 2*ao_num .and. l .le. (2*ao_num+small_ao_num)) then
-!      dirac_ao_bi_elec_integralnaive(i,j) += D *dirac_ao_bielec_integral(i,j,k,l) 
-!     elseif (k .gt. (2*ao_num+small_ao_num) .and. l.gt.(2*ao_num+small_ao_num)) then
-!      dirac_ao_bi_elec_integralnaive(i,j) += D *(dirac_ao_bielec_integral(i,j,k,l) - dirac_ao_bielec_integral(i,l,k,j))
-!     endif
-!    enddo
-!   enddo 
-!  elseif (i .gt. 2*ao_num .and. i .le. (2*ao_num+small_ao_num) .and. j .gt. (2*ao_num+small_ao_num)) then
-!!7 S_alpha S_beta
-!   do k = 1, 2*dirac_ao_num
-!    do l = 1, 2*dirac_ao_num
-!     D = dirac_SCF_density_matrix_ao(k,l)
-!     if (k .gt. (2*ao_num+small_ao_num) .and. l .gt. 2*ao_num .and. l .le. (2*ao_num+small_ao_num)) then
-!      dirac_ao_bi_elec_integralnaive(i,j) += D *( -dirac_ao_bielec_integral(i,l,k,j)) 
-!     endif
-!    enddo
-!   enddo 
-!  elseif (i .gt. (2*ao_num+small_ao_num) .and. j .gt. 2*ao_num .and. j .le. (2*ao_num+small_ao_num)) then
-!!8 S_beta S_alpha
-!   do k = 1, 2*dirac_ao_num
-!    do l = 1, 2*dirac_ao_num
-!     D = dirac_SCF_density_matrix_ao(k,l)
-!     if (k .gt. 2*ao_num .and. j .le. (2*ao_num+small_ao_num) .and. l .gt. (2*ao_num+small_ao_num)) then
-!      dirac_ao_bi_elec_integralnaive(i,j) += D *( -dirac_ao_bielec_integral(i,l,k,j)) 
-!     endif
-!    enddo
-!   enddo 
+ BEGIN_PROVIDER [ complex*16, dirac_ao_bi_elec_integral_S_beta_S_alpha, (small_ao_num, small_ao_num) ]
+  implicit none
+  BEGIN_DOC
+  ! S_beta S_alpha bloc of the bi-electronic Fock matrix in dirac AO basis seti
+   END_DOC
+  integer                        :: i,j,k,l 
+  complex*16                     :: D
+  double precision               :: dirac_ao_bielec_integral
+  dirac_ao_bi_elec_integral_S_beta_S_alpha = (0.d0,0.d0)
+  do i = 1, small_ao_num
+   do j = 1, small_ao_num
+    do k = 1, 2*dirac_ao_num
+     do l = 1, 2*dirac_ao_num
+      if (k .gt. (2*ao_num) .and. k .le. (2*ao_num+small_ao_num) .and. l .gt. (2*ao_num+small_ao_num)) then
+       D = dirac_SCF_density_matrix_ao(k,l)
+       dirac_ao_bi_elec_integral_L_beta_L_alpha(i,j) += D*(- dirac_ao_bielec_integral(i,d_L(l),d_L(k),j))
+      endif
+     enddo
+    enddo
+   enddo
+  enddo
+ END_PROVIDER 
+
+
+ BEGIN_PROVIDER [ complex*16, dirac_ao_bi_elec_integral_S_alpha_S_beta, (small_ao_num, small_ao_num) ]
+  implicit none
+  BEGIN_DOC
+  ! S_beta S_alpha bloc of the bi-electronic Fock matrix in dirac AO basis set
+   END_DOC
+  integer                        :: i,j,k,l 
+  complex*16                     :: D
+  double precision               :: dirac_ao_bielec_integral
+  dirac_ao_bi_elec_integral_S_alpha_S_beta = (0.d0,0.d0)
+  do i = 1, ao_num
+   do j = 1, ao_num
+    dirac_ao_bi_elec_integral_S_alpha_S_beta(i,j) = Conjg(dirac_ao_bi_elec_integral_S_beta_S_alpha(j,i))
+   !do k = 1, 2*dirac_ao_num
+   ! do l = 1, 2*dirac_ao_num
+   !  D = dirac_SCF_density_matrix_ao(k,l)
+   !   if (k .gt. (2*ao_num+small_ao_num) .and. l .gt. (2*ao_num) .and. l .le. (2*ao_num+small_ao_num)) then
+   !    dirac_ao_bi_elec_integral_S_beta_S_alpha(i,j) += D*(- dirac_ao_bielec_integral(i,d_L(l),d_L(k),j))
+   !  endif
+   ! enddo
+   !enddo
+   enddo
+  enddo
+ END_PROVIDER 
+
+
 !  elseif (i .le. ao_num .and. j .gt. 2*ao_num .and. j .le. (2*ao_num+small_ao_num)) then
 !!9 L_alpha S_alpha
 !   do k = 1, 2*dirac_ao_num
