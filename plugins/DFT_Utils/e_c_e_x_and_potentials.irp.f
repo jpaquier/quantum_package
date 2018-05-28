@@ -302,9 +302,13 @@ end
 
 END_PROVIDER 
 
-
  BEGIN_PROVIDER [double precision, Energy_c_md, (N_states)]
-&BEGIN_PROVIDER [double precision, mu_average]
+ implicit none 
+  Energy_c_md = Energy_c_md_LDA
+ END_PROVIdER 
+
+
+ BEGIN_PROVIDER [double precision, Energy_c_md_LDA, (N_states)]
  implicit none
  BEGIN_DOC
  ! Corelation energy for the multi determinent short range LDA. PRB 73 155111 2006
@@ -314,12 +318,10 @@ END_PROVIDER
  logical :: dospin
  double precision :: r2(3),dr2(3), local_potential,r12,dx2,mu,mu_coulomb,coulomb,two_body_dm
  double precision :: threshold
- dospin = .false. ! JT dospin have to be set to true for open shell
- threshold = 1.d-07
- mu_average = 0.d0
  double precision :: cpu0,cpu1
  dospin = .True. ! JT dospin have to be set to true for open shell
  threshold = 1.d-07
+ Energy_c_md_LDA = 0.d0
  allocate(aos_array(ao_num),r(3), rho_a(N_states), rho_b(N_states), ec(N_states))
  call cpu_time(cpu0)
   do j = 1, nucl_num
@@ -334,41 +336,153 @@ END_PROVIDER
 
      do istate = 1, N_states
 !!!!!!!!!!!! CORRELATION PART
-      if(md_correlation_functional.EQ."short_range_LDA")then
-        call ESRC_MD_LDAERF (mu_erf,rho_a(istate),rho_b(istate),dospin,ec(istate))
-      else if(md_correlation_functional.EQ."basis_set_short_range_LDA".or.md_correlation_functional.EQ."basis_set_short_range_PBE_2dm".or.md_correlation_functional.EQ."basis_set_sr_PBE_2dm_mu_corr")then
-       if(basis_set_hf_potential)then
-        call local_r12_operator_on_hf(r,r,local_potential)
-!       call local_r12_operator_with_one_e_int_on_1s(r,r,local_potential)
-       else
-        call expectation_value_in_real_space(r,r,local_potential,two_body_dm)
-       endif
-       mu =  local_potential * dsqrt(dacos(-1.d0)) * 0.5d0
-       mu_average +=  final_weight_functions_at_grid_points(l,k,j) * mu * (one_body_dm_mo_alpha_at_grid_points(l,k,j,1) + one_body_dm_mo_beta_at_grid_points(l,k,j,1))
-       if(md_correlation_functional.EQ."basis_set_short_range_LDA")then
-        call ESRC_MD_LDAERF (mu,rho_a(istate),rho_b(istate),dospin,ec(istate))
-       else if(md_correlation_functional.EQ."basis_set_short_range_PBE_2dm")then
-        call give_epsilon_c_md_on_top_PBE(mu,r,ec) 
-       else if(md_correlation_functional.EQ."basis_set_sr_PBE_2dm_mu_corr")then
-        call give_epsilon_c_md_on_top_PBE_mu_corrected(mu,r,ec)
-       endif
-      else if(md_correlation_functional.EQ."None")then
-       ec = 0.d0
-      else
-       print*, 'Multi determinant correlation functional required does not exist ...'
-       print*, 'md_correlation_functional',md_correlation_functional
-       stop
-      endif
+      call ESRC_MD_LDAERF (mu_erf,rho_a(istate),rho_b(istate),dospin,ec(istate))
+      Energy_c_md_LDA(istate) += final_weight_functions_at_grid_points(l,k,j) * ec(istate)
      enddo
+    enddo
+   enddo
+  enddo
+ deallocate(aos_array,r,rho_a,rho_b, ec)
+ call cpu_time(cpu1)
+ print*,'Time for the ec_md integration :',cpu1-cpu0
+END_PROVIDER
+
+
+
+
+
+ BEGIN_PROVIDER [double precision, Energy_c_md_mu_of_r_LDA, (N_states)]
+&BEGIN_PROVIDER [double precision, mu_average_LDA]
+ implicit none 
+ integer :: j,k,l,istate 
+ double precision, allocatable :: aos_array(:), r(:), rho_a(:), rho_b(:), ec(:)
+ logical :: dospin
+ double precision :: r2(3),dr2(3), local_potential,r12,dx2,mu,mu_coulomb,coulomb,two_body_dm
+ double precision :: threshold
+ Energy_c_md_mu_of_r_LDA = 0.d0
+ dospin = .false. ! JT dospin have to be set to true for open shell
+ threshold = 1.d-07
+ mu_average_LDA = 0.d0
+ double precision :: cpu0,cpu1
+ dospin = .True. ! JT dospin have to be set to true for open shell
+ threshold = 1.d-07
+ allocate(aos_array(ao_num),r(3), rho_a(N_states), rho_b(N_states), ec(N_states))
+ call cpu_time(cpu0)
+  do j = 1, nucl_num
+   do k = 1, n_points_radial_grid  -1
+    do l = 1, n_points_integration_angular 
+     r(1) = grid_points_per_atom(1,l,k,j)
+     r(2) = grid_points_per_atom(2,l,k,j)
+     r(3) = grid_points_per_atom(3,l,k,j)
+     call dm_dft_alpha_beta_and_all_aos_at_r(r,rho_a,rho_b,aos_array)
+     if(dabs(final_weight_functions_at_grid_points(l,k,j) * (rho_a(1)+rho_b(1))).lt.threshold)cycle
      do istate = 1, N_states
-      energy_c_md(istate) += final_weight_functions_at_grid_points(l,k,j) * ec(istate)
+!!!!!!!!!!!! CORRELATION PART
+      if(basis_set_hf_potential)then
+       call local_r12_operator_on_hf(r,r,local_potential)
+      else
+       call expectation_value_in_real_space(r,r,local_potential,two_body_dm)
+      endif
+      mu =  local_potential * dsqrt(dacos(-1.d0)) * 0.5d0
+     !mu = mu_of_r(l,k,j)
+      mu_average_LDA +=  final_weight_functions_at_grid_points(l,k,j) * mu * (one_body_dm_mo_alpha_at_grid_points(l,k,j,1) + one_body_dm_mo_beta_at_grid_points(l,k,j,1))
+      call ESRC_MD_LDAERF (mu,rho_a(istate),rho_b(istate),dospin,ec(istate))
+      Energy_c_md_mu_of_r_LDA(istate) += final_weight_functions_at_grid_points(l,k,j) * ec(istate)
+     enddo
+    enddo
+   enddo
+  enddo
+ mu_average_LDA = mu_average_LDA / dble(elec_alpha_num + elec_beta_num)
+ deallocate(aos_array,r,rho_a,rho_b, ec)
+ call cpu_time(cpu1)
+ print*,'Time for the ec_md integration :',cpu1-cpu0
+
+
+ END_PROVIDER 
+
+ BEGIN_PROVIDER [double precision, Energy_c_md_mu_of_r_PBE_on_top, (N_states)]
+&BEGIN_PROVIDER [double precision, Energy_c_md_mu_of_r_PBE_on_top_corrected, (N_states)]
+&BEGIN_PROVIDER [double precision, mu_average_PBE_on_top]
+ implicit none
+ BEGIN_DOC
+ ! Corelation energy for the multi determinent short range LDA. PRB 73 155111 2006
+ END_DOC
+ integer :: j,k,l,istate 
+ double precision, allocatable :: aos_array(:), r(:), rho_a(:),rho_b(:),ec(:),ec_corrected(:)
+ logical :: dospin
+ double precision :: r2(3),dr2(3), local_potential,r12,dx2,mu,mu_coulomb,coulomb,two_body_dm
+ double precision :: threshold
+ double precision :: on_top,on_top_two_dm_in_r
+ dospin = .True. ! JT dospin have to be set to true for open shell
+ threshold = 1.d-07
+ Energy_c_md_mu_of_r_PBE_on_top = 0.d0
+ Energy_c_md_mu_of_r_PBE_on_top_corrected = 0.d0
+ mu_average_PBE_on_top = 0.d0
+
+ double precision :: cpu0,cpu1
+ allocate(aos_array(ao_num),r(3), rho_a(N_states), rho_b(N_states), ec(N_states),ec_corrected(N_states))
+
+ call cpu_time(cpu0)
+  do j = 1, nucl_num
+   do k = 1, n_points_radial_grid  -1
+    do l = 1, n_points_integration_angular 
+     
+     r(1) = grid_points_per_atom(1,l,k,j)
+     r(2) = grid_points_per_atom(2,l,k,j)
+     r(3) = grid_points_per_atom(3,l,k,j)
+     call dm_dft_alpha_beta_and_all_aos_at_r(r,rho_a,rho_b,aos_array)
+     if(dabs(final_weight_functions_at_grid_points(l,k,j) * (rho_a(1)+rho_b(1))).lt.threshold)cycle
+
+     do istate = 1, N_states
+!!!!!!!!!!!! CORRELATION PART
+      if(basis_set_hf_potential)then
+       call local_r12_operator_on_hf(r,r,local_potential)
+      else
+       call expectation_value_in_real_space(r,r,local_potential,two_body_dm)
+      endif
+      mu =  local_potential * dsqrt(dacos(-1.d0)) * 0.5d0
+      mu_average_PBE_on_top +=  final_weight_functions_at_grid_points(l,k,j) * mu * (one_body_dm_mo_alpha_at_grid_points(l,k,j,1) + one_body_dm_mo_beta_at_grid_points(l,k,j,1))
+      on_top = on_top_two_dm_in_r(r,istate) 
+      call give_epsilon_c_md_on_top_PBE_and_corrected(mu,r,on_top,ec(istate),ec_corrected(istate))
+      Energy_c_md_mu_of_r_PBE_on_top(istate) += final_weight_functions_at_grid_points(l,k,j) * ec(istate)
+      Energy_c_md_mu_of_r_PBE_on_top_corrected(istate) += final_weight_functions_at_grid_points(l,k,j) * ec_corrected(istate)
      enddo
 
     enddo
    enddo
   enddo
- mu_average = mu_average / dble(elec_alpha_num + elec_beta_num)
- deallocate(aos_array,r,rho_a,rho_b, ec)
  call cpu_time(cpu1)
+
+ mu_average_PBE_on_top = mu_average_PBE_on_top / dble(elec_alpha_num + elec_beta_num)
+
+ deallocate(aos_array,r,rho_a,rho_b, ec)
  print*,'Time for the ec_md integration :',cpu1-cpu0
 END_PROVIDER
+
+
+
+
+!BEGIN_PROVIDER [double precision, mu_of_r, (n_points_integration_angular,n_points_radial_grid,nucl_num) ]
+!BEGIN_PROVIDER [double precision, mu_average]
+!implicit none 
+
+! do j = 1, nucl_num
+!  do k = 1, n_points_radial_grid  -1
+!   do l = 1, n_points_integration_angular 
+!    r(1) = grid_points_per_atom(1,l,k,j)
+!    r(2) = grid_points_per_atom(2,l,k,j)
+!    r(3) = grid_points_per_atom(3,l,k,j)
+!    if(basis_set_hf_potential)then
+!     call local_r12_operator_on_hf(r,r,local_potential)
+!!!   call local_r12_operator_with_one_e_int_on_1s(r,r,local_potential)
+!    else
+!     call expectation_value_in_real_space(r,r,local_potential,two_body_dm)
+!    endif
+!    mu =  local_potential * dsqrt(dacos(-1.d0)) * 0.5d0
+!    mu_average +=  final_weight_functions_at_grid_points(l,k,j) * mu * (one_body_dm_mo_alpha_at_grid_points(l,k,j,1) + one_body_dm_mo_beta_at_grid_points(l,k,j,1))
+
+!   enddo
+!  enddo
+! enddo
+
+!END_PROVIDER 
