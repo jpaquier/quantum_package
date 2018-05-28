@@ -1,6 +1,6 @@
  BEGIN_PROVIDER [ complex*16, dirac_ao_mono_elec_integral,(2*(dirac_ao_num),2*(dirac_ao_num))]
   implicit none
-  integer :: i,j
+  integer          :: i,j
   BEGIN_DOC
  ! array of the mono electronic hamiltonian on the AOs basis
  ! in the 4x4 component formalism with cartesian basis and 
@@ -9,8 +9,8 @@
   do i = 1, 2*(dirac_ao_num)
    if (i .le. ao_num) then 
     do j = 1, 2*(dirac_ao_num)
-     if (j .le. ao_num) then 
-      dirac_ao_mono_elec_integral(i,j) = (1.d0,0.d0)*ao_nucl_elec_integral(d_L(i),d_L(j))  
+     if (j .le. ao_num) then
+      dirac_ao_mono_elec_integral(i,j) = (1.d0,0.d0)*ao_nucl_elec_integral(i,j)  
      elseif (j .gt. ao_num .and. j .le. 2*ao_num) then
       dirac_ao_mono_elec_integral(i,j) = (1.d0,0.d0)*0.d0
      elseif (j .gt. 2*ao_num .and. j .le. (2*ao_num+small_ao_num)) then

@@ -9,11 +9,11 @@
   integer                        :: i, j
   PROVIDE ezfio_filename
   dirac_mo_coef = (0.d0,0.d0)
-  do i=1, 2*(dirac_mo_tot_num)
+  do i=1, 2*dirac_mo_tot_num
    if (i .le. mo_tot_num) then
-    do j=1, 2*(dirac_ao_num)
+    do j=1, 2*dirac_ao_num
      if (j .le. ao_num) then
-      dirac_mo_coef(i,j) = (1.d0,0.d0)*mo_coef(d_L(i),d_L(j))
+      dirac_mo_coef(i,j) = (1.d0,0.d0)*mo_coef(i,j)
      endif
     enddo
    elseif (i.gt. mo_tot_num .and. i .le. 2*mo_tot_num) then

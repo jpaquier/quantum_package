@@ -3,30 +3,37 @@ program Dirac_SCF
   BEGIN_DOC
 ! Print the small component basis, after unrestricted kinetic balance
   END_DOC
-  integer :: i,j,k,l_type,n
-  double precision :: fact
+  integer :: i,j,k,l,l_type,n,g,h,df_L
+  double precision :: integral, dirac_ao_bielec_integral
   include 'Utils/constants.include.F'
 
 
- 
- print*,'************'
- print*,'mo_tot_num =', mo_tot_num
- print*,'small_mo_tot_num =', small_mo_tot_num
- print*,'dirac_mo_tot_num =', dirac_mo_tot_num
- do j = 1,2*(dirac_mo_tot_num)
- !print*,j,d_L(j)
-  print*,j, dirac_fock_matrix_eigenvalues(j)
+ print*,'***************'
+ integral =0
+ do i = 1, 2*ao_num
+  print*,i,d_L(i)
+ !integral = dirac_ao_bielec_integral(1,1,1,d_L(i))
+ !print*, integral
  enddo
- print*,'**************************************************'
-!do j = 1,2*ao_num
+
+!print*,"*******************************"
+!print*,'mo_tot_num =', mo_tot_num
+!print*,'small_mo_tot_num =', small_mo_tot_num
+!print*,'dirac_mo_tot_num =', dirac_mo_tot_num
+!do j = 1,2*(dirac_mo_tot_num)
+! print*,j, dirac_fock_matrix_eigenvalues(j)
+!enddo
+!print*,'**************************************************'
+!print*, dirac_ao_num
+!print*, dirac_mo_tot_num
+!do j = 1,2*dirac_ao_num
 ! print*,'**************************************************'
-! do i = 1,2*ao_num
-! !print*,i,j,dirac_ao_bi_elec_integralnaive(i,j)
+! do i = 1,2*dirac_ao_num
 ! !print*, i, j, dirac_ao_bi_elec_integral(i,j)
-! !print*,i, j, dirac_SCF_density_matrix_ao(j,i)
-! !print*, 'dirac_ao_mono_elec_integral =',i, j, dirac_ao_mono_elec_integral(i,j)
+!  print*,i, j, dirac_SCF_density_matrix_ao(j,i)
+!  print*, i, j, dirac_ao_mono_elec_integral(i,j)
 ! !print*,i,j, dirac_mo_coef(i,j) 
-! !print*, 'dirac_mo_mono_elec_integral =',i, j, dirac_mo_mono_elec_integral(i,j)
+! !print*,i, j, dirac_mo_mono_elec_integral(i,j)
 ! enddo
 !enddo
 
@@ -86,31 +93,31 @@ program Dirac_SCF
 !enddo
 
 
-!print*,'ao_num =', ao_num
-!do j = 1,ao_num
-! print*,'*********************************************'
-!!print*,'nucleus =',ao_nucl(j)
-!!print*,'nuclear_coordinate =', nucl_coord(ao_nucl(j), 1 ), nucl_coord( ao_nucl(j), 2 ), nucl_coord(ao_nucl(j), 3 )
-!!print*,'ao_expo_ordered_transp =', ao_expo_ordered_transp(1,i)
-!!print*,'ao_power =', ao_power(i,1), ao_power(i,2), ao_power(i,3)  
-! print*,'******************'
-! do i= 1,ao_num
-! !print*,'nucleus =',ao_nucl(j)
-! !print*,'nuclear_coordinate =', nucl_coord(ao_nucl(j), 1 ), nucl_coord(ao_nucl(j), 2 ), nucl_coord(ao_nucl(j), 3 )
-! !print*,'ao_expo_ordered_transp =', ao_expo_ordered_transp(1,j)
-! !print*,'ao_power =', ao_power(j,1), ao_power(j,2), ao_power(j,3)
-! !do k = 1,nucl_num 
-! ! print*, 'ao_nucl_elec_integral_per_atom =', ao_nucl_elec_integral_per_atom(i,j,k)
-! !enddo
-! !print*,'ao_ortho_canonical_coef =', ao_ortho_canonical_coef(j,i)
-! !print*,'ao_ortho_canonical_overlap =', ao_ortho_canonical_overlap(j,i)
-! !print*,'mo_mono_elec_integral =', mo_mono_elec_integral(i,j)
-! !print*,'ao_mono_elec_integral =', ao_mono_elec_integral(i,j)
-! ! print*,i,j,mo_coef(i,j)
-!  print*,i,j,dirac_SCF_density_matrix_ao(j,i) 
-!  print*,'******************'
-! enddo
-!enddo
+ print*,'ao_num =', ao_num
+ do j = 1,ao_num
+  print*,'*********************************************'
+ !print*,'nucleus =',ao_nucl(j)
+ !print*,'nuclear_coordinate =', nucl_coord(ao_nucl(j), 1 ), nucl_coord( ao_nucl(j), 2 ), nucl_coord(ao_nucl(j), 3 )
+ !print*,'ao_expo_ordered_transp =', ao_expo_ordered_transp(1,i)
+ !print*,'ao_power =', ao_power(i,1), ao_power(i,2), ao_power(i,3)  
+  print*,'******************'
+  do i= 1,ao_num
+  !print*,'nucleus =',ao_nucl(j)
+  !print*,'nuclear_coordinate =', nucl_coord(ao_nucl(j), 1 ), nucl_coord(ao_nucl(j), 2 ), nucl_coord(ao_nucl(j), 3 )
+  !print*,'ao_expo_ordered_transp =', ao_expo_ordered_transp(1,j)
+  !print*,'ao_power =', ao_power(j,1), ao_power(j,2), ao_power(j,3)
+  !do k = 1,nucl_num 
+  ! print*, 'ao_nucl_elec_integral_per_atom =', ao_nucl_elec_integral_per_atom(i,j,k)
+  !enddo
+  !print*,'ao_ortho_canonical_coef =', ao_ortho_canonical_coef(j,i)
+  !print*,'ao_ortho_canonical_overlap =', ao_ortho_canonical_overlap(j,i)
+  !print*,'mo_mono_elec_integral =', mo_mono_elec_integral(i,j)
+  !print*,'ao_mono_elec_integral =', ao_mono_elec_integral(i,j)
+   print*,i,j,dirac_ao_bi_elec_integral_L_alpha_L_beta(i,j)
+  !print*,i,j,dirac_SCF_density_matrix_ao(i,j)
+   print*,'******************'
+  enddo
+ enddo
 
 !do i = 1, nucl_num
 ! print*,''
