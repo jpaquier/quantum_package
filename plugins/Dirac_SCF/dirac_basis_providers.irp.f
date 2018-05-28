@@ -79,76 +79,85 @@
  dirac_ao_integrals_threshold =  1.0E-015
  END_PROVIDER
 
- BEGIN_PROVIDER [double precision, dirac_ao_overlap_abs, (dirac_ao_num,dirac_ao_num) ]
- implicit none
-  BEGIN_DOC
-  ! Concatenation of the large and small component
-  ! overlap_abs 
+!BEGIN_PROVIDER [double precision, dirac_ao_overlap_abs, (dirac_ao_num,dirac_ao_num) ]
+!implicit none
+! BEGIN_DOC
+! ! Concatenation of the large and small component
+! ! overlap_abs 
+! END_DOC
+! integer                        :: i,j,k,l
+! do i = 1, dirac_ao_num
+!  if (i <= ao_num) then
+!   do j = 1, dirac_ao_num
+!    if (j <= ao_num) then
+!     dirac_ao_overlap_abs(i,j) = ao_overlap_abs(i,j)
+!    else
+!     dirac_ao_overlap_abs(i,j) = 0.d0
+!    endif
+!   enddo
+!  else
+!   k = i - ao_num
+!   do j = 1, dirac_ao_num
+!    if (j <= ao_num) then
+!    dirac_ao_overlap_abs(i,j) = 0.d0
+!    else
+!    l = j - ao_num
+!    dirac_ao_overlap_abs(i,j) = small_ao_overlap_abs(k,l)
+!    endif
+!   enddo
+!  endif
+! enddo
+!END_PROVIDER
+
+
+ BEGIN_PROVIDER [ double precision, dirac_ao_overlap_abs,(dirac_ao_num,dirac_ao_num) ]
+  implicit none
+  BEGIN_DOC  
+ !Overlap between absolute value of atomic basis functions:
+ !:math:`\int |\chi_i(r)| |\chi_j(r)| dr)`
   END_DOC
-  integer                        :: i,j,k,l
-  do i = 1, dirac_ao_num
-   if (i <= ao_num) then
-    do j = 1, dirac_ao_num
-     if (j <= ao_num) then
-      dirac_ao_overlap_abs(i,j) = ao_overlap_abs(i,j)
-     else
-      dirac_ao_overlap_abs(i,j) = 0.d0
-     endif
+  integer :: i,j,n,l
+  double precision :: f
+  integer :: dim1
+  double precision :: dirac_overlap, dirac_overlap_x, dirac_overlap_y, dirac_overlap_z
+  double precision :: alpha , beta , c 
+  double precision :: A_center(3), B_center(3)
+  integer :: power_A(3), power_B(3)
+  double precision :: lower_exp_val, dx
+  dim1=500
+  lower_exp_val = 40.d0
+  c = 1
+  do j=1, dirac_ao_num
+   A_center(1) = nucl_coord( dirac_ao_nucl(j), 1 )
+   A_center(2) = nucl_coord( dirac_ao_nucl(j), 2 )
+   A_center(3) = nucl_coord( dirac_ao_nucl(j), 3 )
+   power_A(1)  = dirac_ao_power( j, 1 )
+   power_A(2)  = dirac_ao_power( j, 2 )
+   power_A(3)  = dirac_ao_power( j, 3 )
+   do i= 1, dirac_ao_num
+    B_center(1) = nucl_coord( dirac_ao_nucl(i), 1 )
+    B_center(2) = nucl_coord( dirac_ao_nucl(i), 2 )
+    B_center(3) = nucl_coord( dirac_ao_nucl(i), 3 )
+    power_B(1)  = dirac_ao_power( i, 1 )
+    power_B(2)  = dirac_ao_power( i, 2 )
+    power_B(3)  = dirac_ao_power( i, 3 )
+    do n = 1,dirac_ao_prim_num(j)
+     alpha  = dirac_ao_expo_ordered_transp(n,j)
+     do l = 1, dirac_ao_prim_num(i)
+      beta  = dirac_ao_expo_ordered_transp(l,i)
+      call overlap_x_abs(A_center(1),B_center(1),alpha,beta,power_A(1),power_B(1),dirac_overlap_x,lower_exp_val,dx,dim1)
+      call overlap_x_abs(A_center(2),B_center(2),alpha,beta,power_A(2),power_B(2),dirac_overlap_y,lower_exp_val,dx,dim1)
+      call overlap_x_abs(A_center(3),B_center(3),alpha,beta,power_A(3),power_B(3),dirac_overlap_z,lower_exp_val,dx,dim1)
+      c = dirac_ao_coef_normalized_ordered_transp(n,j) * dirac_ao_coef_normalized_ordered_transp(l,i)
+      dirac_ao_overlap_abs(i,j) += abs(c) * dirac_overlap_x * dirac_overlap_y * dirac_overlap_z
+     enddo
     enddo
-   else
-    k = i - ao_num
-    do j = 1, dirac_ao_num
-     if (j <= ao_num) then
-     dirac_ao_overlap_abs(i,j) = 0.d0
-     else
-     l = j - ao_num
-     dirac_ao_overlap_abs(i,j) = small_ao_overlap_abs(k,l)
-     endif
-    enddo
-   endif
-  enddo
+   enddo
+  enddo 
  END_PROVIDER
 
-!integer function df_L(i)
-!implicit none
-!BEGIN_DOC
-!! df_L = d_List a mappings between the real index of the d_ao_num AOs and 
-!! the (2*d_ao_num)*(2*d_ao_num) positions in the dirac Fock matrix
-!END_DOC
-!Integer   ::     i
-! if (i .le. ao_num) then
-!  df_L = i
-! elseif (i .gt. ao_num .and. i .le. (2*ao_num)) then
-!  df_L = i - ao_num
-! elseif (i .gt. (2*ao_num) .and. i .le. (2*ao_num+small_ao_num)) then
-!  df_L = i - (2*ao_num)
-! elseif (i .gt. (2*ao_num+small_ao_num)) then
-!  df_L = i - (2*ao_num+small_ao_num)
-! endif
-!end
-
-
-!integer function df_L_I(i,j)
-!implicit none
-!BEGIN_DOC
-!! df_L_I = d_List_Inverse a mappings between the real index of the d_ao_num AOs and 
-!! the (2*d_ao_num)*(2*d_ao_num) positions in the dirac Fock matrix
-!END_DOC
-!Integer   ::     i,j
-!  if (i .le. ao_num .and. j == 1) then
-!   df_L_I = (i)
-!  elseif (i .le. ao_num .and. j == 2) then
-!   df_L_I = (i+ao_num)
-!  elseif (i .gt. ao_num .and. j == 1) then
-!   df_L_I = (i+2*ao_num)
-!  elseif (i .gt. ao_num .and. j == 2) then
-!   df_L_I = (i+(2*ao_num+small_ao_num))
-!  endif
-!end 
-
- 
-!BEGIN_PROVIDER [ double precision, d_L, (2*dirac_ao_num) ]
-!&BEGIN_PROVIDER [ double precision, d_L_I, (dirac_ao_num, 2) ]
+!BEGIN_PROVIDER [ integer, d_L, (2*dirac_ao_num) ]
+!&BEGIN_PROVIDER [ integer, d_L_I, (dirac_ao_num, 2) ]
 !implicit none
 !BEGIN_DOC
 !! d_L = d_List, d_L_I = d_list_inverse
@@ -163,9 +172,9 @@
 ! elseif (i .gt. ao_num .and. i .le. (2*ao_num)) then
 !  d_L(i) = i - ao_num
 ! elseif (i .gt. (2*ao_num) .and. i .le. (2*ao_num+small_ao_num)) then
-!  d_L(i) = i - (2*ao_num)
+!  d_L(i) = i - ao_num
 ! elseif (i .gt. (2*ao_num+small_ao_num)) then
-!  d_L(i) = i - (2*ao_num+small_ao_num)
+!  d_L(i) = i - (ao_num+small_ao_num)
 ! endif
 !enddo
 !do i = 1, dirac_ao_num
@@ -173,11 +182,12 @@
 !  d_L_I(i,1) = (i)
 !  d_L_I(i,2) = (i+ao_num)
 ! elseif (i .gt. ao_num) then
-!  d_L_I(i,1) = (i+2*ao_num)
-!  d_L_I(i,2) = (i+(2*ao_num+small_ao_num))
+!  d_L_I(i,1) = (i+ao_num)
+!  d_L_I(i,2) = (i+(ao_num+small_ao_num))
 ! endif
 !enddo
 !END_PROVIDER
+
 
  BEGIN_PROVIDER [ integer, d_L, (2*dirac_ao_num) ]
  &BEGIN_PROVIDER [ integer, d_L_I, (dirac_ao_num, 2) ]
@@ -210,36 +220,3 @@
   endif
  enddo
  END_PROVIDER
-
-
-!BEGIN_PROVIDER [ integer, d_L, (2.d0*dirac_ao_num) ]
-!&BEGIN_PROVIDER [ integer, d_L_I, (dirac_ao_num, 2.d0) ]
-!implicit none
-!BEGIN_DOC
-!! d_L = d_List, d_L_I = d_list_inverse
-!! mappings between the real index of the d_ao_num AOs and 
-!! the (2*d_ao_num)*(2*d_ao_num) positions in the 
-!! dirac Fock matrix
-!END_DOC
-!integer   ::     i
-!do i = 1.d0, 2.d0*dirac_ao_num
-! if (i .le. ao_num) then
-!  d_L(i) = i
-! elseif (i .gt. ao_num .and. i .le. (2.d0*ao_num)) then
-!  d_L(i) = i - ao_num
-! elseif (i .gt. (2.d0*ao_num) .and. i .le. (2.d0*ao_num+small_ao_num)) then
-!  d_L(i) = i - (2.d0*ao_num)
-! elseif (i .gt. (2.d0*ao_num+small_ao_num)) then
-!  d_L(i) = i - (2.d0*ao_num+small_ao_num)
-! endif
-!enddo
-!do i = 1.d0, dirac_ao_num
-! if (i .le. ao_num) then
-!  d_L_I(i,1.d0) = (i)
-!  d_L_I(i,2.d0) = (i+ao_num)
-! elseif (i .gt. ao_num) then
-!  d_L_I(i,1.d0) = (i+2.d0*ao_num)
-!  d_L_I(i,2.d0) = (i+(2.d0*ao_num+small_ao_num))
-! endif
-!enddo
-!END_PROVIDER

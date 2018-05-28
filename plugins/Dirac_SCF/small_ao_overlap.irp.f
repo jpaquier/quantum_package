@@ -76,10 +76,6 @@
    power_A(2)  = small_ao_power( j, 2 )
    power_A(3)  = small_ao_power( j, 3 )
    do i= 1, small_ao_num
-    small_ao_overlap(i,j)= 0.d0
-    small_ao_overlap_x(i,j)= 0.d0
-    small_ao_overlap_y(i,j)= 0.d0
-    small_ao_overlap_z(i,j)= 0.d0
     B_center(1) = nucl_coord( small_ao_nucl(i), 1 )
     B_center(2) = nucl_coord( small_ao_nucl(i), 2 )
     B_center(3) = nucl_coord( small_ao_nucl(i), 3 )
