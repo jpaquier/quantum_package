@@ -7,12 +7,11 @@ BEGIN_PROVIDER [ integer, N_det_generators ]
   END_DOC
   integer                        :: i,k,l
   logical                        :: good
-  integer :: number_of_holes,number_of_particles
+  integer, external :: number_of_holes,number_of_particles
   call write_time(6)
   N_det_generators = 0
   do i=1,N_det
-    good = .True.
-    good = good .and. ( number_of_holes(psi_det_sorted(1,1,i)) ==0 .and. number_of_particles(psi_det_sorted(1,1,i))==0 )
+    good = ( number_of_holes(psi_det_sorted(1,1,i)) ==0).and.(number_of_particles(psi_det_sorted(1,1,i))==0 )
     if (good) then
       N_det_generators += 1
     endif
@@ -23,6 +22,9 @@ END_PROVIDER
 
  BEGIN_PROVIDER [ integer(bit_kind), psi_det_generators, (N_int,2,psi_det_size) ]
 &BEGIN_PROVIDER [ double precision, psi_coef_generators, (psi_det_size,N_states) ]
+&BEGIN_PROVIDER [ integer(bit_kind), psi_det_sorted_gen, (N_int,2,psi_det_size) ]
+&BEGIN_PROVIDER [ double precision, psi_coef_sorted_gen, (psi_det_size,N_states) ]
+&BEGIN_PROVIDER [ integer, psi_det_sorted_gen_order, (psi_det_size) ]
   implicit none
   BEGIN_DOC
   ! For Single reference wave functions, the generator is the
@@ -30,21 +32,37 @@ END_PROVIDER
   END_DOC
   integer                        :: i, k, l, m
   logical                        :: good
-  integer :: number_of_holes,number_of_particles
+  integer, external :: number_of_holes,number_of_particles
+  integer, allocatable :: nongen(:)
+  integer :: inongen
+  inongen = 0
+
+  allocate(nongen(N_det))
+
   m=0
   do i=1,N_det
-    good = .True.
-    good = good .and. ( number_of_holes(psi_det_sorted(1,1,i)) ==0 .and. number_of_particles(psi_det_sorted(1,1,i))==0)
+    good = ( number_of_holes(psi_det_sorted(1,1,i)) ==0).and.(number_of_particles(psi_det_sorted(1,1,i))==0 )
     if (good) then
       m = m+1
+      psi_det_sorted_gen_order(i) = m
       do k=1,N_int
         psi_det_generators(k,1,m) = psi_det_sorted(k,1,i)
         psi_det_generators(k,2,m) = psi_det_sorted(k,2,i)
       enddo
       psi_coef_generators(m,:) = psi_coef_sorted(i,:)
+    else
+      inongen += 1
+      nongen(inongen) = i
     endif
   enddo
   
+  psi_det_sorted_gen(:,:,:N_det_generators) = psi_det_generators(:,:,:N_det_generators)
+  psi_coef_sorted_gen(:N_det_generators, :) = psi_coef_generators(:N_det_generators, :)
+  do i=1,inongen
+    psi_det_sorted_gen_order(nongen(i)) = N_det_generators+i
+    psi_det_sorted_gen(:,:,N_det_generators+i) = psi_det_sorted(:,:,nongen(i))
+    psi_coef_sorted_gen(N_det_generators+i, :) = psi_coef_sorted(nongen(i),:)
+  end do
 END_PROVIDER
 
 BEGIN_PROVIDER [ integer, size_select_max]
