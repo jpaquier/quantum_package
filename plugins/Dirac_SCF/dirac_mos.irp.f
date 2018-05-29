@@ -13,13 +13,13 @@
    if (i .le. mo_tot_num) then
     do j=1, 2*dirac_ao_num
      if (j .le. ao_num) then
-      dirac_mo_coef(i,j) = (1.d0,0.d0)*mo_coef(i,j)
+      dirac_mo_coef(i,j) = (1.d0,0.d0)*large_mo_coef(i,j)
      endif
     enddo
    elseif (i.gt. mo_tot_num .and. i .le. 2*mo_tot_num) then
     do j=1, 2*(ao_num+small_ao_num)
      if (j .gt. ao_num .and. j .le. 2*ao_num) then
-      dirac_mo_coef(i,j) = (1.d0,0.d0)*mo_coef(d_L(i),d_L(j))
+      dirac_mo_coef(i,j) = (1.d0,0.d0)*large_mo_coef(d_L(i),d_L(j))
      endif
     enddo
    elseif (i.gt. 2*mo_tot_num .and. i .le. (2*mo_tot_num+small_mo_tot_num)) then

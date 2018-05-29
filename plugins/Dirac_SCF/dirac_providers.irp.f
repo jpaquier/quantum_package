@@ -1,21 +1,29 @@
  BEGIN_PROVIDER [ integer, dirac_ao_num ]
- &BEGIN_PROVIDER [ integer, dirac_ao_prim_num, (ao_num + small_ao_num) ]
+ implicit none
+  BEGIN_DOC
+  ! Concatenation of the large and small components orbital properties
+  ! in general arrays, for use in the bi-electronic integrals
+  END_DOC
+  dirac_ao_num = large_ao_num + small_ao_num 
+  END_PROVIDER
+
+
+ BEGIN_PROVIDER [ integer, dirac_ao_prim_num, (dirac_ao_num) ]
  implicit none
   BEGIN_DOC
   ! Concatenation of the large and small components orbital properties
   ! in general arrays, for use in the bi-electronic integrals
   END_DOC
   integer                        :: i,j,k
-  dirac_ao_num = (ao_num + small_ao_num)
   do i = 1, dirac_ao_num
-   if (i .le. ao_num) then
-   dirac_ao_prim_num (i) = ao_prim_num(i)
+   if (i .le. large_ao_num) then
+   dirac_ao_prim_num (i) = large_ao_prim_num(i)
    else
-   j = i - ao_num
+   j = i - large_ao_num
    dirac_ao_prim_num (i) = small_ao_prim_num(j)
    endif 
   enddo
-  END_PROVIDER
+ END_PROVIDER
 
  BEGIN_PROVIDER [ integer, dirac_ao_prim_num_max ]
  implicit none
@@ -30,8 +38,7 @@
   BEGIN_DOC
   ! Number of small component MOs
   END_DOC
-  dirac_mo_tot_num = mo_tot_num + small_mo_tot_num
-  ASSERT (small_mo_tot_num > 0)
+  dirac_mo_tot_num = large_mo_tot_num + small_mo_tot_num
  END_PROVIDER
 
  BEGIN_PROVIDER [ integer, dirac_ao_nucl, (dirac_ao_num) ]
@@ -46,15 +53,15 @@
   END_DOC
   integer                        :: i,j,k,l
   do i = 1, dirac_ao_num
-   if (i <= ao_num) then
-    dirac_ao_nucl(i) = ao_nucl(i)
-    dirac_ao_l(i) = ao_l(i)
-    do k = 1, ao_prim_num(i)
-     dirac_ao_coef_normalized_ordered_transp(k,i) = ao_coef_normalized_ordered_transp(k,i)
-     dirac_ao_expo_ordered_transp(k,i) = ao_expo_ordered_transp(k,i)
+   if (i <= large_ao_num) then
+    dirac_ao_nucl(i) = large_ao_nucl(i)
+    dirac_ao_l(i) = large_ao_l(i)
+    do k = 1, large_ao_prim_num(i)
+     dirac_ao_coef_normalized_ordered_transp(k,i) = large_ao_coef_normalized_ordered_transp(k,i)
+     dirac_ao_expo_ordered_transp(k,i) = large_ao_expo_ordered_transp(k,i)
     enddo
     do l = 1, 3
-     dirac_ao_power(i,l) = ao_power(i,l)
+     dirac_ao_power(i,l) = large_ao_power(i,l)
     enddo
    else
     j = i - ao_num
@@ -76,38 +83,8 @@
   BEGIN_DOC
   ! If |<pq|rs>| < ao_integrals_threshold then <pq|rs> is zero
   END_DOC
- dirac_ao_integrals_threshold =  1.0E-015
+ dirac_ao_integrals_threshold =  ao_integrals_threshold
  END_PROVIDER
-
-!BEGIN_PROVIDER [double precision, dirac_ao_overlap_abs, (dirac_ao_num,dirac_ao_num) ]
-!implicit none
-! BEGIN_DOC
-! ! Concatenation of the large and small component
-! ! overlap_abs 
-! END_DOC
-! integer                        :: i,j,k,l
-! do i = 1, dirac_ao_num
-!  if (i <= ao_num) then
-!   do j = 1, dirac_ao_num
-!    if (j <= ao_num) then
-!     dirac_ao_overlap_abs(i,j) = ao_overlap_abs(i,j)
-!    else
-!     dirac_ao_overlap_abs(i,j) = 0.d0
-!    endif
-!   enddo
-!  else
-!   k = i - ao_num
-!   do j = 1, dirac_ao_num
-!    if (j <= ao_num) then
-!    dirac_ao_overlap_abs(i,j) = 0.d0
-!    else
-!    l = j - ao_num
-!    dirac_ao_overlap_abs(i,j) = small_ao_overlap_abs(k,l)
-!    endif
-!   enddo
-!  endif
-! enddo
-!END_PROVIDER
 
 
  BEGIN_PROVIDER [ double precision, dirac_ao_overlap_abs,(dirac_ao_num,dirac_ao_num) ]
@@ -115,6 +92,10 @@
   BEGIN_DOC  
  !Overlap between absolute value of atomic basis functions:
  !:math:`\int |\chi_i(r)| |\chi_j(r)| dr)`
+ !This matrix has no physical meaning, considering the large
+ !and small basis are in different mathematical spaces. 
+ !It only serves the purpose of calculating thresholds for 
+ !general bi-electronic integrals
   END_DOC
   integer :: i,j,n,l
   double precision :: f
@@ -156,11 +137,13 @@
   enddo 
  END_PROVIDER
 
-!BEGIN_PROVIDER [ integer, d_L, (2*dirac_ao_num) ]
-!&BEGIN_PROVIDER [ integer, d_L_I, (dirac_ao_num, 2) ]
+
+
+!BEGIN_PROVIDER [ integer, d_Lb, (2*dirac_ao_num) ]
+!&BEGIN_PROVIDER [ integer, d_Lb_I, (dirac_ao_num, 2) ]
 !implicit none
 !BEGIN_DOC
-!! d_L = d_List, d_L_I = d_list_inverse
+!! d_Lb = d_List, d_Lb_I = d_listbis_inverse
 !! mappings between the real index of the d_ao_num AOs and 
 !! the (2*d_ao_num)*(2*d_ao_num) positions in the 
 !! dirac Fock matrix
@@ -190,11 +173,9 @@
 
 
  BEGIN_PROVIDER [ integer, d_L, (2*dirac_ao_num) ]
- &BEGIN_PROVIDER [ integer, d_L_I, (dirac_ao_num, 2) ]
  implicit none
  BEGIN_DOC
- ! d_L = d_List, d_L_I = d_list_inverse
- ! mappings between the real index of the d_ao_num AOs and 
+ ! d_L = d_Lis mappings between the real index of the d_ao_num AOs and 
  ! the (2*d_ao_num)*(2*d_ao_num) positions in the 
  ! dirac Fock matrix
  END_DOC
@@ -208,15 +189,6 @@
    d_L(i) = i - (2*ao_num)
   elseif (i .gt. (2*ao_num+small_ao_num)) then
    d_L(i) = i - (2*ao_num+small_ao_num)
-  endif
- enddo
- do i = 1, dirac_ao_num
-  if (i .le. ao_num) then
-   d_L_I(i,1) = (i)
-   d_L_I(i,2) = (i+ao_num)
-  elseif (i .gt. ao_num) then
-   d_L_I(i,1) = (i+2*ao_num)
-   d_L_I(i,2) = (i+(2*ao_num+small_ao_num))
   endif
  enddo
  END_PROVIDER

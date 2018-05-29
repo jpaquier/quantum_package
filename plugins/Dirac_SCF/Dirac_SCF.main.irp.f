@@ -7,6 +7,14 @@ program Dirac_SCF
   double precision :: integral, ao_bielec_integral, dirac_ao_bielec_integral
   include 'Utils/constants.include.F'
 
+ 
+!print*,'************'
+!print*, large_ao_num,small_ao_num,dirac_ao_num
+!do j = 1, large_ao_num
+! do i = 1, large_ao_num
+! print*, ao_nucl_elec_integral(i,j), ao_nucl_elec_integral(i,j) 
+!enddo
+!enddo
 
 !print*,'***************'
 !integral =0
@@ -26,13 +34,13 @@ program Dirac_SCF
 !print*,'**************************************************'
 !print*, dirac_ao_num
 !print*, dirac_mo_tot_num
-!do i = 1,ao_num
+!do i = 1,large_ao_num
 ! print*,'**************************************************'
-! do j = 1,ao_num
+! do j = large_ao_num,dirac_ao_num
 ! !print*, i, j, dirac_ao_bi_elec_integral(i,j)
 ! !print*,i, j, dirac_SCF_density_matrix_ao(i,j)
-! !print*, i, j, dirac_ao_mono_elec_integral(i,j)
-!  print*,i,j, dirac_mo_coef(i,j) 
+!  print*, i, j, dirac_ao_mono_elec_integral(i,j)
+! !print*,i,j, dirac_mo_coef(i,j) 
 ! !print*,i, j, dirac_mo_mono_elec_integral(i,j)
 ! enddo
 !enddo
