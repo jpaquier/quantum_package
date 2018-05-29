@@ -360,12 +360,10 @@ END_PROVIDER
  double precision :: r2(3),dr2(3), local_potential,r12,dx2,mu,mu_coulomb,coulomb,two_body_dm
  double precision :: threshold
  Energy_c_md_mu_of_r_LDA = 0.d0
- dospin = .false. ! JT dospin have to be set to true for open shell
- threshold = 1.d-07
  mu_average_LDA = 0.d0
  double precision :: cpu0,cpu1
- dospin = .True. ! JT dospin have to be set to true for open shell
- threshold = 1.d-07
+ dospin = .true. ! JT dospin have to be set to true for open shell
+ threshold = 1.d-10
  allocate(aos_array(ao_num),r(3), rho_a(N_states), rho_b(N_states), ec(N_states))
  call cpu_time(cpu0)
   do j = 1, nucl_num
@@ -379,11 +377,18 @@ END_PROVIDER
      do istate = 1, N_states
 !!!!!!!!!!!! CORRELATION PART
       if(basis_set_hf_potential)then
-       call local_r12_operator_on_hf(r,r,local_potential)
+       call local_r12_operator_on_hf_general(r,r,local_potential)
       else
        call expectation_value_in_real_space(r,r,local_potential,two_body_dm)
       endif
       mu =  local_potential * dsqrt(dacos(-1.d0)) * 0.5d0
+     !if(mu.le.0.d0)then
+     ! print*,'mu = ',mu 
+     ! print*,'r = '
+     ! print*,r
+     ! print*,'rho = ',(rho_a(1)+rho_b(1))
+     ! pause
+     !endif
      !mu = mu_of_r(l,k,j)
       mu_average_LDA +=  final_weight_functions_at_grid_points(l,k,j) * mu * (one_body_dm_mo_alpha_at_grid_points(l,k,j,1) + one_body_dm_mo_beta_at_grid_points(l,k,j,1))
       call ESRC_MD_LDAERF (mu,rho_a(istate),rho_b(istate),dospin,ec(istate))
@@ -436,7 +441,7 @@ END_PROVIDER
      do istate = 1, N_states
 !!!!!!!!!!!! CORRELATION PART
       if(basis_set_hf_potential)then
-       call local_r12_operator_on_hf(r,r,local_potential)
+       call local_r12_operator_on_hf_general(r,r,local_potential)
       else
        call expectation_value_in_real_space(r,r,local_potential,two_body_dm)
       endif
