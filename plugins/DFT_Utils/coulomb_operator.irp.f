@@ -197,11 +197,11 @@ use map_module
 
  two_body_dm = 0.d0
  coulomb = 0.d0
- !$OMP PARALLEL DO &
- !$OMP DEFAULT (NONE)  &
- !$OMP PRIVATE (i,j,m,n,a1,c1,a2,c2,a3,c3,a4,c4) & 
- !$OMP SHARED (mo_tot_num,mos_array_r1,mos_array_r2,threshold,two_bod_alpha_beta_mo_transposed,two_bod_alpha_beta_mo_contracted) & 
- !$OMP REDUCTION (+:coulomb,two_body_dm)       
+!!$OMP PARALLEL DO &
+!!$OMP DEFAULT (NONE)  &
+!!$OMP PRIVATE (i,j,m,n,a1,c1,a2,c2,a3,c3,a4,c4) & 
+!!$OMP SHARED (mo_tot_num,mos_array_r1,mos_array_r2,threshold,two_bod_alpha_beta_mo_transposed,two_bod_alpha_beta_mo_contracted) & 
+!!$OMP REDUCTION (+:coulomb,two_body_dm)       
  do i = 1, mo_tot_num
   a1 = mos_array_r1(i) 
   c1 = dabs(a1)
@@ -217,17 +217,17 @@ use map_module
     do n = 1, mo_tot_num
      a4 = a3 * mos_array_r2(n)
      c4 = dabs(a4)
-     two_body_dm += two_bod_alpha_beta_mo_transposed(n,m,j,i,1) * mos_array_r1(i) * mos_array_r1(n) * mos_array_r2(j) * mos_array_r2(m)
+     two_body_dm +=  two_bod_alpha_beta_mo_transposed(n,m,j,i,1) * mos_array_r1(i) * mos_array_r1(n) * mos_array_r2(j) * mos_array_r2(m)
      coulomb += a4 * two_bod_alpha_beta_mo_contracted(n,m,j,i,1)
     enddo
    enddo
   enddo
  enddo
- !$OMP END PARALLEL DO
+!!$OMP END PARALLEL DO
  if(dabs(two_body_dm).gt.1.d-16.and.coulomb.gt.0.d0)then
   coulomb = coulomb/two_body_dm
  else
-  coulomb = 0.d0
+  coulomb = 1.d-10
  endif
 
 end
@@ -442,13 +442,13 @@ END_PROVIDER
 
 BEGIN_PROVIDER [double precision, integrals_for_hf_potential_general, (mo_tot_num,mo_tot_num,elec_beta_num,elec_alpha_num)]
  implicit none
- integer :: i,j,k,l
+ integer :: i,j,m,n
  double precision :: get_mo_bielec_integral
- do i = 1, elec_alpha_num ! electron 1 
-  do j = 1, elec_beta_num ! electron 2 
-   do k = 1, mo_tot_num   ! electron 1 
-    do l = 1, mo_tot_num  ! electron 2 
-     integrals_for_hf_potential_general(l,k,j,i) = get_mo_bielec_integral(i,j,k,l,mo_integrals_map) 
+ do m = 1, elec_alpha_num ! electron 1 alpha 
+  do n = 1, elec_beta_num ! electron 2 beta 
+   do i = 1, mo_tot_num   ! electron 1 alpha
+    do j = 1, mo_tot_num  ! electron 2 beta 
+     integrals_for_hf_potential_general(j,i,n,m) = get_mo_bielec_integral(m,n,i,j,mo_integrals_map) 
     enddo
    enddo
   enddo
@@ -474,6 +474,46 @@ double precision function mu_coulomb(y,x)
 end
 
 
+subroutine local_r12_operator_on_hf_general_act(r1,r2,integral_psi)
+ implicit none
+ BEGIN_DOC
+! computes the following ANALYTICAL integral
+! \sum_{m,n,i,j} V_{ij}^{mn} phi_i(1) * phi_j(2) * phi_m(1) * phi_n(2) / rho_alpha^{HF}(1)*rho_beta^{HF}(2)
+ END_DOC
+ double precision, intent(in) :: r1(3), r2(3)
+ double precision, intent(out):: integral_psi
+ integer :: i,j,m,n
+ integer :: ii,jj,mm,nn
+ double precision :: mo_bielec_integral,two_bod
+ double precision :: mos_array_r1(mo_tot_num)
+ double precision :: mos_array_r2(mo_tot_num)
+ double precision :: get_mo_bielec_integral
+ call give_all_mos_at_r(r1,mos_array_r1) 
+ call give_all_mos_at_r(r2,mos_array_r2) 
+
+ integral_psi = 0.d0
+ two_bod = 0.d0
+ do mm = 1, n_act_orb
+  m = list_act(mm)
+  if(m>elec_alpha_num)cycle
+  do nn = 1, n_act_orb
+   n = list_act(nn)
+   if(n>elec_beta_num)cycle
+   two_bod += mos_array_r1(n) * mos_array_r1(n) * mos_array_r2(m) * mos_array_r2(m) 
+   do ii = 1, n_act_orb
+    i = list_act(ii)
+    do jj = 1, n_act_orb
+     j = list_act(jj)
+     integral_psi +=  integrals_for_hf_potential_general(j,i,n,m) * mos_array_r1(i) * mos_array_r2(j) * mos_array_r2(n) * mos_array_r1(m) 
+    enddo
+   enddo
+  enddo
+ enddo
+ integral_psi = integral_psi /  two_bod
+
+end
+
+
 subroutine local_r12_operator_on_hf_general(r1,r2,integral_psi)
  implicit none
  BEGIN_DOC
@@ -482,7 +522,8 @@ subroutine local_r12_operator_on_hf_general(r1,r2,integral_psi)
  END_DOC
  double precision, intent(in) :: r1(3), r2(3)
  double precision, intent(out):: integral_psi
- integer :: k,l,i,j,m,n
+ integer :: i,j,m,n
+ integer :: ii,jj,mm,nn
  double precision :: mo_bielec_integral,two_bod
  double precision :: mos_array_r1(mo_tot_num)
  double precision :: mos_array_r2(mo_tot_num)
@@ -493,16 +534,59 @@ subroutine local_r12_operator_on_hf_general(r1,r2,integral_psi)
  integral_psi = 0.d0
  two_bod = 0.d0
  do m = 1, elec_alpha_num
-  do n = 1, elec_beta_num 
+  do n = 1, elec_beta_num
    two_bod += mos_array_r1(n) * mos_array_r1(n) * mos_array_r2(m) * mos_array_r2(m) 
    do i = 1, mo_tot_num
     do j = 1, mo_tot_num
-     integral_psi +=  integrals_for_hf_potential_general(j,i,n,m) * mos_array_r1(i) * mos_array_r2(j) * mos_array_r1(m) * mos_array_r2(n) 
+     integral_psi +=  integrals_for_hf_potential_general(j,i,n,m) * mos_array_r1(i) * mos_array_r2(j) * mos_array_r2(n) * mos_array_r1(m) 
     enddo
    enddo
   enddo
  enddo
- integral_psi = integral_psi /  two_bod
+ if(two_bod.le.1.d-12.or.integral_psi.le.0.d0)then
+   integral_psi = 1.d-10
+ else 
+   integral_psi = integral_psi /  two_bod
+ endif
 
 end
 
+
+subroutine pure_expectation_value_on_hf_general(r1,r2,integral_psi)
+ implicit none
+ BEGIN_DOC
+! computes the following ANALYTICAL integral
+! \sum_{m,n,i,j} V_{ij}^{mn} phi_i(1) * phi_j(2) * phi_m(1) * phi_n(2) / rho_alpha^{HF}(1)*rho_beta^{HF}(2)
+ END_DOC
+ double precision, intent(in) :: r1(3), r2(3)
+ double precision, intent(out):: integral_psi
+ integer :: k,l,i,j,m,n
+ double precision :: mos_array_r1(mo_tot_num)
+ double precision :: mos_array_r2(mo_tot_num)
+ double precision :: get_mo_bielec_integral
+ call give_all_mos_at_r(r1,mos_array_r1) 
+ call give_all_mos_at_r(r2,mos_array_r2) 
+
+ integral_psi = 0.d0
+ do m = 1, elec_alpha_num
+  do n = 1, elec_beta_num 
+   do i = 1, mo_tot_num
+    do j = 1, mo_tot_num
+     integral_psi +=  integrals_for_hf_potential_general(j,i,n,m) * mos_array_r1(i) * mos_array_r2(j) * mos_array_r2(n) * mos_array_r1(m) 
+    enddo
+   enddo
+  enddo
+ enddo
+
+end
+
+BEGIN_PROVIDER [double precision, hf_bielec_alpha_beta_energy]
+ implicit none
+ integer :: i,j
+ hf_bielec_alpha_beta_energy = 0.d0
+ do i = 1, elec_alpha_num
+  do j = 1, elec_beta_num
+   hf_bielec_alpha_beta_energy += integrals_for_hf_potential_general(j,i,j,i)
+  enddo
+ enddo
+END_PROVIDER 

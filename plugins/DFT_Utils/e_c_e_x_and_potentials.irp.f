@@ -359,11 +359,9 @@ END_PROVIDER
  double precision :: r2(3),dr2(3), local_potential,r12,dx2,mu,mu_coulomb,coulomb,two_body_dm
  double precision :: threshold
  Energy_c_md_mu_of_r_LDA = 0.d0
- dospin = .false. ! JT dospin have to be set to true for open shell
- threshold = 1.d-07
  double precision :: cpu0,cpu1
- dospin = .True. ! JT dospin have to be set to true for open shell
- threshold = 1.d-07
+ dospin = .true. ! JT dospin have to be set to true for open shell
+ threshold = 1.d-10
  allocate(aos_array(ao_num),r(3), rho_a(N_states), rho_b(N_states), ec(N_states))
  call cpu_time(cpu0)
   do j = 1, nucl_num

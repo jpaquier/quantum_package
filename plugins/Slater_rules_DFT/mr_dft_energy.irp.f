@@ -83,7 +83,6 @@ subroutine print_variational_energy_dft_mu_of_r
    print*, ''
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-   write(*, '(A28,X,F16.10)') 'mu_average for basis set  = ',mu_average
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  else if(md_correlation_functional.EQ."basis_set_on_top_PBE")then
    write(*, '(A28,X,F16.10)') 'TOTAL ENERGY CORR         = ',psi_energy+Energy_c_md_mu_of_r_PBE_on_top+nuclear_repulsion
@@ -101,11 +100,11 @@ subroutine print_variational_energy_dft_mu_of_r
    print*, ''
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-   write(*, '(A28,X,F16.10)') 'mu_average for basis set  = ',mu_average
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
  endif 
+   write(*, '(A28,X,F16.10)') 'mu_average for basis set  = ',mu_average
 
 
 end
