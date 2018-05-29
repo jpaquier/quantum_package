@@ -6,32 +6,38 @@
   ! mo_label : Label characterizing the MOS (local, canonical, natural,
   ! etc)
   END_DOC
-  integer                        :: i, j
+  integer                        :: i,i_minus,j,j_minus
   PROVIDE ezfio_filename
   dirac_mo_coef = (0.d0,0.d0)
-  do i=1, 2*dirac_mo_tot_num
-   if (i .le. mo_tot_num) then
-    do j=1, 2*dirac_ao_num
-     if (j .le. ao_num) then
+  do j=1, 2*dirac_mo_tot_num
+   if (j .le. large_mo_tot_num) then
+    do i=1, 2*dirac_ao_num
+     if (i .le. large_ao_num) then
       dirac_mo_coef(i,j) = (1.d0,0.d0)*large_mo_coef(i,j)
      endif
     enddo
-   elseif (i.gt. mo_tot_num .and. i .le. 2*mo_tot_num) then
-    do j=1, 2*(ao_num+small_ao_num)
-     if (j .gt. ao_num .and. j .le. 2*ao_num) then
-      dirac_mo_coef(i,j) = (1.d0,0.d0)*large_mo_coef(d_L(i),d_L(j))
+   elseif (j .gt. large_mo_tot_num .and. j .le. 2*large_mo_tot_num) then
+    j_minus = j - large_mo_tot_num
+    do i=1, 2*dirac_ao_num
+     if (i .gt. large_ao_num .and. i .le. 2*large_ao_num) then
+      i_minus = i - large_ao_num
+      dirac_mo_coef(i,j) = (1.d0,0.d0)*large_mo_coef(i_minus,j_minus)
      endif
     enddo
-   elseif (i.gt. 2*mo_tot_num .and. i .le. (2*mo_tot_num+small_mo_tot_num)) then
-    do j=1, 2*(ao_num+small_ao_num)
-     if (j .gt. 2*ao_num .and. j .le. (2*ao_num+small_ao_num)) then
-      dirac_mo_coef(i,j) = (1.d0,0.d0)*small_mo_coef(d_L(i),d_L(j))
+   elseif (j.gt. 2*large_mo_tot_num .and. j .le. (2*large_mo_tot_num+small_mo_tot_num)) then
+    j_minus = j - 2*large_mo_tot_num
+    do i=1, 2*dirac_ao_num
+    i_minus = i - 2*large_ao_num
+     if (i .gt. 2*large_ao_num .and. i .le. (2*large_ao_num+small_ao_num)) then
+      dirac_mo_coef(i,j) = (1.d0,0.d0)*small_mo_coef(i_minus,j_minus)
      endif
     enddo
-   else
-    do j=1, 2*(ao_num+small_ao_num)
-     if (j .gt. (2*ao_num+small_ao_num)) then
-      dirac_mo_coef(i,j) = (1.d0,0.d0)*small_mo_coef(d_L(i),d_L(j))
+   elseif (j .gt. (2*large_ao_num + small_ao_num)) then
+    j_minus = j - (2*large_mo_tot_num + small_mo_tot_num)
+    do i=1, 2*(large_ao_num+small_ao_num)
+     if (i .gt. (2*large_ao_num+small_ao_num)) then
+      i_minus = i - (2*large_ao_num + small_ao_num)
+      dirac_mo_coef(i,j) = (1.d0,0.d0)*small_mo_coef(i_minus,j_minus)
      endif
     enddo
    endif

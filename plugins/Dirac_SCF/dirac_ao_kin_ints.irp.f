@@ -37,7 +37,7 @@
     power_B(3)  = large_ao_power( j, 3 )
     do l = 1, small_ao_prim_num(i)
      alpha   = small_ao_expo_ordered_transp(l,i)
-     do n = 1,ao_prim_num(j)
+     do n = 1, large_ao_prim_num(j)
       beta  = large_ao_expo_ordered_transp(n,j)
       call overlap_gaussian_xyz(A_center,B_center,alpha,beta,power_A,power_B,overlap_x0,overlap_y0,overlap_z0,overlap,dim1)
       c = small_ao_coef_normalized_ordered_transp(l,i) * large_ao_coef_normalized_ordered_transp(n,j)

@@ -1,3 +1,19 @@
+ BEGIN_PROVIDER [ complex*16, dirac_ao_mono_elec_integral,(2*dirac_ao_num,2*dirac_ao_num)]
+  implicit none
+  integer          :: i,j
+  BEGIN_DOC
+ ! array of the mono electronic hamiltonian on the AOs basis
+ ! in the 4x4 component formalism with cartesian basis and 
+ ! the unrestricted kinetic-balance scheme  
+  END_DOC
+  do i = 1, 2*(dirac_ao_num)
+   do j = 1, 2*(dirac_ao_num)
+    dirac_ao_mono_elec_integral(i,j) += (dirac_ao_mono_elec_nucl_integral(i,j) + dirac_ao_mono_elec_mass_integral(i,j) + dirac_ao_mono_elec_kinetic_integral(i,j) )
+   enddo
+  enddo
+ END_PROVIDER
+
+
  BEGIN_PROVIDER [ complex*16, dirac_ao_bi_elec_integral, (2*dirac_ao_num, 2*dirac_ao_num) ]
   use map_module
   implicit none
