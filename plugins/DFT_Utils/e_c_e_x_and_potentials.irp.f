@@ -362,6 +362,7 @@ END_PROVIDER
  double precision :: cpu0,cpu1
  dospin = .true. ! JT dospin have to be set to true for open shell
  threshold = 1.d-10
+ print*,'Providing Energy_c_md_mu_of_r_LDA ...'
  allocate(aos_array(ao_num),r(3), rho_a(N_states), rho_b(N_states), ec(N_states))
  call cpu_time(cpu0)
   do j = 1, nucl_num
@@ -383,7 +384,7 @@ END_PROVIDER
   enddo
  deallocate(aos_array,r,rho_a,rho_b, ec)
  call cpu_time(cpu1)
- print*,'Time for the ec_md integration :',cpu1-cpu0
+ print*,'Time for Energy_c_md_mu_of_r_LDA :',cpu1-cpu0
 
 
  END_PROVIDER 
@@ -408,6 +409,7 @@ END_PROVIDER
  double precision :: cpu0,cpu1
  allocate(aos_array(ao_num),r(3), rho_a(N_states), rho_b(N_states), ec(N_states),ec_corrected(N_states))
 
+ print*,'Providing Energy_c_md_mu_of_r_PBE_on_top ...'
  call cpu_time(cpu0)
   do j = 1, nucl_num
    do k = 1, n_points_radial_grid  -1
@@ -434,7 +436,7 @@ END_PROVIDER
  call cpu_time(cpu1)
 
  deallocate(aos_array,r,rho_a,rho_b, ec)
- print*,'Time for the ec_md integration :',cpu1-cpu0
+ print*,'Time for the Energy_c_md_mu_of_r_PBE_on_top :',cpu1-cpu0
 END_PROVIDER
 
 
@@ -449,6 +451,10 @@ END_PROVIDER
  integer :: j,k,l
  double precision, allocatable :: r(:)
  double precision :: local_potential,two_body_dm
+ double precision :: cpu0,cpu1
+ print*,'providing the mu_of_r ...'
+ print*,'basis_set_hf_potential = ',basis_set_hf_potential
+ call cpu_time(cpu0)
  allocate(r(3))
  mu_average = 0.d0
  do j = 1, nucl_num
@@ -459,7 +465,6 @@ END_PROVIDER
     r(3) = grid_points_per_atom(3,l,k,j)
     if(basis_set_hf_potential)then
      call local_r12_operator_on_hf(r,r,local_potential)
-!!   call local_r12_operator_with_one_e_int_on_1s(r,r,local_potential)
     else
      call expectation_value_in_real_space(r,r,local_potential,two_body_dm)
     endif
@@ -468,6 +473,8 @@ END_PROVIDER
    enddo
   enddo
  enddo
+ call cpu_time(cpu1)
+ print*,'Time to provide mu_of_r = ',cpu1-cpu0
  mu_average = mu_average / dble(elec_alpha_num + elec_beta_num)
  deallocate(r)
  END_PROVIDER 
@@ -480,6 +487,9 @@ END_PROVIDER
  integer :: j,k,l,istate
  double precision :: on_top_two_dm_in_r
  double precision, allocatable :: r(:)
+ double precision :: cpu0,cpu1
+ print*,'providing the on_top_of_r ...'
+ call cpu_time(cpu0)
  allocate(r(3))
   do j = 1, nucl_num
    do k = 1, n_points_radial_grid  -1
@@ -494,5 +504,7 @@ END_PROVIDER
     enddo
    enddo
  enddo
+ call cpu_time(cpu1)
+ print*,'Time to provide on_top_of_r = ',cpu1-cpu0
  deallocate(r)
  END_PROVIDER

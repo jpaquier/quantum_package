@@ -77,8 +77,6 @@ subroutine print_variational_energy_dft_mu_of_r
    print*, 'Component of the energy ....'
    print*, ''
    write(*, '(A28,X,F16.10)') 'nuclear_repulsion         = ',nuclear_repulsion
-   write(*, '(A28,X,F16.10)') 'psi_energy_bielec         = ',psi_energy_bielec
-   write(*, '(A28,X,F16.10)') 'psi_energy_monoelec       = ',psi_energy_monoelec
    write(*, '(A28,X,F16.10)') 'DFT mu(r)     correlation = ',Energy_c_md_mu_of_r_LDA
    print*, ''
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -93,8 +91,6 @@ subroutine print_variational_energy_dft_mu_of_r
    print*, 'Component of the energy ....'
    print*, ''
    write(*, '(A28,X,F16.10)') 'nuclear_repulsion         = ',nuclear_repulsion
-   write(*, '(A28,X,F16.10)') 'psi_energy_bielec         = ',psi_energy_bielec
-   write(*, '(A28,X,F16.10)') 'psi_energy_monoelec       = ',psi_energy_monoelec
    write(*, '(A28,X,F16.10)') 'DFT mu(r) correlation     = ',Energy_c_md_mu_of_r_PBE_on_top
    write(*, '(A28,X,F16.10)') 'DFT mu(r) correlation corr= ',Energy_c_md_mu_of_r_PBE_on_top_corrected
    print*, ''
