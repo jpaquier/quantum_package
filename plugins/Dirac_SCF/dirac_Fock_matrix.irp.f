@@ -14,64 +14,64 @@
  END_PROVIDER
 
 
- BEGIN_PROVIDER [ complex*16, dirac_ao_bi_elec_integral, (2*dirac_ao_num, 2*dirac_ao_num) ]
-  use map_module
-  implicit none
-  BEGIN_DOC
-  ! Fock matrix in Dirac AO basis set
-  END_DOC
-  PROVIDE dirac_ao_bielec_integrals_in_map
-  integer                        :: i,j,k,l,k1 
-  integer                        :: r,s,p,q
-  double precision               :: dirac_ao_bielec_integral, local_threshold
-  complex*16                     :: integral
-  complex*16, allocatable        :: dirac_ao_bi_elec_integral_tmp(:,:)
-  integer(omp_lock_kind)         :: lck(dirac_ao_num)
-  integer*8                      :: i8
-  integer                        :: ii(8), jj(8), kk(8), ll(8), k2
-  integer(cache_map_size_kind)   :: n_elements_max, n_elements
-  integer(key_kind), allocatable :: keys(:)
-  double precision, allocatable  :: values(:)
-  dirac_ao_bi_elec_integral = (0.d0,0.d0)
- !$OMP PARALLEL DEFAULT(NONE)                                      &
- !$OMP PRIVATE(i,j,l,k1,k,integral,ii,jj,kk,ll,i8,keys,values,n_elements_max, &
- !$OMP  n_elements,dirac_ao_bi_elec_integral_tmp)&
- !$OMP SHARED(dirac_ao_num,dirac_SCF_density_matrix_ao,&
- !$OMP  dirac_ao_integrals_map, dirac_ao_bi_elec_integral) 
-  call get_cache_map_n_elements_max(dirac_ao_integrals_map,n_elements_max)
-  allocate(keys(n_elements_max), values(n_elements_max))
-  allocate(dirac_ao_bi_elec_integral_tmp(2*dirac_ao_num,2*dirac_ao_num))
-  dirac_ao_bi_elec_integral_tmp = (0.d0,0.d0)
- !$OMP DO SCHEDULE(dynamic,64)
- !DIR$ NOVECTOR
-  do i8=0_8,dirac_ao_integrals_map%map_size
-   n_elements = n_elements_max
-   call get_cache_map(dirac_ao_integrals_map,i8,keys,values,n_elements)
-   do k1=1,n_elements
-    call bielec_integrals_index_reverse(kk,ii,ll,jj,keys(k1))
-    do k2=1,8
-     if (kk(k2)==0) then
-      cycle
-     endif
-     i = ii(k2) ! electron 1
-     j = jj(k2) ! electron 1
-     k = kk(k2) ! electron 2
-     l = ll(k2) ! electron 2
-     ! values(k1) = (ij|kl) <=> <ik|jl>
-     integral = (dirac_SCF_density_matrix_ao(k,l)) * values(k1)
-     dirac_ao_bi_elec_integral_tmp(i,j) += integral
-     integral = values(k1)
-     dirac_ao_bi_elec_integral_tmp(l,j) -= dirac_SCF_density_matrix_ao(k,i) * integral
-    enddo
-   enddo
-  enddo
- !$OMP END DO NOWAIT
- !$OMP CRITICAL
-  dirac_ao_bi_elec_integral += dirac_ao_bi_elec_integral_tmp
- !$OMP END CRITICAL
-  deallocate(keys,values,dirac_ao_bi_elec_integral_tmp)
- !$OMP END PARALLEL
- END_PROVIDER
+!BEGIN_PROVIDER [ complex*16, dirac_ao_bi_elec_integral, (2*dirac_ao_num, 2*dirac_ao_num) ]
+! use map_module
+! implicit none
+! BEGIN_DOC
+! ! Fock matrix in Dirac AO basis set
+! END_DOC
+! PROVIDE dirac_ao_bielec_integrals_in_map
+! integer                        :: i,j,k,l,k1 
+! integer                        :: r,s,p,q
+! double precision               :: dirac_ao_bielec_integral, local_threshold
+! complex*16                     :: integral
+! complex*16, allocatable        :: dirac_ao_bi_elec_integral_tmp(:,:)
+! integer(omp_lock_kind)         :: lck(dirac_ao_num)
+! integer*8                      :: i8
+! integer                        :: ii(8), jj(8), kk(8), ll(8), k2
+! integer(cache_map_size_kind)   :: n_elements_max, n_elements
+! integer(key_kind), allocatable :: keys(:)
+! double precision, allocatable  :: values(:)
+! dirac_ao_bi_elec_integral = (0.d0,0.d0)
+!!$OMP PARALLEL DEFAULT(NONE)                                      &
+!!$OMP PRIVATE(i,j,l,k1,k,integral,ii,jj,kk,ll,i8,keys,values,n_elements_max, &
+!!$OMP  n_elements,dirac_ao_bi_elec_integral_tmp)&
+!!$OMP SHARED(dirac_ao_num,dirac_SCF_density_matrix_ao,&
+!!$OMP  dirac_ao_integrals_map, dirac_ao_bi_elec_integral) 
+! call get_cache_map_n_elements_max(dirac_ao_integrals_map,n_elements_max)
+! allocate(keys(n_elements_max), values(n_elements_max))
+! allocate(dirac_ao_bi_elec_integral_tmp(2*dirac_ao_num,2*dirac_ao_num))
+! dirac_ao_bi_elec_integral_tmp = (0.d0,0.d0)
+!!$OMP DO SCHEDULE(dynamic,64)
+!!DIR$ NOVECTOR
+! do i8=0_8,dirac_ao_integrals_map%map_size
+!  n_elements = n_elements_max
+!  call get_cache_map(dirac_ao_integrals_map,i8,keys,values,n_elements)
+!  do k1=1,n_elements
+!   call bielec_integrals_index_reverse(kk,ii,ll,jj,keys(k1))
+!   if (ii(1) .le. large_ao_num .and. jj(1) .le. large_ao_num &
+!       kk(1) .le. large_ao_num .and. ll(1) .le. large_ao_num) then 
+!    do k2=1,8
+!     i = ii(k2) ! electron 1
+!     j = jj(k2) ! electron 1
+!     k = kk(k2) ! electron 2
+!     l = ll(k2) ! electron 2
+!     ! values(k1) = (ij|kl) <=> <ik|jl>
+!     integral = values(k1)
+!     dirac_ao_bi_elec_integral_tmp(d_I(i,1),d_I(j,1)) += dirac_SCF_density_matrix_ao(d_I(k,1),d_I(l,1)) * integral
+!     dirac_ao_bi_elec_integral_tmp(d_I(i,2),d_I(j,2)) += dirac_SCF_density_matrix_ao(d_I(i,1),d_I(l,1)) * integral
+!     dirac_ao_bi_elec_integral_tmp(l,j) -= dirac_SCF_density_matrix_ao(k,i) * integral
+!    enddo
+!   endif
+!  enddo
+! enddo
+!!$OMP END DO NOWAIT
+!!$OMP CRITICAL
+! dirac_ao_bi_elec_integral += dirac_ao_bi_elec_integral_tmp
+!!$OMP END CRITICAL
+! deallocate(keys,values,dirac_ao_bi_elec_integral_tmp)
+!!$OMP END PARALLEL
+!END_PROVIDER
 
 
 
