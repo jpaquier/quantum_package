@@ -103,47 +103,83 @@ program Dirac_SCF
 !enddo
 
 
+!print*,large_ao_num,small_ao_num
+!do j = 1,large_ao_num
+!!print*,'nucleus =',ao_nucl(j)
+!!print*,'nuclear_coordinate =', nucl_coord(ao_nucl(j), 1 ), nucl_coord( ao_nucl(j), 2 ), nucl_coord(ao_nucl(j), 3 )
+!!print*,'ao_expo_ordered_transp =', ao_expo_ordered_transp(1,i)
+!!print*,'ao_power =', ao_power(i,1), ao_power(i,2), ao_power(i,3)  
+! do i= 1,large_ao_num
+! !print*,'nucleus =',ao_nucl(j)
+! !print*,'nuclear_coordinate =', nucl_coord(ao_nucl(j), 1 ), nucl_coord(ao_nucl(j), 2 ), nucl_coord(ao_nucl(j), 3 )
+! !print*,'ao_expo_ordered_transp =', ao_expo_ordered_transp(1,j)
+! !print*,'ao_power =', ao_power(j,1), ao_power(j,2), ao_power(j,3)
+! !do k = 1,nucl_num 
+! ! print*, 'ao_nucl_elec_integral_per_atom =', ao_nucl_elec_integral_per_atom(i,j,k)
+! !enddo
+! !print*,'ao_ortho_canonical_coef =', ao_ortho_canonical_coef(j,i)
+! !print*,'ao_ortho_canonical_overlap =', ao_ortho_canonical_overlap(j,i)
+! !print*,'mo_mono_elec_integral =', mo_mono_elec_integral(i,j)
+! !print*,'ao_mono_elec_integral =', ao_mono_elec_integral(i,j)
+!   
+! !integral = dirac_ao_bielec_integral(1,i,1,j)
+! !print*, integral
+! !integral = ao_bielec_integral(1,i,1,j)
+! !print*, integral
+!
+!  print*,i,j,dirac_ao_bi_elec_integral(i,j) 
+!  print*,i,j,dirac_ao_bi_elec_integral_L_alpha_L_alpha(i,j)
+!  print*,i,j,ao_bi_elec_integral_alpha(i,j)
+!   
+! !print*,i, j, dirac_SCF_density_matrix_ao(i,j)
+! !print*,i, j, SCF_density_matrix_ao_alpha(i,j)
+!  
+! !print*,i,j, dirac_mo_coef(i,j)
+! !print*,i,j, mo_coef(i,j)   
+! 
+!  print*,'******************'
+! enddo
+!enddo
+
+
+!do i = 1, dirac_ao_num
+! print*,i,d_I(i,1),d_I(i,2)
+!enddo
+ 
+!print*,large_ao_num,small_ao_num
+!do j = 1, 2*dirac_ao_num
+! do i = 1, 2*dirac_ao_num
+!  print*,i,j,dirac_ao_bi_elec_integral(i,j)
+! !print*,i,j,dirac_SCF_density_matrix_ao(i,j)
+! enddo
+! print*,'*************'
+!enddo
+ 
+!print*,large_ao_num,small_ao_num
+!do j = 1, small_ao_num
+! do i = 1, small_ao_num
+!  print*,i,j,dirac_ao_bi_elec_integral(i+2*large_ao_num,j+2*large_ao_num)
+!  print*,i,j,dirac_ao_bi_elec_integral_S_alpha_S_alpha(i,j)
+!  print*,'******'
+!  print*,i,j,dirac_ao_bi_elec_integral(i+(2*large_ao_num+small_ao_num),j+(2*large_ao_num+small_ao_num))   
+!  print*,i,j,dirac_ao_bi_elec_integral_S_beta_S_beta(i,j)  
+!  print*,'*************************' 
+! enddo
+!enddo
+
  print*,large_ao_num,small_ao_num
- do j = 1,large_ao_num
- !print*,'nucleus =',ao_nucl(j)
- !print*,'nuclear_coordinate =', nucl_coord(ao_nucl(j), 1 ), nucl_coord( ao_nucl(j), 2 ), nucl_coord(ao_nucl(j), 3 )
- !print*,'ao_expo_ordered_transp =', ao_expo_ordered_transp(1,i)
- !print*,'ao_power =', ao_power(i,1), ao_power(i,2), ao_power(i,3)  
-  do i= 1,large_ao_num
-  !print*,'nucleus =',ao_nucl(j)
-  !print*,'nuclear_coordinate =', nucl_coord(ao_nucl(j), 1 ), nucl_coord(ao_nucl(j), 2 ), nucl_coord(ao_nucl(j), 3 )
-  !print*,'ao_expo_ordered_transp =', ao_expo_ordered_transp(1,j)
-  !print*,'ao_power =', ao_power(j,1), ao_power(j,2), ao_power(j,3)
-  !do k = 1,nucl_num 
-  ! print*, 'ao_nucl_elec_integral_per_atom =', ao_nucl_elec_integral_per_atom(i,j,k)
-  !enddo
-  !print*,'ao_ortho_canonical_coef =', ao_ortho_canonical_coef(j,i)
-  !print*,'ao_ortho_canonical_overlap =', ao_ortho_canonical_overlap(j,i)
-  !print*,'mo_mono_elec_integral =', mo_mono_elec_integral(i,j)
-  !print*,'ao_mono_elec_integral =', ao_mono_elec_integral(i,j)
-    
-  !integral = dirac_ao_bielec_integral(1,i,1,j)
-  !print*, integral
-  !integral = ao_bielec_integral(1,i,1,j)
-  !print*, integral
- 
- 
-   print*,i,j,dirac_ao_bi_elec_integral(i+large_ao_num,j+large_ao_num) 
-   print*,i,j,dirac_ao_bi_elec_integral_L_beta_L_beta(i,j)
- 
-  !print*,i,j,dirac_ao_bi_elec_integral(i,j) 
-  !print*,i,j,dirac_ao_bi_elec_integral_L_alpha_L_alpha(i,j)
-  !print*,i,j,ao_bi_elec_integral_alpha(i,j)
-    
-  !print*,i, j, dirac_SCF_density_matrix_ao(i,j)
-  !print*,i, j, SCF_density_matrix_ao_alpha(i,j)
-   
-  !print*,i,j, dirac_mo_coef(i,j)
-  !print*,i,j, mo_coef(i,j)   
-  
-   print*,'******************'
+ do j = 1, large_ao_num
+  do i = 1, large_ao_num
+ ! print*,i,j,ao_bi_elec_integral(i,j)
+ ! print*,i,j,dirac_ao_bi_elec_integral_L_alpha_L_alpha(i,j)
+   print*,'******'
+   print*,i,j,dirac_ao_bi_elec_integral(i+large_ao_num,j+large_ao_num)   
+ ! print*,i,j,dirac_ao_bi_elec_integral_L_beta_L_beta(i,j)  
+  print*,'*************************' 
   enddo
  enddo
+
+
 
 !print*,'ao_num =', ao_num
 !print*,'******************'
