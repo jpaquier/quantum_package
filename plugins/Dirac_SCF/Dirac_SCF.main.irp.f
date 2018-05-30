@@ -127,8 +127,13 @@ program Dirac_SCF
   !integral = ao_bielec_integral(1,i,1,j)
   !print*, integral
  
-   print*,i,j,dirac_ao_bi_elec_integral_L_alpha_L_alpha(i,j)
-   print*,i,j,ao_bi_elec_integral_alpha(i,j)
+ 
+   print*,i,j,dirac_ao_bi_elec_integral(i+large_ao_num,j+large_ao_num) 
+   print*,i,j,dirac_ao_bi_elec_integral_L_beta_L_beta(i,j)
+ 
+  !print*,i,j,dirac_ao_bi_elec_integral(i,j) 
+  !print*,i,j,dirac_ao_bi_elec_integral_L_alpha_L_alpha(i,j)
+  !print*,i,j,ao_bi_elec_integral_alpha(i,j)
     
   !print*,i, j, dirac_SCF_density_matrix_ao(i,j)
   !print*,i, j, SCF_density_matrix_ao_alpha(i,j)
