@@ -126,17 +126,19 @@
  END_PROVIDER
 
 
- BEGIN_PROVIDER [ complex*16, dirac_HF_energy]
- &BEGIN_PROVIDER [ complex*16, dirac_SCF_energy]
- &BEGIN_PROVIDER [ complex*16, dirac_HF_two_electron_energy]
- &BEGIN_PROVIDER [ complex*16, dirac_HF_one_electron_energy]
+ BEGIN_PROVIDER [ double precision, dirac_HF_energy]
+ &BEGIN_PROVIDER [ double precision, dirac_SCF_energy]
+ &BEGIN_PROVIDER [ double precision, dirac_HF_two_electron_energy]
+ &BEGIN_PROVIDER [ double precision, dirac_HF_one_electron_energy]
   implicit none
   integer :: i,j
   dirac_HF_energy = nuclear_repulsion
+  dirac_HF_one_electron_energy = 0.d0
+  dirac_HF_two_electron_energy = 0.d0
   do j=1, 2*dirac_ao_num
    do i=1, 2*dirac_ao_num
-    dirac_HF_two_electron_energy += dirac_ao_bi_elec_integral(i,j) * dirac_SCF_density_matrix_ao(i,j)
-    dirac_HF_one_electron_energy += dirac_ao_mono_elec_integral(i,j) * dirac_SCF_density_matrix_ao(i,j) 
+    dirac_HF_two_electron_energy += real(dirac_ao_bi_elec_integral(i,j) * dirac_SCF_density_matrix_ao(i,j))
+    dirac_HF_one_electron_energy += real(dirac_ao_mono_elec_integral(i,j) * dirac_SCF_density_matrix_ao(i,j)) 
    enddo
   enddo
   dirac_HF_energy += dirac_HF_two_electron_energy + dirac_HF_one_electron_energy
