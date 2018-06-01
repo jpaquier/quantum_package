@@ -43,6 +43,40 @@ double precision function two_dm_in_r_new(r1,r2,istate)
 end
 
 
+double precision function two_dm_in_r_new_cycle(r1,r2,istate)
+ implicit none
+ integer, intent(in) :: istate
+ double precision, intent(in) :: r1(3),r2(3)
+ double precision :: accu1,accu2,accu3,accu4,threshold
+ integer :: i,j,k,l
+ allocate(mos_array_r1(mo_tot_num),mos_array_r2(mo_tot_num))
+ double precision, allocatable :: mos_array_r1(:)
+ double precision, allocatable :: mos_array_r2(:)
+
+ threshold = 1.d-10
+
+ call give_all_mos_at_r(r1,mos_array_r1) 
+ call give_all_mos_at_r(r2,mos_array_r2) 
+ two_dm_in_r_new_cycle = 0.d0
+ do i = 1, mo_tot_num
+  accu1 = dabs(mos_array_r1(i))
+  if(accu1.lt.threshold)cycle
+  do j = 1, mo_tot_num
+   accu2 = accu1 * dabs(mos_array_r1(j))
+   if(accu2.lt.threshold)cycle
+   do k = 1, mo_tot_num
+    accu3 = accu2 *  dabs(mos_array_r2(k))
+    if(accu3.lt.threshold)cycle
+    do l = 1, mo_tot_num
+     two_dm_in_r_new_cycle += two_bod_alpha_beta_mo(l,k,j,i,istate) * mos_array_r1(i) * mos_array_r2(l) * mos_array_r2(k) * mos_array_r1(j)
+    enddo
+   enddo
+  enddo
+ enddo
+ two_dm_in_r_new_cycle = max(two_dm_in_r_new_cycle,1.d-15)
+ deallocate(mos_array_r1,mos_array_r2)
+end
+
 
 double precision function on_top_two_dm_in_r_new(r,istate)
  implicit none
