@@ -1,15 +1,20 @@
  BEGIN_PROVIDER [ complex*16, dirac_ao_mono_elec_integral,(2*dirac_ao_num,2*dirac_ao_num)]
-  implicit none
+ &BEGIN_PROVIDER [ complex*16, dirac_ao_mono_elec_integral_diag, (2*dirac_ao_num) ] 
+ implicit none
   integer          :: i,j
   BEGIN_DOC
  ! array of the mono electronic hamiltonian on the AOs basis
  ! in the 4x4 component formalism with cartesian basis and 
  ! the unrestricted kinetic-balance scheme  
   END_DOC
-  do i = 1, 2*(dirac_ao_num)
-   do j = 1, 2*(dirac_ao_num)
+  dirac_ao_mono_elec_integral = (0.d0,0.d0)
+  do j = 1, 2*(dirac_ao_num)
+   do i = 1, 2*(dirac_ao_num)
     dirac_ao_mono_elec_integral(i,j) += (dirac_ao_mono_elec_nucl_integral(i,j) + dirac_ao_mono_elec_mass_integral(i,j) + dirac_ao_mono_elec_kinetic_integral(i,j) )
    enddo
+  enddo
+  do j = 1, 2*dirac_ao_num
+   dirac_ao_mono_elec_integral_diag(j) = dirac_ao_mono_elec_integral(j,j)
   enddo
  END_PROVIDER
 
@@ -108,8 +113,8 @@
   ! dirac Fock matrix in AO basis set
   END_DOC
   integer                        :: i,j
-  do j=1,dirac_ao_num
-   do i=1,dirac_ao_num
+  do j=1,2*dirac_ao_num
+   do i=1,2*dirac_ao_num
     dirac_Fock_matrix_ao(i,j) = dirac_ao_mono_elec_integral(i,j) + dirac_ao_bi_elec_integral(i,j)
    enddo
   enddo
@@ -117,11 +122,12 @@
 
  BEGIN_PROVIDER [ double precision, dirac_extra_energy_contrib_from_density]
  implicit none
- dirac_extra_energy_contrib_from_density = 0.d0
+  dirac_extra_energy_contrib_from_density = 0.d0
  END_PROVIDER
 
 
  BEGIN_PROVIDER [ complex*16, dirac_HF_energy]
+ &BEGIN_PROVIDER [ complex*16, dirac_SCF_energy]
  &BEGIN_PROVIDER [ complex*16, dirac_HF_two_electron_energy]
  &BEGIN_PROVIDER [ complex*16, dirac_HF_one_electron_energy]
   implicit none
@@ -134,11 +140,35 @@
    enddo
   enddo
   dirac_HF_energy += dirac_HF_two_electron_energy + dirac_HF_one_electron_energy
+  dirac_SCF_energy = dirac_HF_energy + dirac_extra_energy_contrib_from_density
  END_PROVIDER
 
 
- 
- 
+ BEGIN_PROVIDER [complex*16, dirac_Fock_matrix_mo,(2*dirac_mo_tot_num,2*dirac_mo_tot_num)]
+  implicit none
+  BEGIN_DOC
+  ! Fock matrix in the MO basis
+  END_DOC
+    call dirac_ao_to_mo(                                              &
+        dirac_Fock_matrix_ao,                                         &
+        size(dirac_Fock_matrix_ao,1),                                 &
+        dirac_Fock_matrix_mo,                                         &
+        size(dirac_Fock_matrix_mo,1)                                  &
+        )
+ END_PROVIDER
+
+ BEGIN_PROVIDER [complex*16, dirac_Fock_matrix_diag_mo,(2*dirac_mo_tot_num)]
+  implicit none
+  BEGIN_DOC
+  ! Fock matrix in the MO basis
+  END_DOC
+  integer :: i
+  do i = 1, 2*dirac_mo_tot_num
+   dirac_Fock_matrix_diag_mo(i) = dirac_Fock_matrix_mo (i,i)
+  enddo
+ END_PROVIDER
+
+
  ! 1 
  BEGIN_PROVIDER [ complex*16, dirac_ao_bi_elec_integral_L_alpha_L_alpha, (ao_num, ao_num) ]
   implicit none

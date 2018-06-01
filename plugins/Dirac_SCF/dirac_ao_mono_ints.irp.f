@@ -6,7 +6,7 @@
  ! hamiltonian on the AOs basis in the 4x4 component
  ! formalism with cartesian basis and  the unrestricted kinetic-balance scheme  
   END_DOC
- dirac_ao_mono_elec_nucl_integral = 0
+ dirac_ao_mono_elec_nucl_integral = 0.d0
   do j = 1, 2*(dirac_ao_num)
    if (j .le. large_ao_num) then 
     do i = 1, 2*(dirac_ao_num)

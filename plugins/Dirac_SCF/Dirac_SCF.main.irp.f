@@ -41,29 +41,73 @@ program Dirac_SCF
 !enddo
 
 
-!do i = 1, dirac_ao_num
-! print*,i,d_I(i,1),d_I(i,2)
+!do i = 1, 2*dirac_ao_num
+! print*,i,dirac_mo_mono_elec_eigenvalues(i)
 !enddo
+
+
  
 !print*,large_ao_num,small_ao_num
 !do j = 1, large_ao_num
 ! do i = 1, large_ao_num
-! !print*,i,j,dirac_ao_bi_elec_integral(i,j)
-! !print*,i,j,dirac_SCF_density_matrix_ao(i,j)
+!  print*,i,j,SCF_density_matrix_ao_alpha(i,j)
+!  print*,i,j,SCF_density_matrix_ao_beta(i,j)
 ! enddo
 ! print*,'*************'
 !enddo
 
- print*,  HF_one_electron_energy
- print*,  dirac_HF_one_electron_energy
+!print*,large_ao_num,small_ao_num
+!do j = 1, large_ao_num
+! do i = 1, large_ao_num
+!  print*,i,j,large_ao_ortho_lowdin_overlap(i,j)
+! !print*,i,j,ao_mono_elec_integral(i,j)
+! !print*,i,j,ao_bi_elec_integral(i,j)
+! enddo
+! print*,'**************'
+!enddo
+
  
+ print*,large_ao_num,small_ao_num
+ do j = 1, small_ao_num
+  do i = 1, small_ao_num
+  !print*,i,j,small_ao_ortho_canonical_overlap(i,j)
+   print*,i,j,small_ao_ortho_lowdin_overlap(i,j)
+  !print*,i,j,dirac_ao_mono_elec_integral(i,j)
+  !print*,i,j,dirac_mo_mono_elec_integral(i,j)
+  !print*,i,j,dirac_Fock_matrix_ao(i,j)
+  !print*,i,j,dirac_Fock_matrix_mo(i,j)  
+  !print*,i,j,dirac_S_mo_coef(i,j)
+  !print*,'******' 
+  enddo
+  print*,'******************'
+ enddo
+
+!print*,large_ao_num,small_ao_num
+!do j = 1, 2*large_ao_num
+! do i = 1, 2*large_ao_num
+!  print*,i,j,dirac_ao_mono_elec_integral(i,j)
+! !print*,i,j,dirac_ao_mono_elec_nucl_integral(i,j)
+! enddo
+! print*,'*************'
+!enddo
+
+
+!print*,  HF_one_electron_energy
+!print*,  dirac_HF_one_electron_energy
+!print*,'***********' 
+!print*,  HF_two_electron_energy
+!print*,  dirac_HF_two_electron_energy
+!print*,'***********'
+!print*, SCF_energy
+!print*, dirac_SCF_energy 
+
 !print*,'large_ao_num =',large_ao_num
 !do j = 1, large_ao_num
 ! do i = 1, large_ao_num
-! !print*,i,j,ao_bi_elec_integral_alpha(i,j)
+!  print*,i,j,ao_bi_elec_integral_alpha(i,j)
 !  print*,i,j,dirac_ao_bi_elec_integral(i,j)
 ! !print*,i,j,dirac_ao_bi_elec_integral_L_alpha_L_alpha(i,j)
-! !print*,'******'
+!  print*,'******'
 ! !print*,i,j,dirac_ao_bi_elec_integral(i+large_ao_num,j+large_ao_num)   
 ! !print*,i,j,dirac_ao_bi_elec_integral_L_beta_L_beta(i,j)  
 ! !print*,'**********' 

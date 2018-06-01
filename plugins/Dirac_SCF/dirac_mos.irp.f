@@ -53,8 +53,8 @@
   ! Ct.A_ao.C
   END_DOC
   integer, intent(in)            :: LDA_ao,LDA_mo
-  complex*16, intent(in)         :: A_ao(LDA_ao,2*(ao_num+small_ao_num))
-  double precision, intent(out)  :: A_mo(LDA_mo,2*(mo_tot_num+small_mo_tot_num))
+  complex*16, intent(in)         :: A_ao(LDA_ao,2*dirac_ao_num)
+  double precision, intent(out)  :: A_mo(LDA_mo,2*dirac_mo_tot_num)
   complex*16, allocatable        :: T(:,:)
   allocate ( T(2*(dirac_ao_num),2*(dirac_mo_tot_num)) )
   call zgemm('N','N', 2*(dirac_ao_num), 2*(dirac_mo_tot_num), 2*(dirac_ao_num), &
@@ -69,16 +69,67 @@
  end
 
 
- BEGIN_PROVIDER [double precision,dirac_fock_matrix_eigenvalues,(2*(dirac_mo_tot_num))]
- &BEGIN_PROVIDER [complex*16, dirac_fock_matrix_eigenvectors,(2*(dirac_mo_tot_num),2*(dirac_mo_tot_num))]
- implicit none
- integer :: n,nmax
- double precision :: eigenvalues( 2*(dirac_mo_tot_num))
- complex*16       :: eigenvectors(2*(dirac_mo_tot_num),2*(dirac_mo_tot_num))
- n = 2*(dirac_mo_tot_num)
- nmax = n
- call lapack_diag_complex(eigenvalues,eigenvectors,dirac_mo_mono_elec_integral,nmax,n)
- dirac_fock_matrix_eigenvalues = eigenvalues
- dirac_fock_matrix_eigenvectors = eigenvectors
+ BEGIN_PROVIDER [ complex*16, dirac_S_mo_coef, (2*dirac_ao_num, 2*dirac_mo_tot_num) ]
+  implicit none
+  BEGIN_DOC
+  ! Product S.C where S is the overlap matrix in the AO basis and C the mo_coef matrix.
+  END_DOC
+  call zgemm('N','N', 2*dirac_ao_num, 2*dirac_mo_tot_num, 2*dirac_ao_num,            &
+     (1.d0,0.d0), dirac_ao_overlap,size(dirac_ao_overlap,1),                         &
+     dirac_mo_coef, size(dirac_mo_coef,1),                                           &
+     (0.d0,0.d0), dirac_S_mo_coef, size(dirac_S_mo_coef,1))
  END_PROVIDER
  
+
+ subroutine dirac_mo_to_ao(A_mo,LDA_mo,A_ao,LDA_ao)
+  implicit none
+  BEGIN_DOC
+  ! Transform A from the MO basis to the AO basis
+  !
+  ! (S.C).A_mo.(S.C)t
+  END_DOC
+  integer, intent(in)            :: LDA_ao,LDA_mo
+  complex*16, intent(in)         :: A_mo(LDA_mo,2*dirac_mo_tot_num)
+  complex*16, intent(out)        :: A_ao(LDA_ao,2*dirac_ao_num)
+  complex*16, allocatable        :: T(:,:)
+  allocate ( T(2*dirac_mo_tot_num,2*dirac_ao_num) )
+  call zgemm('N','T', 2*dirac_mo_tot_num, 2*dirac_ao_num, 2*dirac_mo_tot_num,        &
+       (1.d0,0.d0), A_mo,size(A_mo,1),                                               &
+       dirac_S_mo_coef, size(dirac_S_mo_coef,1),                                     &
+       (0.d0,0.d0), T, size(T,1))
+  call zgemm('N','N', 2*dirac_ao_num, 2*dirac_ao_num, 2*dirac_mo_tot_num,            &
+       (1.d0,0.d0), dirac_S_mo_coef, size(dirac_S_mo_coef,1),                        &
+       T, size(T,1),                                                                 &
+       (0.d0,0.d0), A_ao, size(A_ao,1))
+  deallocate(T)
+ end
+
+ BEGIN_PROVIDER[ character*(64), dirac_mo_label ]
+  implicit none
+  BEGIN_DOC
+  ! Molecular orbital coefficients on AO basis set
+  ! mo_coef(i,j) = coefficient of the ith ao on the jth mo
+  ! mo_label : Label characterizing the MOS (local, canonical, natural, etc)
+  END_DOC
+  logical                        :: exists
+  PROVIDE ezfio_filename
+  if (mpi_master) then
+    call ezfio_has_mo_basis_mo_label(exists)
+    if (exists) then
+      call ezfio_get_mo_basis_mo_label(mo_label)
+      dirac_mo_label = trim(dirac_mo_label)
+    else
+      dirac_mo_label = 'no_label'
+    endif
+    write(*,*) '* dirac_mo_label          ', trim(dirac_mo_label)
+  endif
+ !IRP_IF MPI
+ !  include 'mpif.h'
+ !  integer :: ierr
+ !  call MPI_BCAST( mo_label, 64, MPI_CHARACTER, 0, MPI_COMM_WORLD, ierr)
+ !  if (ierr /= MPI_SUCCESS) then
+ !    stop 'Unable to read mo_label with MPI'
+ !  endif
+ !IRP_ENDIF
+ END_PROVIDER
+
