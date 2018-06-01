@@ -56,11 +56,55 @@ subroutine print_variational_energy_dft
  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  write(*, '(A28,X,F16.10)') 'corrected Multi-det correl= ',Energy_c_md_on_top(1)
  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
- write(*, '(A28,X,F16.10)') 'mu_average for basis set  = ',mu_average
  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 end
+
+
+subroutine print_variational_energy_dft_mu_of_r
+ implicit none
+
+ print*,  '****************************************'
+ print*, 'Functional used = ',md_correlation_functional
+ print*,  '****************************************'
+ print*,  ' MR DFT energy with pure correlation part for the DFT '
+ if(md_correlation_functional.EQ."basis_set_LDA")then
+   write(*, '(A28,X,F16.10)') 'TOTAL ENERGY CORR         = ',psi_energy+Energy_c_md_mu_of_r_LDA+nuclear_repulsion
+   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+   print*, ''
+   write(*, '(A28,X,F16.10)') 'Variational energy of Psi = ',psi_energy
+   print*, 'Component of the energy ....'
+   print*, ''
+   write(*, '(A28,X,F16.10)') 'nuclear_repulsion         = ',nuclear_repulsion
+   write(*, '(A28,X,F16.10)') 'DFT mu(r)     correlation = ',Energy_c_md_mu_of_r_LDA
+   print*, ''
+   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ else if(md_correlation_functional.EQ."basis_set_on_top_PBE")then
+   write(*, '(A28,X,F16.10)') 'TOTAL ENERGY CORR         = ',psi_energy+Energy_c_md_mu_of_r_PBE_on_top+nuclear_repulsion
+   write(*, '(A28,X,F16.10)') 'TOTAL ENERGY CORR CORRECTED=',psi_energy+Energy_c_md_mu_of_r_PBE_on_top_corrected+nuclear_repulsion
+   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+   print*, ''
+   write(*, '(A28,X,F16.10)') 'Variational energy of Psi = ',psi_energy
+   print*, 'Component of the energy ....'
+   print*, ''
+   write(*, '(A28,X,F16.10)') 'nuclear_repulsion         = ',nuclear_repulsion
+   write(*, '(A28,X,F16.10)') 'DFT mu(r) correlation     = ',Energy_c_md_mu_of_r_PBE_on_top
+   write(*, '(A28,X,F16.10)') 'DFT mu(r) correlation corr= ',Energy_c_md_mu_of_r_PBE_on_top_corrected
+   print*, ''
+   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+ endif 
+   write(*, '(A28,X,F16.10)') 'mu_average for basis set  = ',mu_average
+
+
+end
+
 
 
 subroutine print_variational_energy_dft_no_ecmd

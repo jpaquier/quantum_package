@@ -620,6 +620,52 @@ subroutine give_epsilon_c_md_on_top_PBE(mu,r,eps_c_md_on_top_PBE)
  end
 
 
+
+subroutine give_epsilon_c_md_on_top_PBE_and_corrected(mu,r,on_top,eps_c_md_on_top_PBE,eps_c_md_on_top_PBE_corrected)
+  implicit none
+  double precision, intent(in)  :: mu , r(3)
+  double precision, intent(in)  :: on_top(N_states)
+  double precision, intent(out) :: eps_c_md_on_top_PBE(N_states),eps_c_md_on_top_PBE_corrected(N_states)
+  double precision              :: on_top_corrected(N_states)
+  double precision :: two_dm_in_r, pi, e_pbe(N_states),beta(N_states)
+  double precision :: aos_array(ao_num), grad_aos_array(3,ao_num)
+  double precision :: rho_a(N_states),rho_b(N_states)
+  double precision :: grad_rho_a(3,N_states),grad_rho_b(3,N_states)
+  double precision :: grad_rho_a_2(N_states),grad_rho_b_2(N_states),grad_rho_a_b(N_states)
+  double precision :: rhoc,rhoo,sigmacc,sigmaco,sigmaoo,vrhoc,vrhoo,vsigmacc,vsigmaco,vsigmaoo
+  integer :: m, istate
+  pi = 4d0 * datan(1d0)
+  double precision :: on_top_tmp(N_states)
+  on_top_tmp = max(on_top,1.d-15)
+  eps_c_md_on_top_PBE = 0d0
+  eps_c_md_on_top_PBE_corrected = 0d0
+  call density_and_grad_alpha_beta_and_all_aos_and_grad_aos_at_r(r,rho_a,rho_b, grad_rho_a, grad_rho_b, aos_array, grad_aos_array)
+  grad_rho_a_2 = 0.d0
+  grad_rho_b_2 = 0.d0
+  grad_rho_a_b = 0.d0
+  do istate = 1, N_states
+   do m = 1, 3
+    grad_rho_a_2(istate) += grad_rho_a(m,istate)*grad_rho_a(m,istate)
+    grad_rho_b_2(istate) += grad_rho_b(m,istate)*grad_rho_b(m,istate)
+    grad_rho_a_b(istate) += grad_rho_a(m,istate)*grad_rho_b(m,istate)
+   enddo
+  enddo
+  do istate = 1, N_states
+   ! convertion from (alpha,beta) formalism to (closed, open) formalism
+   call rho_ab_to_rho_oc(rho_a(istate),rho_b(istate),rhoo,rhoc)
+   call grad_rho_ab_to_grad_rho_oc(grad_rho_a_2(istate),grad_rho_b_2(istate),grad_rho_a_b(istate),sigmaoo,sigmacc,sigmaco)
+   call Ec_sr_PBE(0d0,rhoc,rhoo,sigmacc,sigmaco,sigmaoo,e_PBE(istate))
+   beta(istate) = (3d0*e_PBE(istate))/( (-2d0+sqrt(2d0))*sqrt(2d0*pi)*2d0*on_top_tmp(istate) )
+   eps_c_md_on_top_PBE(istate)=e_PBE(istate)/(1d0+beta(istate)*mu**3d0)
+   on_top_corrected(istate) = on_top_tmp(istate) / ( 1d0 + 2d0/(dsqrt(pi)*mu) )
+   beta(istate) = (3d0*e_PBE(istate))/( (-2d0+sqrt(2d0))*sqrt(2d0*pi)*2d0*on_top_corrected(istate) )
+   eps_c_md_on_top_PBE_corrected(istate)=e_PBE(istate)/(1d0+beta(istate)*mu**3d0)
+  enddo
+ end
+
+
+
+
  BEGIN_PROVIDER [double precision, Energy_c_md_on_top_PBE, (N_states)]
  BEGIN_DOC
   ! Give the Ec_md energy with a good large mu behaviour in function of the on top pair density coupled to the PBE correlation energy at mu=0

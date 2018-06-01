@@ -199,6 +199,12 @@ subroutine ecorrlr(rs,z,mu,eclr)
       a3=b0**8*coe3
       a4=b0**6*(b0**2*coe2+4.d0*ec)
 
+      if(mu*sqrt(rs)/phi.lt.0.d0)then
+       print*,'phi',phi
+       print*,'mu ',mu
+       print*,'rs ',rs
+       pause
+      endif
       eclr=(phi**3*Qrpa(mu*sqrt(rs)/phi)+a1*mu**3+a2*mu**4+a3*mu**5+ &
            a4*mu**6+b0**8*mu**8*ec)/((1.d0+b0**2*mu**2)**4)
 
@@ -645,6 +651,13 @@ subroutine vcorrlr(rs,z,mu,vclrup,vclrdown,vclrupd,vclrdownd)
       c2              = 3.91744d0
       d2              = 3.44851d0
       b2=d2-3.d0/(2.d0*pi*Acoul)*(4.d0/(9.d0*pi))**(1.d0/3.d0)
+     !if(((1.d0+a2*x+b2*x**2+c2*x**3)/(1.d0+a2*x+d2*x**2)).le.0.d0)then
+     ! print*,(1.d0+a2*x+b2*x**2+c2*x**3)/(1.d0+a2*x+d2*x**2)
+     ! print*,(1.d0+a2*x+b2*x**2+c2*x**3),(1.d0+a2*x+d2*x**2)
+     ! print*,x
+     ! pause
+     !endif
+     !Qrpa=Acoul*log(dabs((1.d0+a2*x+b2*x**2+c2*x**3)/(1.d0+a2*x+d2*x**2)))
       Qrpa=Acoul*log((1.d0+a2*x+b2*x**2+c2*x**3)/(1.d0+a2*x+d2*x**2))
       return
       end
