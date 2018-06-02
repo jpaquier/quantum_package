@@ -116,7 +116,7 @@
   if (mpi_master) then
     call ezfio_has_mo_basis_mo_label(exists)
     if (exists) then
-      call ezfio_get_mo_basis_mo_label(mo_label)
+      call ezfio_get_mo_basis_mo_label(dirac_mo_label)
       dirac_mo_label = trim(dirac_mo_label)
     else
       dirac_mo_label = 'no_label'
@@ -131,5 +131,103 @@
  !    stop 'Unable to read mo_label with MPI'
  !  endif
  !IRP_ENDIF
+ END_PROVIDER
+
+ subroutine orthonormalize_dirac_mos
+  implicit none
+  call ortho_lowdin(dirac_mo_overlap,2*dirac_mo_tot_num,2*dirac_mo_tot_num,dirac_mo_coef,2*dirac_ao_num,2*dirac_ao_num)
+  dirac_mo_label = 'Orthonormalized'
+  SOFT_TOUCH dirac_mo_coef dirac_mo_label
+ end
+
+
+ subroutine dirac_mo_as_eigvectors_of_dirac_mo_matrix(matrix,n,m,label,sign,output)
+  implicit none
+  integer,intent(in)             :: n,m, sign
+  character*(64), intent(in)     :: label
+  complex*16, intent(in)         :: matrix(n,m)
+  logical, intent(in)            :: output
+  integer                        :: i,j
+  complex*16, allocatable        :: dirac_mo_coef_new(:,:), R(:,:), A(:,:)
+  double precision, allocatable  :: dirac_eigvalues(:)
+ !!DIR$ ATTRIBUTES ALIGN : $IRP_ALIGN :: mo_coef_new, R
+  call write_time(6)
+  if (m /= 2*dirac_mo_tot_num) then
+    print *, irp_here, ': Error : m/= 2*dirac_mo_tot_num'
+    stop 1
+  endif
+  allocate(A(n,m),R(n,m),dirac_mo_coef_new(2*dirac_ao_num,m),dirac_eigvalues(m))
+  if (sign == -1) then
+   do j=1,m
+    do i=1,n
+     A(i,j) = -matrix(i,j)
+    enddo
+   enddo
+  else
+   do j=1,m
+    do i=1,n
+     A(i,j) = matrix(i,j)
+    enddo
+   enddo
+  endif
+  dirac_mo_coef_new = dirac_mo_coef
+  call lapack_diag_complex(dirac_eigvalues,R,A,n,m)
+  if (output) then
+    write (6,'(A)')  'Dirac MOs are now **'//trim(label)//'**'
+    write (6,'(A)') ''
+    write (6,'(A)')  'Eigenvalues'
+    write (6,'(A)') '-----------'
+    write (6,'(A)')  ''
+    write (6,'(A)') '======== ================'
+  endif
+  if (sign == -1) then
+   do i=1,m
+    dirac_eigvalues(i) = - dirac_eigvalues(i)
+   enddo
+  endif
+  if (output) then
+   do i=1,m
+    write (6,'(I8,1X,F16.10)')  i, dirac_eigvalues(i)
+   enddo
+   write (6,'(A)') '======== ================'
+   write (6,'(A)')  ''
+  endif
+  call zgemm('N','N',2*dirac_ao_num,m,m,1.d0,dirac_mo_coef_new,size(dirac_mo_coef_new,1),R,size(R,1),0.d0,dirac_mo_coef,size(dirac_mo_coef,1))
+  deallocate(A,dirac_mo_coef_new,R,dirac_eigvalues)
+  call write_time(6)
+  dirac_mo_label = label
+ end
+
+
+ BEGIN_PROVIDER [ complex*16, dirac_mo_overlap,(2*dirac_mo_tot_num,2*dirac_mo_tot_num)]
+  implicit none
+  integer :: i,j,n,l
+  double precision :: f
+  integer :: lmax
+  lmax = (2*dirac_ao_num/4) * 4
+ !!$OMP PARALLEL DO SCHEDULE(STATIC) DEFAULT(NONE) &
+ !!$OMP  PRIVATE(i,j,n,l) &
+ !!$OMP  SHARED(dirac_mo_overlap,dirac_mo_coef,dirac_ao_overlap, &
+ !!$OMP    dirac_mo_tot_num,dirac_ao_num,lmax)
+  do j=1,2*dirac_mo_tot_num
+   do i= 1,2*dirac_mo_tot_num
+    dirac_mo_overlap(i,j) = 0.d0
+    do n = 1, lmax,4
+     do l = 1, 2*dirac_ao_num
+      dirac_mo_overlap(i,j) += dirac_mo_coef(l,i) *                  &
+                               ( dirac_mo_coef(n  ,j) * dirac_ao_overlap(l,n  )  &
+                               + dirac_mo_coef(n+1,j) * dirac_ao_overlap(l,n+1)  &
+                               + dirac_mo_coef(n+2,j) * dirac_ao_overlap(l,n+2)  &
+                               + dirac_mo_coef(n+3,j) * dirac_ao_overlap(l,n+3)  )
+     enddo
+    enddo
+    do n = lmax+1, 2*dirac_ao_num
+     do l = 1, 2*dirac_ao_num
+      dirac_mo_overlap(i,j) += dirac_mo_coef(n,j) * dirac_mo_coef(l,i) * dirac_ao_overlap(l,n)
+     enddo
+    enddo
+   enddo
+  enddo
+ !!$OMP END PARALLEL DO
  END_PROVIDER
 

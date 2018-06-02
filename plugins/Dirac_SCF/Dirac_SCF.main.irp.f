@@ -68,34 +68,43 @@ program Dirac_SCF
 
  
 !print*,large_ao_num,small_ao_num
-!do j = 1, ao_num
-! do i = 1, ao_num
-!  print*,i,j,large_ao_ortho_canonical_overlap(i,j)
-!  print*,i,j,large_ao_ortho_lowdin_overlap(i,j)
+!do j = 1, 2*dirac_ao_num
+! do i = 1, 2*dirac_ao_num
+! !print*,i,j,mo_overlap(i,j)
+!  print*,i,j,dirac_mo_overlap(i,j)
+! !print*,i,j,large_ao_ortho_canonical_overlap(i,j)
+! !print*,i,j,large_ao_ortho_lowdin_overlap(i,j)
 ! !print*,i,j,dirac_ao_mono_elec_integral(i,j)
 ! !print*,i,j,dirac_mo_mono_elec_integral(i,j)
 ! !print*,i,j,dirac_Fock_matrix_ao(i,j)
 ! !print*,i,j,dirac_Fock_matrix_mo(i,j)  
 ! !print*,i,j,dirac_S_mo_coef(i,j)
-! !print*,'******' 
+!  print*,'******' 
 ! enddo
 ! print*,'******************'
 !enddo
 
 !print*,large_ao_num,small_ao_num
-!do j = 1, 2*large_ao_num
-! do i = 1, 2*large_ao_num
-!  print*,i,j,dirac_ao_mono_elec_integral(i,j)
-! !print*,i,j,dirac_ao_mono_elec_nucl_integral(i,j)
-! enddo
-! print*,'*************'
+!do j = 1, 2*dirac_ao_num
+! print*,j,eigenvalues_dirac_fock_matrix_mo(j)
+!!do i = 1, 2*dirac_ao_num
+!! print*,i,j,eigenvectors_dirac_fock_matrix_mo(i,j)
+!!!print*,i,j,dirac_ao_ortho_lowdin_coef(i,j)
+!!!print*,i,j,dirac_mo_coef(i,j)
+!!!print*,'*****'
+!!!print*,i,j,dirac_ao_mono_elec_integral(i,j)
+!!!print*,i,j,dirac_ao_mono_elec_nucl_integral(i,j)
+!!enddo
+!!print*,'*************'
 !enddo
  
  print*,  HF_one_electron_energy
  print*,  dirac_HF_one_electron_energy
+ print*,  dirac_HF_one_electron_energy_complex
  print*,'***********' 
  print*,  HF_two_electron_energy
  print*,  dirac_HF_two_electron_energy
+ print*,  dirac_HF_two_electron_energy_complex
  print*,'***********'
  print*, SCF_energy
  print*, dirac_SCF_energy 

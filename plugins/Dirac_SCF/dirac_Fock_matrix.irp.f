@@ -126,23 +126,42 @@
  END_PROVIDER
 
 
+ BEGIN_PROVIDER [ complex*16, dirac_HF_two_electron_energy_complex]
+ &BEGIN_PROVIDER [ complex*16, dirac_HF_one_electron_energy_complex]
+  implicit none
+  integer :: i,j
+  dirac_HF_one_electron_energy_complex = (0.d0,0.d0)
+  dirac_HF_two_electron_energy_complex = (0.d0,0.d0)
+  do j=1, 2*dirac_ao_num
+   do i=1, 2*dirac_ao_num
+    dirac_HF_two_electron_energy_complex += dirac_ao_bi_elec_integral(i,j) * dirac_SCF_density_matrix_ao(i,j)
+    dirac_HF_one_electron_energy_complex += dirac_ao_mono_elec_integral(i,j) * dirac_SCF_density_matrix_ao(i,j) 
+   enddo
+  enddo
+ END_PROVIDER
+
+
  BEGIN_PROVIDER [ double precision, dirac_HF_energy]
- &BEGIN_PROVIDER [ double precision, dirac_SCF_energy]
  &BEGIN_PROVIDER [ double precision, dirac_HF_two_electron_energy]
  &BEGIN_PROVIDER [ double precision, dirac_HF_one_electron_energy]
   implicit none
   integer :: i,j
-  dirac_HF_energy = nuclear_repulsion
-  dirac_HF_one_electron_energy = 0.d0
-  dirac_HF_two_electron_energy = 0.d0
-  do j=1, 2*dirac_ao_num
-   do i=1, 2*dirac_ao_num
-    dirac_HF_two_electron_energy += real(dirac_ao_bi_elec_integral(i,j) * dirac_SCF_density_matrix_ao(i,j))
-    dirac_HF_one_electron_energy += real(dirac_ao_mono_elec_integral(i,j) * dirac_SCF_density_matrix_ao(i,j)) 
+  dirac_HF_two_electron_energy = real(dirac_HF_two_electron_energy_complex)
+  dirac_HF_one_electron_energy = real(dirac_HF_one_electron_energy_complex)
+  dirac_HF_energy = nuclear_repulsion + dirac_HF_two_electron_energy + dirac_HF_one_electron_energy
+ END_PROVIDER
+
+
+ BEGIN_PROVIDER [ double precision, dirac_SCF_energy]
+  integer     :: i,j,k
+  dirac_SCF_energy = 0.d0 
+  k = 2*dirac_ao_num
+  do j = 1, 2*dirac_ao_num
+   do i = 1, 2*dirac_ao_num
+    dirac_SCF_energy += real((dirac_ao_mono_elec_integral(30,30) +dirac_ao_bi_elec_integral(1,1))*dirac_SCF_density_matrix_ao(1,1))
    enddo
   enddo
-  dirac_HF_energy += dirac_HF_two_electron_energy + dirac_HF_one_electron_energy
-  dirac_SCF_energy = dirac_HF_energy + dirac_extra_energy_contrib_from_density
+  !dirac_SCF_energy = dirac_HF_energy + dirac_extra_energy_contrib_from_density
  END_PROVIDER
 
 

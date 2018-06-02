@@ -78,6 +78,7 @@
   enddo
  END_PROVIDER
 
+
  BEGIN_PROVIDER [ double precision, dirac_ao_integrals_threshold  ]
   implicit none
   BEGIN_DOC
