@@ -40,20 +40,39 @@ program Dirac_SCF
 ! print*,'*************************'
 !enddo
 
-
-!do i = 1, 2*dirac_ao_num
-! print*,i,dirac_mo_mono_elec_eigenvalues(i)
+   
+!do j = 1, 2*dirac_ao_num
+!!print*,j,dirac_mo_mono_elec_eigenvalues(j)
+! do i = 1, 2*dirac_ao_num
+!  print*,i,j,dirac_mo_mono_elec_eigenvectors(i,j)
+! enddo
+!print*,'********************'
 !enddo
 
 
- 
- print*,large_ao_num,small_ao_num
  do j = 1, 2*dirac_ao_num
+ !print*,j,eigenvalues_dirac_fock_matrix_mo(j)
   do i = 1, 2*dirac_ao_num
-   print*,i,j,dirac_SCF_density_matrix_ao(i,j)
+   print*,i,j,eigenvectors_dirac_fock_matrix_mo(i,j)
   enddo
-  print*,'*************'
+  print*,'***********************'
  enddo
+
+!print*,large_ao_num,small_ao_num
+!do j = 1, 2*dirac_ao_num
+! do i = 1, 2*dirac_ao_num
+!  print*,i,j,dirac_SCF_density_matrix_ao(i,j)
+! enddo
+! print*,'*************'
+!enddo
+ 
+!print*,large_ao_num,small_ao_num
+!do j = 1, elec_num
+! do i = 1, 2*dirac_ao_num
+!  print*,i,j,dirac_mo_coef_electronic(i,j)
+! enddo
+! print*,'*************'
+!enddo
 
 !print*,large_ao_num,small_ao_num
 !do j = 1, large_ao_num

@@ -7,6 +7,7 @@
  ! in the 4x4 component formalism with cartesian basis and 
  ! the unrestricted kinetic-balance scheme  
   END_DOC
+  print*,'Computing the mono-electronic Fock matrix'
   dirac_ao_mono_elec_integral = (0.d0,0.d0)
   do j = 1, 2*(dirac_ao_num)
    do i = 1, 2*(dirac_ao_num)
@@ -148,20 +149,22 @@
   integer :: i,j
   dirac_HF_two_electron_energy = real(dirac_HF_two_electron_energy_complex)
   dirac_HF_one_electron_energy = real(dirac_HF_one_electron_energy_complex)
+  if (aimag(dirac_HF_one_electron_energy_complex) .gt. 1.d-10  .or. aimag(dirac_HF_two_electron_energy_complex) .gt. 1.d-10) then
+  print*, 'Warning! The energy is not real'
+  print*, 'dirac_HF_one_electron_energy_complex =', dirac_HF_one_electron_energy_complex
+  print*, 'dirac_HF_two_electron_energy_complex =', dirac_HF_two_electron_energy_complex
+  STOP
+  endif
   dirac_HF_energy = nuclear_repulsion + dirac_HF_two_electron_energy + dirac_HF_one_electron_energy
  END_PROVIDER
 
 
  BEGIN_PROVIDER [ double precision, dirac_SCF_energy]
   integer     :: i,j,k
-  dirac_SCF_energy = 0.d0 
-  k = 2*dirac_ao_num
-  do j = 1, 2*dirac_ao_num
-   do i = 1, 2*dirac_ao_num
-    dirac_SCF_energy += real((dirac_ao_mono_elec_integral(30,30) +dirac_ao_bi_elec_integral(1,1))*dirac_SCF_density_matrix_ao(1,1))
-   enddo
-  enddo
-  !dirac_SCF_energy = dirac_HF_energy + dirac_extra_energy_contrib_from_density
+  BEGIN_DOC
+  ! dirac_SCF energy 
+  END_DOC 
+  dirac_SCF_energy = dirac_HF_energy + dirac_extra_energy_contrib_from_density
  END_PROVIDER
 
 
@@ -193,15 +196,15 @@
 
  BEGIN_PROVIDER [double precision,eigenvalues_dirac_fock_matrix_mo,(2*(dirac_mo_tot_num))]
  &BEGIN_PROVIDER [complex*16, eigenvectors_dirac_fock_matrix_mo,(2*(dirac_mo_tot_num),2*(dirac_mo_tot_num))]
- implicit none
- integer :: n,nmax
- double precision :: eigenvalues( 2*(dirac_mo_tot_num))
- complex*16       :: eigenvectors(2*(dirac_mo_tot_num),2*(dirac_mo_tot_num))
- n = 2*(dirac_mo_tot_num)
- nmax = n
- call lapack_diag_complex(eigenvalues,eigenvectors,dirac_mo_mono_elec_integral,nmax,n)
- eigenvalues_dirac_fock_matrix_mo = eigenvalues
- eigenvectors_dirac_fock_matrix_mo = eigenvectors
+  implicit none
+  integer :: n,nmax
+  double precision :: eigenvalues( 2*(dirac_mo_tot_num))
+  complex*16       :: eigenvectors(2*(dirac_mo_tot_num),2*(dirac_mo_tot_num))
+  n = 2*(dirac_mo_tot_num)
+  nmax = n
+  call lapack_diag_complex(eigenvalues,eigenvectors,dirac_Fock_matrix_ao,nmax,n)
+  eigenvalues_dirac_fock_matrix_mo = eigenvalues
+  eigenvectors_dirac_fock_matrix_mo = eigenvectors
  END_PROVIDER
 
  

@@ -10,7 +10,6 @@
    integer                        :: power_A(3),power_B(3)
    integer                        :: i,j,k,l,n_pt_in,m
    double precision               :: NAI_pol_mult 
-   print*,' computing the large_ao_nucl_elec_integral'
      large_ao_nucl_elec_integral = 0.d0
      !        _
      ! /|  / |_)

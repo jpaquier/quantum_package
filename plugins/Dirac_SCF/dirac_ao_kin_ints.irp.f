@@ -90,7 +90,6 @@
   integer :: i,j
   double precision :: c
   c = 137.0359895
-  print *,  'Computing AO kinetic integrals (SL bloc)'
   do j = 1, large_ao_num
    do i = 1, small_ao_num
     dirac_ao_kinetic_integral_z(i,j) = - c * (0.d0,1.d0) * dirac_ao_deriv1_z(i,j)

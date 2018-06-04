@@ -31,7 +31,7 @@
   do k=1,n_it_scf_max
    delta_E = dirac_SCF_energy - E
    E = dirac_SCF_energy
-   if ( (delta_E < 0.d0).and.(dabs(delta_E) < thresh_scf) ) then
+   if ( dsqrt(delta_E) < 1.d-8)  then
     exit
    endif
    saving = E < E_min
@@ -43,11 +43,11 @@
      save_char = ' '
    endif
   !write(6,*) &
-   write(6,'(I4, 1X, F16.8, 1X, F16.10, 1X, F16.10, 3X, A4 )')  &
+   write(6,'(I4, 1X, F16.8, 1X, F16.8, 1X, F16.8, 3X, A4 )')  &
     k, dirac_SCF_energy, delta_E, delta_D, save_char
    D = dirac_SCF_density_matrix_ao
-   dirac_mo_coef = eigenvectors_dirac_fock_matrix_mo
-   TOUCH dirac_mo_coef
+   dirac_mo_coef_electronic = eigenvectors_dirac_fock_matrix_mo
+   TOUCH dirac_mo_coef_electronic
    D_new = dirac_SCF_density_matrix_ao
    F_new = dirac_Fock_matrix_ao
    E_new = dirac_SCF_energy
@@ -57,8 +57,8 @@
    do while (E_half > E)
     dirac_SCF_density_matrix_ao = D + lambda * delta
     TOUCH dirac_SCF_density_matrix_ao
-    dirac_mo_coef = eigenvectors_dirac_fock_matrix_mo
-    TOUCH dirac_mo_coef
+    dirac_mo_coef_electronic = eigenvectors_dirac_fock_matrix_mo
+    TOUCH dirac_mo_coef_electronic
     E_half = dirac_SCF_energy
     if ((E_half > E).and.(E_new < E)) then
      lambda = 1.d0
@@ -74,7 +74,7 @@
    b = -E_new - 3.d0*E + 4.d0*E_half
    lambda = -lambda*b/(a+1.d-16)
    D = (1.d0-lambda) * D + lambda * D_new
-   delta_E = SCF_energy - E
+   delta_E = dirac_SCF_energy - E
    do j=1,2*dirac_ao_num
     do i=1,2*dirac_ao_num
      delta_D_complex += D(i,j) - dirac_SCF_density_matrix_ao(i,j)
@@ -84,8 +84,8 @@
    delta_D = real(delta_D_complex) 
    dirac_SCF_density_matrix_ao = D
    TOUCH dirac_SCF_density_matrix_ao
-   dirac_mo_coef = eigenvectors_dirac_fock_matrix_mo
-   TOUCH dirac_mo_coef
+   dirac_mo_coef_electronic = eigenvectors_dirac_fock_matrix_mo
+   TOUCH dirac_mo_coef_electronic
   enddo
   write(6,'(A4,1X,A16, 1X, A16, 1X, A16, 1X, A4 )')  '====','================','================','================', '===='
   write(6,*)

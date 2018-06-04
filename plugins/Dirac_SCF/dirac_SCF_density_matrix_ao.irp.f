@@ -21,8 +21,8 @@
  !corresponding to filled electronic states in the ao basis
  END_DOC
  integer :: i,j,j_plus
- j_plus = j + 2*small_ao_num
  do j =1, elec_num
+  j_plus = j+2*small_ao_num 
   do i = 1, 2*dirac_ao_num
    dirac_mo_coef_electronic (i,j) = dirac_mo_coef (i,j_plus)
   enddo

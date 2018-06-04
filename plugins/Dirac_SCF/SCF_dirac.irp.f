@@ -6,8 +6,8 @@
   ! optional: mo_basis.mo_coef
   END_DOC
   call create_dirac_guess
-  call orthonormalize_mos
-  call run
+  call orthonormalize_dirac_mos
+  call run_dirac
  end
 
 
@@ -21,7 +21,7 @@
  !call ezfio_has_mo_basis_mo_coef(exists)
  !if (.not.exists) then
     if (mo_guess_type == "HCore") then
-      dirac_mo_coef = dirac_ao_ortho_lowdin_coef
+      dirac_mo_coef = dirac_ao_ortho_canonical_coef
       TOUCH dirac_mo_coef
       dirac_mo_label = 'Guess'
       call dirac_mo_as_eigvectors_of_dirac_mo_matrix(dirac_mo_mono_elec_integral,size(dirac_mo_mono_elec_integral,1),size(dirac_mo_mono_elec_integral,2),dirac_mo_label,1,.false.)
@@ -35,16 +35,12 @@
  !endif
  end
 
- subroutine run
+ subroutine run_dirac
   BEGIN_DOC
   ! Run SCF_dirac calculation
   END_DOC
   use bitmasks
   implicit none
-  double precision               :: dirac_SCF_energy_before,dirac_SCF_energy_after,diag_H_mat_elem
-  double precision               :: dirac_EHF
-  integer                        :: i_it, i, j, k
-  dirac_EHF = dirac_SCF_energy 
   dirac_mo_label = "Canonical"
   soft_touch dirac_mo_label
  !Choose SCF algorithm
