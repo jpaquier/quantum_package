@@ -58,7 +58,7 @@
   label = "Guess"
   c = 0.5d0 * 1.75d0
   allocate (A(2*dirac_ao_num, 2*dirac_ao_num))
-  A = 0.d0
+  A = (0.d0,0.d0)
   do j=1,2*dirac_ao_num
    do i=1,2*dirac_ao_num
     A(i,j) = c * dirac_ao_overlap(i,j) * (dirac_ao_mono_elec_integral_diag(i) + dirac_ao_mono_elec_integral_diag(j))

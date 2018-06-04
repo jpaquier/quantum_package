@@ -47,14 +47,13 @@ program Dirac_SCF
 
 
  
-!print*,large_ao_num,small_ao_num
-!do j = 1, large_ao_num
-! do i = 1, large_ao_num
-!  print*,i,j,SCF_density_matrix_ao_alpha(i,j)
-!  print*,i,j,SCF_density_matrix_ao_beta(i,j)
-! enddo
-! print*,'*************'
-!enddo
+ print*,large_ao_num,small_ao_num
+ do j = 1, 2*dirac_ao_num
+  do i = 1, 2*dirac_ao_num
+   print*,i,j,dirac_SCF_density_matrix_ao(i,j)
+  enddo
+  print*,'*************'
+ enddo
 
 !print*,large_ao_num,small_ao_num
 !do j = 1, large_ao_num
@@ -97,17 +96,17 @@ program Dirac_SCF
 !!enddo
 !!print*,'*************'
 !enddo
- 
- print*,  HF_one_electron_energy
- print*,  dirac_HF_one_electron_energy
- print*,  dirac_HF_one_electron_energy_complex
- print*,'***********' 
- print*,  HF_two_electron_energy
- print*,  dirac_HF_two_electron_energy
- print*,  dirac_HF_two_electron_energy_complex
- print*,'***********'
- print*, SCF_energy
- print*, dirac_SCF_energy 
+
+!print*,  HF_one_electron_energy
+!print*,  dirac_HF_one_electron_energy
+!print*,  dirac_HF_one_electron_energy_complex
+!print*,'***********' 
+!print*,  HF_two_electron_energy
+!print*,  dirac_HF_two_electron_energy
+!print*,  dirac_HF_two_electron_energy_complex
+!print*,'***********'
+!print*, SCF_energy
+!print*, dirac_SCF_energy 
 
 !print*,'large_ao_num =',large_ao_num
 !do j = 1, large_ao_num

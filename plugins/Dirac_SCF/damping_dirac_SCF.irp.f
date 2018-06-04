@@ -1,10 +1,10 @@
  subroutine damping_dirac_SCF
   implicit none
-  double precision               :: E, E_min, delta_E, E_half, E_new, a, b, lambda
+  double precision               :: E, E_min, delta_E, E_half, E_new, a, b, lambda,delta_D
   complex*16, allocatable        :: D(:,:)
   complex*16, allocatable        :: D_new(:,:), F_new(:,:)
   complex*16, allocatable        :: delta(:,:)
-  complex*16                     :: delta_D
+  complex*16                     :: delta_D_complex
   integer                        :: i,j,k
   logical                        :: saving
   character                      :: save_char
@@ -26,7 +26,8 @@
     '====','================','================','================', '===='
   E = dirac_SCF_energy + 1.d0
   E_min = dirac_SCF_energy
-  delta_D = (0.d0,0.d0)
+  delta_D_complex = (0.d0,0.d0)
+  delta_D = 0.d0
   do k=1,n_it_scf_max
    delta_E = dirac_SCF_energy - E
    E = dirac_SCF_energy
@@ -41,8 +42,9 @@
    else
      save_char = ' '
    endif
-   write(6,'(I4,1X,F16.10, 1X, F16.10, 1X, F16.10, 3X, A )')  &
-     k, E, delta_E, delta_D, save_char
+  !write(6,*) &
+   write(6,'(I4, 1X, F16.8, 1X, F16.10, 1X, F16.10, 3X, A4 )')  &
+    k, dirac_SCF_energy, delta_E, delta_D, save_char
    D = dirac_SCF_density_matrix_ao
    dirac_mo_coef = eigenvectors_dirac_fock_matrix_mo
    TOUCH dirac_mo_coef
@@ -75,10 +77,11 @@
    delta_E = SCF_energy - E
    do j=1,2*dirac_ao_num
     do i=1,2*dirac_ao_num
-     delta_D += D(i,j) - dirac_SCF_density_matrix_ao(i,j)
+     delta_D_complex += D(i,j) - dirac_SCF_density_matrix_ao(i,j)
     enddo
-   enddo
-   delta_D = delta_D/dble(2*dirac_ao_num)
+   enddo 
+   delta_D_complex = delta_D_complex/dble(2*dirac_ao_num)
+   delta_D = real(delta_D_complex) 
    dirac_SCF_density_matrix_ao = D
    TOUCH dirac_SCF_density_matrix_ao
    dirac_mo_coef = eigenvectors_dirac_fock_matrix_mo
