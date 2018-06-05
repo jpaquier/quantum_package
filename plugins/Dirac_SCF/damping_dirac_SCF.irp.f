@@ -25,29 +25,28 @@
   write(6,'(A4,1X,A16, 1X, A16, 1X, A16, 1X, A4 )')  &
     '====','================','================','================', '===='
   E = dirac_SCF_energy + 1.d0
-  E_min = dirac_SCF_energy
+ !E_min = dirac_SCF_energy
   delta_D_complex = (0.d0,0.d0)
   delta_D = 0.d0
   do k=1,n_it_scf_max
    delta_E = dirac_SCF_energy - E
    E = dirac_SCF_energy
-   if ( dsqrt(delta_E) < 1.d-8)  then
+   if (dabs(delta_E) < thresh_scf)  then
     exit
    endif
-   saving = E < E_min
-   if (saving) then
-  ! call save_mos
-    save_char = 'X'
-    E_min = E
-   else
+ ! saving = E < E_min
+ ! if (saving) then
+ !! call save_mos
+ !  save_char = 'X'
+ !  E_min = E
+ ! else
      save_char = ' '
-   endif
-  !write(6,*) &
-   write(6,'(I4, 1X, F16.8, 1X, F16.8, 1X, F16.8, 3X, A4 )')  &
+ ! endif
+  write(6,'(I4, 1X, F16.8, 1X, F16.8, 1X, F16.8, 3X, A4 )')  &
     k, dirac_SCF_energy, delta_E, delta_D, save_char
    D = dirac_SCF_density_matrix_ao
-   dirac_mo_coef_electronic = eigenvectors_dirac_fock_matrix_mo
-   TOUCH dirac_mo_coef_electronic
+   dirac_mo_coef = eigenvectors_dirac_fock_matrix_mo
+   TOUCH dirac_mo_coef
    D_new = dirac_SCF_density_matrix_ao
    F_new = dirac_Fock_matrix_ao
    E_new = dirac_SCF_energy
@@ -57,8 +56,8 @@
    do while (E_half > E)
     dirac_SCF_density_matrix_ao = D + lambda * delta
     TOUCH dirac_SCF_density_matrix_ao
-    dirac_mo_coef_electronic = eigenvectors_dirac_fock_matrix_mo
-    TOUCH dirac_mo_coef_electronic
+    dirac_mo_coef = eigenvectors_dirac_fock_matrix_mo
+    TOUCH dirac_mo_coef
     E_half = dirac_SCF_energy
     if ((E_half > E).and.(E_new < E)) then
      lambda = 1.d0
@@ -81,15 +80,20 @@
     enddo
    enddo 
    delta_D_complex = delta_D_complex/dble(2*dirac_ao_num)
-   delta_D = real(delta_D_complex) 
+   delta_D = real(delta_D_complex)
+   if (aimag(delta_D_complex) .gt. 1.d-10) then  
+    print*, 'Warning! The delta_D is complex'
+    print*, 'delta_D_complex =', delta_D_complex
+    STOP
+   endif
    dirac_SCF_density_matrix_ao = D
    TOUCH dirac_SCF_density_matrix_ao
-   dirac_mo_coef_electronic = eigenvectors_dirac_fock_matrix_mo
-   TOUCH dirac_mo_coef_electronic
+   dirac_mo_coef = eigenvectors_dirac_fock_matrix_mo
+   TOUCH dirac_mo_coef
   enddo
   write(6,'(A4,1X,A16, 1X, A16, 1X, A16, 1X, A4 )')  '====','================','================','================', '===='
   write(6,*)
-  call write_double(6, E_min, 'Hartree-Fock energy')
+  call write_double(6, dirac_SCF_energy, 'Hartree-Fock energy')
  !call ezfio_set_hartree_fock_energy(E_min)
   call write_time(6)
   deallocate(D,F_new,D_new,delta)

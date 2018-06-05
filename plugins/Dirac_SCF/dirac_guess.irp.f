@@ -116,10 +116,10 @@
   do j =1, elec_num
    j_plus = j+2*small_ao_num
    do i = 1, 2*dirac_ao_num
-    dirac_mo_coef_electronic (i,j) = eigenvectors_dirac_fock_matrix_mo (i,j_plus)
+    dirac_mo_coef (i,j) = eigenvectors_dirac_fock_matrix_mo (i,j_plus)
    enddo
   enddo
-  SOFT_TOUCH dirac_mo_coef_electronic
+  SOFT_TOUCH dirac_mo_coef
  !call save_mos
   deallocate(A)
  end

@@ -22,9 +22,8 @@
  END_DOC
  integer :: i,j,j_plus
  do j =1, elec_num
-  j_plus = j+2*small_ao_num 
   do i = 1, 2*dirac_ao_num
-   dirac_mo_coef_electronic (i,j) = dirac_mo_coef (i,j_plus)
+   dirac_mo_coef_electronic(i,j) = dirac_mo_coef(i,j + 2*small_ao_num)
   enddo
  enddo
  END_PROVIDER
@@ -38,5 +37,9 @@
         dirac_mo_coef_electronic, size(dirac_mo_coef_electronic,1), &
         dirac_mo_coef_electronic, size(dirac_mo_coef_electronic,1), (0.d0,0.d0), &
         dirac_SCF_density_matrix_ao, size(dirac_SCF_density_matrix_ao,1))
- END_PROVIDER
+ ! call zgemm('N','C',2*dirac_ao_num,2*dirac_ao_num,elec_num,(1.d0,0.d0), &
+ !       dirac_mo_coef, size(dirac_mo_coef,1), &
+ !       dirac_mo_coef, size(dirac_mo_coef,1), (0.d0,0.d0), &
+ !       dirac_SCF_density_matrix_ao, size(dirac_SCF_density_matrix_ao,1))
+  END_PROVIDER
 
