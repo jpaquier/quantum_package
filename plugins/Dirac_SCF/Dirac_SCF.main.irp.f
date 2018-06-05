@@ -43,16 +43,16 @@ program Dirac_SCF
 
 
 
-!do j = 1, 2*dirac_ao_num
-! print*,j,eigenvalues_dirac_mono_elec_mo(j)
-!!do i = 1, 2*dirac_ao_num
-!!!print*,i,j,dirac_SCF_density_matrix_ao(i,j)
-!!!print*,i,j,eigenvectors_dirac_mono_elec_mo(i,j)
-!! print*,i,j,dirac_mo_overlap(i,j)
-!! print*,i,j,dirac_mo_overlap_bis(i,j)
-!!enddo
-!print*,'********************'
-!enddo
+ do j = 1, 2*dirac_ao_num
+ !print*,j,eigenvalues_dirac_mono_elec_mo(j)
+  do i = 1, 2*dirac_ao_num
+  !print*,i,j,dirac_SCF_density_matrix_ao(i,j)
+  !print*,i,j,eigenvectors_dirac_mono_elec_mo(i,j)
+   print*,i,j,dirac_mo_overlap(i,j)
+   print*,i,j,dirac_mo_overlap_bis(i,j)
+  enddo
+ print*,'********************'
+ enddo
 
   
 

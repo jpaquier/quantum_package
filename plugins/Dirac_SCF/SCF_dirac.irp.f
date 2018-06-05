@@ -42,8 +42,8 @@
   do j= 1, 2*dirac_ao_num
    do i=1, 2*dirac_ao_num
    !print*,i,j,dirac_mo_coef(i,j) 
-   !print*,i,j,dirac_mo_overlap(i,j) 
-   !print*,i,j,dirac_mo_overlap_bis(i,j) 
+    print*,i,j,dirac_mo_overlap(i,j) 
+    print*,i,j,dirac_mo_overlap_bis(i,j) 
    !print*,i,j,dirac_SCF_density_matrix_ao(i+large_ao_num,j)
    !print*,i,j,dirac_SCF_density_matrix_ao(j,i+large_ao_num)
    !print*,i,j,dirac_ao_bi_elec_integral(i,j)
