@@ -65,68 +65,69 @@
      l = ll(k2) ! electron 2
      ! values(k1) = (ij|kl) <=> <ik|jl>
      integral = values (k1)
-    !if ((i .le. large_ao_num .and. j .le. large_ao_num .and. k .le. large_ao_num .and. l .le. large_ao_num) .or.  &
-    !    (i .gt. large_ao_num .and. j .gt. large_ao_num .and. k .gt. large_ao_num .and. l .gt. large_ao_num)) then
-    ! !L_alpha L_alpha .or. S_alpha S_alpha
-    ! dirac_ao_bi_elec_integral_tmp(d_I(i,1),d_I(j,1)) += dirac_SCF_density_matrix_ao(d_I(k,1),d_I(l,1)) * integral 
-    ! dirac_ao_bi_elec_integral_tmp(d_I(i,1),d_I(j,1)) += dirac_SCF_density_matrix_ao(d_I(k,2),d_I(l,2)) * integral
-    ! dirac_ao_bi_elec_integral_tmp(d_I(i,1),d_I(l,1)) -= dirac_SCF_density_matrix_ao(d_I(k,1),d_I(j,1)) * integral
-    ! !L_beta L_beta .or. S_beta S_beta
-    ! dirac_ao_bi_elec_integral_tmp(d_I(i,2),d_I(j,2)) += dirac_SCF_density_matrix_ao(d_I(k,1),d_I(l,1)) * integral
-    ! dirac_ao_bi_elec_integral_tmp(d_I(i,2),d_I(j,2)) += dirac_SCF_density_matrix_ao(d_I(k,2),d_I(l,2)) * integral
-    ! dirac_ao_bi_elec_integral_tmp(d_I(i,2),d_I(l,2)) -= dirac_SCF_density_matrix_ao(d_I(k,2),d_I(j,2)) * integral    
-    ! !L_beta L_alpha .or. S_beta S_alpha
-    ! dirac_ao_bi_elec_integral_tmp(d_I(i,2),d_I(l,1)) -= dirac_SCF_density_matrix_ao(d_I(k,1),d_I(j,2)) * integral
-    ! !L_alpha L_beta .or. S_alpha S_beta
-    ! dirac_ao_bi_elec_integral_tmp(d_I(i,1),d_I(l,2)) -= dirac_SCF_density_matrix_ao(d_I(k,2),d_I(j,1)) * integral
-    !elseif((i .le. large_ao_num .and. j .le. large_ao_num .and. k .gt. large_ao_num .and. l .gt. large_ao_num) .or. &
-    !       (i .gt. large_ao_num .and. j .gt. large_ao_num .and. k .le. large_ao_num .and. l .le. large_ao_num))then
-    !  !L_alpha L_alpha .or. S_alpha S_alpha
-    ! dirac_ao_bi_elec_integral_tmp(d_I(i,1),d_I(j,1)) += dirac_SCF_density_matrix_ao(d_I(k,1),d_I(l,1)) * integral
-    ! dirac_ao_bi_elec_integral_tmp(d_I(i,1),d_I(j,1)) += dirac_SCF_density_matrix_ao(d_I(k,2),d_I(l,2)) * integral
-    ! !L_beta L_beta .or. S_beta S_beta
-    ! dirac_ao_bi_elec_integral_tmp(d_I(i,2),d_I(j,2)) += dirac_SCF_density_matrix_ao(d_I(k,1),d_I(l,1)) * integral
-    ! dirac_ao_bi_elec_integral_tmp(d_I(i,2),d_I(j,2)) += dirac_SCF_density_matrix_ao(d_I(k,2),d_I(l,2)) * integral
-    ! !L_alpha S_alpha .or S_alpha L_alpha
-    ! dirac_ao_bi_elec_integral_tmp(d_I(i,1),d_I(l,1)) -= dirac_SCF_density_matrix_ao(d_I(k,1),d_I(j,1)) * integral
-    ! !L_beta S_beta .or. S_beta L_beta
-    ! dirac_ao_bi_elec_integral_tmp(d_I(i,2),d_I(l,2)) -= dirac_SCF_density_matrix_ao(d_I(k,2),d_I(j,2)) * integral
-    ! !L_beta S_alpha .or. S_beta L_alpha
-    ! dirac_ao_bi_elec_integral_tmp(d_I(i,2),d_I(l,1)) -= dirac_SCF_density_matrix_ao(d_I(k,1),d_I(j,2)) * integral
-    ! !L_alpha S_beta .or. S_alpha L_beta
-    ! dirac_ao_bi_elec_integral_tmp(d_I(i,1),d_I(l,2)) -= dirac_SCF_density_matrix_ao(d_I(k,2),d_I(j,1)) * integral
-    !endif
      if ((i .le. large_ao_num .and. j .le. large_ao_num .and. k .le. large_ao_num .and. l .le. large_ao_num) .or.  &
          (i .gt. large_ao_num .and. j .gt. large_ao_num .and. k .gt. large_ao_num .and. l .gt. large_ao_num)) then
       !L_alpha L_alpha .or. S_alpha S_alpha
-      dirac_ao_bi_elec_integral_tmp(d_I(i,1),d_I(j,1)) += dirac_SCF_density_matrix_ao(d_I(l,1),d_I(k,1)) * integral 
-      dirac_ao_bi_elec_integral_tmp(d_I(i,1),d_I(j,1)) += dirac_SCF_density_matrix_ao(d_I(l,2),d_I(k,2)) * integral
-      dirac_ao_bi_elec_integral_tmp(d_I(i,1),d_I(k,1)) -= dirac_SCF_density_matrix_ao(d_I(l,1),d_I(j,1)) * integral
+      dirac_ao_bi_elec_integral_tmp(d_I(i,1),d_I(j,1)) += dirac_SCF_density_matrix_ao(d_I(k,1),d_I(l,1)) * integral 
+      dirac_ao_bi_elec_integral_tmp(d_I(i,1),d_I(j,1)) += dirac_SCF_density_matrix_ao(d_I(k,2),d_I(l,2)) * integral
+      dirac_ao_bi_elec_integral_tmp(d_I(i,1),d_I(l,1)) -= dirac_SCF_density_matrix_ao(d_I(k,1),d_I(j,1)) * integral
       !L_beta L_beta .or. S_beta S_beta
-      dirac_ao_bi_elec_integral_tmp(d_I(i,2),d_I(j,2)) += dirac_SCF_density_matrix_ao(d_I(l,1),d_I(k,1)) * integral
-      dirac_ao_bi_elec_integral_tmp(d_I(i,2),d_I(j,2)) += dirac_SCF_density_matrix_ao(d_I(l,2),d_I(k,2)) * integral
-      dirac_ao_bi_elec_integral_tmp(d_I(i,2),d_I(k,2)) -= dirac_SCF_density_matrix_ao(d_I(l,2),d_I(j,2)) * integral    
+      dirac_ao_bi_elec_integral_tmp(d_I(i,2),d_I(j,2)) += dirac_SCF_density_matrix_ao(d_I(k,1),d_I(l,1)) * integral
+      dirac_ao_bi_elec_integral_tmp(d_I(i,2),d_I(j,2)) += dirac_SCF_density_matrix_ao(d_I(k,2),d_I(l,2)) * integral
+      dirac_ao_bi_elec_integral_tmp(d_I(i,2),d_I(l,2)) -= dirac_SCF_density_matrix_ao(d_I(k,2),d_I(j,2)) * integral    
       !L_beta L_alpha .or. S_beta S_alpha
-      dirac_ao_bi_elec_integral_tmp(d_I(i,2),d_I(k,1)) -= dirac_SCF_density_matrix_ao(d_I(l,1),d_I(j,2)) * integral
+      dirac_ao_bi_elec_integral_tmp(d_I(i,2),d_I(l,1)) -= dirac_SCF_density_matrix_ao(d_I(k,1),d_I(j,2)) * integral
       !L_alpha L_beta .or. S_alpha S_beta
-      dirac_ao_bi_elec_integral_tmp(d_I(i,1),d_I(k,2)) -= dirac_SCF_density_matrix_ao(d_I(l,2),d_I(j,1)) * integral
+      dirac_ao_bi_elec_integral_tmp(d_I(i,1),d_I(l,2)) -= dirac_SCF_density_matrix_ao(d_I(k,2),d_I(j,1)) * integral
      elseif((i .le. large_ao_num .and. j .le. large_ao_num .and. k .gt. large_ao_num .and. l .gt. large_ao_num) .or. &
             (i .gt. large_ao_num .and. j .gt. large_ao_num .and. k .le. large_ao_num .and. l .le. large_ao_num))then
        !L_alpha L_alpha .or. S_alpha S_alpha
-      dirac_ao_bi_elec_integral_tmp(d_I(i,1),d_I(j,1)) += dirac_SCF_density_matrix_ao(d_I(l,1),d_I(k,1)) * integral
-      dirac_ao_bi_elec_integral_tmp(d_I(i,1),d_I(j,1)) += dirac_SCF_density_matrix_ao(d_I(l,2),d_I(k,2)) * integral
+      dirac_ao_bi_elec_integral_tmp(d_I(i,1),d_I(j,1)) += dirac_SCF_density_matrix_ao(d_I(k,1),d_I(l,1)) * integral
+      dirac_ao_bi_elec_integral_tmp(d_I(i,1),d_I(j,1)) += dirac_SCF_density_matrix_ao(d_I(k,2),d_I(l,2)) * integral
       !L_beta L_beta .or. S_beta S_beta
-      dirac_ao_bi_elec_integral_tmp(d_I(i,2),d_I(j,2)) += dirac_SCF_density_matrix_ao(d_I(l,1),d_I(k,1)) * integral
-      dirac_ao_bi_elec_integral_tmp(d_I(i,2),d_I(j,2)) += dirac_SCF_density_matrix_ao(d_I(l,2),d_I(k,2)) * integral
+      dirac_ao_bi_elec_integral_tmp(d_I(i,2),d_I(j,2)) += dirac_SCF_density_matrix_ao(d_I(k,1),d_I(l,1)) * integral
+      dirac_ao_bi_elec_integral_tmp(d_I(i,2),d_I(j,2)) += dirac_SCF_density_matrix_ao(d_I(k,2),d_I(l,2)) * integral
       !L_alpha S_alpha .or S_alpha L_alpha
-      dirac_ao_bi_elec_integral_tmp(d_I(i,1),d_I(k,1)) -= dirac_SCF_density_matrix_ao(d_I(l,1),d_I(j,1)) * integral
+      dirac_ao_bi_elec_integral_tmp(d_I(i,1),d_I(l,1)) -= dirac_SCF_density_matrix_ao(d_I(k,1),d_I(j,1)) * integral
       !L_beta S_beta .or. S_beta L_beta
-      dirac_ao_bi_elec_integral_tmp(d_I(i,2),d_I(k,2)) -= dirac_SCF_density_matrix_ao(d_I(l,2),d_I(j,2)) * integral
+      dirac_ao_bi_elec_integral_tmp(d_I(i,2),d_I(l,2)) -= dirac_SCF_density_matrix_ao(d_I(k,2),d_I(j,2)) * integral
       !L_beta S_alpha .or. S_beta L_alpha
-      dirac_ao_bi_elec_integral_tmp(d_I(i,2),d_I(k,1)) -= dirac_SCF_density_matrix_ao(d_I(l,1),d_I(j,2)) * integral
+      dirac_ao_bi_elec_integral_tmp(d_I(i,2),d_I(l,1)) -= dirac_SCF_density_matrix_ao(d_I(k,1),d_I(j,2)) * integral
       !L_alpha S_beta .or. S_alpha L_beta
-      dirac_ao_bi_elec_integral_tmp(d_I(i,1),d_I(k,2)) -= dirac_SCF_density_matrix_ao(d_I(l,2),d_I(j,1)) * integral
+      dirac_ao_bi_elec_integral_tmp(d_I(i,1),d_I(l,2)) -= dirac_SCF_density_matrix_ao(d_I(k,2),d_I(j,1)) * integral
      endif
+    
+    !if ((i .le. large_ao_num .and. j .le. large_ao_num .and. k .le. large_ao_num .and. l .le. large_ao_num) .or.  &
+    !    (i .gt. large_ao_num .and. j .gt. large_ao_num .and. k .gt. large_ao_num .and. l .gt. large_ao_num)) then
+    ! !L_alpha L_alpha .or. S_alpha S_alpha
+    ! dirac_ao_bi_elec_integral_tmp(d_I(i,1),d_I(j,1)) += (dirac_SCF_density_matrix_ao(d_I(l,1),d_I(k,1))) * integral 
+    ! dirac_ao_bi_elec_integral_tmp(d_I(i,1),d_I(j,1)) += (dirac_SCF_density_matrix_ao(d_I(l,2),d_I(k,2))) * integral
+    ! dirac_ao_bi_elec_integral_tmp(d_I(i,1),d_I(l,1)) -= (dirac_SCF_density_matrix_ao(d_I(j,1),d_I(k,1))) * integral
+    ! !L_beta L_beta .or. S_beta S_beta
+    ! dirac_ao_bi_elec_integral_tmp(d_I(i,2),d_I(j,2)) += (dirac_SCF_density_matrix_ao(d_I(l,1),d_I(k,1))) * integral
+    ! dirac_ao_bi_elec_integral_tmp(d_I(i,2),d_I(j,2)) += (dirac_SCF_density_matrix_ao(d_I(l,2),d_I(k,2))) * integral
+    ! dirac_ao_bi_elec_integral_tmp(d_I(i,2),d_I(l,2)) -= (dirac_SCF_density_matrix_ao(d_I(j,2),d_I(k,2))) * integral   
+    ! !L_beta L_alpha .or. S_beta S_alpha
+    ! dirac_ao_bi_elec_integral_tmp(d_I(i,2),d_I(l,1)) -= (dirac_SCF_density_matrix_ao(d_I(j,1),d_I(k,2))) * integral
+    ! !L_alpha L_beta .or. S_alpha S_beta
+    ! dirac_ao_bi_elec_integral_tmp(d_I(i,1),d_I(l,2)) -= (dirac_SCF_density_matrix_ao(d_I(j,2),d_I(k,1))) * integral
+    !elseif((i .le. large_ao_num .and. j .le. large_ao_num .and. k .gt. large_ao_num .and. l .gt. large_ao_num) .or. &
+    !       (i .gt. large_ao_num .and. j .gt. large_ao_num .and. k .le. large_ao_num .and. l .le. large_ao_num))then
+    !  !L_alpha L_alpha .or. S_alpha S_alpha
+    ! dirac_ao_bi_elec_integral_tmp(d_I(i,1),d_I(j,1)) += (dirac_SCF_density_matrix_ao(d_I(l,1),d_I(k,1))) * integral
+    ! dirac_ao_bi_elec_integral_tmp(d_I(i,1),d_I(j,1)) += (dirac_SCF_density_matrix_ao(d_I(l,2),d_I(k,2))) * integral
+    ! !L_beta L_beta .or. S_beta S_beta
+    ! dirac_ao_bi_elec_integral_tmp(d_I(i,2),d_I(j,2)) += (dirac_SCF_density_matrix_ao(d_I(l,1),d_I(k,1))) * integral
+    ! dirac_ao_bi_elec_integral_tmp(d_I(i,2),d_I(j,2)) += (dirac_SCF_density_matrix_ao(d_I(l,2),d_I(k,2))) * integral
+    ! !L_alpha S_alpha .or S_alpha L_alpha
+    ! dirac_ao_bi_elec_integral_tmp(d_I(i,1),d_I(l,1)) -= (dirac_SCF_density_matrix_ao(d_I(j,1),d_I(k,1))) * integral
+    ! !L_beta S_beta .or. S_beta L_beta
+    ! dirac_ao_bi_elec_integral_tmp(d_I(i,2),d_I(l,2)) -= (dirac_SCF_density_matrix_ao(d_I(j,2),d_I(k,2))) * integral
+    ! !L_beta S_alpha .or. S_beta L_alpha
+    ! dirac_ao_bi_elec_integral_tmp(d_I(i,2),d_I(l,1)) -= (dirac_SCF_density_matrix_ao(d_I(j,1),d_I(k,2))) * integral
+    ! !L_alpha S_beta .or. S_alpha L_beta
+    ! dirac_ao_bi_elec_integral_tmp(d_I(i,1),d_I(l,2)) -= (dirac_SCF_density_matrix_ao(d_I(j,2),d_I(k,1))) * integral
+    !endif
     enddo
    enddo
   enddo
@@ -182,7 +183,7 @@
   dirac_HF_two_electron_energy_complex = (0.d0,0.d0)
   do j=1, 2*dirac_ao_num
    do i=1, 2*dirac_ao_num
-    dirac_HF_two_electron_energy_complex += 0.5d0* dirac_ao_bi_elec_integral(i,j) * dirac_SCF_density_matrix_ao(i,j)
+    dirac_HF_two_electron_energy_complex += 0.5d0* (dirac_ao_bi_elec_integral(i,j)) * dirac_SCF_density_matrix_ao(j,i)
    enddo
   enddo
   dirac_HF_two_electron_energy = real(dirac_HF_two_electron_energy_complex)

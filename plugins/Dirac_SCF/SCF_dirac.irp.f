@@ -8,7 +8,7 @@
   call create_dirac_guess
  !call orthonormalize_dirac_mos
   call test_dirac
-  call run_dirac
+ !call run_dirac
  end
 
  subroutine create_dirac_guess
@@ -39,16 +39,19 @@
  subroutine test_dirac
   implicit none
   integer   :: i,j
-  do j=1, dirac_ao_num
-   do i=1, dirac_ao_num
+  do j=1, 2*dirac_ao_num
+   do i=1, 2*dirac_ao_num
    !print*,i,j,dirac_mo_coef(i,j) 
    !print*,i,j,dirac_mo_overlap(i,j) 
    !print*,i,j,dirac_mo_overlap_bis(i,j) 
+   !print*,i,j,dirac_SCF_density_matrix_ao(i,j)
+   !print*,i,j,dirac_SCF_density_matrix_ao(j,i)
+    print*,i,j,dirac_ao_bi_elec_integral(i,j)
    enddo
   enddo
-  print*,  dirac_HF_one_electron_energy
+  print*,  dirac_HF_one_electron_energy_complex
   print*,'***********' 
-  print*,  dirac_HF_two_electron_energy
+  print*,  dirac_HF_two_electron_energy_complex
   print*,'***********'
   print*, dirac_SCF_energy 
  end
