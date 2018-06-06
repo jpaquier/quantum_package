@@ -37,7 +37,7 @@
  END_DOC
  integer :: n,nmax
   call zgemm('N','N', 2*(dirac_ao_num), 2*(dirac_mo_tot_num), 2*(dirac_ao_num),              &
-      (1.d0,0.d0), dirac_mo_coef,size(dirac_mo_coef,1),                                      &
+      (1.d0,0.d0), dirac_mo_coef_S,size(dirac_mo_coef_S,1),                                      &
       eigenvectors_dirac_mono_elec_mo, size(eigenvectors_dirac_mono_elec_mo,1),              &
       (0.d0,0.d0), eigenvectors_dirac_mono_elec_ao, size(eigenvectors_dirac_mono_elec_ao,1)) 
  END_PROVIDER

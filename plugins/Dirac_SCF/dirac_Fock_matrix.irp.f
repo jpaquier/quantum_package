@@ -118,6 +118,7 @@
   integer                        :: i,j
   do j=1,2*dirac_ao_num
    do i=1,2*dirac_ao_num
+   !dirac_Fock_matrix_ao(i,j) = dirac_ao_mono_elec_integral(i,j)
     dirac_Fock_matrix_ao(i,j) = dirac_ao_mono_elec_integral(i,j) + dirac_ao_bi_elec_integral(i,j)
    enddo
   enddo
@@ -216,9 +217,23 @@
   complex*16       :: eigenvectors(2*(dirac_mo_tot_num),2*(dirac_mo_tot_num))
   n = 2*(dirac_mo_tot_num)
   nmax = n
-  call lapack_diag_complex(eigenvalues,eigenvectors,dirac_Fock_matrix_ao,nmax,n)
+  call lapack_diag_complex(eigenvalues,eigenvectors,dirac_Fock_matrix_mo,nmax,n)
   eigenvalues_dirac_fock_matrix_mo = eigenvalues
   eigenvectors_dirac_fock_matrix_mo = eigenvectors
  END_PROVIDER
 
  
+ BEGIN_PROVIDER [complex*16, eigenvectors_dirac_Fock_matrix_ao, (2*(dirac_mo_tot_num),2*(dirac_mo_tot_num))]
+ implicit none
+ BEGIN_DOC
+ ! The eigenvectors in the AO basis, which does not
+ ! diagonalize S
+ END_DOC
+ integer :: n,nmax
+  call zgemm('N','N', 2*(dirac_ao_num), 2*(dirac_mo_tot_num), 2*(dirac_ao_num),              &
+      (1.d0,0.d0), dirac_mo_coef_S,size(dirac_mo_coef_S,1),                                      &
+      eigenvectors_dirac_Fock_matrix_mo, size(eigenvectors_dirac_Fock_matrix_mo,1),              &
+      (0.d0,0.d0), eigenvectors_dirac_Fock_matrix_ao, size(eigenvectors_dirac_Fock_matrix_ao,1)) 
+ END_PROVIDER
+
+
