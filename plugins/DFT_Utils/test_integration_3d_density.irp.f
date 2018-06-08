@@ -11,7 +11,7 @@ program pouet
 !call test_grad
 !call test_r12_psi(nx,rmax)
 !call test_one_dm_mo
- call test_expectation_value_and_coulomb(nx,rmax)
+!call test_expectation_value_and_coulomb(nx,rmax)
 !call routine3
 !call test_rho2
 !call test_one_dm_ao
@@ -20,6 +20,7 @@ program pouet
 !call test_erf_coulomb_oprerator
 !call test_nuclear_coulomb_oprerator
 !call test_integratio_mo
+ call test_naive_grid
 end
 
 subroutine test
@@ -471,4 +472,34 @@ subroutine test_grad
  !print*,'accu = ',accu(3)
   print*,dx,(accu(1)+accu(2)+accu(3))/3.d0
  enddo
+end
+
+subroutine test_naive_grid
+ implicit none
+ integer :: i,j
+ double precision :: r(3)
+ double precision :: rmax,dx
+ 
+ double precision, allocatable :: mos_array(:)
+ rmax = 10.d0
+ integer :: nx
+ nx = 10000
+ allocate(mos_array(mo_tot_num))
+ dx = rmax/dble(nx)
+ r = 0.d0
+ r(3) = -rmax * 0.5d0
+ do i = 1, nx
+  call give_all_mos_at_r(r,mos_array)
+  write(33,*)r(3),mos_array(1),mos_array(2)
+  r(3) += dx
+ enddo
+!do j = 1, n_radial
+! do i = 1, n_points_integration_angular
+!  r = r_points(:,i,j) 
+!  
+! enddo
+!enddo
+
+
+
 end
