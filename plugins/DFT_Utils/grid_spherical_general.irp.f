@@ -6,35 +6,43 @@ BEGIN_PROVIDER [integer, n_points_radial_grid_spherical]
 ! number of radial points per atom for 3d numerical integration, needed for DFT
 ! for example
  END_DOC
- n_points_radial_grid_spherical= 10000
+ n_points_radial_grid_spherical= 100000
  n_points_total_shperical = n_points_radial_grid_spherical*n_points_integration_angular
 END_PROVIDER 
 
-
-
- BEGIN_PROVIDER [double precision,spherical_grid_of_r,(3,n_points_integration_angular,n_points_radial_grid_spherical)]
-&BEGIN_PROVIDER [double precision,weights_rad_of_r,(n_points_integration_angular,n_points_radial_grid_spherical)]
-&BEGIN_PROVIDER [double precision, r0_sphere_grid,(3)]
-&BEGIN_PROVIDER [double precision, pas_grid_sphe]
+ BEGIN_PROVIDER [double precision, r_max_grid_spherical]
+ r_max_grid_spherical=8.d0
  implicit none
-  double precision :: r_max, r_localoca
-  integer :: i,j
- r_max=4
- pas_grid_sphe=r_max/n_points_radial_grid_spherical
- r_localoca=0
+ END_PROVIDER 
+
+ BEGIN_PROVIDER [double precision, pas_grid_sphe]
+ implicit none
+ pas_grid_sphe=r_max_grid_spherical/n_points_radial_grid_spherical
+ END_PROVIDER 
+
+ BEGIN_PROVIDER [double precision, r0_sphere_grid,(3)]
+ implicit none
  r0_sphere_grid(1)=0.0
  r0_sphere_grid(2)=0.0
  r0_sphere_grid(3)=0.0
+ END_PROVIDER 
+
+ BEGIN_PROVIDER [double precision,spherical_grid_of_r,(3,n_points_integration_angular,n_points_radial_grid_spherical)]
+&BEGIN_PROVIDER [double precision,weights_rad_of_r,(n_points_integration_angular,n_points_radial_grid_spherical)]
+&BEGIN_PROVIDER [double precision, list_r ,(n_points_radial_grid_spherical)]
+ implicit none
+ double precision :: r_localoca
+ integer :: i,j
+ r_localoca=0
 
  do i = 1,n_points_radial_grid_spherical
   do j=1,n_points_integration_angular
    spherical_grid_of_r(1,j,i)= (r_localoca - r0_sphere_grid(1))* angular_quadrature_points(j,1)
    spherical_grid_of_r(2,j,i)= (r_localoca - r0_sphere_grid(2)) *angular_quadrature_points(j,2)
    spherical_grid_of_r(3,j,i)= (r_localoca - r0_sphere_grid(3)) * angular_quadrature_points(j,3)
-
    weights_rad_of_r(j,i)= weights_angular_points(j)  * r_localoca * r_localoca
   enddo
-  
+  list_r(i) = r_localoca
   r_localoca += pas_grid_sphe
  enddo
 
@@ -93,7 +101,7 @@ END_PROVIDER
 include 'Utils/constants.include.F'
  implicit none
  integer :: i,j,istate
- double precision, allocatable :: aos_array(:), r(:), rho_a(:), rho_b(:),ec(:),list_r(:)
+ double precision, allocatable :: aos_array(:), r(:), rho_a(:), rho_b(:),ec(:)
  logical :: dospin
  double precision :: r2(3),dr2(3),local_potential,r12,dx2,mu,mu_coulomb,coulomb,two_body_dm
  double precision :: threshold
@@ -101,7 +109,7 @@ include 'Utils/constants.include.F'
  dospin = .True. ! JT dospin have to be set to true for open shell
  threshold = 1.d-07
  !mu_average_grille_sphe = 0.d0
- allocate(aos_array(ao_num),r(3), rho_a(N_states),rho_b(N_states),ec(N_states),list_r(n_points_radial_grid_spherical))
+ allocate(aos_array(ao_num),r(3), rho_a(N_states),rho_b(N_states),ec(N_states))
  call cpu_time(cpu0)
 !!!!!!spherical integrale!!!!!
 
@@ -129,7 +137,6 @@ do i = 1, n_points_radial_grid_spherical
      rhomu_r(istate,i) +=  (rho_a(istate)+rho_b(istate)) * mu * weights_rad_of_r(j,i)       
     enddo
   enddo
-  list_r(i)= sqrt(r(1)*r(1)+r(2)*r(2)+r(3)*r(3))
   do istate = 1, N_states
    rhomu_r(istate,i) = rhomu_r(istate,i) / dble(elec_num)
    mu_r(istate,i) = mu_r(istate,i) /  (list_r(i)*list_r(i) * 4.d0 * pi)
