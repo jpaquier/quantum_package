@@ -3,7 +3,7 @@ program test_RS_KS
  read_wf = .False.
  touch read_wf
 
- call test_energy 
+!call test_energy 
  call test_bis
 end
 
@@ -26,13 +26,14 @@ subroutine test_bis
 
 implicit none
 integer :: i,j
- print*,'energy_c    = ',energy_c
- print*,'energy_x    = ',energy_x
- do i = 1, ao_num
-  do j = 1, ao_num
-    print*,Fock_matrix_ao_alpha(i,j),Fock_matrix_ao_beta(i,j)
-  enddo
- enddo
+ provide Fock_matrix_alpha_no_xc_ao
+!print*,'energy_c    = ',energy_c
+!print*,'energy_x    = ',energy_x
+!do i = 1, ao_num
+! do j = 1, ao_num
+!   print*,Fock_matrix_ao_alpha(i,j),Fock_matrix_ao_beta(i,j)
+! enddo
+!enddo
 
 
 end

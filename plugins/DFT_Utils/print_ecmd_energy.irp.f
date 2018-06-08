@@ -16,8 +16,8 @@ end
 subroutine pouet
  implicit none
 
-!write(*, '(A22,X,F16.10)') 'EC_MD_ON_TOP_PBE    = ',Energy_c_md_on_top_PBE_mu_corrected(1)+psi_energy+nuclear_repulsion
- write(*, '(A28,X,F16.10)') 'on_top_PBE MD correl      = ',Energy_c_md_on_top_PBE_mu_corrected(1)
+ write(*, '(A22,X,F16.10)') 'EC_MD_ON_TOP_PBE    = ',Energy_c_md_on_top_PBE_mu_corrected_UEG(1)+psi_energy+nuclear_repulsion
+ write(*, '(A28,X,F16.10)') 'on_top_PBE MD correl      = ',Energy_c_md_on_top_PBE_mu_corrected_UEG(1)
 
 end
 
