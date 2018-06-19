@@ -4,8 +4,8 @@ program Dirac_SCF
 ! Print the small component basis, after unrestricted kinetic balance
   END_DOC
   integer :: i,j,k,l,l_type,n,g,h,df_L
-  double precision :: integral, ao_bielec_integral, dirac_ao_bielec_integral
-  complex*16       :: ortho(2*dirac_ao_num)
+  double precision :: integral, ao_bielec_integral, dirac_ao_bielec_integral,eigenvalues(2)
+  complex*16       :: ortho(2*dirac_ao_num),testm(2,2), eigenvectors(2,2)
   include 'Utils/constants.include.F'
 
  
@@ -41,20 +41,6 @@ program Dirac_SCF
 ! print*,'*************************'
 !enddo
 
-
-
- do j = 1, 2*dirac_ao_num
- !print*,j,eigenvalues_dirac_mono_elec_mo(j)
-  do i = 1, 2*dirac_ao_num
-  !print*,i,j,dirac_SCF_density_matrix_ao(i,j)
-  !print*,i,j,eigenvectors_dirac_mono_elec_mo(i,j)
-   print*,i,j,dirac_mo_overlap(i,j)
-   print*,i,j,dirac_mo_overlap_bis(i,j)
-  enddo
- print*,'********************'
- enddo
-
-  
 
 !do j = 1, 2*dirac_ao_num
 !!print*,j,eigenvalues_dirac_fock_matrix_mo(j)
@@ -122,16 +108,16 @@ program Dirac_SCF
 !!print*,'*************'
 !enddo
 
- print*,  HF_one_electron_energy 
- print*,  dirac_HF_one_electron_energy
- print*,  dirac_HF_one_electron_energy_complex
- print*,'***********' 
- print*,  HF_two_electron_energy
- print*,  dirac_HF_two_electron_energy
- print*,  dirac_HF_two_electron_energy_complex
- print*,'***********'
- print*, HF_energy
- print*, dirac_HF_energy 
+!print*,  HF_one_electron_energy 
+!print*,  dirac_HF_one_electron_energy
+!print*,  dirac_HF_one_electron_energy_complex
+!print*,'***********' 
+!print*,  HF_two_electron_energy
+!print*,  dirac_HF_two_electron_energy
+!print*,  dirac_HF_two_electron_energy_complex
+!print*,'***********'
+!print*, HF_energy
+!print*, dirac_HF_energy 
 
 !print*,'large_ao_num =',large_ao_num
 !do j = 1, large_ao_num
