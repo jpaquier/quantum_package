@@ -44,94 +44,50 @@ subroutine routine
 
 end
 
-subroutine on_top_pair_density_approx(r,rho2_ap)
- implicit none
- double precision, intent(in)  :: r(3)
- double precision, intent(out) :: rho2_ap(N_states)
- double precision :: psi_temp
- psi_temp = 0.d0
- double precision :: mos_array(mo_tot_num)
- double precision :: aos_array(mo_tot_num)
- call give_all_mos_at_r(r,mos_array)
- integer :: i,j,k,l,t,m,istate
- do istate = 1, N_states
- rho2_ap(istate) = 0.d0
- do m = 1, n_couple(istate) ! loop over the first electron 
-   ! get matrix 
-   i=list_couple(m,1,istate)
-   j=list_couple(m,2,istate)
-   print*,'i,j',i,j
-    do k = 1, n_k_dens(m,istate) 
-     do t=1,mo_tot_num
-      psi_temp+=psi_k_couple(t,k,m,istate)*mos_array(t)
-     enddo
-     rho2_ap(istate) +=mos_array(i)*mos_array(j)*lambda_k(k,m,istate)*psi_temp*psi_temp
-     print*,'rho2(0) barth= ',rho2_ap(istate)
-   enddo
- enddo
- enddo
-end
-
 
 subroutine test_rho2
  implicit none
  integer :: j,k,l,istate,n_k_loc,m
  double precision :: r(3),rho2
- double precision :: rho2_ap(N_states)
- double precision :: test,test_bart
+ double precision, allocatable :: rho2_ap(:)
+ double precision :: test,test_bart,two_dm_in_r
+ allocate(rho2_ap(N_states))
 
-!do istate = 1, N_states
-! do m = 1, n_couple(istate)
-!  do n_k_loc=1, n_k_dens(m,istate)
-
-!  print*,'lambda: ',lambda_k(n_k_loc,m,istate)
-!  do j=1,mo_tot_num
-!  print*,'j pote: ',psi_k_couple(j,n_k_loc,m,istate)
-!  enddo
-!  enddo
-! enddo
-!enddo
-
-call  on_top_pair_density_approx(r,rho2_ap)
-!do istate = 1, N_states
-! r(1) = 0.d0
-! r(2) = 0.d0
-! r(3) = 0.d0
- print*,'rho2(0) barth= ',rho2_ap(1)
-!enddo
-
-
-!do istate = 1, N_states
-! r(1) = 0.d0
-! r(2) = 0.d0
-! r(3) = 0.d0
-! call  on_top_pair_density_in_real_space(r,rho2)
-! print*,'rho2(0) = ',rho2
-! call  on_top_pair_density_approx(r,rho2_ap)
-! print*,'rho2(0) barth= ',rho2_ap(istate)
-!stop
-! test = 0.d0
-
-!  do j = 1, nucl_num
-!   do k = 1, n_points_radial_grid  -1
-!    print*,k
-!    do l = 1, n_points_integration_angular
-!
-!     r(1) = grid_points_per_atom(1,l,k,j)
-!     r(2) = grid_points_per_atom(2,l,k,j)
-!     r(3) = grid_points_per_atom(3,l,k,j)
-!     call  on_top_pair_density_in_real_space(r,rho2)
-!     call  on_top_pair_density_approx(r,rho2_ap(istate))
-!     print*,'rho2(r) normal = ',rho2
-!!     print*,'rho2(r) barth =  ',rho2_ap(istate)
+do istate = 1, N_states
+ r(1) = 0.d0
+ r(2) = 0.d0
+ r(3) = 0.d0
+ call  on_top_pair_density_in_real_space(r,rho2)
+ print*,'rho2(0) = ',rho2
+ call  on_top_pair_density_approx(r,rho2_ap)
+ print*,'rho2(0) barth= ',rho2_ap(istate)
+ test = 0.d0
+ test_bart= 0.d0 
+  do j = 1, nucl_num
+   do k = 1, n_points_radial_grid  -1
+    print*,k
+    do l = 1, n_points_integration_angular
+     r(1) = grid_points_per_atom(1,l,k,j)
+     r(2) = grid_points_per_atom(2,l,k,j)
+     r(3) = grid_points_per_atom(3,l,k,j)
+     rho2 = two_dm_in_r(r,r,istate)
+     call on_top_pair_density_approx(r,rho2_ap)
+     if(dabs(rho2-rho2_ap(istate)).gt.1.d-10)then
+      print*,'' 
+      print*,'r = '
+      print*,r
+      print*,'Problem!!, rho2(r)-rho2_bart(r) ='
+      print*,rho2-rho2_ap(istate),rho2,rho2_ap(istate)
+      print*,'' 
+     endif 
 !    call  on_top_pair_density_in_real_space_from_ao(r,rho2)
-!     test += rho2 * final_weight_functions_at_grid_points(l,k,j)
-!     test_bart += rho2_ap(istate) * final_weight_functions_at_grid_points(l,k,j) 
-!     enddo
-!    enddo
-!   enddo
-! print*,'test = ',test
-! print*,'test Barth = ',test_bart
-! enddo
+     test += rho2 * final_weight_functions_at_grid_points(l,k,j)
+     test_bart += rho2_ap(istate) * final_weight_functions_at_grid_points(l,k,j) 
+    enddo
+   enddo
+  enddo
+ print*,'test = ',test
+ print*,'test Barth = ',test_bart
+ enddo
 end
 
