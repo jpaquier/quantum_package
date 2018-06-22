@@ -422,7 +422,7 @@
 
 
 
- BEGIN_PROVIDER [ complex*16, dirac_ao_bi_elec_integral_qq, (2*dirac_ao_num, 2*dirac_ao_num) ]
+ BEGIN_PROVIDER [ complex*16, dirac_ao_bi_elec_integral_conjugate, (2*dirac_ao_num, 2*dirac_ao_num) ]
   use map_module
   implicit none
   BEGIN_DOC
@@ -440,7 +440,7 @@
   integer(cache_map_size_kind)   :: n_elements_max, n_elements
   integer(key_kind), allocatable :: keys(:)
   double precision, allocatable  :: values(:)
-  dirac_ao_bi_elec_integral_qq = (0.d0,0.d0)
+  dirac_ao_bi_elec_integral_conjugate = (0.d0,0.d0)
 !!$OMP PARALLEL DEFAULT(NONE)                                      &
 !!$OMP PRIVATE(i,j,l,k1,k,integral,ii,jj,kk,ll,i8,keys,values,n_elements_max, &
 !!$OMP  n_elements,dirac_ao_bi_elec_integral_tmp)&
@@ -503,7 +503,7 @@
   enddo
 !!$OMP END DO NOWAIT
 !!$OMP CRITICAL
-  dirac_ao_bi_elec_integral_qq += dirac_ao_bi_elec_integral_tmp
+  dirac_ao_bi_elec_integral_conjugate += dirac_ao_bi_elec_integral_tmp
 !!$OMP END CRITICAL
   deallocate(keys,values,dirac_ao_bi_elec_integral_tmp)
 !!$OMP END PARALLEL
