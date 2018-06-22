@@ -92,9 +92,34 @@
       dirac_ao_bi_elec_Gaunt_integral_tmp(d_I(i,2),d_I(l,1)) += (dirac_SCF_density_matrix_ao(d_I(j,2),d_I(k,1))) * integral
       !L_alpha L_beta .or. S_alpha S_beta
       dirac_ao_bi_elec_Gaunt_integral_tmp(d_I(i,1),d_I(l,2)) += (dirac_SCF_density_matrix_ao(d_I(j,1),d_I(k,2))) * integral
+      !L_alpha S_alpha .or S_alpha L_alpha
+      dirac_ao_bi_elec_Gaunt_integral_tmp(d_I(i,1),d_I(j,1)) += (dirac_SCF_density_matrix_ao(d_I(l,1),d_I(k,1))) * integral
+      dirac_ao_bi_elec_Gaunt_integral_tmp(d_I(i,1),d_I(j,1)) -= (dirac_SCF_density_matrix_ao(d_I(l,2),d_I(k,2))) * integral
+      !L_beta S_beta .or S_beta L_beta
+      dirac_ao_bi_elec_Gaunt_integral_tmp(d_I(i,2),d_I(j,2)) += (dirac_SCF_density_matrix_ao(d_I(l,2),d_I(k,2))) * integral
+      dirac_ao_bi_elec_Gaunt_integral_tmp(d_I(i,2),d_I(j,2)) -= (dirac_SCF_density_matrix_ao(d_I(l,1),d_I(k,1))) * integral
+      !L_beta S_alpha .or S_beta L_alpha
+      dirac_ao_bi_elec_Gaunt_integral_tmp(d_I(i,2),d_I(j,1)) += 2*(dirac_SCF_density_matrix_ao(d_I(l,2),d_I(k,1))) * integral
+      !L_alpha S_beta .or S_alpha L_beta
+      dirac_ao_bi_elec_Gaunt_integral_tmp(d_I(i,1),d_I(j,2)) += 2*(dirac_SCF_density_matrix_ao(d_I(l,1),d_I(k,2))) * integral
      elseif ((i .le. large_ao_num .and. j .gt. large_ao_num .and. k .le. large_ao_num .and. l .gt. large_ao_num)  .or.  &
-         (i .gt. large_ao_num .and. j .le. large_ao_num .and. k .gt. large_ao_num .and. l .le. large_ao_num)) then
-   
+             (i .gt. large_ao_num .and. j .le. large_ao_num .and. k .gt. large_ao_num .and. l .le. large_ao_num)) then
+      !L_alpha S_alpha .or S_alpha L_alpha
+      dirac_ao_bi_elec_Gaunt_integral_tmp(d_I(i,1),d_I(j,1)) += (dirac_SCF_density_matrix_ao(d_I(l,1),d_I(k,1))) * integral
+      dirac_ao_bi_elec_Gaunt_integral_tmp(d_I(i,1),d_I(j,1)) -= (dirac_SCF_density_matrix_ao(d_I(l,2),d_I(k,2))) * integral
+      dirac_ao_bi_elec_Gaunt_integral_tmp(d_I(i,1),d_I(l,1)) -= 2*(dirac_SCF_density_matrix_ao(d_I(j,2),d_I(k,2))) * integral
+      dirac_ao_bi_elec_Gaunt_integral_tmp(d_I(i,1),d_I(l,1)) -= (dirac_SCF_density_matrix_ao(d_I(j,1),d_I(k,1))) * integral
+      !L_beta S_beta .or S_beta L_beta
+      dirac_ao_bi_elec_Gaunt_integral_tmp(d_I(i,2),d_I(j,2)) += (dirac_SCF_density_matrix_ao(d_I(l,2),d_I(k,2))) * integral
+      dirac_ao_bi_elec_Gaunt_integral_tmp(d_I(i,2),d_I(j,2)) -= (dirac_SCF_density_matrix_ao(d_I(l,1),d_I(k,1))) * integral
+      dirac_ao_bi_elec_Gaunt_integral_tmp(d_I(i,2),d_I(l,2)) -= 2*(dirac_SCF_density_matrix_ao(d_I(j,1),d_I(k,1))) * integral
+      dirac_ao_bi_elec_Gaunt_integral_tmp(d_I(i,2),d_I(l,2)) -= (dirac_SCF_density_matrix_ao(d_I(j,2),d_I(k,2))) * integral
+      !L_beta S_alpha .or S_beta L_alpha
+      dirac_ao_bi_elec_Gaunt_integral_tmp(d_I(i,2),d_I(j,1)) += 2*(dirac_SCF_density_matrix_ao(d_I(l,2),d_I(k,1))) * integral
+      dirac_ao_bi_elec_Gaunt_integral_tmp(d_I(i,2),d_I(l,1)) += (dirac_SCF_density_matrix_ao(d_I(j,2),d_I(k,1))) * integral
+      !L_alpha S_beta .or S_alpha L_beta
+      dirac_ao_bi_elec_Gaunt_integral_tmp(d_I(i,1),d_I(j,2)) += 2*(dirac_SCF_density_matrix_ao(d_I(l,1),d_I(k,2))) * integral
+      dirac_ao_bi_elec_Gaunt_integral_tmp(d_I(i,1),d_I(l,2)) += (dirac_SCF_density_matrix_ao(d_I(j,1),d_I(k,2))) * integral
      endif
     enddo
    enddo
@@ -115,7 +140,7 @@
   integer                        :: i,j
   do j=1,2*dirac_ao_num
    do i=1,2*dirac_ao_num
-    dirac_Fock_matrix_ao(i,j) = dirac_ao_mono_elec_integral(i,j) + dirac_ao_bi_elec_Gaunt_integral(i,j)
+    dirac_Fock_matrix_Gaunt_ao(i,j) = dirac_ao_mono_elec_integral(i,j) + dirac_ao_bi_elec_Gaunt_integral(i,j)
    enddo
   enddo
  END_PROVIDER
@@ -127,7 +152,7 @@
   dirac_HF_two_electron_Gaunt_energy_complex = (0.d0,0.d0)
   do j=1, 2*dirac_ao_num
    do i=1, 2*dirac_ao_num
-    dirac_HF_two_electron_energy_complex += 0.5d0* (dirac_ao_bi_elec_Gaunt_integral(i,j)) * dirac_SCF_density_matrix_ao(j,i)
+    dirac_HF_two_electron_Gaunt_energy_complex += 0.5d0* (dirac_ao_bi_elec_Gaunt_integral(i,j)) * dirac_SCF_density_matrix_ao(j,i)
    enddo
   enddo
   dirac_HF_two_electron_Gaunt_energy = real(dirac_HF_two_electron_Gaunt_energy_complex)
@@ -195,8 +220,8 @@
   n = 2*(dirac_mo_tot_num)
   nmax = n
   call lapack_diag_complex(eigenvalues,eigenvectors,dirac_Fock_matrix_Gaunt_mo,nmax,n)
-  eigenvalues_dirac_fock_matrix_mo = eigenvalues
-  eigenvectors_dirac_fock_matrix_mo = eigenvectors
+  eigenvalues_dirac_fock_matrix_Gaunt_mo = eigenvalues
+  eigenvectors_dirac_fock_matrix_Gaunt_mo = eigenvectors
  END_PROVIDER
 
  

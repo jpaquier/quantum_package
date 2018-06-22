@@ -1,4 +1,4 @@
- subroutine damping_dirac_SCF
+ subroutine damping_dirac_Gaunt_SCF
   implicit none
   double precision               :: E, E_min, delta_E, E_half, E_new, a, b, lambda,delta_D
   complex*16, allocatable        :: D(:,:)
@@ -24,13 +24,13 @@
     '  N ', 'Energy  ', 'Energy diff  ', 'Density diff  ', 'Save'
   write(6,'(A4,1X,A16, 1X, A16, 1X, A16, 1X, A4 )')  &
     '====','================','================','================', '===='
-  E = dirac_SCF_energy + 1.d0
-  E_min = dirac_SCF_energy
+  E = dirac_SCF_Gaunt_energy + 1.d0
+  E_min = dirac_SCF_Gaunt_energy
   delta_D_complex = (0.d0,0.d0)
   delta_D = 0.d0
   do k=1,n_it_scf_max
-   delta_E = dirac_SCF_energy - E
-   E = dirac_SCF_energy
+   delta_E = dirac_SCF_Gaunt_energy - E
+   E = dirac_SCF_Gaunt_energy
    if (dabs(delta_E) < thresh_scf)  then
     exit
    endif
@@ -43,22 +43,22 @@
      save_char = ' '
    endif
    write(6,'(I4, 1X, F16.8, 1X, F16.8, 1X, F16.8, 3X, A4 )')  &
-    k, dirac_SCF_energy, delta_E, delta_D, save_char
+    k, dirac_SCF_Gaunt_energy, delta_E, delta_D, save_char
    D = dirac_SCF_density_matrix_ao
-   dirac_mo_coef = eigenvectors_dirac_fock_matrix_ao
+   dirac_mo_coef = eigenvectors_dirac_fock_matrix_Gaunt_ao
    TOUCH dirac_mo_coef
    D_new = dirac_SCF_density_matrix_ao
-   F_new = dirac_Fock_matrix_ao
-   E_new = dirac_SCF_energy
+   F_new = dirac_Fock_matrix_Gaunt_ao
+   E_new = dirac_SCF_Gaunt_energy
    delta = D_new - D
    lambda = .5d0
    E_half = 0.d0
    do while (E_half > E)
     dirac_SCF_density_matrix_ao = D + lambda * delta
     TOUCH dirac_SCF_density_matrix_ao
-    dirac_mo_coef = eigenvectors_dirac_fock_matrix_ao
+    dirac_mo_coef = eigenvectors_dirac_fock_matrix_Gaunt_ao
     TOUCH dirac_mo_coef
-    E_half = dirac_SCF_energy
+    E_half = dirac_SCF_Gaunt_energy
     if ((E_half > E).and.(E_new < E)) then
      lambda = 1.d0
      exit
@@ -73,7 +73,7 @@
    b = -E_new - 3.d0*E + 4.d0*E_half
    lambda = -lambda*b/(a+1.d-16)
    D = (1.d0-lambda) * D + lambda * D_new
-   delta_E = dirac_SCF_energy - E
+   delta_E = dirac_SCF_Gaunt_energy - E
    do j=1,2*dirac_ao_num
     do i=1,2*dirac_ao_num
      delta_D_complex += D(i,j) - dirac_SCF_density_matrix_ao(i,j)
@@ -88,12 +88,12 @@
    endif
    dirac_SCF_density_matrix_ao = D
    TOUCH dirac_SCF_density_matrix_ao
-   dirac_mo_coef = eigenvectors_dirac_fock_matrix_ao
+   dirac_mo_coef = eigenvectors_dirac_fock_matrix_Gaunt_ao
    TOUCH dirac_mo_coef
   enddo
   write(6,'(A4,1X,A16, 1X, A16, 1X, A16, 1X, A4 )')  '====','================','================','================', '===='
   write(6,*)
-  call write_double(6, dirac_SCF_energy, 'Hartree-Fock energy')
+  call write_double(6, dirac_SCF_Gaunt_energy, 'Hartree-Fock energy')
  !call ezfio_set_hartree_fock_energy(E_min)
   call write_time(6)
   deallocate(D,F_new,D_new,delta)
