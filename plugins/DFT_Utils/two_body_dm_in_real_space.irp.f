@@ -12,6 +12,10 @@ double precision function two_dm_in_r(r1,r2,istate)
   do j = 1, mo_tot_num
    do k = 1, mo_tot_num
     do l = 1, mo_tot_num
+     if(dabs(two_bod_alpha_beta_mo_transposed(l,k,j,i,istate)).gt.1.d-10)then
+    !  print*,l,k,j,i
+     ! print*,two_bod_alpha_beta_mo_transposed(l,k,j,i,istate)
+     endif
      two_dm_in_r += two_bod_alpha_beta_mo_transposed(l,k,j,i,istate) * mos_array_r1(i) * mos_array_r1(l) * mos_array_r2(k) * mos_array_r2(j)
     enddo
    enddo
