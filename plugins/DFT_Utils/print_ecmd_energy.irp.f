@@ -16,8 +16,8 @@ end
 subroutine pouet
  implicit none
 
- write(*, '(A22,X,F16.10)') 'EC_MD_ON_TOP_PBE    = ',Energy_c_md_on_top_PBE_mu_corrected_UEG(1)+psi_energy+nuclear_repulsion
- write(*, '(A28,X,F16.10)') 'on_top_PBE MD correl      = ',Energy_c_md_on_top_PBE_mu_corrected_UEG(1)
+ write(*, '(A22,X,F16.10)') 'EC_MD_ON_TOP_PBE_cor= ',Energy_c_md_on_top_PBE_mu_corrected_UEG(1)+psi_energy+nuclear_repulsion
+ write(*, '(A28,X,F16.10)') 'on_top_PBE_cor MD correl  = ',Energy_c_md_on_top_PBE_mu_corrected_UEG(1)
 
 end
 
@@ -30,6 +30,7 @@ subroutine ecmd_energy_printer
  write(*, '(A22,X,F16.10)') 'EC_MD_LDA           = ',Energy_c_md+psi_energy+nuclear_repulsion
  write(*, '(A22,X,F16.10)') 'EC_MD_ON_TOP        = ',Energy_c_md_on_top(1)+psi_energy+nuclear_repulsion
  write(*, '(A22,X,F16.10)') 'EC_MD_ON_TOP_PBE    = ',Energy_c_md_on_top_PBE(1)+psi_energy+nuclear_repulsion
+ write(*, '(A22,X,F16.10)') 'EC_MD_ON_TOP_PBE_cor= ',Energy_c_md_on_top_PBE_mu_corrected_UEG(1)+psi_energy+nuclear_repulsion
  print*, ''
  print*, 'Component of the energy ....'
  print*, ''
@@ -40,5 +41,6 @@ subroutine ecmd_energy_printer
  write(*, '(A28,X,F16.10)') 'LDA Multi-det correlation = ',Energy_c_md
  write(*, '(A28,X,F16.10)') 'on_top Multi-det correl   = ',Energy_c_md_on_top(1)
  write(*, '(A28,X,F16.10)') 'on_top_PBE MD correl      = ',Energy_c_md_on_top_PBE(1)
+ write(*, '(A28,X,F16.10)') 'on_top_PBE_cor MD correl  = ',Energy_c_md_on_top_PBE_mu_corrected_UEG(1)
 
 end

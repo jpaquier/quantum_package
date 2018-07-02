@@ -2,8 +2,8 @@ program test
  read_wf = .True.
  touch read_wf
 !call densitymap
- call correlation_hole
-!call normalisation_on_top
+!call correlation_hole
+ call normalisation_on_top
 !call print_weight
 !call test_opt_on_top
 !call test_tbdm_with_symmetry
@@ -70,6 +70,7 @@ subroutine normalisation_on_top
  integer :: i,j,k,l 
  double precision :: r(3), rho_a, rho_b, rho, aos_array(ao_num)
  double precision :: two_dm_in_r,dif,tdm
+ double precision :: two_dm_in_r_new_cycle
 
  do j = 1, nucl_num
   do k = 1, n_points_radial_grid  -1
@@ -77,7 +78,7 @@ subroutine normalisation_on_top
     r(:) = grid_points_per_atom(:,l,k,j)
     call dm_dft_alpha_beta_and_all_aos_at_r(r,rho_a,rho_b,aos_array)
     rho = rho_a + rho_b
-    tdm = two_dm_in_r(r,r)
+    tdm = two_dm_in_r_new_cycle(r,r,1)
     dif = (rho**2d0)/4d0  - tdm    
 !    if( abs(dif) > 1d-8 )then
      print*,(rho**2d0)/4d0,tdm,dif

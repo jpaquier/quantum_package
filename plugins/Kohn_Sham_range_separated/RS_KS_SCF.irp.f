@@ -5,8 +5,9 @@ program scf
 ! output: kohn_sham.energy
 ! optional: mo_basis.mo_coef
   END_DOC
-! read_wf = .False.
-! touch read_wf
+  read_wf = .False.
+  touch read_wf
+  print*,'N_states = ',N_states
 
   print*, '**************************'
   print*, 'mu_erf = ',mu_erf

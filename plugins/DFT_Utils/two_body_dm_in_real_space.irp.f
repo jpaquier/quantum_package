@@ -53,7 +53,7 @@ double precision function two_dm_in_r_new_cycle(r1,r2,istate)
  double precision, allocatable :: mos_array_r1(:)
  double precision, allocatable :: mos_array_r2(:)
 
- threshold = 1.d-10
+ threshold = 1.d-20
 
  call give_all_mos_at_r(r1,mos_array_r1) 
  call give_all_mos_at_r(r2,mos_array_r2) 
