@@ -1,39 +1,48 @@
 program pouet
  implicit none
- double precision :: test_bart,test,test_bart2
- read_wf = .True.
-! call routine
+ double precision :: test_bart,test,test_bart2,test_inte,rho2_ec
+ read_wf = .true.
+ touch read_wf
+ call routine
 ! call test_matrx_svd
-call test_rho2_bart(test_bart)
-call test_rho2_bart2(test_bart2)
-call test_rho2_bourrin(test)
+!call test_rho2_bart(test_bart)
+!call test_rho2_bart2(test_bart2)
+! call test_rho2_bourrin(test)
+!call test_rho2_integral(test_inte)
+!call on_top_pair_density_thresh_ec(rho2_ec)
+!call routine 
 print*,' '
 print*,' '
 print*,'***********Error*******'
-print*,'exact  bourin  = ',test
-print*,'test dipole    = ',test_bart2
-print*,'test couple    =',test_bart
-print*,'Erreur couple  = ',dabs(test_bart - test)
-print*,'Erreur dipole  = ',dabs(test_bart2 - test)
+!print*,'exact  bourin      = ',test
+print*,'avec thresh ec     = ',rho2_ec
+!print*,'Erreur ec          = ',dabs(rho2_ec - test)
+print*,'bourrin avec inte  = ',test_inte
+!print*,'test dipole        = ',test_bart2
+!print*,'test couple        = ',test_bart
+!print*,'Erreur couple      = ',dabs(test_bart - test)
+!print*,'Erreur dipole      = ',dabs(test_bart2 - test)
+end
+
+subroutine routine 
+ implicit none
+ provide n_k_tot  
 end
 
 
 subroutine test_rho2_bourrin(test)
  implicit none
  double precision, intent(out) :: test
- integer :: j,k,l,istate,n_k_loc,m
+ integer :: j,k,l,istate
  double precision :: r(3),rho2
- double precision, allocatable :: rho2_ap(:)
  double precision :: two_dm_in_r
  double precision :: wall_1, wall_2
- allocate(rho2_ap(N_states))
 
 do istate = 1, N_states
  test = 0.d0
  r(1) = 0.d0
  r(2) = 0.d0
  r(3) = 0.d0
-!rho2 = two_dm_in_r(r,r,istate)
  call wall_time(wall_1)
   do j = 1, nucl_num
    do k = 1, n_points_radial_grid  -1
@@ -42,16 +51,38 @@ do istate = 1, N_states
      r(2) = grid_points_per_atom(2,l,k,j)
      r(3) = grid_points_per_atom(3,l,k,j)
      rho2 = two_dm_in_r(r,r,istate)
-!    stop
+     print*,'rho2      = ',rho2
      test += rho2 * final_weight_functions_at_grid_points(l,k,j)
     enddo
    enddo
   enddo
-!print*,'test       = ',test
  enddo
  call wall_time(wall_2)
  print*,'wall time bourrin = ',wall_2 - wall_1
 end
+
+subroutine test_rho2_integral(test_inte)
+ implicit none
+ double precision, intent(out) :: test_inte
+ integer :: i,j,k,l,istate
+ double precision :: wall_1, wall_2,get_mo_bielec_integral_ijkl_r3
+ do istate = 1, N_states
+ test_inte = 0.d0
+ call wall_time(wall_1)
+  do i = 1, mo_tot_num
+   do j = 1, mo_tot_num
+    do k = 1, mo_tot_num
+     do l = 1, mo_tot_num
+      test_inte += two_bod_alpha_beta_mo_transposed(l,k,j,i,istate) * get_mo_bielec_integral_ijkl_r3(l,k,j,i,mo_integrals_ijkl_r3_map)
+     enddo
+    enddo
+   enddo
+  enddo
+ enddo
+ call wall_time(wall_2)
+ print*,'wall time bourrin = ',wall_2 - wall_1
+end
+
 
 subroutine test_rho2_bart(test_bart)
  implicit none

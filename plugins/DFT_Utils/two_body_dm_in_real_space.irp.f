@@ -2,9 +2,9 @@ double precision function two_dm_in_r(r1,r2,istate)
  implicit none
  integer, intent(in) :: istate
  double precision, intent(in) :: r1(3),r2(3)
- double precision :: mos_array_r1(mo_tot_num)
- double precision :: mos_array_r2(mo_tot_num)
+ double precision, allocatable :: mos_array_r1(:), mos_array_r2(:)
  integer :: i,j,k,l
+ allocate(mos_array_r2(mo_tot_num), mos_array_r1(mo_tot_num))
  call give_all_mos_at_r(r1,mos_array_r1) 
  call give_all_mos_at_r(r2,mos_array_r2) 
  two_dm_in_r = 0.d0
