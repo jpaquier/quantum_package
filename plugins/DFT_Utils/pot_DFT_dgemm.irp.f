@@ -31,6 +31,10 @@
   potential_c_beta_ao = 0.d0
   potential_x_beta_ao = 0.d0
 
+! provide one_body_dm_beta_mo_for_dft
+! double precision :: r(3),rho_a,rho_b
+! r = 0.d0
+! call dm_dft_alpha_beta_at_r(r,rho_a,rho_b)
   do j = 1, nucl_num
    do k = 1, n_points_radial_grid  -1
     allocate(tmp_c_a(ao_num,ao_num,N_states),tmp_c_b(ao_num,ao_num,N_states),tmp_x_a(ao_num,ao_num,N_states),tmp_x_b(ao_num,ao_num,N_states))
@@ -71,7 +75,10 @@ END_PROVIDER
    r(2) = grid_points_per_atom(2,l_angular,k_radial,j_nucl)
    r(3) = grid_points_per_atom(3,l_angular,k_radial,j_nucl)
    weight = final_weight_functions_at_grid_points(l_angular,k_radial,j_nucl)
-   call dm_dft_alpha_beta_and_all_aos_at_r(r,rho_a,rho_b,aos_array)
+!  call dm_dft_alpha_beta_and_all_aos_at_r(r,rho_a,rho_b,aos_array)
+   call give_all_aos_at_r(r,aos_array)
+   rho_a(:) = one_body_dm_mo_alpha_at_grid_points(l_angular,k_radial,j_nucl,:)
+   rho_b(:) = one_body_dm_mo_beta_at_grid_points(l_angular,k_radial,j_nucl,:)
    call LDA_type_functional(r,rho_a,rho_b,vx_rho_a,vx_rho_b,vc_rho_a,vc_rho_b,ex,ec)
    
    do i = 1 , ao_num 
@@ -132,7 +139,14 @@ END_PROVIDER
    r(1) = grid_points_per_atom(1,l_angular,k_radial,j_nucl)
    r(2) = grid_points_per_atom(2,l_angular,k_radial,j_nucl)
    r(3) = grid_points_per_atom(3,l_angular,k_radial,j_nucl)
-   call density_and_grad_alpha_beta_and_all_aos_and_grad_aos_at_r(r,rho_a,rho_b, grad_rho_a, grad_rho_b, aos_array, grad_aos_array)
+
+!  call density_and_grad_alpha_beta_and_all_aos_and_grad_aos_at_r(r,rho_a,rho_b, grad_rho_a, grad_rho_b, aos_array, grad_aos_array)
+   rho_a(:) = one_body_dm_mo_alpha_and_grad_at_grid_points(4,l_angular,k_radial,j_nucl,:)
+   rho_b(:) = one_body_dm_mo_beta_and_grad_at_grid_points(4,l_angular,k_radial,j_nucl,:)
+   grad_rho_a(1:3,:) =  one_body_dm_mo_alpha_and_grad_at_grid_points(1:3,l_angular,k_radial,j_nucl,:)
+   grad_rho_b(1:3,:) =  one_body_dm_mo_beta_and_grad_at_grid_points(1:3,l_angular,k_radial,j_nucl,:)
+   call give_all_aos_and_grad_at_r(r,aos_array,grad_aos_array)
+
    grad_rho_a_2 = 0.d0
    grad_rho_b_2 = 0.d0
    grad_rho_a_b = 0.d0
@@ -143,6 +157,14 @@ END_PROVIDER
      grad_rho_a_b(istate) += grad_rho_a(m,istate) * grad_rho_b(m,istate)
     enddo
    enddo
+  !if(isnan(rho_a(1)))then
+  ! print*,'NAN ALPHA !!' 
+  !endif
+
+  !if(isnan(rho_b(1)))then
+  ! print*,'NAN BETA !!' 
+  !endif
+
    call GGA_type_functionals(r,rho_a,rho_b,grad_rho_a_2,grad_rho_b_2,grad_rho_a_b,ex,vx_rho_a,vx_rho_b,vx_grad_rho_a_2,vx_grad_rho_b_2,vx_grad_rho_a_b, &  
                                                                                 ec,vc_rho_a,vc_rho_b,vc_grad_rho_a_2,vc_grad_rho_b_2,vc_grad_rho_a_b )
    do i = 1, ao_num

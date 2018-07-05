@@ -435,7 +435,7 @@ subroutine test_grad
   double precision :: accu(3)
   accu = 0.d0
   do i = 1, nx
-   call give_all_aos_and_grad_at_r_new(r,aos_array,grad_aos_array)
+   call give_all_aos_and_grad_at_r(r,aos_array,grad_aos_array)
    do m = 1, 3
     rdx_plus = r
     rdx_plus(m) +=  dx
