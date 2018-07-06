@@ -19,10 +19,10 @@
  logical                        :: exists
   PROVIDE ezfio_filename
   call ezfio_has_mo_basis_mo_coef(exists)
-  if (exists) then
-   dirac_mo_coef = dirac_mo_coef_guess
-   print*, 'Non-relativistic Guess'
-  elseif (.not.exists) then
+ !if (exists) then
+ ! dirac_mo_coef = dirac_mo_coef_guess
+ ! print*, 'Non-relativistic Guess'
+ !elseif (.not.exists) then
   !if (mo_guess_type == "HCore") then
     dirac_mo_coef = eigenvectors_dirac_mono_elec_ao
     TOUCH dirac_mo_coef       
@@ -33,7 +33,7 @@
   ! print *,  'Unrecognized MO guess type : '//mo_guess_type
   ! stop 1
   !endif
-  endif              
+ !endif              
  end
 
  subroutine test_dirac

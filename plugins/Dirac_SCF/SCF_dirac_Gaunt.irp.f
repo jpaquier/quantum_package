@@ -18,15 +18,15 @@
   END_DOC
   logical                        :: exists
   PROVIDE ezfio_filename
-   if (mo_guess_type == "HCore") then
+  !if (mo_guess_type == "HCore") then
     dirac_mo_coef = eigenvectors_dirac_mono_elec_ao
     TOUCH dirac_mo_coef       
-    dirac_mo_label = 'Guess'
+    dirac_mo_label = 'HCore Guess'
     SOFT_TOUCH dirac_mo_coef dirac_mo_label
-   else
-    print *,  'Unrecognized MO guess type : '//mo_guess_type
-    stop 1
-   endif
+  !else
+  ! print *,  'Unrecognized MO guess type : '//mo_guess_type
+  ! stop 1
+  !endif
  end
 
  subroutine test_dirac_Gaunt
