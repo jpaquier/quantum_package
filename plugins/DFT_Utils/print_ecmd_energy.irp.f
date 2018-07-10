@@ -8,16 +8,17 @@ program print_ecmd_energy
  touch disk_access_mo_integrals
  disk_access_ao_integrals = "None"
  touch disk_access_ao_integrals
- call ecmd_energy_printer
-!call pouet 
+!call ecmd_energy_printer
+ call pouet 
 end
 
 
 subroutine pouet
  implicit none
 
- write(*, '(A22,X,F16.10)') 'EC_MD_ON_TOP_PBE_cor= ',Energy_c_md_on_top_PBE_mu_corrected_UEG(1)+psi_energy+nuclear_repulsion
- write(*, '(A28,X,F16.10)') 'on_top_PBE_cor MD correl  = ',Energy_c_md_on_top_PBE_mu_corrected_UEG(1)
+ write(*, '(A28,X,F16.10)') 'on_top Multi-det correl   = ',Energy_c_md_on_top(1)
+!write(*, '(A22,X,F16.10)') 'EC_MD_ON_TOP_PBE_cor= ',Energy_c_md_on_top_PBE_mu_corrected_UEG(1)+psi_energy+nuclear_repulsion
+!write(*, '(A28,X,F16.10)') 'on_top_PBE_cor MD correl  = ',Energy_c_md_on_top_PBE_mu_corrected_UEG(1)
 
 end
 

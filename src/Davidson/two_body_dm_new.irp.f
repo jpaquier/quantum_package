@@ -236,26 +236,26 @@
   ! -------------------------------------------------
 
   PROVIDE N_int nthreads_davidson
-  !$OMP PARALLEL DEFAULT(NONE) NUM_THREADS(nthreads_davidson)        &
-      !$OMP   SHARED(psi_bilinear_matrix_rows, N_det,N_states,       &
-      !$OMP          psi_bilinear_matrix_columns,                    &
-      !$OMP          psi_det_alpha_unique, psi_det_beta_unique,      &
-      !$OMP          n_det_alpha_unique, n_det_beta_unique, N_int,   &
-      !$OMP          psi_bilinear_matrix_transp_rows,                &
-      !$OMP          psi_bilinear_matrix_transp_columns,             &
-      !$OMP          psi_bilinear_matrix_transp_order, N_st,         &
-      !$OMP          psi_bilinear_matrix_order_transp_reverse,       &
-      !$OMP          psi_bilinear_matrix_columns_loc,                &
-      !$OMP          psi_bilinear_matrix_transp_rows_loc,            &
-      !$OMP          istart, iend, istep, irp_here,big_array,        &
-      !$OMP          dim1,dim2,dim3,dim4,                            &
-      !$OMP          ishift, idx0, u_t, maxab)                       &
-      !$OMP   PRIVATE(krow, kcol, tmp_det, spindet, k_a, k_b, i,     &
-      !$OMP          lcol, lrow, l_a, l_b,c_1,c_2,                  &
-      !$OMP          buffer, doubles, n_doubles,                     &
-      !$OMP          tmp_det2, hij, sij, idx, l, kcol_prev,          &
-      !$OMP          singles_a, n_singles_a, singles_b,              &
-      !$OMP          n_singles_b, k8)
+ !!$OMP PARALLEL DEFAULT(NONE) NUM_THREADS(nthreads_davidson)        &
+ !    !$OMP   SHARED(psi_bilinear_matrix_rows, N_det,N_states,       &
+ !    !$OMP          psi_bilinear_matrix_columns,                    &
+ !    !$OMP          psi_det_alpha_unique, psi_det_beta_unique,      &
+ !    !$OMP          n_det_alpha_unique, n_det_beta_unique, N_int,   &
+ !    !$OMP          psi_bilinear_matrix_transp_rows,                &
+ !    !$OMP          psi_bilinear_matrix_transp_columns,             &
+ !    !$OMP          psi_bilinear_matrix_transp_order, N_st,         &
+ !    !$OMP          psi_bilinear_matrix_order_transp_reverse,       &
+ !    !$OMP          psi_bilinear_matrix_columns_loc,                &
+ !    !$OMP          psi_bilinear_matrix_transp_rows_loc,            &
+ !    !$OMP          istart, iend, istep, irp_here,big_array,        &
+ !    !$OMP          dim1,dim2,dim3,dim4,                            &
+ !    !$OMP          ishift, idx0, u_t, maxab)                       &
+ !    !$OMP   PRIVATE(krow, kcol, tmp_det, spindet, k_a, k_b, i,     &
+ !    !$OMP          lcol, lrow, l_a, l_b,c_1,c_2,                  &
+ !    !$OMP          buffer, doubles, n_doubles,                     &
+ !    !$OMP          tmp_det2, hij, sij, idx, l, kcol_prev,          &
+ !    !$OMP          singles_a, n_singles_a, singles_b,              &
+ !    !$OMP          n_singles_b, k8)
   
   ! Alpha/Beta double excitations
   ! =============================
@@ -341,9 +341,9 @@
     enddo
 
   enddo
-  !$OMP END DO 
+ !!$OMP END DO 
 
-  !$OMP DO SCHEDULE(dynamic,64)
+ !!$OMP DO SCHEDULE(dynamic,64)
   do k_a=istart+ishift,iend,istep
 
 
@@ -538,9 +538,9 @@
     call diagonal_contrib_to_two_body_ab_dm(tmp_det,c_1,big_array,dim1,dim2,dim3,dim4)
 
   end do
-  !$OMP END DO 
+ !!$OMP END DO 
   deallocate(buffer, singles_a, singles_b, doubles, idx)
-  !$OMP END PARALLEL
+ !!$OMP END PARALLEL
 
  end
 
