@@ -485,12 +485,21 @@ END_PROVIDER
  ! on_top computation 
  END_DOC
  integer :: j,k,l,istate
- double precision :: two_dm_in_r
+ double precision :: two_dm_in_r,two_dm_in_r_k_selected
  double precision, allocatable :: r(:)
  double precision :: cpu0,cpu1
+ allocate(r(3))
+
+ r = 0.d0
+ istate = 1
+ If (ontop_approx .EQV. .TRUE.) Then
+  on_top_of_r(1,1,1,1) = two_dm_in_r_k_selected(r,r,istate) 
+ else      
+  on_top_of_r(1,1,1,1) = two_dm_in_r(r,r,istate)
+ endif
+
  print*,'providing the on_top_of_r ...'
  call cpu_time(cpu0)
- allocate(r(3))
   do j = 1, nucl_num
    do k = 1, n_points_radial_grid  -1
     do l = 1, n_points_integration_angular
@@ -499,7 +508,11 @@ END_PROVIDER
      r(3) = grid_points_per_atom(3,l,k,j)
      do istate = 1, N_states
 !!!!!!!!!!!! CORRELATION PART
-      on_top_of_r(l,k,j,istate) = two_dm_in_r(r,r,istate)
+      If (ontop_approx .EQV. .TRUE.) Then
+       on_top_of_r(l,k,j,istate) = two_dm_in_r_k_selected(r,r,istate) 
+      else      
+       on_top_of_r(l,k,j,istate) = two_dm_in_r(r,r,istate)
+      endif
      enddo
     enddo
    enddo
