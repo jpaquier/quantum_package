@@ -26,7 +26,7 @@ subroutine test_grad_ao
      r(1) = grid_points_per_atom(1,l,k,j)
      r(2) = grid_points_per_atom(2,l,k,j)
      r(3) = grid_points_per_atom(3,l,k,j)
-     call give_all_aos_and_grad_at_r_new(r,aos_array,grad_aos_array)
+     call give_all_aos_and_grad_at_r(r,aos_array,grad_aos_array)
      do m = 1,3
       rdx_plus = r
       rdx_plus(m) = r(m) + dr
@@ -70,7 +70,7 @@ subroutine test_grad_density
      r(2) = grid_points_per_atom(2,l,k,j)
      r(3) = grid_points_per_atom(3,l,k,j)
      call density_and_grad_alpha_beta_and_all_aos_and_grad_aos_at_r(r,dm_a,dm_b, grad_dm_a, grad_dm_b, aos_array, grad_aos_array)
-     call give_all_aos_and_grad_at_r_new(r,aos_array,grad_aos_array)
+     call give_all_aos_and_grad_at_r(r,aos_array,grad_aos_array)
      do m = 1,3
       rdx_plus = r
       rdx_plus(m) = r(m) + dr

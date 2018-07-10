@@ -7,6 +7,7 @@ BEGIN_PROVIDER [double precision, one_body_dm_alpha_mo_for_dft, (mo_tot_num,mo_t
  if(read_density_from_input)then
   one_body_dm_alpha_mo_for_dft = data_one_body_alpha_dm_mo
  else 
+  provide mo_coef
   one_body_dm_alpha_mo_for_dft = one_body_dm_mo_alpha
  endif
 
@@ -17,10 +18,10 @@ BEGIN_PROVIDER [double precision, one_body_dm_beta_mo_for_dft, (mo_tot_num,mo_to
  BEGIN_DOC
 ! density used for all DFT calculations based on the density 
  END_DOC
-
  if(read_density_from_input)then
   one_body_dm_beta_mo_for_dft = data_one_body_beta_dm_mo
  else
+  provide mo_coef
   one_body_dm_beta_mo_for_dft = one_body_dm_mo_beta
  endif
 

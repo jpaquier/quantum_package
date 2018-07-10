@@ -85,7 +85,7 @@ subroutine give_all_aos_at_r(r,aos_array)
 end
 
 
-subroutine give_all_aos_and_grad_at_r_new(r,aos_array,aos_grad_array)
+subroutine give_all_aos_and_grad_at_r(r,aos_array,aos_grad_array)
  implicit none
  BEGIN_DOC
 ! input      : r(1) ==> r(1) = x, r(2) = y, r(3) = z

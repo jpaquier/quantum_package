@@ -38,7 +38,7 @@ END_PROVIDER
 &BEGIN_PROVIDER [integer, index_ligand_orb_loc, (mo_tot_num)]
  implicit none
  double precision :: thr_loc
- thr_loc = 0.01d0
+ thr_loc = 0.05d0
  call find_good_orb(index_ligand_orb_loc, n_orb_ligand_loc,thr_loc)
 !n_orb_ligand_loc = 2 
 !index_ligand_orb_loc(1) = 70

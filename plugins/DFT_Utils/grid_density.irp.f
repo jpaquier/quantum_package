@@ -3,9 +3,9 @@ BEGIN_PROVIDER [integer, n_points_integration_angular]
  BEGIN_DOC
 ! number of angular points per atom for 3d numerical integration, needed for DFT for example
  END_DOC
- n_points_integration_angular = 74
+!n_points_integration_angular = 74
 !n_points_integration_angular = 266
-!n_points_integration_angular = 590
+ n_points_integration_angular = 590
 !n_points_integration_angular =1202
 !n_points_integration_angular = 2030
 !n_points_integration_angular = 5810
@@ -41,8 +41,8 @@ END_PROVIDER
 !call LD2030(X,Y,Z,W,n_points_integration_angular)
 !call LD1202(X,Y,Z,W,n_points_integration_angular)
 !call LD0590(X,Y,Z,W,n_points_integration_angular)
-!call LD0266(X,Y,Z,W,n_points_integration_angular)
- call LD0074(X,Y,Z,W,n_points_integration_angular)
+ call LD0266(X,Y,Z,W,n_points_integration_angular)
+!call LD0074(X,Y,Z,W,n_points_integration_angular)
 !call LD0050(X,Y,Z,W,n_points_integration_angular)
  do i = 1, n_points_integration_angular
   angular_quadrature_points(i,1) = x(i)
@@ -179,38 +179,38 @@ END_PROVIDER
  integer :: i,j,k,l,m,istate
  double precision :: contrib
  double precision :: r(3)
- double precision :: aos_array(ao_num),mos_array(mo_tot_num),grad_aos_array(3,ao_num)
-!do istate = 1, N_States
+ double precision :: aos_array(ao_num),grad_aos_array(3,ao_num)
+ do istate = 1, N_States
   do j = 1, nucl_num
    do k = 1, n_points_radial_grid -1
     do l = 1, n_points_integration_angular
       do m = 1, 4
-       one_body_dm_mo_alpha_and_grad_at_grid_points(m,l,k,j,1) = 0.d0
-       one_body_dm_mo_beta_and_grad_at_grid_points(m,l,k,j,1) = 0.d0
+       one_body_dm_mo_alpha_and_grad_at_grid_points(m,l,k,j,istate) = 0.d0
+       one_body_dm_mo_beta_and_grad_at_grid_points(m,l,k,j,istate) = 0.d0
       enddo
-     enddo
-     r(1) = grid_points_per_atom(1,l,k,j)
-     r(2) = grid_points_per_atom(2,l,k,j)
-     r(3) = grid_points_per_atom(3,l,k,j)
+      r(1) = grid_points_per_atom(1,l,k,j)
+      r(2) = grid_points_per_atom(2,l,k,j)
+      r(3) = grid_points_per_atom(3,l,k,j)
 
  !!!!! Works also with the ao basis 
-     double precision :: dm_a,dm_b, dm_a_grad(3), dm_b_grad(3)
-     call density_and_grad_alpha_beta_and_all_aos_and_grad_aos_at_r(r,dm_a,dm_b,  dm_a_grad, dm_b_grad, aos_array, grad_aos_array)
-     one_body_dm_mo_alpha_and_grad_at_grid_points(1,l,k,j,1) +=  dm_a_grad(1)
-     one_body_dm_mo_alpha_and_grad_at_grid_points(2,l,k,j,1) +=  dm_a_grad(2)
-     one_body_dm_mo_alpha_and_grad_at_grid_points(3,l,k,j,1) +=  dm_a_grad(3)
-     one_body_dm_mo_alpha_and_grad_at_grid_points(4,l,k,j,1) +=  dm_a
+      double precision :: dm_a(N_states),dm_b(N_states), dm_a_grad(3,N_states), dm_b_grad(3,N_states)
+      call density_and_grad_alpha_beta_and_all_aos_and_grad_aos_at_r(r,dm_a,dm_b,  dm_a_grad, dm_b_grad, aos_array, grad_aos_array)
+      one_body_dm_mo_alpha_and_grad_at_grid_points(1,l,k,j,istate)  =  dm_a_grad(1,istate)
+      one_body_dm_mo_alpha_and_grad_at_grid_points(2,l,k,j,istate)  =  dm_a_grad(2,istate)
+      one_body_dm_mo_alpha_and_grad_at_grid_points(3,l,k,j,istate)  =  dm_a_grad(3,istate)
+      one_body_dm_mo_alpha_and_grad_at_grid_points(4,l,k,j,istate)  =  dm_a(istate)
+      
+      
+      one_body_dm_mo_beta_and_grad_at_grid_points(1,l,k,j,istate)  =  dm_b_grad(1,istate)
+      one_body_dm_mo_beta_and_grad_at_grid_points(2,l,k,j,istate)  =  dm_b_grad(2,istate)
+      one_body_dm_mo_beta_and_grad_at_grid_points(3,l,k,j,istate)  =  dm_b_grad(3,istate)
+      one_body_dm_mo_beta_and_grad_at_grid_points(4,l,k,j,istate)  =  dm_b(istate)
 
 
-     one_body_dm_mo_beta_and_grad_at_grid_points(1,l,k,j,1) +=  dm_b_grad(1)
-     one_body_dm_mo_beta_and_grad_at_grid_points(2,l,k,j,1) +=  dm_b_grad(2)
-     one_body_dm_mo_beta_and_grad_at_grid_points(3,l,k,j,1) +=  dm_b_grad(3)
-     one_body_dm_mo_beta_and_grad_at_grid_points(4,l,k,j,1) +=  dm_b
-
-
+     enddo
     enddo
    enddo
-! enddo
+  enddo
 
 END_PROVIDER 
 
