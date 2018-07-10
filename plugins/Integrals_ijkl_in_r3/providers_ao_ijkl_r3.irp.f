@@ -34,7 +34,7 @@ BEGIN_PROVIDER [ logical, ao_bielec_integrals_ijkl_r3_in_map ]
       return
   endif
   
-  print*, 'Providing the AO ERF integrals'
+  print*, 'Providing the AO ijkl_r3 integrals'
   call wall_time(wall_0)
   call wall_time(wall_1)
   call cpu_time(cpu_1)
@@ -79,8 +79,8 @@ BEGIN_PROVIDER [ logical, ao_bielec_integrals_ijkl_r3_in_map ]
   integer(map_size_kind)         :: get_ao_ijkl_r3_map_size, ao_ijkl_r3_map_size
   ao_ijkl_r3_map_size = get_ao_ijkl_r3_map_size()
   
-  print*, 'AO ERF integrals provided:'
-  print*, ' Size of AO ERF map :         ', map_mb(ao_integrals_ijkl_r3_map) ,'MB'
+  print*, 'AO ijkl_r3 integrals provided:'
+  print*, ' Size of AO ijkl_r3 map :         ', map_mb(ao_integrals_ijkl_r3_map) ,'MB'
   print*, ' Number of AO ERF integrals :', ao_ijkl_r3_map_size
   print*, ' cpu  time :',cpu_2 - cpu_1, 's'
   print*, ' wall time :',wall_2 - wall_1, 's  ( x ', (cpu_2-cpu_1)/(wall_2-wall_1+tiny(1.d0)), ' )'
