@@ -7,7 +7,8 @@
   integer :: i,j
   double precision :: m,c
   m = 1.d0
-  c = 137.0359998  
+  c = 137.0359998d0 
+ !c = 5.d0
   do i = 1, small_ao_num
    do j = 1, small_ao_num
     small_ao_mass_energy(i,j) = -2 * m * (c**2.) * small_ao_overlap(i,j)
