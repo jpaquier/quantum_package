@@ -11,9 +11,8 @@ program pouet
 !call test_grad
 !call test_r12_psi(nx,rmax)
 !call test_one_dm_mo
-!call test_expectation_value_and_coulomb(nx,rmax)
 !call routine3
-!call test_rho2
+call test_rho2
 !call test_one_dm_ao
 !call test_coulomb_oprerator
 !call test_expectation_value
@@ -42,14 +41,16 @@ end
 subroutine test_rho2
  implicit none
  integer :: j,k,l 
- double precision ::r(3),rho2
- double precision :: test
+ double precision ::r(3),rho2,rho2_ap
+ double precision :: test,test_bart
 
  r(1) = 0.d0
  r(2) = 0.d0
  r(3) = 0.d0
  call  on_top_pair_density_in_real_space(r,rho2)
  print*,'rho2(0) = ',rho2
+!call  on_top_pair_density_in_real_space_approx(r,rho2_ap)
+! print*,'rho2(0) = ',rho2_ap
 !stop
  test = 0.d0
   do j = 1, nucl_num
@@ -61,12 +62,17 @@ subroutine test_rho2
      r(2) = grid_points_per_atom(2,l,k,j)
      r(3) = grid_points_per_atom(3,l,k,j)
      call  on_top_pair_density_in_real_space(r,rho2)
+     !call  on_top_pair_density_in_real_space_approx(r,rho2_ap)
+     print*,'rho2(r) normal = ',rho2
+ !    print*,'rho2(r) barth =  ',rho2_ap
 !    call  on_top_pair_density_in_real_space_from_ao(r,rho2)
-     test += rho2 * final_weight_functions_at_grid_points(l,k,j) 
+     test += rho2 * final_weight_functions_at_grid_points(l,k,j)
+ !    test_bart += rho2_ap * final_weight_functions_at_grid_points(l,k,j) 
      enddo
     enddo
    enddo
  print*,'test = ',test
+! print*,'test Barth = ',test_bart
 
 end
 

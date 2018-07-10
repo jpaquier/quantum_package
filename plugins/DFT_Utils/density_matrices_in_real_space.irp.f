@@ -149,16 +149,16 @@ subroutine on_top_pair_density_in_real_space(r,rho2)
   do i = 1, mo_tot_num
    a1 = mos_array(i)
    c1 = dabs(a1)
-   if(c1.le.threshold)cycle
+!  if(c1.le.threshold)cycle
    do j = 1, mo_tot_num 
     a2 = a1 * mos_array(j)
     c2 = dabs(a2)
-    if(dabs(one_body_dm_mo_for_dft(j,i,istate)).le.threshold)cycle
-    if(c2.le.threshold)cycle
+!   if(dabs(one_body_dm_mo_for_dft(j,i,istate)).le.threshold)cycle
+!   if(c2.le.threshold)cycle
     do k = 1, mo_tot_num 
      a3 = a2 * mos_array(k)
      c3 = dabs(a3)
-     if(c3.le.threshold)cycle
+!    if(c3.le.threshold)cycle
      do l = 1, mo_tot_num
       rho2 += a3 * mos_array(l) * two_bod_alpha_beta_mo(l,k,j,i,istate)
 !     print*,a3,mos_array(l),two_bod_alpha_beta_mo(l,k,j,i,istate)
