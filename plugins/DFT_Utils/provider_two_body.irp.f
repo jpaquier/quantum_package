@@ -40,7 +40,13 @@
  double precision :: get_mo_bielec_integral_ijkl_r3
  double precision, allocatable :: E_cor_coupl(:,:)
  allocate(E_cor_coupl(mo_tot_num*mo_tot_num,2),order_loc(mo_tot_num*mo_tot_num))
+
+ double precision, allocatable :: integrals_ij(:,:)
+ allocate(integrals_ij(mo_tot_num,mo_tot_num))
+ double precision :: cpu0,cpu1
  E_cor_tot = 0.d0
+ cpu0 = dabs(two_bod_alpha_beta_mo_transposed(1,1,1,1,1) * get_mo_bielec_integral_ijkl_r3(1,1,1,1,mo_integrals_ijkl_r3_map))
+ call cpu_time(cpu0)
  do istate = 1, N_states
    do i = 1, mo_tot_num ! loop over the first electron 
     do j = 1, mo_tot_num ! loop over the second electron 
@@ -48,10 +54,18 @@
      icouple = couple_to_array(j,i)
      order_loc(icouple)= icouple
      E_cor_coupl(icouple,:) = 0.d0
+     call get_mo_bielec_integrals_ijkl_r3_ij(i,j,mo_tot_num,integrals_ij,mo_integrals_ijkl_r3_map)
      do k = 1, mo_tot_num
       do l = 1, mo_tot_num
-       E_cor_coupl(icouple,1) -= dabs(two_bod_alpha_beta_mo_transposed(l,k,j,i,istate) * get_mo_bielec_integral_ijkl_r3(l,k,j,i,mo_integrals_ijkl_r3_map))
-       E_cor_coupl(icouple,2) +=     (two_bod_alpha_beta_mo_transposed(l,k,j,i,istate) * get_mo_bielec_integral_ijkl_r3(l,k,j,i,mo_integrals_ijkl_r3_map))
+!      if(dabs(integrals_ij(l,k) - get_mo_bielec_integral_ijkl_r3(l,k,j,i,mo_integrals_ijkl_r3_map)).gt.1.d-10 .and. dabs(get_mo_bielec_integral_ijkl_r3(l,k,j,i,mo_integrals_ijkl_r3_map)).gt.1.d-10)then
+!      print*,'ahahaha' 
+!      print*,i,j,k,l
+!      print*,integrals_ij(l,k) , get_mo_bielec_integral_ijkl_r3(l,k,j,i,mo_integrals_ijkl_r3_map)
+!      endif
+!      E_cor_coupl(icouple,1) -= dabs(two_bod_alpha_beta_mo_transposed(l,k,j,i,istate) * get_mo_bielec_integral_ijkl_r3(l,k,j,i,mo_integrals_ijkl_r3_map))
+!      E_cor_coupl(icouple,2) +=     (two_bod_alpha_beta_mo_transposed(l,k,j,i,istate) * get_mo_bielec_integral_ijkl_r3(l,k,j,i,mo_integrals_ijkl_r3_map))
+       E_cor_coupl(icouple,1) -= dabs(two_bod_alpha_beta_mo_transposed(l,k,j,i,istate) * integrals_ij(l,k))
+       E_cor_coupl(icouple,2) +=     (two_bod_alpha_beta_mo_transposed(l,k,j,i,istate) * integrals_ij(l,k))
       enddo
      enddo
      E_cor_tot(istate) += E_cor_coupl(icouple,2)
@@ -64,6 +78,9 @@
    enddo
   enddo
  deallocate(E_cor_coupl,order_loc)
+ deallocate(integrals_ij)
+ call cpu_time(cpu1)
+ print*,'Time to provide E_cor_tot   = ',cpu1-cpu0
  END_PROVIDER
 
 

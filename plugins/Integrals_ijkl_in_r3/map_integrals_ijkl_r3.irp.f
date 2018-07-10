@@ -501,7 +501,7 @@ subroutine get_mo_bielec_integrals_ijkl_r3_ij(k,l,sze,out_array,map)
   implicit none
   BEGIN_DOC
   ! Returns multiple integrals <ij|kl> in the MO basis, all
-  ! i(1)j(2) 1/r12 k(1)l(2)
+  ! i(r)j(r) k(r)l(r)
   ! i, j for k,l fixed.
   END_DOC
   integer, intent(in)            :: k,l, sze

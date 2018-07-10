@@ -3,35 +3,42 @@ program pouet
  double precision :: test_bbis,test_bart,test,test_bart2,test_inte,rho2_ana(1)
  read_wf = .true.
  touch read_wf
- call on_top_pair_density_thresh_ec(rho2_ana)
- call test_rho2_selec_k_num_inte(test_bbis)
- call test_rho2_bourrin(test)
- call test_rho2_integral(test_inte)
- print*,' '
- print*,' '
- print*,'***********Error*******'
- print*,'E_cor_tot                        = ',E_cor_tot
- print*,'Bourin Numerical integrals       = ',test
- print*,'Bourin analatical integrals      = ',test_inte
- print*,'Selected k analatical integrals  = ',rho2_ana
- print*,'Selected k numerical integrals   = ',test_bbis
-print*,'*******************'
-print*,'*******************'
-print*,'*******************'
-print*,'*******************'
- print*,'Total          = ',E_cor_tot 
- print*,'couple         = ',E_cor_couple
- print*,'rho2_ana       = ',rho2_ana
- print*,'**'
- print*,'**'
- print*,'**'
- print*,'Err couple/tot = ',dabs(E_cor_tot(1) - E_cor_couple(1))/dabs(E_cor_tot(1))
- print*,'thr couple     = ',thr_couple_2dm
- print*,'**'
- print*,'Err couple/eig = ',dabs(E_cor_couple(1) - rho2_ana(1))/dabs(E_cor_couple(1))
- print*,'thr eigen      = ',thr_eig_2dm
- print*,'**'
- print*,'Err tot/final  = ',dabs(E_cor_tot(1) - rho2_ana(1))/dabs(E_cor_tot(1))
+!call on_top_pair_density_thresh_ec(rho2_ana)
+!call test_rho2_selec_k_num_inte(test_bbis)
+!call test_rho2_bourrin(test)
+!call test_rho2_integral(test_inte)
+!print*,' '
+!print*,' '
+!print*,'***********Error*******'
+!print*,'E_cor_tot                        = ',E_cor_tot
+!print*,'Bourin Numerical integrals       = ',test
+!print*,'Bourin analatical integrals      = ',test_inte
+!print*,'Selected k analatical integrals  = ',rho2_ana
+!print*,'Selected k numerical integrals   = ',test_bbis
+!rint*,'*******************'
+!rint*,'*******************'
+!rint*,'*******************'
+!rint*,'*******************'
+!print*,'Total          = ',E_cor_tot 
+!print*,'couple         = ',E_cor_couple
+!print*,'rho2_ana       = ',rho2_ana
+!print*,'**'
+!print*,'**'
+!print*,'**'
+!print*,'Err couple/tot = ',dabs(E_cor_tot(1) - E_cor_couple(1))/dabs(E_cor_tot(1))
+!print*,'thr couple     = ',thr_couple_2dm
+!print*,'**'
+!print*,'Err couple/eig = ',dabs(E_cor_couple(1) - rho2_ana(1))/dabs(E_cor_couple(1))
+!print*,'thr eigen      = ',thr_eig_2dm
+!print*,'**'
+!print*,'Err tot/final  = ',dabs(E_cor_tot(1) - rho2_ana(1))/dabs(E_cor_tot(1))
+ call routine
+end
+
+subroutine routine
+ implicit none
+ print*,'E_cor_tot',E_cor_tot
+
 end
 
 
