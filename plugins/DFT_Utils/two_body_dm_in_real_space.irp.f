@@ -173,7 +173,7 @@ double precision function on_top_dm_integral_with_mu_correction(mu,istate)
  implicit none
  integer, intent(in) :: istate
  double precision, intent(in) :: mu
- double precision :: two_dm_in_r, pi, r(3)
+ double precision :: two_dm_in_r, pi
  double precision :: weight
  integer :: j,k,l
  pi = 4d0 * datan(1d0)
@@ -182,9 +182,8 @@ double precision function on_top_dm_integral_with_mu_correction(mu,istate)
  do j = 1, nucl_num
   do k = 1, n_points_radial_grid  -1
    do l = 1, n_points_integration_angular 
-    r(:) = grid_points_per_atom(:,l,k,j)
     weight = final_weight_functions_at_grid_points(l,k,j) 
-    on_top_dm_integral_with_mu_correction += two_dm_in_r(r,r,istate) * weight
+    on_top_dm_integral_with_mu_correction += on_top_of_r(l,k,j,istate) * weight
    enddo
   enddo
  enddo

@@ -40,8 +40,8 @@ END_PROVIDER
 !call LD5810(X,Y,Z,W,n_points_integration_angular)
 !call LD2030(X,Y,Z,W,n_points_integration_angular)
 !call LD1202(X,Y,Z,W,n_points_integration_angular)
-!call LD0590(X,Y,Z,W,n_points_integration_angular)
- call LD0266(X,Y,Z,W,n_points_integration_angular)
+ call LD0590(X,Y,Z,W,n_points_integration_angular)
+!call LD0266(X,Y,Z,W,n_points_integration_angular)
 !call LD0074(X,Y,Z,W,n_points_integration_angular)
 !call LD0050(X,Y,Z,W,n_points_integration_angular)
  do i = 1, n_points_integration_angular
