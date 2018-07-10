@@ -57,8 +57,13 @@
      call get_mo_bielec_integrals_ijkl_r3_ij(i,j,mo_tot_num,integrals_ij,mo_integrals_ijkl_r3_map)
      do k = 1, mo_tot_num
       do l = 1, mo_tot_num
-      !E_cor_coupl(icouple,1) -= dabs(two_bod_alpha_beta_mo_transposed(l,k,j,i,istate) * get_mo_bielec_integral_ijkl_r3(l,k,j,i,mo_integrals_ijkl_r3_map))
-      !E_cor_coupl(icouple,2) +=     (two_bod_alpha_beta_mo_transposed(l,k,j,i,istate) * get_mo_bielec_integral_ijkl_r3(l,k,j,i,mo_integrals_ijkl_r3_map))
+!      if(dabs(integrals_ij(l,k) - get_mo_bielec_integral_ijkl_r3(l,k,j,i,mo_integrals_ijkl_r3_map)).gt.1.d-10 .and. dabs(get_mo_bielec_integral_ijkl_r3(l,k,j,i,mo_integrals_ijkl_r3_map)).gt.1.d-10)then
+!      print*,'ahahaha' 
+!      print*,i,j,k,l
+!      print*,integrals_ij(l,k) , get_mo_bielec_integral_ijkl_r3(l,k,j,i,mo_integrals_ijkl_r3_map)
+!      endif
+!      E_cor_coupl(icouple,1) -= dabs(two_bod_alpha_beta_mo_transposed(l,k,j,i,istate) * get_mo_bielec_integral_ijkl_r3(l,k,j,i,mo_integrals_ijkl_r3_map))
+!      E_cor_coupl(icouple,2) +=     (two_bod_alpha_beta_mo_transposed(l,k,j,i,istate) * get_mo_bielec_integral_ijkl_r3(l,k,j,i,mo_integrals_ijkl_r3_map))
        E_cor_coupl(icouple,1) -= dabs(two_bod_alpha_beta_mo_transposed(l,k,j,i,istate) * integrals_ij(l,k))
        E_cor_coupl(icouple,2) +=     (two_bod_alpha_beta_mo_transposed(l,k,j,i,istate) * integrals_ij(l,k))
       enddo
