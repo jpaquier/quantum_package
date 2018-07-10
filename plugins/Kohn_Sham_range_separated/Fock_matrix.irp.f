@@ -196,10 +196,10 @@
 
    !$OMP END DO NOWAIT
    !$OMP CRITICAL
-   ao_bi_elec_integral_alpha += ao_bi_elec_integral_alpha_tmp
+   ao_bi_elec_integral_alpha  =  ao_bi_elec_integral_alpha + ao_bi_elec_integral_alpha_tmp
    !$OMP END CRITICAL
    !$OMP CRITICAL
-   ao_bi_elec_integral_beta  += ao_bi_elec_integral_beta_tmp
+   ao_bi_elec_integral_beta   =  ao_bi_elec_integral_beta  + ao_bi_elec_integral_beta_tmp
    !$OMP END CRITICAL
    deallocate(ao_bi_elec_integral_alpha_tmp,ao_bi_elec_integral_beta_tmp)
    deallocate(keys_erf,values_erf)

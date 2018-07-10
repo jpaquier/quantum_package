@@ -8,8 +8,8 @@ program print_ecmd_energy
  touch disk_access_mo_integrals
  disk_access_ao_integrals = "None"
  touch disk_access_ao_integrals
-!call ecmd_energy_printer
- call pouet 
+ call ecmd_energy_printer
+!call pouet 
 end
 
 
@@ -28,8 +28,8 @@ subroutine ecmd_energy_printer
  write(*, '(A22,X,F32.10)') 'mu_erf              = ',mu_erf          
  print*,  ' MR DFT energy with pure correlation part for the DFT '
  write(*, '(A22,X,F16.10)') 'EC_MD_LDA           = ',Energy_c_md+psi_energy+nuclear_repulsion
- write(*, '(A22,X,F16.10)') 'EC_MD_ON_TOP        = ',Energy_c_md_on_top(1)+psi_energy+nuclear_repulsion
- write(*, '(A22,X,F16.10)') 'EC_MD_ON_TOP_PBE    = ',Energy_c_md_on_top_PBE(1)+psi_energy+nuclear_repulsion
+!write(*, '(A22,X,F16.10)') 'EC_MD_ON_TOP        = ',Energy_c_md_on_top(1)+psi_energy+nuclear_repulsion
+!write(*, '(A22,X,F16.10)') 'EC_MD_ON_TOP_PBE    = ',Energy_c_md_on_top_PBE(1)+psi_energy+nuclear_repulsion
  write(*, '(A22,X,F16.10)') 'EC_MD_ON_TOP_PBE_cor= ',Energy_c_md_on_top_PBE_mu_corrected_UEG(1)+psi_energy+nuclear_repulsion
  print*, ''
  print*, 'Component of the energy ....'
@@ -39,8 +39,8 @@ subroutine ecmd_energy_printer
  write(*, '(A28,X,F16.10)') 'psi_energy_bielec         = ',psi_energy_bielec
  write(*, '(A28,X,F16.10)') 'psi_energy_monoelec       = ',psi_energy_monoelec
  write(*, '(A28,X,F16.10)') 'LDA Multi-det correlation = ',Energy_c_md
- write(*, '(A28,X,F16.10)') 'on_top Multi-det correl   = ',Energy_c_md_on_top(1)
- write(*, '(A28,X,F16.10)') 'on_top_PBE MD correl      = ',Energy_c_md_on_top_PBE(1)
+!write(*, '(A28,X,F16.10)') 'on_top Multi-det correl   = ',Energy_c_md_on_top(1)
+!write(*, '(A28,X,F16.10)') 'on_top_PBE MD correl      = ',Energy_c_md_on_top_PBE(1)
  write(*, '(A28,X,F16.10)') 'on_top_PBE_cor MD correl  = ',Energy_c_md_on_top_PBE_mu_corrected_UEG(1)
 
 end

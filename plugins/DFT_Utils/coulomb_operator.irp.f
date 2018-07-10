@@ -224,9 +224,9 @@ use map_module
   enddo
  enddo
 !!$OMP END PARALLEL DO
- if(dabs(two_body_dm).gt.1.d-16.and.coulomb.gt.0.d0)then
+ if(two_body_dm.gt.1.d-12.and.coulomb.gt.1.d-12)then
   coulomb = coulomb/two_body_dm
- else
+ else 
   coulomb = 1.d-10
  endif
 
