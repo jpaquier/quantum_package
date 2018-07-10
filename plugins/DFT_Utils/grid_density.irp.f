@@ -16,7 +16,7 @@ BEGIN_PROVIDER [integer, n_points_radial_grid]
  BEGIN_DOC
 ! number of radial points per atom for 3d numerical integration, needed for DFT for example
  END_DOC
- n_points_radial_grid = 40
+ n_points_radial_grid = 30 
 END_PROVIDER 
 
 
