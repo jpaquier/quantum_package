@@ -15,80 +15,92 @@
   double precision               :: Q_new(0:max_dim,3),Q_center(3),fact_q,qq
   integer                        :: iorder_p(3), iorder_q(3)
   double precision               :: dirac_ao_bielec_integral_schwartz_accel
-  if (dirac_ao_prim_num(i) * dirac_ao_prim_num(j) * dirac_ao_prim_num(k) * dirac_ao_prim_num(l) > 1024 ) then
-   dirac_ao_bielec_integral = dirac_ao_bielec_integral_schwartz_accel(i,j,k,l)
-   return
-  endif
-  dim1 = n_pt_max_integrals
-  num_i = dirac_ao_nucl(i)
-  num_j = dirac_ao_nucl(j)
-  num_k = dirac_ao_nucl(k)
-  num_l = dirac_ao_nucl(l)
-  dirac_ao_bielec_integral = 0.d0
-  if (num_i /= num_j .or. num_k /= num_l .or. num_j /= num_k)then
-   do p = 1, 3
-    I_power(p) = dirac_ao_power(i,p)
-    J_power(p) = dirac_ao_power(j,p)
-    K_power(p) = dirac_ao_power(k,p)
-    L_power(p) = dirac_ao_power(l,p)
-    I_center(p) = nucl_coord(num_i,p)
-    J_center(p) = nucl_coord(num_j,p)
-    K_center(p) = nucl_coord(num_k,p)
-    L_center(p) = nucl_coord(num_l,p)
-   enddo
-  double precision               :: coef1, coef2, coef3, coef4
-  double precision               :: p_inv,q_inv
-  double precision               :: general_primitive_integral
-  do p = 1, dirac_ao_prim_num(i)  
-   coef1 = dirac_ao_coef_normalized_ordered_transp(p,i)
-   do q = 1, dirac_ao_prim_num(j)
-    coef2 = coef1*dirac_ao_coef_normalized_ordered_transp(q,j)
-    call give_explicit_poly_and_gaussian(P_new,P_center,pp,fact_p,iorder_p,   &
-         dirac_ao_expo_ordered_transp(p,i),dirac_ao_expo_ordered_transp(q,j), &
-         I_power,J_power,I_center,J_center,dim1)
-    p_inv = 1.d0/pp
-    do r = 1, dirac_ao_prim_num(k)
-     coef3 = coef2*dirac_ao_coef_normalized_ordered_transp(r,k)
-     do s = 1, dirac_ao_prim_num(l)
-      coef4 = coef3*dirac_ao_coef_normalized_ordered_transp(s,l)
-      call give_explicit_poly_and_gaussian(Q_new,Q_center,qq,fact_q,iorder_q,   &
-           dirac_ao_expo_ordered_transp(r,k),dirac_ao_expo_ordered_transp(s,l), &
-           K_power,L_power,K_center,L_center,dim1)
-      q_inv = 1.d0/qq
-      integral = general_primitive_integral(dim1,           &
-                 P_new,P_center,fact_p,pp,p_inv,iorder_p,   &
-                 Q_new,Q_center,fact_q,qq,q_inv,iorder_q)
-      dirac_ao_bielec_integral +=+  coef4 * integral
-     enddo ! s
-    enddo  ! r
-   enddo   ! q
-  enddo    ! p
-  else
-   do p = 1, 3
-    I_power(p) = dirac_ao_power(i,p)
-    J_power(p) = dirac_ao_power(j,p)
-    K_power(p) = dirac_ao_power(k,p)
-    L_power(p) = dirac_ao_power(l,p)
-   enddo
-  double  precision              :: ERI
-   do p = 1, dirac_ao_prim_num(i)
+  !First, remove from the start the integrals that have no physical meaning
+  if ((i .le. large_ao_num .and. j .le. large_ao_num .and. k .le. large_ao_num .and. l .gt. large_ao_num) .or.  &
+      (i .le. large_ao_num .and. j .le. large_ao_num .and. k .gt. large_ao_num .and. l .le. large_ao_num) .or.  &
+      (i .le. large_ao_num .and. j .gt. large_ao_num .and. k .le. large_ao_num .and. l .le. large_ao_num) .or.  &
+      (i .gt. large_ao_num .and. j .le. large_ao_num .and. k .le. large_ao_num .and. l .le. large_ao_num) .or.  &
+      (i .le. large_ao_num .and. j .gt. large_ao_num .and. k .gt. large_ao_num .and. l .gt. large_ao_num) .or.  &
+      (i .gt. large_ao_num .and. j .le. large_ao_num .and. k .gt. large_ao_num .and. l .gt. large_ao_num) .or.  &
+      (i .gt. large_ao_num .and. j .gt. large_ao_num .and. k .le. large_ao_num .and. l .gt. large_ao_num) .or.  &
+      (i .gt. large_ao_num .and. j .gt. large_ao_num .and. k .gt. large_ao_num .and. l .le. large_ao_num)) then
+   dirac_ao_bielec_integral = 0.d0
+  else 
+   if (dirac_ao_prim_num(i) * dirac_ao_prim_num(j) * dirac_ao_prim_num(k) * dirac_ao_prim_num(l) > 1024 ) then
+    dirac_ao_bielec_integral = dirac_ao_bielec_integral_schwartz_accel(i,j,k,l)
+    return
+   endif
+   dim1 = n_pt_max_integrals
+   num_i = dirac_ao_nucl(i)
+   num_j = dirac_ao_nucl(j)
+   num_k = dirac_ao_nucl(k)
+   num_l = dirac_ao_nucl(l)
+   dirac_ao_bielec_integral = 0.d0
+   if (num_i /= num_j .or. num_k /= num_l .or. num_j /= num_k)then
+    do p = 1, 3
+     I_power(p) = dirac_ao_power(i,p)
+     J_power(p) = dirac_ao_power(j,p)
+     K_power(p) = dirac_ao_power(k,p)
+     L_power(p) = dirac_ao_power(l,p)
+     I_center(p) = nucl_coord(num_i,p)
+     J_center(p) = nucl_coord(num_j,p)
+     K_center(p) = nucl_coord(num_k,p)
+     L_center(p) = nucl_coord(num_l,p)
+    enddo
+   double precision               :: coef1, coef2, coef3, coef4
+   double precision               :: p_inv,q_inv
+   double precision               :: general_primitive_integral
+   do p = 1, dirac_ao_prim_num(i)  
     coef1 = dirac_ao_coef_normalized_ordered_transp(p,i)
     do q = 1, dirac_ao_prim_num(j)
      coef2 = coef1*dirac_ao_coef_normalized_ordered_transp(q,j)
+     call give_explicit_poly_and_gaussian(P_new,P_center,pp,fact_p,iorder_p,   &
+          dirac_ao_expo_ordered_transp(p,i),dirac_ao_expo_ordered_transp(q,j), &
+          I_power,J_power,I_center,J_center,dim1)
+     p_inv = 1.d0/pp
      do r = 1, dirac_ao_prim_num(k)
       coef3 = coef2*dirac_ao_coef_normalized_ordered_transp(r,k)
       do s = 1, dirac_ao_prim_num(l)
        coef4 = coef3*dirac_ao_coef_normalized_ordered_transp(s,l)
-       integral = ERI(                                                 &
-                  dirac_ao_expo_ordered_transp(p,i),dirac_ao_expo_ordered_transp(q,j),dirac_ao_expo_ordered_transp(r,k),dirac_ao_expo_ordered_transp(s,l),&
-                  I_power(1),J_power(1),K_power(1),L_power(1),         &
-                  I_power(2),J_power(2),K_power(2),L_power(2),         &
-                  I_power(3),J_power(3),K_power(3),L_power(3))
-       dirac_ao_bielec_integral += coef4 * integral
+       call give_explicit_poly_and_gaussian(Q_new,Q_center,qq,fact_q,iorder_q,   &
+            dirac_ao_expo_ordered_transp(r,k),dirac_ao_expo_ordered_transp(s,l), &
+            K_power,L_power,K_center,L_center,dim1)
+       q_inv = 1.d0/qq
+       integral = general_primitive_integral(dim1,           &
+                  P_new,P_center,fact_p,pp,p_inv,iorder_p,   &
+                  Q_new,Q_center,fact_q,qq,q_inv,iorder_q)
+       dirac_ao_bielec_integral +=+  coef4 * integral
       enddo ! s
      enddo  ! r
     enddo   ! q
    enddo    ! p
+   else
+    do p = 1, 3
+     I_power(p) = dirac_ao_power(i,p)
+     J_power(p) = dirac_ao_power(j,p)
+     K_power(p) = dirac_ao_power(k,p)
+     L_power(p) = dirac_ao_power(l,p)
+    enddo
+   double  precision              :: ERI
+    do p = 1, dirac_ao_prim_num(i)
+     coef1 = dirac_ao_coef_normalized_ordered_transp(p,i)
+     do q = 1, dirac_ao_prim_num(j)
+      coef2 = coef1*dirac_ao_coef_normalized_ordered_transp(q,j)
+      do r = 1, dirac_ao_prim_num(k)
+       coef3 = coef2*dirac_ao_coef_normalized_ordered_transp(r,k)
+       do s = 1, dirac_ao_prim_num(l)
+        coef4 = coef3*dirac_ao_coef_normalized_ordered_transp(s,l)
+        integral = ERI(                                                 &
+                   dirac_ao_expo_ordered_transp(p,i),dirac_ao_expo_ordered_transp(q,j),dirac_ao_expo_ordered_transp(r,k),dirac_ao_expo_ordered_transp(s,l),&
+                   I_power(1),J_power(1),K_power(1),L_power(1),         &
+                   I_power(2),J_power(2),K_power(2),L_power(2),         &
+                   I_power(3),J_power(3),K_power(3),L_power(3))
+        dirac_ao_bielec_integral += coef4 * integral
+       enddo ! s
+      enddo  ! r
+     enddo   ! q
+    enddo    ! p
+   endif
   endif
  end
 
