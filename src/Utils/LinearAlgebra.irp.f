@@ -28,7 +28,127 @@ subroutine svd(A,LDA,U,LDU,D,Vt,LDVt,m,n)
       D, U, LDU, Vt, LDVt, work, lwork, info)
   lwork = int(work(1))
   deallocate(work)
+  print*,lwork,m,n
+  allocate(work(lwork))
+  call dgesvd('A','A', m, n, A_tmp, LDA,                             &
+      D, U, LDU, Vt, LDVt, work, lwork, info)
+  deallocate(work,A_tmp)
 
+  if (info /= 0) then
+    print *,  info, ': SVD failed'
+    stop
+  endif
+  
+end
+
+subroutine find_optimal_lwork_svd(A,LDA,U,LDU,D,Vt,LDVt,m,n,lwork_opt)
+  implicit none
+  BEGIN_DOC
+  ! Compute A = U.D.Vt
+  !
+  ! LDx : leftmost dimension of x
+  !
+  ! Dimsneion of A is m x n
+  !
+  END_DOC
+  
+  integer, intent(in)             :: LDA, LDU, LDVt, m, n
+  double precision, intent(in)    :: A(LDA,n)
+  integer, intent(out)            :: lwork_opt
+  
+  double precision, intent(out)   :: U(LDU,m)
+  double precision, intent(out)   :: Vt(LDVt,n)
+  double precision, intent(out)   :: D(min(m,n))
+  double precision,allocatable    :: work(:)
+  integer                         :: info, lwork, i, j, k
+  
+  double precision,allocatable    :: A_tmp(:,:)
+  allocate (A_tmp(LDA,n))
+  A_tmp = A
+  
+  ! Find optimal size for temp arrays
+  allocate(work(1))
+  lwork = -1
+  call dgesvd('A','A', m, n, A_tmp, LDA,                             &
+      D, U, LDU, Vt, LDVt, work, lwork, info)
+  lwork = int(work(1))
+  lwork_opt = lwork
+  deallocate(work)
+  print*,lwork,m,n
+  allocate(work(lwork))
+  call dgesvd('A','A', m, n, A_tmp, LDA,                             &
+      D, U, LDU, Vt, LDVt, work, lwork, info)
+  deallocate(work,A_tmp)
+
+  if (info /= 0) then
+    print *,  info, ': SVD failed'
+    stop
+  endif
+  
+end
+
+subroutine svd_lwork_in(A,LDA,U,LDU,D,Vt,LDVt,m,n,lwork_opt)
+  implicit none
+  BEGIN_DOC
+  ! Compute A = U.D.Vt
+  !
+  ! LDx : leftmost dimension of x
+  !
+  ! Dimsneion of A is m x n
+  !
+  END_DOC
+  
+  integer, intent(in)             :: LDA, LDU, LDVt, m, n
+  double precision, intent(in)    :: A(LDA,n)
+  integer, intent(in)            :: lwork_opt
+  
+  double precision, intent(out)   :: U(LDU,m)
+  double precision, intent(out)   :: Vt(LDVt,n)
+  double precision, intent(out)   :: D(min(m,n))
+  double precision,allocatable    :: work(:)
+  integer                         :: info, i, j, k
+  
+  double precision,allocatable    :: A_tmp(:,:)
+  allocate (A_tmp(LDA,n))
+  A_tmp = A
+  
+  allocate(work(lwork_opt))
+  call dgesvd('A','A', m, n, A_tmp, LDA,                             &
+      D, U, LDU, Vt, LDVt, work, lwork_opt, info)
+  deallocate(work,A_tmp)
+
+  if (info /= 0) then
+    print *,  info, ': SVD failed'
+    stop
+  endif
+  
+end
+
+subroutine svd_guess_lwork(A,LDA,U,LDU,D,Vt,LDVt,m,n)
+  implicit none
+  BEGIN_DOC
+  ! Compute A = U.D.Vt
+  !
+  ! LDx : leftmost dimension of x
+  !
+  ! Dimsneion of A is m x n
+  !
+  END_DOC
+  
+  integer, intent(in)             :: LDA, LDU, LDVt, m, n
+  double precision, intent(in)    :: A(LDA,n)
+  double precision, intent(out)   :: U(LDU,m)
+  double precision,intent(out)    :: Vt(LDVt,n)
+  double precision,intent(out)    :: D(min(m,n))
+  double precision,allocatable    :: work(:)
+  integer                         :: info, lwork, i, j, k
+  
+  double precision,allocatable    :: A_tmp(:,:)
+  allocate (A_tmp(LDA,n))
+  A_tmp = A
+  
+  ! Find optimal size for temp arrays
+  lwork = 3 * m * n
   allocate(work(lwork))
   call dgesvd('A','A', m, n, A_tmp, LDA,                             &
       D, U, LDU, Vt, LDVt, work, lwork, info)

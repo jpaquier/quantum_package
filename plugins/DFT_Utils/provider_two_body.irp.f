@@ -144,12 +144,30 @@ END_PROVIDER
  integer, allocatable :: order_loc(:)
  allocate(order_loc(mo_tot_num*n_couple_max_ec),ec_eigen(mo_tot_num*n_couple_max_ec,2),mat(mo_tot_num,mo_tot_num),U(mo_tot_num,mo_tot_num),Vt(mo_tot_num,mo_tot_num),D(mo_tot_num))
  double precision, allocatable :: integrals_ij(:,:)
+ double precision :: svd1,svd2,svdtot
+ double precision :: average1,average2,averagetot
+ double precision :: sort1,sort2
+ double precision :: cpu1,cpu2
+ integer :: lwork_opt
  allocate(integrals_ij(mo_tot_num,mo_tot_num))
  LDU = mo_tot_num
  LDVt = mo_tot_num
+ svdtot = 0.d0
+ 
+ call cpu_time(cpu1)
  do istate = 1, N_states
   i_eigen=0
   E_cor_loc = 0.d0
+  m = 1
+   i = couple_to_array_reverse(E_cor_couple_sorted_order(m,istate),1)
+   j = couple_to_array_reverse(E_cor_couple_sorted_order(m,istate),2)
+   do k = 1, mo_tot_num
+    do l = 1, mo_tot_num
+     mat(l,k) = two_bod_alpha_beta_mo_transposed(l,k,j,i,istate)
+    enddo
+   enddo  
+   call find_optimal_lwork_svd(mat,mo_tot_num,U,LDU,D,Vt,LDVt,mo_tot_num,mo_tot_num,lwork_opt)
+   print*,"lwork_opt     =",lwork_opt
   do m = 1, n_couple_ec(istate)
    i = couple_to_array_reverse(E_cor_couple_sorted_order(m,istate),1)
    j = couple_to_array_reverse(E_cor_couple_sorted_order(m,istate),2)
@@ -158,33 +176,41 @@ END_PROVIDER
      mat(l,k) = two_bod_alpha_beta_mo_transposed(l,k,j,i,istate)
     enddo
    enddo  
-   call svd(mat,mo_tot_num,U,LDU,D,Vt,LDVt,mo_tot_num,mo_tot_num)
+   call cpu_time(svd1)
+   call svd_lwork_in(mat,mo_tot_num,U,LDU,D,Vt,LDVt,mo_tot_num,mo_tot_num,lwork_opt)
+   call cpu_time(svd2)
+   svdtot += dabs(svd2-svd1)
    ! U(i,k)  = <k|i> where <k| is the kth left eigenvector
    ! Vt(k,i) = <i|k> where |k> is the kth right eigenvector
    ! D(k)    =  kth eigenvalue 
    ! SAve eigenvalues & right and left eigenvetors
+   call cpu_time(average1)
    call get_mo_bielec_integrals_ijkl_r3_ij(i,j,mo_tot_num,integrals_ij,mo_integrals_ijkl_r3_map) 
+   
    do t = 1, mo_tot_num  
     i_eigen += 1
     order_loc(i_eigen) = i_eigen
     k_ec_tmp = 0.d0
-   do q =1, mo_tot_num
-    do r =1, mo_tot_num
-       k_ec_tmp += U(q,t)*Vt(t,r)*integrals_ij(r,q)
+    do q =1, mo_tot_num
+     do r =1, mo_tot_num
+        k_ec_tmp += U(q,t)*Vt(t,r)*integrals_ij(r,q)
+     enddo
+    enddo
+    ec_eigen(i_eigen,1) = -abs(D(t) * k_ec_tmp)
+    ec_eigen(i_eigen,2) = D(t) * k_ec_tmp
+    lambda_k_ec(1,i_eigen,istate)= D(t)
+    lambda_k_ec(2,i_eigen,istate)= m
+    do w=1,mo_tot_num
+     psi_k_couple_l_ec(w,i_eigen,istate)=U(w,t)
+     psi_k_couple_r_ec(w,i_eigen,istate)=Vt(t,w)
     enddo
    enddo
-   ec_eigen(i_eigen,1) = -abs(D(t) * k_ec_tmp)
-   ec_eigen(i_eigen,2) = D(t) * k_ec_tmp
-   lambda_k_ec(1,i_eigen,istate)= D(t)
-   lambda_k_ec(2,i_eigen,istate)= m
-   do w=1,mo_tot_num
-    psi_k_couple_l_ec(w,i_eigen,istate)=U(w,t)
-    psi_k_couple_r_ec(w,i_eigen,istate)=Vt(t,w)
-   enddo
-   
-   enddo
+   call cpu_time(average2)
+   averagetot += dabs(average2-average1)
   enddo
+  call cpu_time(sort1)
   call dsort(ec_eigen(1,1),order_loc,mo_tot_num*n_couple_max_ec)
+  call cpu_time(sort2)
   E_cor_loc = 0.d0
   n_k_tot(istate) = 1
   ec_eigen_sorted(n_k_tot(istate),istate)= ec_eigen(order_loc(n_k_tot(istate)),2)
@@ -209,6 +235,15 @@ END_PROVIDER
   print*,'Percentage of selected couples = ',per_c
   print*,'Percentage of selected of k    = ',per_k
   print*,'*******************************'
+  print*,'time for all SVD                       = ',svdtot
+  print*,'time for all averages                  = ',averagetot
+  print*,'time for sorting                       = ',sort2-sort1
+ call cpu_time(cpu2)
+  print*,'total time to provide all eigenvectors = ',cpu2-cpu1
+  svdtot = svdtot/dble(n_couple_ec(istate))
+  averagetot = averagetot/dble(n_couple_ec(istate))
+  print*,'Average time per SVD                   = ',svdtot
+  print*,'Average time per average               = ',averagetot
  enddo
  n_k_tot_max = maxval(n_k_tot)
 deallocate(order_loc,mat,D,U,Vt,ec_eigen,integrals_ij)
