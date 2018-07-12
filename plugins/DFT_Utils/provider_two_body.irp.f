@@ -58,14 +58,15 @@
       do k = 1, mo_tot_num
        jcouple = couple_to_array(l,k)
        if(icouple == jcouple)then
-        E_cor_coupl(icouple,1) -= 1.d0 * dabs(two_bod_alpha_beta_mo_transposed(k,l,j,i,istate) * integrals_ij(l,k))
+        E_cor_coupl(icouple,1) += 1.d0 *     (two_bod_alpha_beta_mo_transposed(k,l,j,i,istate) * integrals_ij(l,k))
         E_cor_coupl(icouple,2) += 1.d0 * two_bod_alpha_beta_mo_transposed(k,l,j,i,istate) * integrals_ij(l,k)
        else if (icouple.gt.jcouple)then
-        E_cor_coupl(icouple,1) -= 2.d0 * dabs(two_bod_alpha_beta_mo_transposed(k,l,j,i,istate) * integrals_ij(l,k))
+        E_cor_coupl(icouple,1) += 2.d0 *     (two_bod_alpha_beta_mo_transposed(k,l,j,i,istate) * integrals_ij(l,k))
         E_cor_coupl(icouple,2) += 2.d0 * two_bod_alpha_beta_mo_transposed(k,l,j,i,istate) * integrals_ij(l,k)
        endif
       enddo
      enddo
+     E_cor_coupl(icouple,1) = -dabs(E_cor_coupl(icouple,1))
      E_cor_tot(istate) += E_cor_coupl(icouple,2)
     enddo
    enddo
@@ -80,6 +81,9 @@
  deallocate(integrals_ij)
  call cpu_time(cpu1)
  print*,'Time to provide E_cor_tot   = ',cpu1-cpu0
+ do i = 1, mo_tot_num * mo_tot_num
+  write(33,*),i,E_cor_couple_sorted(i,1) 
+ enddo
  END_PROVIDER
 
 
@@ -102,12 +106,16 @@
   do while (dabs(E_cor_loc - E_cor_tot(istate))/dabs(E_cor_tot(istate)) .gt. thr_couple_2dm  )
    m += 1
    n_couple_ec(istate) += 1
+   print*,E_cor_couple_sorted(m,istate),E_cor_loc,dabs(E_cor_loc - E_cor_tot(istate))/dabs(E_cor_tot(istate))
    E_cor_loc += E_cor_couple_sorted(m,istate)
   enddo
   E_cor_couple(istate) = E_cor_loc
  enddo
  n_couple_max_ec = maxval(n_couple_ec)
  !print*,'n_ couple max    = ',n_couple_ec(1)
+ integer :: i
+  
+  write(34,*),n_couple_ec(1)
 END_PROVIDER 
 
 
