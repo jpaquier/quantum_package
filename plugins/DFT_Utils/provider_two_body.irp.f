@@ -35,7 +35,7 @@
  BEGIN_DOC
  ! Compute the correlation energy by electron couple and rank the results by descending order in E_cor_couple_sorted
  END_DOC
- integer :: i,j,k,l,istate,t,icouple
+ integer :: i,j,k,l,istate,t,icouple,jcouple
  integer, allocatable :: order_loc(:)
  double precision :: get_mo_bielec_integral_ijkl_r3
  double precision, allocatable :: E_cor_coupl(:,:)
@@ -47,20 +47,26 @@
  E_cor_tot = 0.d0
  cpu0 = dabs(two_bod_alpha_beta_mo_transposed(1,1,1,1,1) * get_mo_bielec_integral_ijkl_r3(1,1,1,1,mo_integrals_ijkl_r3_map))
  call cpu_time(cpu0)
- do istate = 1, N_states
+  do istate = 1, N_states
    do i = 1, mo_tot_num ! loop over the first electron 
     do j = 1, mo_tot_num ! loop over the second electron 
-     ! get matrix 
      icouple = couple_to_array(j,i)
      order_loc(icouple)= icouple
      E_cor_coupl(icouple,:) = 0.d0
      call get_mo_bielec_integrals_ijkl_r3_ij(i,j,mo_tot_num,integrals_ij,mo_integrals_ijkl_r3_map)
-     do k = 1, mo_tot_num
-      do l = 1, mo_tot_num
-       E_cor_coupl(icouple,1) -= dabs(two_bod_alpha_beta_mo_transposed(l,k,j,i,istate) * integrals_ij(l,k))
-       E_cor_coupl(icouple,2) +=     (two_bod_alpha_beta_mo_transposed(l,k,j,i,istate) * integrals_ij(l,k))
+     do l = 1, mo_tot_num
+      do k = 1, mo_tot_num
+       jcouple = couple_to_array(l,k)
+       if(icouple == jcouple)then
+        E_cor_coupl(icouple,1) += 1.d0 *     (two_bod_alpha_beta_mo_transposed(k,l,j,i,istate) * integrals_ij(l,k))
+        E_cor_coupl(icouple,2) += 1.d0 * two_bod_alpha_beta_mo_transposed(k,l,j,i,istate) * integrals_ij(l,k)
+       else if (icouple.gt.jcouple)then
+        E_cor_coupl(icouple,1) += 2.d0 *     (two_bod_alpha_beta_mo_transposed(k,l,j,i,istate) * integrals_ij(l,k))
+        E_cor_coupl(icouple,2) += 2.d0 * two_bod_alpha_beta_mo_transposed(k,l,j,i,istate) * integrals_ij(l,k)
+       endif
       enddo
      enddo
+     E_cor_coupl(icouple,1) = -dabs(E_cor_coupl(icouple,1))
      E_cor_tot(istate) += E_cor_coupl(icouple,2)
     enddo
    enddo
@@ -70,10 +76,14 @@
     E_cor_couple_sorted_order(t,istate)= order_loc(t)
    enddo
   enddo
+  print*,'E_cor_tot     = ',E_cor_tot
  deallocate(E_cor_coupl,order_loc)
  deallocate(integrals_ij)
  call cpu_time(cpu1)
  print*,'Time to provide E_cor_tot   = ',cpu1-cpu0
+ do i = 1, mo_tot_num * mo_tot_num
+  write(33,*),i,E_cor_couple_sorted(i,1) 
+ enddo
  END_PROVIDER
 
 
@@ -96,12 +106,16 @@
   do while (dabs(E_cor_loc - E_cor_tot(istate))/dabs(E_cor_tot(istate)) .gt. thr_couple_2dm  )
    m += 1
    n_couple_ec(istate) += 1
+   print*,E_cor_couple_sorted(m,istate),E_cor_loc,dabs(E_cor_loc - E_cor_tot(istate))/dabs(E_cor_tot(istate))
    E_cor_loc += E_cor_couple_sorted(m,istate)
   enddo
   E_cor_couple(istate) = E_cor_loc
  enddo
  n_couple_max_ec = maxval(n_couple_ec)
  !print*,'n_ couple max    = ',n_couple_ec(1)
+ integer :: i
+  
+  write(34,*),n_couple_ec(1)
 END_PROVIDER 
 
 
@@ -149,6 +163,7 @@ END_PROVIDER
  double precision :: sort1,sort2
  double precision :: cpu1,cpu2
  integer :: lwork_opt
+ integer :: icouple,jcouple
  allocate(integrals_ij(mo_tot_num,mo_tot_num))
  LDU = mo_tot_num
  LDVt = mo_tot_num
@@ -159,21 +174,29 @@ END_PROVIDER
   i_eigen=0
   E_cor_loc = 0.d0
   m = 1
-   i = couple_to_array_reverse(E_cor_couple_sorted_order(m,istate),1)
-   j = couple_to_array_reverse(E_cor_couple_sorted_order(m,istate),2)
-   do k = 1, mo_tot_num
-    do l = 1, mo_tot_num
-     mat(l,k) = two_bod_alpha_beta_mo_transposed(l,k,j,i,istate)
-    enddo
-   enddo  
-   call find_optimal_lwork_svd(mat,mo_tot_num,U,LDU,D,Vt,LDVt,mo_tot_num,mo_tot_num,lwork_opt)
-   print*,"lwork_opt     =",lwork_opt
+  i = couple_to_array_reverse(E_cor_couple_sorted_order(m,istate),1)
+  j = couple_to_array_reverse(E_cor_couple_sorted_order(m,istate),2)
+  do k = 1, mo_tot_num
+   do l = 1, mo_tot_num
+    mat(l,k) = two_bod_alpha_beta_mo_transposed(l,k,j,i,istate)
+   enddo
+  enddo  
+  call find_optimal_lwork_svd(mat,mo_tot_num,U,LDU,D,Vt,LDVt,mo_tot_num,mo_tot_num,lwork_opt)
+  print*,"lwork_opt     =",lwork_opt
   do m = 1, n_couple_ec(istate)
    i = couple_to_array_reverse(E_cor_couple_sorted_order(m,istate),1)
    j = couple_to_array_reverse(E_cor_couple_sorted_order(m,istate),2)
+   icouple = couple_to_array(j,i)
    do k = 1, mo_tot_num
     do l = 1, mo_tot_num
-     mat(l,k) = two_bod_alpha_beta_mo_transposed(l,k,j,i,istate)
+     jcouple = couple_to_array(k,l)
+     if(icouple == jcouple)then
+      mat(l,k) = two_bod_alpha_beta_mo_transposed(l,k,j,i,istate)
+     else if (icouple.gt.jcouple)then
+      mat(l,k) = 2.d0 * two_bod_alpha_beta_mo_transposed(l,k,j,i,istate)
+     else 
+      mat(l,k) = 0.d0
+     endif
     enddo
    enddo  
    call cpu_time(svd1)

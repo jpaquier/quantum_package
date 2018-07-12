@@ -1,8 +1,14 @@
 program pouet
  implicit none
- double precision :: test_bbis,test_bart,test,test_bart2,test_inte,rho2_ana(1)
  read_wf = .true.
  touch read_wf
+ call routine
+
+end
+
+subroutine routine 
+ implicit none
+ double precision :: test_bbis,test_bart,test,test_bart2,test_inte,rho2_ana(1)
  call on_top_pair_density_thresh_ec(rho2_ana)
  call test_rho2_selec_k_num_inte(test_bbis)
  call test_rho2_bourrin(test)
@@ -33,12 +39,6 @@ program pouet
  print*,'**'
  print*,'Err tot/final  = ',dabs(E_cor_tot(1) - rho2_ana(1))/dabs(E_cor_tot(1))
 ! call routine
-end
-
-subroutine routine
- implicit none
- print*,'E_cor_tot',E_cor_tot
-
 end
 
 
