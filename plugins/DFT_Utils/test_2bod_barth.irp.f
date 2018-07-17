@@ -3,18 +3,24 @@ program pouet
  integer :: nktotto
  read_wf = .true.
  touch read_wf
+ !provide k_sorted_order_couple 
+
  call routine
 ! call number_of_k(nktotto)
 end
 
 subroutine routine 
  implicit none
- double precision :: test_bbis,test_bart,test_ter,test,test_bart2,test_inte,rho2_ana(1)
+ double precision :: test_bbis,test_bart,test_ter,test_ter2,test,test_bart2,test_inte,rho2_ana(1)
  call on_top_pair_density_thresh_ec(rho2_ana)
  call test_rho2_selec_k_num_inte(test_bbis)
  call test_rho2_integral(test_inte)
+
  call test_rho2_bourrin(test)
+
  call test_rho2_selec_k_num_inte_sorted(test_ter)
+ call test_rho2_selec_k_num_inte_sortedi2(test_ter2)
+
  print*,' '
  print*,' '
  print*,'***********Error*******'
@@ -24,6 +30,7 @@ subroutine routine
  print*,'Selected k analatical integrals             = ',rho2_ana
  print*,'Selected k numerical integrals              = ',test_bbis
  print*,'Selected k sorted new numerical integrals   = ',test_ter 
+ print*,'Selected k sorted new numerical integrals 2 = ',test_ter2
  print*,'*******************'
  print*,'*******************'
  print*,'*******************'
@@ -209,6 +216,38 @@ subroutine test_rho2_selec_k_num_inte_sorted(test_ter)
  call wall_time(wall_2)
  print*,'wall time sorted k num integral = ',wall_2 - wall_1
 end
+
+
+subroutine test_rho2_selec_k_num_inte_sortedi2(test_ter2)
+ implicit none
+ double precision, intent(out) :: test_ter2
+ integer :: j,k,l,istate
+ double precision :: r(3),rho2
+ double precision :: two_dm_in_r_k_sorted_couple 
+ double precision :: wall_1, wall_2
+
+ do istate = 1, N_states
+ test_ter2  = 0.d0
+ r(1) = 0.d0
+ r(2) = 0.d0
+ r(3) = 0.d0
+ call wall_time(wall_1)
+  do j = 1, nucl_num
+   do k = 1, n_points_radial_grid  -1
+    do l = 1, n_points_integration_angular
+     r(1) = grid_points_per_atom(1,l,k,j)
+     r(2) = grid_points_per_atom(2,l,k,j)
+     r(3) = grid_points_per_atom(3,l,k,j)
+     rho2 = two_dm_in_r_k_sorted_couple(r,r,istate)
+     test_ter2 += rho2 * final_weight_functions_at_grid_points(l,k,j)
+    enddo
+   enddo
+  enddo
+ enddo
+ call wall_time(wall_2)
+ print*,'wall time sorted k num integral 2 = ',wall_2 - wall_1
+end
+
 
 
 
