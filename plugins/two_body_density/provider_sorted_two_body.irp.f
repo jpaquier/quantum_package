@@ -208,7 +208,7 @@ END_PROVIDER
   n_k_selected(istate) = 0
   n_k_selected(istate) +=1
   E_cor_loc += vecteuur(order_loc(n_k_selected(istate)),2)
-  do while (dabs(E_cor_loc - E_cor_couple(istate))/dabs(E_cor_couple(istate)) .ge. 0.00000001 )
+  do while (dabs(E_cor_loc - E_cor_couple(istate))/dabs(E_cor_couple(istate)) .ge. thr_eig_2dm )
    n_k_selected(istate) +=1
    E_cor_loc += vecteuur(order_loc(n_k_selected(istate)),2)
   enddo
@@ -292,19 +292,11 @@ END_PROVIDER
  k_list=0
  n_kl=0
  do istate = 1, N_states
-  do k = 1, n_k_selected_max    
-   if (k .le. n_k_selected(istate))then
-    order_loc(k)=k
-    k_list(k)=k_sorted_order(k,istate,1)
-   else 
-    order_loc(k)=k
-    k_list(k)=mo_tot_num*mo_tot_num+1
-   endif
-  enddo
-  !do k = 1, n_k_selected(istate)
-  !print*,k_sorted(order_loc(k),istate),k_sorted_order(order_loc(k),istate,1),k_sorted_order(order_loc(k),istate,1)
-  !enddo
-  call sort(k_list,order_loc,n_k_selected_max) 
+  do k = 1, n_k_selected(istate)
+   order_loc(k)=k
+   k_list(k)=k_sorted_order(k,istate,1)
+  enddo 
+  call sort(k_list,order_loc,n_k_selected(istate)) 
   icouple_prev=0 
   icouple_loc=0
   do k = 1, n_k_selected(istate)
@@ -317,12 +309,10 @@ END_PROVIDER
     n_kl_id(n_kl(icouple_loc,istate),icouple_loc,istate)= jcouple
     gamma_ijkl(n_kl(icouple_loc,istate),icouple_loc,istate) = k_sorted(order_loc(k),istate)
     icouple_prev= icouple
-  ! print*,gamma_ijkl(n_kl(icouple_loc,istate),icouple_loc,istate),id_coupleij(icouple_loc,istate),n_kl_id(n_kl(icouple_loc,istate),icouple_loc,istate)
    else if (icouple .eq. icouple_prev)then
     n_kl(icouple_loc,istate) += 1
     n_kl_id(n_kl(icouple_loc,istate),icouple_loc,istate)= jcouple
     gamma_ijkl(n_kl(icouple_loc,istate),icouple_loc,istate) = k_sorted(order_loc(k),istate) 
-   ! print*,gamma_ijkl(n_kl(icouple_loc,istate),icouple_loc,istate),id_coupleij(icouple_loc,istate),n_kl_id(n_kl(icouple_loc,istate),icouple_loc,istate)
    endif
   enddo
  enddo

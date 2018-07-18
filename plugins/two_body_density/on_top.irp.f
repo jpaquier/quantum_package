@@ -73,3 +73,29 @@ double precision function on_top_in_r_sorted(r,istate)
  deallocate(mos_array_r)
 end
 
+double precision function two_dm_in_r(r1,r2,istate)
+ implicit none
+ integer, intent(in) :: istate
+ double precision, intent(in) :: r1(3),r2(3)
+ double precision, allocatable :: mos_array_r1(:), mos_array_r2(:)
+ integer :: i,j,k,l
+ allocate(mos_array_r2(mo_tot_num), mos_array_r1(mo_tot_num))
+ call give_all_mos_at_r(r1,mos_array_r1) 
+ call give_all_mos_at_r(r2,mos_array_r2) 
+ two_dm_in_r = 0.d0
+ do i = 1, mo_tot_num
+  do j = 1, mo_tot_num
+   do k = 1, mo_tot_num
+    do l = 1, mo_tot_num
+     if(dabs(two_bod_alpha_beta_mo_transposed(l,k,j,i,istate)).gt.1.d-10)then
+    !  print*,l,k,j,i
+     ! print*,two_bod_alpha_beta_mo_transposed(l,k,j,i,istate)
+     endif
+     two_dm_in_r += two_bod_alpha_beta_mo_transposed(l,k,j,i,istate) * mos_array_r1(i) * mos_array_r1(l) * mos_array_r2(k) * mos_array_r2(j)
+    enddo
+   enddo
+  enddo
+ enddo
+ two_dm_in_r = max(two_dm_in_r,1.d-15)
+end
+

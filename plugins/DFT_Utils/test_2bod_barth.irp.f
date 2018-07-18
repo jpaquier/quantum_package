@@ -5,8 +5,31 @@ program pouet
  touch read_wf
  !provide k_sorted_order_couple 
 
- call routine
+ call routine2
 ! call number_of_k(nktotto)
+end
+
+
+subroutine routine2
+double precision :: test_ter2,test,test_ter,wall_1,wall_2,wall_3,wall_4
+
+ call wall_time(wall_1)
+ call test_rho2_bourrin(test)
+ call wall_time(wall_2)
+
+ !call test_rho2_selec_k_num_inte_sorted(test_ter)
+
+ call wall_time(wall_3)
+ call test_rho2_selec_k_num_inte_sortedi2(test_ter2)
+ call wall_time(wall_4)
+ print*,'*******************************'
+ print*,'Bourin Numerical integrals                  = ',test 
+ print*,'Selected k sorted new numerical integrals 2 = ',test_ter2
+ print*,'Err sorted/bourrin  = ',dabs(test_ter2 - test)/dabs(test)
+ print*,'  '
+ print*,'  '
+ print*,'wall time tot bourrin  = ',wall_2 - wall_1
+ print*,'wall time tot Sorted   = ',wall_4 - wall_3
 end
 
 subroutine routine 
@@ -15,12 +38,16 @@ subroutine routine
  call on_top_pair_density_thresh_ec(rho2_ana)
  call test_rho2_selec_k_num_inte(test_bbis)
  call test_rho2_integral(test_inte)
-
+ double precision :: wall_1,wall_2,wall_3,wall_4
+ call wall_time(wall_1)
  call test_rho2_bourrin(test)
+ call wall_time(wall_2) 
 
  call test_rho2_selec_k_num_inte_sorted(test_ter)
+ 
+ call wall_time(wall_3)
  call test_rho2_selec_k_num_inte_sortedi2(test_ter2)
-
+ call wall_time(wall_4)
  print*,' '
  print*,' '
  print*,'***********Error*******'
@@ -29,7 +56,7 @@ subroutine routine
  print*,'Bourin analatical integrals                 = ',test_inte
  print*,'Selected k analatical integrals             = ',rho2_ana
  print*,'Selected k numerical integrals              = ',test_bbis
- print*,'Selected k sorted new numerical integrals   = ',test_ter 
+ !print*,'Selected k sorted new numerical integrals   = ',test_ter 
  print*,'Selected k sorted new numerical integrals 2 = ',test_ter2
  print*,'*******************'
  print*,'*******************'
@@ -52,9 +79,11 @@ subroutine routine
  print*,'**'
  print*,'********Sorted matrix elemets'
  print*,'**'
- print*,'Err sorted/bourrin  = ',dabs(test_ter - test)/dabs(test)
-
-
+ print*,'Err sorted/bourrin  = ',dabs(test_ter2 - test)/dabs(test)
+ print*,'  '
+ print*,'  '
+ print*,'wall time tot bourrin  = ',wall_2 - wall_1
+ print*,'wall time tot Sorted   = ',wall_4 - wall_3
 
 
 
