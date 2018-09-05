@@ -281,6 +281,7 @@ END_PROVIDER
  END_PROVIDER
 
  BEGIN_PROVIDER [integer,id_coupleij,(n_couple_max_ec,N_states)]
+&BEGIN_PROVIDER [integer,n_coupleij_bis,(N_states)]
 &BEGIN_PROVIDER [integer,n_kl,(n_couple_max_ec,N_states)]
 &BEGIN_PROVIDER [integer,n_kl_id,(n_k_ij_max,n_couple_max_ec,N_states)]
 &BEGIN_PROVIDER [double precision, gamma_ijkl,(n_k_ij_max,n_couple_max_ec,N_states)]
@@ -299,24 +300,30 @@ END_PROVIDER
   call sort(k_list,order_loc,n_k_selected(istate)) 
   icouple_prev=0 
   icouple_loc=0
+  n_coupleij_bis(istate)=0
   do k = 1, n_k_selected(istate)
    icouple = k_sorted_order(order_loc(k),istate,1)
    jcouple = k_sorted_order(order_loc(k),istate,2)
+   !icouple = k_sorted_order(k,istate,1)
+   !jcouple = k_sorted_order(k,istate,2)
+  ! print*,icouple,jcouple
    if(icouple .ne. icouple_prev)then
     icouple_loc += 1   
     id_coupleij(icouple_loc,istate) = icouple
+    n_coupleij_bis(istate) +=1
     n_kl(icouple_loc,istate) = 1
     n_kl_id(n_kl(icouple_loc,istate),icouple_loc,istate)= jcouple
+   ! gamma_ijkl(n_kl(icouple_loc,istate),icouple_loc,istate) = k_sorted(k,istate)
     gamma_ijkl(n_kl(icouple_loc,istate),icouple_loc,istate) = k_sorted(order_loc(k),istate)
     icouple_prev= icouple
    else if (icouple .eq. icouple_prev)then
     n_kl(icouple_loc,istate) += 1
     n_kl_id(n_kl(icouple_loc,istate),icouple_loc,istate)= jcouple
-    gamma_ijkl(n_kl(icouple_loc,istate),icouple_loc,istate) = k_sorted(order_loc(k),istate) 
+   ! gamma_ijkl(n_kl(icouple_loc,istate),icouple_loc,istate) = k_sorted(k,istate) 
+    gamma_ijkl(n_kl(icouple_loc,istate),icouple_loc,istate) = k_sorted(order_loc(k),istate)
    endif
   enddo
  enddo
-
  END_PROVIDER
 
 
@@ -562,9 +569,11 @@ double precision function two_dm_in_r_k_sorted_couple(r1,r2,istate)
  call give_all_mos_at_r(r1,mos_array_r1)
  call give_all_mos_at_r(r2,mos_array_r2)
  two_dm_in_r_k_sorted_couple = 0.d0
- tmp = 0.d0
- do m = 1, n_couple_ec(istate)
+ tmp = 0.d0 
+ do m = 1, n_coupleij_bis(istate)
+  !print*,m
   icouple = id_coupleij(m,istate)
+  !print*,icouple,n_couple_ec(istate)
   i = couple_to_array_reverse(icouple,1)
   j = couple_to_array_reverse(icouple,2) 
   tmp=0.d0

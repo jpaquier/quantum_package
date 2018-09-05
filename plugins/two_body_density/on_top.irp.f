@@ -57,7 +57,7 @@ double precision function on_top_in_r_sorted(r,istate)
  call give_all_mos_at_r(r,mos_array_r)
  on_top_in_r_sorted = 0.d0
  tmp = 0.d0
- do m = 1, n_couple_ec(istate)
+ do m = 1, n_coupleij_bis(istate)
   icouple = id_coupleij(m,istate)
   i = couple_to_array_reverse(icouple,1)
   j = couple_to_array_reverse(icouple,2) 

@@ -28,7 +28,7 @@
  integer :: i,j,k,l,istate
  double precision :: cpu_0,cpu_1
  two_bod_alpha_beta_mo_transposed= 0.d0
- print*,'providing two_bod_alpha_beta ...'
+ print*,'providing two_bod_alpha_beta transposed ...'
  call cpu_time(cpu_0)
  do istate = 1, N_states 
   do i = 1, mo_tot_num
@@ -42,7 +42,7 @@
   enddo
  enddo
  call cpu_time(cpu_1)
- print*,'two_bod_alpha_beta provided in',dabs(cpu_1-cpu_0)
+ print*,'two_bod_alpha_beta transposed provided in',dabs(cpu_1-cpu_0)
 
  END_PROVIDER 
 

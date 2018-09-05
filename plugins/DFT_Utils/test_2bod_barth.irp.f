@@ -4,7 +4,6 @@ program pouet
  read_wf = .true.
  touch read_wf
  !provide k_sorted_order_couple 
-
  call routine2
 ! call number_of_k(nktotto)
 end
