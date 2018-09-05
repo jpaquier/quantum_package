@@ -47,7 +47,7 @@ subroutine test_rho2
  r(1) = 0.d0
  r(2) = 0.d0
  r(3) = 0.d0
- call  on_top_pair_density_in_real_space(r,rho2)
+ call  two_dm_in_r(r,r,rho2)
  print*,'rho2(0) = ',rho2
 !call  on_top_pair_density_in_real_space_approx(r,rho2_ap)
 ! print*,'rho2(0) = ',rho2_ap
@@ -61,7 +61,7 @@ subroutine test_rho2
      r(1) = grid_points_per_atom(1,l,k,j)
      r(2) = grid_points_per_atom(2,l,k,j)
      r(3) = grid_points_per_atom(3,l,k,j)
-     call  on_top_pair_density_in_real_space(r,rho2)
+     call  two_dm_in_r(r,rho2)
      !call  on_top_pair_density_in_real_space_approx(r,rho2_ap)
      print*,'rho2(r) normal = ',rho2
  !    print*,'rho2(r) barth =  ',rho2_ap

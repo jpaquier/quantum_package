@@ -106,7 +106,7 @@
   do while (dabs(E_cor_loc - E_cor_tot(istate))/dabs(E_cor_tot(istate)) .gt. thr_couple_2dm  )
    m += 1
    n_couple_ec(istate) += 1
-   print*,E_cor_couple_sorted(m,istate),E_cor_loc,dabs(E_cor_loc - E_cor_tot(istate))/dabs(E_cor_tot(istate))
+ !  print*,E_cor_couple_sorted(m,istate),E_cor_loc,dabs(E_cor_loc - E_cor_tot(istate))/dabs(E_cor_tot(istate))
    E_cor_loc += E_cor_couple_sorted(m,istate)
   enddo
   E_cor_couple(istate) = E_cor_loc
@@ -117,6 +117,7 @@
   
   write(34,*),n_couple_ec(1)
 END_PROVIDER 
+
 
 
  BEGIN_PROVIDER [integer,identity_eig,(2,mo_tot_num*n_couple_max_ec,N_states)]
@@ -137,6 +138,193 @@ END_PROVIDER
 
 END_PROVIDER
 
+
+ BEGIN_PROVIDER [integer,id_k,(2,mo_tot_num*mo_tot_num*n_couple_max_ec,N_states)]
+&BEGIN_PROVIDER [integer,id_k_reverse,(mo_tot_num*mo_tot_num,mo_tot_num*mo_tot_num,N_states)]
+ implicit none
+ integer :: i,j,m,istate,i_eigen,icouple,jcouple,k,l
+ i_eigen = 0
+ do istate = 1, N_states
+  do m = 1, n_couple_ec(istate)
+  i = couple_to_array_reverse(E_cor_couple_sorted_order(m,istate),1)
+  j = couple_to_array_reverse(E_cor_couple_sorted_order(m,istate),2)
+  icouple = couple_to_array(j,i)
+  do k = 1, mo_tot_num
+    do l = 1, mo_tot_num
+     jcouple = couple_to_array(l,k)
+     i_eigen += 1
+     id_k(1,i_eigen,istate) = icouple 
+     id_k(2,i_eigen,istate) = jcouple
+     id_k_reverse(jcouple,icouple,istate) = i_eigen
+    enddo
+   enddo
+  enddo
+ enddo
+
+ END_PROVIDER
+
+
+ BEGIN_PROVIDER [integer,n_k_selected,(N_states)]
+&BEGIN_PROVIDER [integer,n_k_selected_max]
+ implicit none
+ double precision :: tmp,tmp2,E_cor_loc
+ integer :: icouple,jcouple,l,i,j,k,t,m,s,istate,nbre,icoupleloc
+ double precision :: wall_1, wall_2
+ double precision, allocatable :: integrals_ij(:,:),vecteuur(:,:)
+ integer, allocatable :: order_loc(:)
+ allocate(integrals_ij(mo_tot_num,mo_tot_num),order_loc(mo_tot_num*mo_tot_num*n_couple_max_ec),vecteuur(mo_tot_num*mo_tot_num*n_couple_max_ec,3))
+ do istate = 1, N_states
+  vecteuur = 0.d0
+  icoupleloc = 0
+  order_loc = 0
+  do m = 1, n_couple_ec(istate)
+   i = couple_to_array_reverse(E_cor_couple_sorted_order(m,istate),1)
+   j = couple_to_array_reverse(E_cor_couple_sorted_order(m,istate),2)
+   tmp= 0.d0
+   call get_mo_bielec_integrals_ijkl_r3_ij(i,j,mo_tot_num,integrals_ij,mo_integrals_ijkl_r3_map)
+   icouple = couple_to_array(j,i)
+   do k = 1, mo_tot_num
+    do l = 1, mo_tot_num
+     icoupleloc += 1
+     order_loc(icoupleloc) = icoupleloc
+     jcouple = couple_to_array(l,k)
+     if(icouple == jcouple)then 
+      vecteuur(icoupleloc,1) = -dabs(two_bod_alpha_beta_mo_transposed(k,l,j,i,istate) *integrals_ij(l,k))
+      vecteuur(icoupleloc,2) = two_bod_alpha_beta_mo_transposed(k,l,j,i,istate) *integrals_ij(l,k)
+      vecteuur(icoupleloc,3) = two_bod_alpha_beta_mo_transposed(k,l,j,i,istate)!*integrals_ij(l,k) 
+     else if (icouple.gt.jcouple)then
+      vecteuur(icoupleloc,1) = -2.d0 * dabs(two_bod_alpha_beta_mo_transposed(k,l,j,i,istate) *integrals_ij(l,k))
+      vecteuur(icoupleloc,2) = 2.d0 *two_bod_alpha_beta_mo_transposed(k,l,j,i,istate) * integrals_ij(l,k) 
+      vecteuur(icoupleloc,3) = 2.d0*two_bod_alpha_beta_mo_transposed(k,l,j,i,istate)! * integrals_ij(l,k)
+     else
+      vecteuur(icoupleloc,1) = 0.d0
+      vecteuur(icoupleloc,2) = 0.d0
+     endif
+    enddo
+   enddo
+  enddo
+  call dsort(vecteuur(1,1),order_loc,mo_tot_num*mo_tot_num*n_couple_max_ec)
+  E_cor_loc =0 
+  n_k_selected(istate) = 0
+  n_k_selected(istate) +=1
+  E_cor_loc += vecteuur(order_loc(n_k_selected(istate)),2)
+  do while (dabs(E_cor_loc - E_cor_couple(istate))/dabs(E_cor_couple(istate)) .ge. thr_eig_2dm )
+   n_k_selected(istate) +=1
+   E_cor_loc += vecteuur(order_loc(n_k_selected(istate)),2)
+  enddo
+ enddo
+ n_k_selected_max = maxval(n_k_selected)
+ print*,'  '
+ print*,'\\\\\\\\\\\\\\\\\\\\\\'
+ print*,'Max number of selected tensor elements = ',n_k_selected_max
+ print*,'Total number of tensor elements        = ',mo_tot_num**4   
+ print*,'\\\\\\\\\\\\\\\\\\\\\\'
+ print*,'  '
+ deallocate(integrals_ij)
+ END_PROVIDER
+
+
+ BEGIN_PROVIDER [double precision,k_sorted,(n_k_selected_max,N_states)]
+&BEGIN_PROVIDER [integer,k_sorted_order,(n_k_selected_max,N_states,2)]
+&BEGIN_PROVIDER [integer,n_k_ij_max]
+ implicit none
+ double precision :: tmp,tmp2
+ integer :: icouple,jcouple,l,i,j,k,t,m,s,istate,nbre,icoupleloc
+ double precision :: wall_1, wall_2
+ double precision, allocatable :: integrals_ij(:,:),vecteuur(:,:)
+ integer, allocatable :: n_k_ij(:),compteur(:),order_loc(:)
+ allocate(n_k_ij(N_states),compteur(mo_tot_num*mo_tot_num),integrals_ij(mo_tot_num,mo_tot_num),order_loc(mo_tot_num*mo_tot_num*n_couple_max_ec),vecteuur(mo_tot_num*mo_tot_num*n_couple_max_ec,3))
+ n_k_ij=0
+ compteur=0
+ do istate = 1, N_states
+  vecteuur = 0.d0
+  icoupleloc = 0
+  order_loc = 0
+  do m = 1, n_couple_ec(istate)
+   i = couple_to_array_reverse(E_cor_couple_sorted_order(m,istate),1)
+   j = couple_to_array_reverse(E_cor_couple_sorted_order(m,istate),2)
+   tmp= 0.d0
+   call get_mo_bielec_integrals_ijkl_r3_ij(i,j,mo_tot_num,integrals_ij,mo_integrals_ijkl_r3_map)
+   icouple = couple_to_array(j,i)
+   do k = 1, mo_tot_num
+    do l = 1, mo_tot_num
+     icoupleloc += 1
+     order_loc(icoupleloc) = icoupleloc
+     jcouple = couple_to_array(l,k)
+     if(icouple == jcouple)then 
+      vecteuur(icoupleloc,1) = -dabs(two_bod_alpha_beta_mo_transposed(k,l,j,i,istate) *integrals_ij(l,k))
+      vecteuur(icoupleloc,2) = two_bod_alpha_beta_mo_transposed(k,l,j,i,istate) *integrals_ij(l,k)
+      vecteuur(icoupleloc,3) = two_bod_alpha_beta_mo_transposed(k,l,j,i,istate)!*integrals_ij(l,k) 
+     else if (icouple.gt.jcouple)then
+      vecteuur(icoupleloc,1) = -2.d0 * dabs(two_bod_alpha_beta_mo_transposed(k,l,j,i,istate) *integrals_ij(l,k))
+      vecteuur(icoupleloc,2) = 2.d0 *two_bod_alpha_beta_mo_transposed(k,l,j,i,istate) * integrals_ij(l,k) 
+      vecteuur(icoupleloc,3) = 2.d0*two_bod_alpha_beta_mo_transposed(k,l,j,i,istate)! * integrals_ij(l,k)
+     else
+      vecteuur(icoupleloc,1) = 0.d0
+      vecteuur(icoupleloc,2) = 0.d0
+     endif
+    enddo
+   enddo
+  enddo
+  call dsort(vecteuur(1,1),order_loc,mo_tot_num*mo_tot_num*n_couple_max_ec)
+  compteur(istate)=0
+  do k = 1,n_k_selected(istate) 
+   k_sorted(k,istate)=vecteuur(order_loc(k),3)
+   k_sorted_order(k,istate,1)=id_k(1,order_loc(k),istate)
+   k_sorted_order(k,istate,2)=id_k(2,order_loc(k),istate)
+   compteur(id_k(1,order_loc(k),istate)) += 1
+  enddo
+ n_k_ij(istate) = maxval(compteur) 
+ enddo
+ n_k_ij_max=maxval(n_k_ij)
+ deallocate(integrals_ij)
+ END_PROVIDER
+
+ BEGIN_PROVIDER [integer,id_coupleij,(n_couple_max_ec,N_states)]
+&BEGIN_PROVIDER [integer,n_coupleij_bis,(N_states)]
+&BEGIN_PROVIDER [integer,n_kl,(n_couple_max_ec,N_states)]
+&BEGIN_PROVIDER [integer,n_kl_id,(n_k_ij_max,n_couple_max_ec,N_states)]
+&BEGIN_PROVIDER [double precision, gamma_ijkl,(n_k_ij_max,n_couple_max_ec,N_states)]
+ implicit none
+ integer:: icouple_prev,istate,k,l,icouple_loc,icouple,jcouple
+ integer, allocatable :: k_list(:),order_loc(:)
+ allocate(k_list(n_k_selected_max),order_loc(n_k_selected_max))
+ order_loc=0
+ k_list=0
+ n_kl=0
+ do istate = 1, N_states
+  do k = 1, n_k_selected(istate)
+   order_loc(k)=k
+   k_list(k)=k_sorted_order(k,istate,1)
+  enddo 
+  call sort(k_list,order_loc,n_k_selected(istate)) 
+  icouple_prev=0 
+  icouple_loc=0
+  n_coupleij_bis(istate)=0
+  do k = 1, n_k_selected(istate)
+   icouple = k_sorted_order(order_loc(k),istate,1)
+   jcouple = k_sorted_order(order_loc(k),istate,2)
+   !icouple = k_sorted_order(k,istate,1)
+   !jcouple = k_sorted_order(k,istate,2)
+  ! print*,icouple,jcouple
+   if(icouple .ne. icouple_prev)then
+    icouple_loc += 1   
+    id_coupleij(icouple_loc,istate) = icouple
+    n_coupleij_bis(istate) +=1
+    n_kl(icouple_loc,istate) = 1
+    n_kl_id(n_kl(icouple_loc,istate),icouple_loc,istate)= jcouple
+   ! gamma_ijkl(n_kl(icouple_loc,istate),icouple_loc,istate) = k_sorted(k,istate)
+    gamma_ijkl(n_kl(icouple_loc,istate),icouple_loc,istate) = k_sorted(order_loc(k),istate)
+    icouple_prev= icouple
+   else if (icouple .eq. icouple_prev)then
+    n_kl(icouple_loc,istate) += 1
+    n_kl_id(n_kl(icouple_loc,istate),icouple_loc,istate)= jcouple
+   ! gamma_ijkl(n_kl(icouple_loc,istate),icouple_loc,istate) = k_sorted(k,istate) 
+    gamma_ijkl(n_kl(icouple_loc,istate),icouple_loc,istate) = k_sorted(order_loc(k),istate)
+   endif
+  enddo
+ enddo
+ END_PROVIDER
 
 
 
@@ -336,5 +524,67 @@ double precision function two_dm_in_r_k_selected(r1,r2,istate)
    two_dm_in_r_k_selected += lambda_k_ec(1,ec_eigen_sorted_order(k,istate),istate)*psi_temp_l*psi_temp_r*mos_array_r1(i)*mos_array_r1(j)
   enddo
 deallocate(mos_array_r2,mos_array_r1)
+end
+
+double precision function two_dm_in_r_k_selected_sorted(r1,r2,istate)
+ implicit none
+ BEGIN_DOC
+ !Compute the on top locally  
+ END_DOC
+ integer, intent(in) :: istate
+ double precision, intent(in) :: r1(3),r2(3)
+ double precision, allocatable :: mos_array_r1(:), mos_array_r2(:)
+ integer :: i,j,k,l,m,t,icouple,jcouple
+ double precision :: tmp,psi_temp_l,psi_temp_r
+ double precision :: u_dot_v
+ allocate(mos_array_r2(mo_tot_num), mos_array_r1(mo_tot_num))
+ call give_all_mos_at_r(r1,mos_array_r1)
+ call give_all_mos_at_r(r2,mos_array_r2)
+ two_dm_in_r_k_selected_sorted = 0.d0
+  tmp = 0.d0
+  do t = 1, n_k_selected(istate)
+   icouple = k_sorted_order(t,istate,1) 
+   jcouple = k_sorted_order(t,istate,2) 
+   i = couple_to_array_reverse(icouple,1)
+   j = couple_to_array_reverse(icouple,2)
+   k = couple_to_array_reverse(jcouple,1)
+   l = couple_to_array_reverse(jcouple,2)
+   two_dm_in_r_k_selected_sorted += k_sorted(t,istate)*mos_array_r2(k)*mos_array_r2(l)*mos_array_r1(i)*mos_array_r1(j)
+  enddo
+deallocate(mos_array_r2,mos_array_r1)
+end
+
+double precision function two_dm_in_r_k_sorted_couple(r1,r2,istate)
+ implicit none
+ BEGIN_DOC
+ !Compute the on top locally  
+ END_DOC
+ integer, intent(in) :: istate
+ double precision, intent(in) :: r1(3),r2(3)
+ double precision, allocatable :: mos_array_r1(:), mos_array_r2(:)
+ integer :: i,j,k,l,m,t,icouple,n,jcouple
+ double precision :: tmp,psi_temp_l,psi_temp_r
+ double precision :: u_dot_v
+ allocate(mos_array_r2(mo_tot_num), mos_array_r1(mo_tot_num))
+ call give_all_mos_at_r(r1,mos_array_r1)
+ call give_all_mos_at_r(r2,mos_array_r2)
+ two_dm_in_r_k_sorted_couple = 0.d0
+ tmp = 0.d0 
+ do m = 1, n_coupleij_bis(istate)
+  !print*,m
+  icouple = id_coupleij(m,istate)
+  !print*,icouple,n_couple_ec(istate)
+  i = couple_to_array_reverse(icouple,1)
+  j = couple_to_array_reverse(icouple,2) 
+  tmp=0.d0
+  do n = 1, n_kl(m,istate)
+   jcouple = n_kl_id(n,m,istate)
+   k = couple_to_array_reverse(jcouple,1)
+   l = couple_to_array_reverse(jcouple,2)
+   tmp += gamma_ijkl(n,m,istate) * mos_array_r1(k)*mos_array_r2(l)
+  enddo
+  two_dm_in_r_k_sorted_couple += tmp *mos_array_r1(i) * mos_array_r2(j)
+ enddo
+ deallocate(mos_array_r2,mos_array_r1)
 end
 
