@@ -2,6 +2,8 @@ program pouet
  implicit none
  read_wf = .true.
  touch read_wf
+ disk_access_ao_one_integrals = "None"
+ touch disk_access_only_ao_one_integrals
  disk_access_mo_one_integrals = "None"
  touch disk_access_only_mo_one_integrals
  disk_access_mo_integrals = "None"
