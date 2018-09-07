@@ -101,6 +101,8 @@ subroutine print_variational_energy_dft_mu_of_r
    !write(*, '(A28,X,F16.10)') 'DFT mu(r) correlation       = ',Energy_c_md_mu_of_r_PBE_on_top
    write(*, '(A28,X,F16.10)') 'DFT mu(r) correlation corr  = ',Energy_c_md_mu_of_r_PBE_on_top_corrected
    print*, ''
+   write(*, '(A28,X,F16.10)') 'DFT mu(r) cor not md corr  = ',Energy_c_mu_of_r_PBE_on_top_corrected   
+
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

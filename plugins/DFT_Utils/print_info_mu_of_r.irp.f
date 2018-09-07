@@ -1,9 +1,16 @@
 program test
  read_wf = .True.
  touch read_wf
-call test_subou
+!call test_subou
+call test_potepote
 end
 
+subroutine test_potepote
+ implicit none
+ !double precision :: Energy_c_md_mu_of_r_PBE_on_top_corrected,Energy_c_mu_of_r_PBE_on_top_corrected
+ print*,'Ec,md on top corr =  ', Energy_c_md_mu_of_r_PBE_on_top_corrected
+ print*,'Ec, on top corr =  ', Energy_c_mu_of_r_PBE_on_top_corrected
+end
 
 
 subroutine test_subou
