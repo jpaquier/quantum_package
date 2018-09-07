@@ -391,12 +391,13 @@ END_PROVIDER
 
  BEGIN_PROVIDER [double precision, Energy_c_md_mu_of_r_PBE_on_top, (N_states)]
 &BEGIN_PROVIDER [double precision, Energy_c_md_mu_of_r_PBE_on_top_corrected, (N_states)]
+&BEGIN_PROVIDER [double precision, Energy_c_mu_of_r_PBE_on_top_corrected, (N_states)]
  implicit none
  BEGIN_DOC
  ! Corelation energy for the multi determinent short range LDA. PRB 73 155111 2006
  END_DOC
  integer :: j,k,l,istate 
- double precision, allocatable :: aos_array(:), r(:), rho_a(:),rho_b(:),ec(:),ec_corrected(:)
+ double precision, allocatable :: aos_array(:), r(:), rho_a(:),rho_b(:),ec(:),ec_corrected(:),eps_c_on_top_PBE(:)
  logical :: dospin
  double precision :: r2(3),dr2(3), local_potential,r12,dx2,mu,mu_coulomb,coulomb,two_body_dm
  double precision :: threshold
@@ -405,9 +406,9 @@ END_PROVIDER
  threshold = 1.d-07
  Energy_c_md_mu_of_r_PBE_on_top = 0.d0
  Energy_c_md_mu_of_r_PBE_on_top_corrected = 0.d0
-
+ Energy_c_mu_of_r_PBE_on_top_corrected = 0.d0
  double precision :: cpu0,cpu1
- allocate(aos_array(ao_num),r(3), rho_a(N_states), rho_b(N_states), ec(N_states),ec_corrected(N_states))
+ allocate(aos_array(ao_num),r(3), rho_a(N_states), rho_b(N_states), ec(N_states),ec_corrected(N_states),eps_c_on_top_PBE(N_states))
 
  print*,'Providing Energy_c_md_mu_of_r_PBE_on_top ...'
  call cpu_time(cpu0)
@@ -426,8 +427,10 @@ END_PROVIDER
       mu = mu_of_r(l,k,j) 
       on_top = on_top_of_r(l,k,j,istate) 
       call give_epsilon_c_md_on_top_PBE_and_corrected(mu,r,on_top,ec(istate),ec_corrected(istate))
+      call give_epsilon_c_on_top_PBE_mu_corrected(mu,r,eps_c_on_top_PBE(istate))
       Energy_c_md_mu_of_r_PBE_on_top(istate) += final_weight_functions_at_grid_points(l,k,j) * ec(istate)
       Energy_c_md_mu_of_r_PBE_on_top_corrected(istate) += final_weight_functions_at_grid_points(l,k,j) * ec_corrected(istate)
+      Energy_c_mu_of_r_PBE_on_top_corrected(istate) += final_weight_functions_at_grid_points(l,k,j) * eps_c_on_top_PBE(istate)
      enddo
 
     enddo

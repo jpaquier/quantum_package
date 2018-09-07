@@ -106,7 +106,7 @@ double precision function g0_UEG_mu(mu,rho_a,rho_b)
  D = -0.01277d0
  E = 0.001859d0
  rs = (3d0 / 4d0*pi*rho)**(1d0/3d0)
- kf = (alpha*rs)**-1d0
+ kf = (alpha*rs)**(-1d0)
  zeta = mu / kf
  x = -d2*rs*h(zeta)/ahd 
  g0_UEG_mu = (exp(x)/2d0) * (1d0- B*(h(zeta)/ahd)*rs + C*((h(zeta)**2d0)/(ahd**2d0))*(rs**2d0) + D*((h(zeta)**3d0)/(ahd**3d0))*(rs**3d0) + E*((h(zeta)**4d0)/(ahd**4d0))*(rs**4d0) )
@@ -260,7 +260,7 @@ subroutine give_epsilon_c_md_on_top_PBE_and_corrected(mu,r,on_top,eps_c_md_on_to
    beta(istate) = (3d0*e_PBE(istate))/( (-2d0+sqrt(2d0))*sqrt(2d0*pi)*2d0*on_top_tmp(istate) )
    eps_c_md_on_top_PBE(istate)=e_PBE(istate)/(1d0+beta(istate)*mu**3d0)
    on_top_corrected(istate) = on_top_tmp(istate) / ( 1d0 + 2d0/(dsqrt(pi)*mu) )
-   beta(istate) = (3d0*e_PBE(istate))/( (-2d0+sqrt(2d0))*sqrt(2d0*pi)*2d0*on_top_corrected(istate) )
+   beta(istate) = (3d0*e_PBE(istate))/( (sqrt(2d0)-2d0)*sqrt(2d0*pi)*2d0*on_top_corrected(istate) )
    eps_c_md_on_top_PBE_corrected(istate)=e_PBE(istate)/(1d0+beta(istate)*mu**3d0)
   enddo
  end
@@ -480,4 +480,106 @@ subroutine give_epsilon_c_md_on_top_PBE_mu_corrected_UEG(mu,r,eps_c_md_on_top_PB
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+!!!!BONJOUR BONJOUR!!!!!!!!
 
+subroutine give_epsilon_c_on_top_PBE_mu_corrected(mu,r,eps_c_on_top_PBE)
+  implicit none
+  double precision, intent(in)  :: mu , r(3)
+  double precision, intent(out) :: eps_c_on_top_PBE(N_states)
+  double precision :: two_dm_in_r, pi,e_pbe(N_states),beta2(N_states),on_top_two_dm_in_r_mu_corrected,on_top_two_dm_in_r_c_mu_corrected,on_top_hf
+  double precision :: aos_array(ao_num), grad_aos_array(3,ao_num)
+  double precision :: rho_a(N_states),rho_b(N_states)
+  double precision :: grad_rho_a(3,N_states),grad_rho_b(3,N_states)
+  double precision :: grad_rho_a_2(N_states),grad_rho_b_2(N_states),grad_rho_a_b(N_states)
+  double precision ::rhoc,rhoo,sigmacc,sigmaco,sigmaoo,vrhoc,vrhoo,vsigmacc,vsigmaco,vsigmaoo
+  double precision :: beta, alpha, on_top_corrected
+  integer :: m, istate
+  pi = 4d0 * datan(1d0)
+
+  eps_c_on_top_PBE = 0d0
+  call density_and_grad_alpha_beta_and_all_aos_and_grad_aos_at_r(r,rho_a,rho_b,grad_rho_a, grad_rho_b, aos_array, grad_aos_array)
+  grad_rho_a_2 = 0.d0
+  grad_rho_b_2 = 0.d0
+  grad_rho_a_b = 0.d0
+  do istate = 1, N_states
+   do m = 1, 3
+    grad_rho_a_2(istate) += grad_rho_a(m,istate)*grad_rho_a(m,istate)
+    grad_rho_b_2(istate) += grad_rho_b(m,istate)*grad_rho_b(m,istate)
+    grad_rho_a_b(istate) += grad_rho_a(m,istate)*grad_rho_b(m,istate)
+   enddo
+  enddo
+  do istate = 1, N_states
+   ! convertion from (alpha,beta) formalism to (closed, open) formalism
+   call rho_ab_to_rho_oc(rho_a(istate),rho_b(istate),rhoo,rhoc)
+   call grad_rho_ab_to_grad_rho_oc(grad_rho_a_2(istate),grad_rho_b_2(istate),grad_rho_a_b(istate),sigmaoo,sigmacc,sigmaco)
+   call Ec_sr_PBE(0d0,rhoc,rhoo,sigmacc,sigmaco,sigmaoo,e_PBE(istate))
+   on_top_corrected = on_top_two_dm_in_r_mu_corrected(mu,r,istate)
+   on_top_two_dm_in_r_c_mu_corrected = on_top_corrected - on_top_hf(r,istate)
+  !if(on_top_two_dm_in_r_c_mu_corrected .gt.0.d0)then
+  ! print*,'r'
+  ! print*,r
+  ! print*,on_top_two_dm_in_r_c_mu_corrected,on_top_corrected,on_top_hf(r,istate) 
+  !endif
+
+!   beta2(istate) = (6d0*e_PBE(istate)*(mu**3d0))/((4d0*sqrt(2d0*pi)*2d0*on_top_two_dm_in_r_mu_corrected(mu,r,istate))+3d0*pi*mu*on_top_two_dm_in_r_c_mu_corrected)
+!  eps_c_on_top_PBE(istate)=e_PBE(istate)/(1d0+beta2(istate))
+
+!  eps_c_on_top_PBE(istate)=e_PBE(istate)*(1d0/(2d0+(2d0*mu**2*e_PBE(istate)/(pi*on_top_two_dm_in_r_c_mu_corrected*2)))+1d0/(2d0+(3d0*mu**3*e_PBE(istate)/(2d0*sqrt(2d0*pi)*on_top_corrected*2))))
+   beta  =  (3d0*e_PBE(istate))/( 2.d0 * dsqrt(2.d0 * pi) * 2.d0 * on_top_corrected)
+   alpha =  (2d0*e_PBE(istate))/( pi * 2.d0 * on_top_two_dm_in_r_c_mu_corrected ) 
+   eps_c_on_top_PBE(istate)=e_PBE(istate)/(1d0+beta*mu**3d0) + e_PBE(istate)/(1d0+alpha*mu**2d0)
+!  eps_c_on_top_PBE(istate)= e_PBE(istate)/(1d0+alpha*mu**2d0)
+!  eps_c_on_top_PBE(istate)= e_PBE(istate)/(1d0+beta*mu**3d0)
+!  eps_c_on_top_PBE(istate)= e_PBE(istate)/(2d0+beta*mu**3d0)  + e_PBE(istate)/(2d0+alpha*mu**2d0)
+!  eps_c_on_top_PBE(istate)=e_PBE(istate)*(1d0/(2d0+(3d0*mu**3*e_PBE(istate)/(2d0*sqrt(2d0*pi)*on_top_corrected*2))))
+  enddo
+ end
+
+
+double precision function on_top_hf(r,istate)
+ implicit none
+ integer, intent(in) :: istate
+ double precision, intent(in) :: r(3)
+ double precision :: mos_array_r(mo_tot_num),rho_alpha,rho_beta
+ integer :: i,j
+ call give_all_mos_at_r(r,mos_array_r)
+ rho_alpha = 0.d0
+ rho_beta = 0.d0
+ on_top_hf = 0.d0
+
+ do i = 1, elec_alpha_num
+  rho_alpha += mos_array_r(i) **2 
+ enddo
+
+ do i = 1, elec_beta_num
+  rho_beta += mos_array_r(i) **2 
+ enddo
+
+ on_top_hf= rho_beta*rho_alpha
+end
+
+ BEGIN_PROVIDER [double precision, Energy_c_on_top_PBE_mu_corrected,(N_states)]
+ BEGIN_DOC
+  ! Ecrire doc 
+ END_DOC
+ implicit none
+ double precision :: eps_c_on_top_PBE(N_states)
+ double precision :: two_dm_in_r, r(3)
+ double precision :: weight,mu
+ integer :: j,k,l,istate
+ mu = mu_erf
+ Energy_c_on_top_PBE_mu_corrected = 0d0
+
+ do j = 1, nucl_num
+  do k = 1, n_points_radial_grid  -1
+   do l = 1, n_points_integration_angular
+    r(:) = grid_points_per_atom(:,l,k,j)
+    weight = final_weight_functions_at_grid_points(l,k,j)
+    call give_epsilon_c_on_top_PBE_mu_corrected(mu,r,eps_c_on_top_PBE)
+    do istate = 1, N_states
+     Energy_c_on_top_PBE_mu_corrected(istate) += eps_c_on_top_PBE(istate) * weight
+    enddo
+   enddo
+  enddo
+ enddo
+ END_PROVIDER
