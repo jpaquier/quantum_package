@@ -449,7 +449,7 @@ subroutine get_mo_bielec_integrals(j,k,l,sze,out_val,map)
     call bielec_integrals_index(i,j,k,l,hash(i))
   enddo
   
-  if (key_kind == 8) then
+  if (integral_kind == 8) then
     call map_get_many(map, hash, out_val, sze)
   else
     call map_get_many(map, hash, tmp_val, sze)
@@ -536,7 +536,7 @@ subroutine get_mo_bielec_integrals_coulomb_ii(k,l,sze,out_val,map)
     call bielec_integrals_index(k,i,l,i,hash(i))
   enddo
   
-  if (key_kind == 8) then
+  if (integral_kind == 8) then
     call map_get_many(map, hash, out_val, sze)
   else
     call map_get_many(map, hash, tmp_val, sze)
@@ -569,7 +569,7 @@ subroutine get_mo_bielec_integrals_exch_ii(k,l,sze,out_val,map)
     call bielec_integrals_index(k,i,i,l,hash(i))
   enddo
   
-  if (key_kind == 8) then
+  if (integral_kind == 8) then
     call map_get_many(map, hash, out_val, sze)
   else
     call map_get_many(map, hash, tmp_val, sze)
