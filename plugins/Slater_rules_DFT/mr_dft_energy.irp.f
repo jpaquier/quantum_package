@@ -83,14 +83,6 @@ subroutine print_variational_energy_dft_mu_of_r
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  else if(md_correlation_functional.EQ."basis_set_on_top_PBE")then
-   !double precision :: wall_1,wall_2
-   !call wall_time(wall_1)
-   !print*,Energy_c_md_mu_of_r_PBE_on_top_corrected
-   !call wall_time(wall_2)
-   
-   !write(*, '(A28,X,F16.10)') 'TIME To PROVIDE ECMD_MU_Cor = ',wall_2-wall_1
-   
-   !write(*, '(A28,X,F16.10)') 'TOTAL ENERGY CORR           = ',psi_energy+Energy_c_md_mu_of_r_PBE_on_top+nuclear_repulsion
    write(*, '(A28,X,F16.10)') 'TOTAL ENERGY CORR CORRECTED =',psi_energy+Energy_c_md_mu_of_r_PBE_on_top_corrected+nuclear_repulsion
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    print*, ''
