@@ -1,3 +1,9 @@
+BEGIN_PROVIDER [integer, n_points_grid_per_atom]
+ implicit none
+ n_points_grid_per_atom = n_points_integration_angular * n_points_radial_grid
+
+END_PROVIDER 
+
 BEGIN_PROVIDER [integer, n_points_integration_angular]
  implicit none
  BEGIN_DOC
@@ -16,7 +22,7 @@ BEGIN_PROVIDER [integer, n_points_radial_grid]
  BEGIN_DOC
 ! number of radial points per atom for 3d numerical integration, needed for DFT for example
  END_DOC
- n_points_radial_grid = 30 
+ n_points_radial_grid = 60
 END_PROVIDER 
 
 

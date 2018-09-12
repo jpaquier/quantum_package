@@ -1,51 +1,71 @@
+double precision function NAI_pol_mult_erf_ao(i_ao,j_ao,mu_in,C_center)
+ implicit none
+ BEGIN_DOC
+ ! computes the following integral : 
+ ! int[-infty;+infty] dr AO_i_ao (r) AO_j_ao(r) erf(mu_in * |r-C_center|)/|r-C_center|
+ END_DOC
+ integer, intent(in) :: i_ao,j_ao
+ double precision, intent(in) :: mu_in, C_center(3)
+ integer :: i,j,num_A,num_B, power_A(3), power_B(3), n_pt_in
+ double precision :: A_center(3), B_center(3),integral, alpha,beta, NAI_pol_mult_erf
+ num_A = ao_nucl(i_ao)
+ power_A(1:3)= ao_power(i_ao,1:3)
+ A_center(1:3) = nucl_coord(num_A,1:3)
+ num_B = ao_nucl(j_ao)
+ power_B(1:3)= ao_power(j_ao,1:3)
+ B_center(1:3) = nucl_coord(num_B,1:3)
+ n_pt_in = n_pt_max_integrals
+ NAI_pol_mult_erf_ao = 0.d0
+ do i = 1, ao_prim_num(i_ao)
+  alpha = ao_expo_ordered_transp(i,i_ao)
+  do j = 1, ao_prim_num(j_ao)
+   beta = ao_expo_ordered_transp(j,j_ao)
+   integral =  NAI_pol_mult_erf(A_center,B_center,power_A,power_B,alpha,beta,C_center,n_pt_in,mu_in)
+   NAI_pol_mult_erf_ao += integral * ao_coef_normalized_ordered_transp(j,j_ao)*ao_coef_normalized_ordered_transp(i,i_ao)
+  enddo
+ enddo
 
-double precision function NAI_pol_mult_erf(A_center,B_center,power_A,power_B,alpha,beta,C_center,mu_in,n_pt_in)
-! function that calculate the folowing integral :
+
+
+end
+
+
+
+double precision function NAI_pol_mult_erf(A_center,B_center,power_A,power_B,alpha,beta,C_center,n_pt_in,mu_in)
+! function that computes the folowing integral :
 !       int{dr} of (x-A_x)^ax (x-B_X)^bx exp(-alpha (x-A_x)^2 - beta (x-B_x)^2 ) erf(mu_in*(r-R_c))/(r-R_c)
 
 implicit none
 integer, intent(in) :: n_pt_in
 double precision,intent(in) :: C_center(3),A_center(3),B_center(3),alpha,beta,mu_in
-integer :: power_A(3),power_B(3)
+integer, intent(in) :: power_A(3),power_B(3)
 integer :: i,j,k,l,n_pt
 double precision :: P_center(3)
+
 double precision :: d(0:n_pt_in),pouet,coeff,dist,const,pouet_2,factor
 double precision :: I_n_special_exact,integrate_bourrin,I_n_bibi
 double precision ::  V_e_n,const_factor,dist_integral,tmp
-double precision :: accu,rint,p_inv_normal,p_normal,rho_normal
+double precision :: accu,rint,p_inv,p,rho
 integer :: n_pt_out,lmax
 include 'Utils/constants.include.F'
- !if ( (A_center(1)/=B_center(1)).or. &
- !     (A_center(2)/=B_center(2)).or. &
- !     (A_center(3)/=B_center(3)).or. &
- !     (A_center(1)/=C_center(1)).or. &
- !     (A_center(2)/=C_center(2)).or. &
- !     (A_center(3)/=C_center(3))) then
- !     continue
- !else
- !      NAI_pol_mult_erf = V_e_n(power_A(1),power_A(2),power_A(3),power_B(1),power_B(2),power_B(3),alpha,beta)
- !     return
- !endif
-! print*,'alpha,beta'
-! print*,alpha,beta
-  p_normal = alpha + beta
-  p_inv_normal = 1.d0/p_normal
-  rho_normal = alpha * beta * p_inv_normal
+  p = alpha + beta
+  p_inv = 1.d0/p
+  rho = alpha * beta * p_inv
 
   dist = 0.d0
   dist_integral = 0.d0
   do i = 1, 3
-   P_center(i) = (alpha * A_center(i) + beta * B_center(i)) * p_inv_normal
+   P_center(i) = (alpha * A_center(i) + beta * B_center(i)) * p_inv
    dist += (A_center(i) - B_center(i))*(A_center(i) - B_center(i))
    dist_integral += (P_center(i) - C_center(i))*(P_center(i) - C_center(i))
   enddo
-  const_factor = dist*rho_normal 
+  const_factor = dist*rho 
   if(const_factor > 80.d0)then
    NAI_pol_mult_erf = 0.d0
    return
   endif
   factor = dexp(-const_factor)
-  coeff = dtwo_pi * factor * p_inv_normal * mu_in/dsqrt(p_normal+ mu_in * mu_in)
+  coeff = dtwo_pi * factor * p_inv * mu_in/dsqrt(p+ mu_in * mu_in)
   lmax = 20
   
  !  print*, "b"
@@ -53,14 +73,14 @@ include 'Utils/constants.include.F'
     d(i) = 0.d0
   enddo
   n_pt =  2 * ( (power_A(1) + power_B(1)) +(power_A(2) + power_B(2)) +(power_A(3) + power_B(3)) )
-  const = p_normal * dist_integral /(p_normal+ mu_in**2)  * mu_in **2
+  const = p * dist_integral /(p+ mu_in**2)  * mu_in **2
   if (n_pt == 0) then
    pouet = rint(0,const)
    NAI_pol_mult_erf = coeff * pouet
    return
   endif
 
-  call give_polynom_mult_center_mono_elec_erf(A_center,B_center,alpha,beta,power_A,power_B,C_center,mu_in,n_pt_in,d,n_pt_out)
+  call give_polynom_mult_center_mono_elec_erf(A_center,B_center,alpha,beta,power_A,power_B,C_center,n_pt_in,d,n_pt_out,mu_in)
   
  
   if(n_pt_out<0)then
@@ -69,7 +89,6 @@ include 'Utils/constants.include.F'
   endif
   accu = 0.d0
 
-! 1/r1 standard attraction integral
 ! sum of integrals of type : int {t,[0,1]}  exp-(rho.(P-Q)^2 * t^2) * t^i
   do i =0 ,n_pt_out,2
    accu +=  d(i) * rint(i/2,const)
@@ -80,15 +99,17 @@ end
 
 
 
-subroutine give_polynom_mult_center_mono_elec_erf(A_center,B_center,alpha,beta,power_A,power_B,C_center,mu_in,n_pt_in,d,n_pt_out)
+
+
+subroutine give_polynom_mult_center_mono_elec_erf(A_center,B_center,alpha,beta,power_A,power_B,C_center,n_pt_in,d,n_pt_out,mu_in)
 !!!! subroutine that returns the explicit polynom in term of the "t" variable of the following polynomw ::
 !!!!         I_x1(a_x, d_x,p,q) * I_x1(a_y, d_y,p,q) * I_x1(a_z, d_z,p,q)
 !!!! it is for the nuclear electron atraction
 implicit none
 integer, intent(in) :: n_pt_in
 integer,intent(out) :: n_pt_out
-double precision, intent(in) :: A_center(3), B_center(3),C_center(3),mu_in
-double precision, intent(in) :: alpha,beta
+double precision, intent(in) :: A_center(3), B_center(3),C_center(3)
+double precision, intent(in) :: alpha,beta,mu_in
 integer, intent(in) :: power_A(3), power_B(3)
 integer :: a_x,b_x,a_y,b_y,a_z,b_z
 double precision :: d(0:n_pt_in)
@@ -97,32 +118,29 @@ double precision :: d2(0:n_pt_in)
 double precision :: d3(0:n_pt_in)
 double precision :: accu,  pq_inv, p10_1, p10_2, p01_1, p01_2
 double precision :: p,P_center(3),rho,p_inv,p_inv_2
-!print*,'n_pt_in = ',n_pt_in
  accu = 0.d0
 !COMPTEUR irp_rdtsc1 = irp_rdtsc()
  ASSERT (n_pt_in > 1)
-!p = (alpha + beta)/(mu_in * mu_in) * (alpha * beta/(alpha + beta) + mu_in * mu_in)
- p = alpha + beta
+ p = alpha+beta
  p_inv = 1.d0/p
  p_inv_2 = 0.5d0/p
  do i =1, 3
   P_center(i) = (alpha * A_center(i) + beta * B_center(i)) * p_inv
  enddo
-! print*,'passed the P_center'
  
  double precision :: R1x(0:2), B01(0:2), R1xp(0:2),R2x(0:2)
  R1x(0)  = (P_center(1) - A_center(1))
  R1x(1)  = 0.d0
- R1x(2)  = -(P_center(1) - C_center(1)) * mu_in * mu_in
- ! R1x = (P_x - A_x) - (P_x - C_x) t^2
+ R1x(2)  = -(P_center(1) - C_center(1))* mu_in**2 / (p+mu_in*mu_in)
+ ! R1x = (P_x - A_x) - (P_x - C_x) ( t * mu/sqrt(p+mu^2) )^2
  R1xp(0)  = (P_center(1) - B_center(1))
  R1xp(1)  = 0.d0
- R1xp(2)  =-(P_center(1) - C_center(1)) * mu_in*mu_in
- !R1xp = (P_x - B_x) - (P_x - C_x) t^2
+ R1xp(2)  =-(P_center(1) - C_center(1))* mu_in**2 / (p+mu_in*mu_in)
+ !R1xp = (P_x - B_x) - (P_x - C_x) ( t * mu/sqrt(p+mu^2) )^2
  R2x(0)  =  p_inv_2
  R2x(1)  = 0.d0
- R2x(2)  = -p_inv_2 * mu_in * mu_in
- !R2x  = 0.5 / p - 0.5/p t^2
+ R2x(2)  = -p_inv_2* mu_in**2 / (p+mu_in*mu_in)
+ !R2x  = 0.5 / p - 0.5/p ( t * mu/sqrt(p+mu^2) )^2
  do i = 0,n_pt_in
   d(i) = 0.d0
  enddo
@@ -151,14 +169,14 @@ double precision :: p,P_center(3),rho,p_inv,p_inv_2
    return
   endif
 
- R1x(0)  = (P_center(2) - A_center(2)) 
+ R1x(0)  = (P_center(2) - A_center(2))
  R1x(1)  = 0.d0
- R1x(2)  = -(P_center(2) - C_center(2)) * mu_in * mu_in 
- ! R1x = (P_x - A_x) - (P_x - C_x) t^2
+ R1x(2)  = -(P_center(2) - C_center(2))* mu_in**2 / (p+mu_in*mu_in)
+ ! R1x = (P_x - A_x) - (P_x - C_x) ( t * mu/sqrt(p+mu^2) )^2
  R1xp(0)  = (P_center(2) - B_center(2))
  R1xp(1)  = 0.d0
- R1xp(2)  =-(P_center(2) - C_center(2)) * mu_in * mu_in 
- !R1xp = (P_x - B_x) - (P_x - C_x) t^2
+ R1xp(2)  =-(P_center(2) - C_center(2))* mu_in**2 / (p+mu_in*mu_in)
+ !R1xp = (P_x - B_x) - (P_x - C_x) ( t * mu/sqrt(p+mu^2) )^2
  a_y = power_A(2)
  b_y = power_B(2)
   call I_x1_pol_mult_mono_elec(a_y,b_y,R1x,R1xp,R2x,d2,n_pt2,n_pt_in) 
@@ -174,12 +192,12 @@ double precision :: p,P_center(3),rho,p_inv,p_inv_2
 
  R1x(0)  = (P_center(3) - A_center(3))
  R1x(1)  = 0.d0
- R1x(2)  = -(P_center(3) - C_center(3)) * mu_in * mu_in 
- ! R1x = (P_x - A_x) - (P_x - C_x) t^2
+ R1x(2)  = -(P_center(3) - C_center(3))* mu_in**2 / (p+mu_in*mu_in)
+ ! R1x = (P_x - A_x) - (P_x - C_x) ( t * mu/sqrt(p+mu^2) )^2
  R1xp(0)  = (P_center(3) - B_center(3))
  R1xp(1)  = 0.d0
- R1xp(2)  =-(P_center(3) - C_center(3)) * mu_in * mu_in 
- !R2x  = 0.5 / p - 0.5/p t^2
+ R1xp(2)  =-(P_center(3) - C_center(3))* mu_in**2 / (p+mu_in*mu_in)
+ !R2x  = 0.5 / p - 0.5/p ( t * mu/sqrt(p+mu^2) )^2
  a_z = power_A(3)
  b_z = power_B(3)
 
@@ -207,5 +225,4 @@ double precision :: p,P_center(3),rho,p_inv,p_inv_2
  enddo
 
 end
-
 
