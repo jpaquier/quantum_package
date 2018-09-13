@@ -45,11 +45,12 @@ double precision :: P_center(3)
 double precision :: d(0:n_pt_in),pouet,coeff,dist,const,pouet_2,factor
 double precision :: I_n_special_exact,integrate_bourrin,I_n_bibi
 double precision ::  V_e_n,const_factor,dist_integral,tmp
-double precision :: accu,rint,p_inv,p,rho
+double precision :: accu,rint,p_inv,p,rho,p_inv_2
 integer :: n_pt_out,lmax
 include 'Utils/constants.include.F'
   p = alpha + beta
   p_inv = 1.d0/p
+  p_inv_2 = 0.5d0 * p_inv 
   rho = alpha * beta * p_inv
 
   dist = 0.d0
@@ -64,6 +65,8 @@ include 'Utils/constants.include.F'
    NAI_pol_mult_erf = 0.d0
    return
   endif
+  double precision :: p_new
+  p_new = mu_in/dsqrt(p+ mu_in * mu_in)
   factor = dexp(-const_factor)
   coeff = dtwo_pi * factor * p_inv * mu_in/dsqrt(p+ mu_in * mu_in)
   lmax = 20
@@ -80,7 +83,9 @@ include 'Utils/constants.include.F'
    return
   endif
 
-  call give_polynom_mult_center_mono_elec_erf(A_center,B_center,alpha,beta,power_A,power_B,C_center,n_pt_in,d,n_pt_out,mu_in)
+! call give_polynom_mult_center_mono_elec_erf(A_center,B_center,alpha,beta,power_A,power_B,C_center,n_pt_in,d,n_pt_out,mu_in)
+  p_new = p_new * p_new 
+  call give_polynom_mult_center_mono_elec_erf_opt(A_center,B_center,alpha,beta,power_A,power_B,C_center,n_pt_in,d,n_pt_out,mu_in,p,p_inv,p_inv_2,p_new,P_center)
   
  
   if(n_pt_out<0)then
@@ -97,6 +102,124 @@ include 'Utils/constants.include.F'
 
 end
 
+
+subroutine give_polynom_mult_center_mono_elec_erf_opt(A_center,B_center,alpha,beta,power_A,power_B,C_center,n_pt_in,d,n_pt_out,mu_in,p,p_inv,p_inv_2,p_new,P_center)
+!!!! subroutine that returns the explicit polynom in term of the "t" variable of the following polynomw ::
+!!!!         I_x1(a_x, d_x,p,q) * I_x1(a_y, d_y,p,q) * I_x1(a_z, d_z,p,q)
+!!!! it is for the nuclear electron atraction
+implicit none
+integer, intent(in) :: n_pt_in
+integer,intent(out) :: n_pt_out
+double precision, intent(in) :: A_center(3), B_center(3),C_center(3),p,p_inv,p_inv_2,p_new,P_center(3)
+double precision, intent(in) :: alpha,beta,mu_in
+integer, intent(in) :: power_A(3), power_B(3)
+integer :: a_x,b_x,a_y,b_y,a_z,b_z
+double precision :: d(0:n_pt_in)
+double precision :: d1(0:n_pt_in)
+double precision :: d2(0:n_pt_in)
+double precision :: d3(0:n_pt_in)
+double precision :: accu
+ accu = 0.d0
+!COMPTEUR irp_rdtsc1 = irp_rdtsc()
+ ASSERT (n_pt_in > 1)
+ 
+ double precision :: R1x(0:2), B01(0:2), R1xp(0:2),R2x(0:2)
+ R1x(0)  = (P_center(1) - A_center(1))
+ R1x(1)  = 0.d0
+ R1x(2)  = -(P_center(1) - C_center(1))* p_new
+ ! R1x = (P_x - A_x) - (P_x - C_x) ( t * mu/sqrt(p+mu^2) )^2
+ R1xp(0)  = (P_center(1) - B_center(1))
+ R1xp(1)  = 0.d0
+ R1xp(2)  =-(P_center(1) - C_center(1))* p_new 
+ !R1xp = (P_x - B_x) - (P_x - C_x) ( t * mu/sqrt(p+mu^2) )^2
+ R2x(0)  =  p_inv_2
+ R2x(1)  = 0.d0
+ R2x(2)  = -p_inv_2* p_new 
+ !R2x  = 0.5 / p - 0.5/p ( t * mu/sqrt(p+mu^2) )^2
+ do i = 0,n_pt_in
+  d(i) = 0.d0
+ enddo
+ do i = 0,n_pt_in
+  d1(i) = 0.d0
+ enddo
+ do i = 0,n_pt_in
+  d2(i) = 0.d0
+ enddo
+ do i = 0,n_pt_in
+  d3(i) = 0.d0
+ enddo
+ integer :: n_pt1,n_pt2,n_pt3,dim,i
+ n_pt1 = n_pt_in
+ n_pt2 = n_pt_in              
+ n_pt3 = n_pt_in              
+ a_x = power_A(1)
+ b_x = power_B(1)
+  call I_x1_pol_mult_mono_elec(a_x,b_x,R1x,R1xp,R2x,d1,n_pt1,n_pt_in) 
+! print*,'passed the first I_x1'
+  if(n_pt1<0)then
+   n_pt_out = -1
+   do i = 0,n_pt_in
+    d(i) = 0.d0
+   enddo
+   return
+  endif
+
+ R1x(0)  = (P_center(2) - A_center(2))
+ R1x(1)  = 0.d0
+ R1x(2)  = -(P_center(2) - C_center(2))* p_new
+ ! R1x = (P_x - A_x) - (P_x - C_x) ( t * mu/sqrt(p+mu^2) )^2
+ R1xp(0)  = (P_center(2) - B_center(2))
+ R1xp(1)  = 0.d0
+ R1xp(2)  =-(P_center(2) - C_center(2))* p_new 
+ !R1xp = (P_x - B_x) - (P_x - C_x) ( t * mu/sqrt(p+mu^2) )^2
+ a_y = power_A(2)
+ b_y = power_B(2)
+  call I_x1_pol_mult_mono_elec(a_y,b_y,R1x,R1xp,R2x,d2,n_pt2,n_pt_in) 
+! print*,'passed the second I_x1'
+  if(n_pt2<0)then
+   n_pt_out = -1
+   do i = 0,n_pt_in
+    d(i) = 0.d0
+   enddo
+   return
+  endif
+
+
+ R1x(0)  = (P_center(3) - A_center(3))
+ R1x(1)  = 0.d0
+ R1x(2)  = -(P_center(3) - C_center(3))* p_new 
+ ! R1x = (P_x - A_x) - (P_x - C_x) ( t * mu/sqrt(p+mu^2) )^2
+ R1xp(0)  = (P_center(3) - B_center(3))
+ R1xp(1)  = 0.d0
+ R1xp(2)  =-(P_center(3) - C_center(3))* p_new 
+ !R2x  = 0.5 / p - 0.5/p ( t * mu/sqrt(p+mu^2) )^2
+ a_z = power_A(3)
+ b_z = power_B(3)
+
+! print*,'a_z = ',a_z
+! print*,'b_z = ',b_z
+  call I_x1_pol_mult_mono_elec(a_z,b_z,R1x,R1xp,R2x,d3,n_pt3,n_pt_in) 
+! print*,'passed the third I_x1'
+  if(n_pt3<0)then
+   n_pt_out = -1
+   do i = 0,n_pt_in
+    d(i) = 0.d0
+   enddo
+   return
+  endif
+ integer :: n_pt_tmp
+ n_pt_tmp = 0
+ call multiply_poly(d1,n_pt1,d2,n_pt2,d,n_pt_tmp)
+ do i = 0,n_pt_tmp
+  d1(i) = 0.d0
+ enddo
+ n_pt_out = 0
+ call multiply_poly(d ,n_pt_tmp ,d3,n_pt3,d1,n_pt_out)
+ do i = 0, n_pt_out
+  d(i) = d1(i)
+ enddo
+
+end
 
 
 
