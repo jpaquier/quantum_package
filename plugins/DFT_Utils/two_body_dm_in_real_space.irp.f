@@ -515,22 +515,40 @@ subroutine give_epsilon_c_on_top_PBE_mu_corrected(mu,r,eps_c_on_top_PBE)
    call Ec_sr_PBE(0d0,rhoc,rhoo,sigmacc,sigmaco,sigmaoo,e_PBE(istate))
    on_top_corrected = on_top_two_dm_in_r_mu_corrected(mu,r,istate)
    on_top_two_dm_in_r_c_mu_corrected = on_top_corrected - on_top_hf(r,istate)
-  !if(on_top_two_dm_in_r_c_mu_corrected .gt.0.d0)then
-  ! print*,'r'
-  ! print*,r
-  ! print*,on_top_two_dm_in_r_c_mu_corrected,on_top_corrected,on_top_hf(r,istate) 
-  !endif
 
-!   beta2(istate) = (6d0*e_PBE(istate)*(mu**3d0))/((4d0*sqrt(2d0*pi)*2d0*on_top_two_dm_in_r_mu_corrected(mu,r,istate))+3d0*pi*mu*on_top_two_dm_in_r_c_mu_corrected)
-!  eps_c_on_top_PBE(istate)=e_PBE(istate)/(1d0+beta2(istate))
-
-!  eps_c_on_top_PBE(istate)=e_PBE(istate)*(1d0/(2d0+(2d0*mu**2*e_PBE(istate)/(pi*on_top_two_dm_in_r_c_mu_corrected*2)))+1d0/(2d0+(3d0*mu**3*e_PBE(istate)/(2d0*sqrt(2d0*pi)*on_top_corrected*2))))
-   beta  =  (3d0*e_PBE(istate))/( 2.d0 * dsqrt(2.d0 * pi) * 2.d0 * on_top_corrected)
+   beta  =  (3d0*e_PBE(istate))/( dsqrt(2.d0 * pi) * 4.d0 * on_top_corrected)
    alpha =  (2d0*e_PBE(istate))/( pi * 2.d0 * on_top_two_dm_in_r_c_mu_corrected ) 
-   eps_c_on_top_PBE(istate)=e_PBE(istate)/(1d0+beta*mu**3d0) + e_PBE(istate)/(1d0+alpha*mu**2d0)
+
+!  eps_c_on_top_PBE(istate)=  e_PBE(istate)/(2d0+alpha*mu**2d0) + e_PBE(istate)/(2d0+beta*mu**3d0) 
+!  if(mu.lt.1.d0)then
+!   print*,mu,rho_a,rho_b 
+!  endif
+!  if(mu.lt.0.1d0)then
+!   eps_c_on_top_PBE(istate) = 0.d0
+!   print*,mu,rho_a,rho_b 
+!  else
+!   eps_c_on_top_PBE(istate)=  pi * on_top_two_dm_in_r_c_mu_corrected / mu**2 + 2.d0/3.d0 * dsqrt(2.d0 * pi) * 2.d0 * on_top_corrected / mu**3
+!  endif
+   if(mu.lt.0.001d0)then
+    eps_c_on_top_PBE(istate) = 0.d0
+   else
+!   eps_c_on_top_PBE(istate) = erf(mu**1) * ( pi * on_top_two_dm_in_r_c_mu_corrected / mu**2 + 2.d0/3.d0 * dsqrt(2.d0 * pi) * 2.d0 * on_top_corrected / mu**3 )  &  
+!                            + (1.d0 - erf(mu**1)) * e_PBE(istate)
+!   eps_c_on_top_PBE(istate) = e_PBE(istate)
+    eps_c_on_top_PBE(istate) = 4.d0 * dsqrt(pi) * (1.d0 - dsqrt(2.d0))/(3.d0 * mu**3) * on_top_corrected
+   endif
+   if(eps_c_on_top_PBE(istate).gt.0.d0)then
+    print*,''
+    print*,mu,rho_a,rho_b 
+    print*,on_top_two_dm_in_r_c_mu_corrected,on_top_corrected
+   
+   endif
+!  print*,'erf = ',erf(0.d0),erf(5.d0)
 !  eps_c_on_top_PBE(istate)= e_PBE(istate)/(1d0+alpha*mu**2d0)
 !  eps_c_on_top_PBE(istate)= e_PBE(istate)/(1d0+beta*mu**3d0)
-!  eps_c_on_top_PBE(istate)= e_PBE(istate)/(2d0+beta*mu**3d0)  + e_PBE(istate)/(2d0+alpha*mu**2d0)
+
+!  eps_c_on_top_PBE(istate)= 0.5d0 * ( e_PBE(istate)/(1d0+beta*mu**3d0)  + e_PBE(istate)/(1d0+alpha*mu**2d0) )
+
 !  eps_c_on_top_PBE(istate)=e_PBE(istate)*(1d0/(2d0+(3d0*mu**3*e_PBE(istate)/(2d0*sqrt(2d0*pi)*on_top_corrected*2))))
   enddo
  end
