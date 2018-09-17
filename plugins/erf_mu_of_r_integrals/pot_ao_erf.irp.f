@@ -68,7 +68,7 @@ include 'Utils/constants.include.F'
   double precision :: p_new
   p_new = mu_in/dsqrt(p+ mu_in * mu_in)
   factor = dexp(-const_factor)
-  coeff = dtwo_pi * factor * p_inv * mu_in/dsqrt(p+ mu_in * mu_in)
+  coeff = dtwo_pi * factor * p_inv * p_new 
   lmax = 20
   
  !  print*, "b"
@@ -76,7 +76,7 @@ include 'Utils/constants.include.F'
     d(i) = 0.d0
   enddo
   n_pt =  2 * ( (power_A(1) + power_B(1)) +(power_A(2) + power_B(2)) +(power_A(3) + power_B(3)) )
-  const = p * dist_integral /(p+ mu_in**2)  * mu_in **2
+  const = p * dist_integral * p_new * p_new 
   if (n_pt == 0) then
    pouet = rint(0,const)
    NAI_pol_mult_erf = coeff * pouet

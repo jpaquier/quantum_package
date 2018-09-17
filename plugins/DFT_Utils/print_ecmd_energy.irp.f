@@ -8,8 +8,8 @@ program print_ecmd_energy
  touch disk_access_mo_integrals
  disk_access_ao_integrals = "None"
  touch disk_access_ao_integrals
-!call ecmd_energy_printer
- call pouet 
+ call ecmd_energy_printer
+!call pouet 
 end
 
 
