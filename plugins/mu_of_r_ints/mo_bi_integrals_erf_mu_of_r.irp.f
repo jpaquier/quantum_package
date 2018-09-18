@@ -55,7 +55,7 @@ BEGIN_PROVIDER [ logical, mo_bielec_integrals_erf_mu_of_r_in_map ]
   if (write_mo_integrals_mu_of_r) then
     call ezfio_set_work_empty(.False.)
     call map_save_to_disk(trim(ezfio_filename)//'/work/mo_ints_erf_mu_of_r',mo_integrals_erf_mu_of_r_map)
-    call ezfio_set_integrals_erf_mu_of_r_disk_access_mo_integrals_mu_of_r("Read")
+    call ezfio_set_mu_of_r_ints_disk_access_mo_integrals_mu_of_r("Read")
   endif
   
 END_PROVIDER
@@ -112,32 +112,32 @@ END_PROVIDER
         enddo
       enddo
       
-      if (do_direct_integrals) then
-        double precision               :: ao_bielec_integral_erf_mu_of_r
-        do r=1,ao_num
-          call compute_ao_bielec_integrals_erf_mu_of_r(q,r,s,ao_num,int_value)
-          do p=1,ao_num
-            integral = int_value(p)
-            if (abs(integral) > ao_integrals_threshold) then
-              !DIR$ VECTOR ALIGNED
-              do i=1,mo_tot_num
-                iqrs(i,r) += mo_coef_transp(i,p) * integral
-              enddo
-            endif
-          enddo
-          call compute_ao_bielec_integrals_erf_mu_of_r(q,s,r,ao_num,int_value)
-          do p=1,ao_num
-            integral = int_value(p)
-            if (abs(integral) > ao_integrals_threshold) then
-              !DIR$ VECTOR ALIGNED
-              do i=1,mo_tot_num
-                iqsr(i,r) += mo_coef_transp(i,p) * integral
-              enddo
-            endif
-          enddo
-        enddo
-        
-      else
+     !if (do_direct_integrals) then
+     !  double precision               :: ao_bielec_integral_erf_mu_of_r
+     !  do r=1,ao_num
+     !    call compute_ao_bielec_integrals_erf_mu_of_r(q,r,s,ao_num,int_value)
+     !    do p=1,ao_num
+     !      integral = int_value(p)
+     !      if (abs(integral) > ao_integrals_threshold) then
+     !        !DIR$ VECTOR ALIGNED
+     !        do i=1,mo_tot_num
+     !          iqrs(i,r) += mo_coef_transp(i,p) * integral
+     !        enddo
+     !      endif
+     !    enddo
+     !    call compute_ao_bielec_integrals_erf_mu_of_r(q,s,r,ao_num,int_value)
+     !    do p=1,ao_num
+     !      integral = int_value(p)
+     !      if (abs(integral) > ao_integrals_threshold) then
+     !        !DIR$ VECTOR ALIGNED
+     !        do i=1,mo_tot_num
+     !          iqsr(i,r) += mo_coef_transp(i,p) * integral
+     !        enddo
+     !      endif
+     !    enddo
+     !  enddo
+     !  
+     !else
         
         do r=1,ao_num
           call get_ao_bielec_integrals_erf_mu_of_r_non_zero(q,r,s,ao_num,int_value,int_idx,n)
@@ -163,7 +163,7 @@ END_PROVIDER
             endif
           enddo
         enddo
-      endif
+!     endif
       iqis = 0.d0
       iqri = 0.d0
       do r=1,ao_num
@@ -332,7 +332,7 @@ subroutine add_integrals_to_map_erf_mu_of_r(mask_ijkl)
   endif
   
   size_buffer = min(ao_num*ao_num*ao_num,16000000)
-  print*, 'Providing the ERF molecular integrals '
+  print*, 'Providing the ERF mu of r molecular integrals '
   print*, 'Buffers : ', 8.*(mo_tot_num*(n_j)*(n_k+1) + mo_tot_num+&
       ao_num+ao_num*ao_num+ size_buffer*3)/(1024*1024), 'MB / core'
   
@@ -538,9 +538,9 @@ subroutine add_integrals_to_map_erf_mu_of_r(mask_ijkl)
   deallocate(list_ijkl)
   
   
-  print*,'Molecular ERF integrals provided:'
-  print*,' Size of MO ERF map           ', map_mb(mo_integrals_erf_mu_of_r_map) ,'MB'
-  print*,' Number of MO ERF integrals: ',  mo_map_size
+  print*,'Molecular ERF mu of r integrals provided:'
+  print*,' Size of MO ERF mu of r map           ', map_mb(mo_integrals_erf_mu_of_r_map) ,'MB'
+  print*,' Number of MO ERF mu of r integrals: ',  mo_map_size
   print*,' cpu  time :',cpu_2 - cpu_1, 's'
   print*,' wall time :',wall_2 - wall_1, 's  ( x ', (cpu_2-cpu_1)/(wall_2-wall_1), ')'
   

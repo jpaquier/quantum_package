@@ -586,7 +586,7 @@ end
 
 subroutine test_int_erf_bielec_ijkl
  implicit none
- integer :: i,j,k,l,i_count
+ integer :: i,j,k,l
  double precision :: accu
  double precision, allocatable :: integrals_array(:,:)
  double precision :: integral_erf,erf_mu_of_r_ao,test,ao_bielec_integral_erf,test_2,erf_mu_of_r_ao_old
@@ -597,19 +597,22 @@ subroutine test_int_erf_bielec_ijkl
  integral_erf = erf_mu_of_r_ao(1,1,1,1)
  print*,''
  call wall_time(wall1)
- provide ao_bielec_integrals_erf_in_map
- do i = 1, ao_num
-  do j = 1, ao_num
+ provide ao_bielec_integrals_erf_in_map ao_bielec_integrals_erf_mu_of_r_in_map 
+ do i = 1, ao_num ! electron 1 
+  do j = 1, ao_num ! electron 1 
    print*,i,j
-   call give_all_erf_mu_of_r_kl(i,j,integrals_array)
-   do k = 1, ao_num
-    do l = 1, ao_num
+!  call give_all_erf_mu_of_r_kl(i,j,integrals_array)
+   do k = 1, ao_num ! electron 2 
+    do l = 1, ao_num ! electron 2 
+     double precision :: get_ao_bielec_integral_erf_mu_of_r,integral_erf_map,i_count
+     
      integral_erf = ao_bielec_integral_erf(i,j,k,l)
-  !  integral_erf = erf_mu_of_r_ao(i,j,k,l)
+    !integral_erf = erf_mu_of_r_ao(i,j,k,l)
   ! !test = erf_mu_of_r_ao(i,j,k,l)
-     test = integrals_array(l,k)
+!    test = integrals_array(l,k)
+     test = get_ao_bielec_integral_erf_mu_of_r(i,k,j,l,ao_integrals_erf_mu_of_r_map)
      if(dabs(integral_erf + test).gt.0.d0)then
-      i_count += 1
+      i_count += 1.d0
       accu += dabs(integral_erf - test)/dabs(integral_erf + test)*0.5d0
      endif
      if(dabs(integral_erf - test).gt.1.d-10)then
@@ -625,6 +628,6 @@ subroutine test_int_erf_bielec_ijkl
  call wall_time(wall2)
  double precision :: wall1, wall2
  print*,'time = ',wall2-wall1
- accu = accu/dble(i_count)
+ accu = accu/(i_count)
  print*,'average error = ',accu
 end

@@ -14,8 +14,8 @@ program qp_ao_ints
   zmq_state = 'ao_integral_erf_mu_of_rs'
 
   ! Provide everything needed
-  double precision :: integral_erf_mu_of_r, ao_bielec_integral_erf_mu_of_r
-  integral_erf_mu_of_r = ao_bielec_integral_erf_mu_of_r(1,1,1,1)
+  double precision :: erf_mu_of_r_ao, integral_erf_mu_of_r
+  integral_erf_mu_of_r = erf_mu_of_r_ao(1,1,1,1)
 
   character*(64) :: state
   call wait_for_state(zmq_state,state)

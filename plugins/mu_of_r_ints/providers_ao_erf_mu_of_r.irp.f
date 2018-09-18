@@ -9,7 +9,7 @@ BEGIN_PROVIDER [ logical, ao_bielec_integrals_erf_mu_of_r_in_map ]
   END_DOC
   
   integer                        :: i,j,k,l
-  double precision               :: ao_bielec_integral_erf_mu_of_r,cpu_1,cpu_2, wall_1, wall_2
+  double precision               :: erf_mu_of_r_ao,cpu_1,cpu_2, wall_1, wall_2
   double precision               :: integral, wall_0
   include 'Utils/constants.include.F'
   
@@ -22,19 +22,19 @@ BEGIN_PROVIDER [ logical, ao_bielec_integrals_erf_mu_of_r_in_map ]
   integer                        :: kk, m, j1, i1, lmax
   character*(64)                 :: fmt
   
-  integral = ao_bielec_integral_erf_mu_of_r(1,1,1,1)
+  integral = erf_mu_of_r_ao(1,1,1,1)
   
   double precision               :: map_mb
   PROVIDE read_ao_integrals_mu_of_r disk_access_ao_integrals_mu_of_r
   if (read_ao_integrals_mu_of_r) then
-    print*,'Reading the AO ERF integrals'
+    print*,'Reading the AO ERF mu of r integrals'
       call map_load_from_disk(trim(ezfio_filename)//'/work/ao_ints_erf_mu_of_r',ao_integrals_erf_mu_of_r_map)
-      print*, 'AO ERF integrals provided'
+      print*, 'AO ERF mu of r integrals provided'
       ao_bielec_integrals_erf_mu_of_r_in_map = .True.
       return
   endif
   
-  print*, 'Providing the AO ERF integrals'
+  print*, 'Providing the AO ERF mu of r integrals'
   call wall_time(wall_0)
   call wall_time(wall_1)
   call cpu_time(cpu_1)
@@ -79,18 +79,18 @@ BEGIN_PROVIDER [ logical, ao_bielec_integrals_erf_mu_of_r_in_map ]
   integer(map_size_kind)         :: get_ao_erf_mu_of_r_map_size, ao_erf_mu_of_r_map_size
   ao_erf_mu_of_r_map_size = get_ao_erf_mu_of_r_map_size()
   
-  print*, 'AO ERF integrals provided:'
-  print*, ' Size of AO ERF map :         ', map_mb(ao_integrals_erf_mu_of_r_map) ,'MB'
-  print*, ' Number of AO ERF integrals :', ao_erf_mu_of_r_map_size
+  print*, 'AO ERF mu of r integrals provided:'
+  print*, ' Size of AO ERF mu of r map :         ', map_mb(ao_integrals_erf_mu_of_r_map) ,'MB'
+  print*, ' Number of AO ERF mu of r integrals :', ao_erf_mu_of_r_map_size
   print*, ' cpu  time :',cpu_2 - cpu_1, 's'
   print*, ' wall time :',wall_2 - wall_1, 's  ( x ', (cpu_2-cpu_1)/(wall_2-wall_1+tiny(1.d0)), ' )'
   
   ao_bielec_integrals_erf_mu_of_r_in_map = .True.
 
-  if (write_ao_integrals_erf_mu_of_r) then
+  if (write_ao_integrals_mu_of_r) then
     call ezfio_set_work_empty(.False.)
     call map_save_to_disk(trim(ezfio_filename)//'/work/ao_ints_erf_mu_of_r',ao_integrals_erf_mu_of_r_map)
-    call ezfio_set_integrals_erf_mu_of_r_disk_access_ao_integrals_mu_of_r("Read")
+    call ezfio_set_mu_of_r_ints_disk_access_ao_integrals_mu_of_r("Read")
   endif
   
 END_PROVIDER
