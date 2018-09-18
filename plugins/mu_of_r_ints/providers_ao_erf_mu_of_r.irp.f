@@ -23,6 +23,9 @@ BEGIN_PROVIDER [ logical, ao_bielec_integrals_erf_mu_of_r_in_map ]
   character*(64)                 :: fmt
   
   integral = erf_mu_of_r_ao(1,1,1,1)
+  double precision :: integrals_matrix(ao_num,ao_num)
+  call give_all_erf_mu_of_r_kl(1,1,integrals_matrix)
+
   
   double precision               :: map_mb
   PROVIDE read_ao_integrals_mu_of_r disk_access_ao_integrals_mu_of_r

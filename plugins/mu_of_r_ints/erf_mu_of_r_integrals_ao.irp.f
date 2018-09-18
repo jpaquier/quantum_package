@@ -54,13 +54,15 @@ end
  integer, intent(in) :: k,l
  double precision, intent(out) :: integrals(ao_num,ao_num)
  integer :: i_point,i,j
- double precision :: integrals_kl_of_r(n_points_final_grid),r(3),NAI_pol_mult_erf_ao
- double precision :: v_array(ao_num,n_points_final_grid),tmp
+ double precision :: integrals_kl_of_r(n_points_final_grid),r(3),NAI_pol_mult_erf_ao,tmp
+ double precision,allocatable :: v_array(:,:)
+ allocate(v_array(ao_num,n_points_final_grid))
  integrals = 0.d0
  do i_point = 1, n_points_final_grid
   r(1) = final_grid_points(1,i_point) 
   r(2) = final_grid_points(2,i_point) 
   r(3) = final_grid_points(3,i_point) 
+  tmp = 0.d0
   if(dabs(aos_in_r_array_transp(i_point,k) * aos_in_r_array_transp(i_point,l) * 2.d0/dsqrt(pi) * mu_of_r_prov_selected(i_point)) * ao_overlap_abs(k,l) .lt. threshold_grid_dft)then
    tmp = 0.d0
   else 
@@ -70,6 +72,5 @@ end
    v_array(i,i_point) = tmp * final_weight_functions_at_final_grid_points(i_point) * aos_in_r_array(i,i_point)
   enddo
  enddo
- integrals = 0.d0
  call dgemm('N','N',ao_num,ao_num,n_points_final_grid,1.d0,v_array,size(v_array,1),aos_in_r_array_transp,size(aos_in_r_array_transp,1),1.d0,integrals,size(integrals,1))
  end

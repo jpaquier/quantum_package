@@ -613,7 +613,7 @@ subroutine test_int_erf_bielec_ijkl
      test = get_ao_bielec_integral_erf_mu_of_r(i,k,j,l,ao_integrals_erf_mu_of_r_map)
      if(dabs(integral_erf + test).gt.0.d0)then
       i_count += 1.d0
-      accu += dabs(integral_erf - test)/dabs(integral_erf + test)*0.5d0
+      accu += dabs(integral_erf - test)!/dabs(integral_erf + test)*0.5d0
      endif
      if(dabs(integral_erf - test).gt.1.d-10)then
       print*,'AHAHAH'
