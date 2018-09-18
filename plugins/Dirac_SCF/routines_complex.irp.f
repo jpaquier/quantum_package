@@ -34,7 +34,6 @@
   ! LDx : leftmost dimension of x
   ! Dimension of A is m x n
   END_DOC
-  
   integer, intent(in)             :: LDA, LDU, LDVt, m, n
   complex*16, intent(in)          :: A(LDA,n)
   complex*16, intent(out)         :: U(LDU,m)

@@ -88,8 +88,8 @@
  !dirac_mo_label = "Canonical"
  !soft_touch dirac_mo_label
  !Choose SCF algorithm
-  call damping_dirac_SCF  
- !call Roothaan_Hall_SCF
+  call damping_Dirac_SCF  
+ !call Roothaan_Hall_Dirac_SCF
  end
 
  subroutine test_dirac_end

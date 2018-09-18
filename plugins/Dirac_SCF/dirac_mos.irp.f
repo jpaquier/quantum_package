@@ -48,7 +48,8 @@
  BEGIN_PROVIDER [ complex*16, dirac_mo_coef_S, (2*(dirac_ao_num),2*(dirac_mo_tot_num))
  implicit none
   BEGIN_DOC
-  ! Molecular orbital coefficients on AO basis set
+  ! Molecular orbital coefficients on AO basis set 
+  ! diagonalizing the overlap matrix S
   ! dirac_mo_coef_S(i,j) = coefficient of the ith ao on the jth mo
   ! mo_label : Label characterizing the MOS (local, canonical, natural,
   ! etc)

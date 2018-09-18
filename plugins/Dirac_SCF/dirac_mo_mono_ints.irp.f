@@ -32,8 +32,7 @@
  BEGIN_PROVIDER [complex*16, eigenvectors_dirac_mono_elec_ao, (2*(dirac_mo_tot_num),2*(dirac_mo_tot_num))]
  implicit none
  BEGIN_DOC
- ! The eigenvectors in the AO basis, which does not
- ! diagonalize S
+ ! The eigenvectors in the AO basis which does not diagonalize S
  END_DOC
  integer :: n,nmax
   call zgemm('N','N', 2*(dirac_ao_num), 2*(dirac_mo_tot_num), 2*(dirac_ao_num),              &

@@ -426,7 +426,8 @@
   use map_module
   implicit none
   BEGIN_DOC
-  ! Fock matrix in Dirac AO basis set
+  ! Conjugate of the Fock matrix in Dirac AO basis set
+  ! due to non interversion of the coefficient in the density matrix
   END_DOC
   PROVIDE dirac_ao_bielec_integrals_in_map
   integer                        :: i,j,k,l,k1 
