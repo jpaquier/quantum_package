@@ -1,6 +1,7 @@
 program erf_mu_of_r_integrals
  implicit none 
- call test_int_erf_bielec_ijkl
+ call test_int_erf_bielec_ijkl_mo
+!call test_int_erf_bielec_ijkl
 !call test_aos
 !call bis
 !call test_prim
@@ -634,4 +635,40 @@ subroutine test_int_erf_bielec_ijkl
  accu_relative = accu_relative/(i_count)
  print*,'average absolute error = ',accu_absolute 
  print*,'average relative error = ',accu_relative 
+end
+
+subroutine test_int_erf_bielec_ijkl_mo
+ implicit none
+ integer :: i,j,k,l
+ integer :: m,n,p,q
+ double precision :: accu,get_mo_bielec_integral_erf_mu_of_r, integral, get_ao_bielec_integral_erf_mu_of_r,integral_2
+
+ do i = 1, mo_tot_num ! 1 
+  do j = 1, mo_tot_num ! 2 
+   do k = 1, mo_tot_num ! 1 
+    do l = 1, mo_tot_num ! 2
+     integral = get_mo_bielec_integral_erf_mu_of_r(i,j,k,l,mo_integrals_erf_mu_of_r_map)
+     integral_2 = 0.d0
+     do m = 1, ao_num
+      do n = 1, ao_num
+       do p = 1, ao_num
+        do q = 1, ao_num   !                                                                          1             2                1              2
+         integral_2 += get_ao_bielec_integral_erf_mu_of_r(m,n,p,q,ao_integrals_erf_mu_of_r_map) * mo_coef(m,i) * mo_coef(n,j)  * mo_coef(p,k) * mo_coef(q,l)  
+        enddo
+       enddo
+      enddo
+     enddo
+      print*,i,j,k,l
+      print*,integral,integral_2
+     if(dabs(integral - integral_2).gt.1.d-6)then
+      print*,'AHAHAH'
+      print*,i,j,k,l
+      print*,integral,integral_2
+      print*,dabs(integral- integral_2),dabs(integral- integral_2)/dabs(integral+integral_2)*0.5d0
+     endif
+    enddo
+   enddo
+  enddo 
+ enddo
+
 end
