@@ -63,11 +63,11 @@ end
   r(2) = final_grid_points(2,i_point) 
   r(3) = final_grid_points(3,i_point) 
   tmp = 0.d0
-  if(dabs(aos_in_r_array_transp(i_point,k) * aos_in_r_array_transp(i_point,l) * 2.d0/dsqrt(pi) * mu_of_r_prov_selected(i_point)) * ao_overlap_abs(k,l) .lt. threshold_grid_dft)then
-   tmp = 0.d0
-  else 
+! if(dabs(aos_in_r_array_transp(i_point,k) * aos_in_r_array_transp(i_point,l) * 2.d0/dsqrt(pi) * mu_of_r_prov_selected(i_point)) * ao_overlap_abs(k,l) .lt. threshold_grid_dft)then
+!  tmp = 0.d0
+! else 
    tmp = NAI_pol_mult_erf_ao(k,l,mu_of_r_prov_selected(i_point),r) 
-  endif
+! endif
   do i = 1, ao_num
    v_array(i,i_point) = tmp * final_weight_functions_at_final_grid_points(i_point) * aos_in_r_array(i,i_point)
   enddo

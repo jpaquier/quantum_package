@@ -587,11 +587,12 @@ end
 subroutine test_int_erf_bielec_ijkl
  implicit none
  integer :: i,j,k,l
- double precision :: accu
+ double precision :: accu_relative,accu_absolute
  double precision, allocatable :: integrals_array(:,:)
  double precision :: integral_erf,erf_mu_of_r_ao,test,ao_bielec_integral_erf,test_2,erf_mu_of_r_ao_old
  allocate(integrals_array(ao_num,ao_num))
- accu = 0.d0
+ accu_relative = 0.d0
+ accu_absolute = 0.d0
  i_count = 0
  
  integral_erf = erf_mu_of_r_ao(1,1,1,1)
@@ -613,7 +614,8 @@ subroutine test_int_erf_bielec_ijkl
      test = get_ao_bielec_integral_erf_mu_of_r(i,k,j,l,ao_integrals_erf_mu_of_r_map)
      if(dabs(integral_erf + test).gt.0.d0)then
       i_count += 1.d0
-      accu += dabs(integral_erf - test)!/dabs(integral_erf + test)*0.5d0
+      accu_absolute += dabs(integral_erf - test)!/dabs(integral_erf + test)*0.5d0
+      accu_relative += dabs(integral_erf - test)/dabs(integral_erf + test)*0.5d0
      endif
      if(dabs(integral_erf - test).gt.1.d-10)then
       print*,'AHAHAH'
@@ -628,6 +630,8 @@ subroutine test_int_erf_bielec_ijkl
  call wall_time(wall2)
  double precision :: wall1, wall2
  print*,'time = ',wall2-wall1
- accu = accu/(i_count)
- print*,'average error = ',accu
+ accu_absolute = accu_absolute/(i_count)
+ accu_relative = accu_relative/(i_count)
+ print*,'average absolute error = ',accu_absolute 
+ print*,'average relative error = ',accu_relative 
 end
