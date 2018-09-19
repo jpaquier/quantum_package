@@ -4,7 +4,7 @@
  &BEGIN_PROVIDER [ double precision, large_ao_overlap_z,(large_ao_num,large_ao_num) ]
   implicit none
   BEGIN_DOC
- !Overlap between atomic basis functions of the small component:
+ !Overlap between atomic basis functions of the large component:
  !:math:`\int \chi_i(r) \chi_j(r) dr)`
  !with correct overlap_x*overlap_y*overlap_z=overlap
   END_DOC
@@ -54,7 +54,7 @@
  BEGIN_PROVIDER [ double precision, large_ao_overlap_abs,(large_ao_num,large_ao_num) ]
   implicit none
   BEGIN_DOC  
- !Overlap between absolute value of atomic basis functions:
+ !Overlap between absolute value of large component atomic basis functions:
  !:math:`\int |\chi_i(r)| |\chi_j(r)| dr)`
   END_DOC
   integer :: i,j,n,l

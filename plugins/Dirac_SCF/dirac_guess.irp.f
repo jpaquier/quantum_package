@@ -94,7 +94,8 @@
  subroutine dirac_huckel_guess
   implicit none
   BEGIN_DOC
-  ! Build the MOs using the extended Huckel model
+  ! Build the dirac MOs using the extended Huckel model (This guess may have
+  ! absolutely no meaning nor usage)
   END_DOC
   integer                        :: i,j,j_plus
   double precision               :: accu

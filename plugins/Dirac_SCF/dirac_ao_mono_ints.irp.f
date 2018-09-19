@@ -2,11 +2,11 @@
   implicit none
   integer          :: i,i_minus,j,j_minus
   BEGIN_DOC
- ! array of the mono electronic nucleus-electron
- ! hamiltonian on the AOs basis in the 4x4 component
- ! formalism with cartesian basis and  the unrestricted kinetic-balance scheme  
+  !Array of the mono electronic nucleus-electron
+  ! hamiltonian on the AOs basis in the 4x4 component
+  ! formalism with cartesian basis and  the unrestricted kinetic-balance scheme  
   END_DOC
- dirac_ao_mono_elec_nucl_integral = 0.d0
+  dirac_ao_mono_elec_nucl_integral = 0.d0
   do j = 1, 2*(dirac_ao_num)
    if (j .le. large_ao_num) then 
     do i = 1, 2*(dirac_ao_num)
@@ -40,18 +40,18 @@
     enddo
    endif    
   enddo
-  END_PROVIDER
+ END_PROVIDER
 
 
  BEGIN_PROVIDER [ complex*16, dirac_ao_mono_elec_mass_integral,(2*dirac_ao_num,2*dirac_ao_num)]
   implicit none
   integer          :: i,i_minus,j,j_minus
   BEGIN_DOC
- ! array of the mono electronic mass hamiltonian on the AOs basis
- ! in the 4x4 component formalism with cartesian basis and 
- ! the unrestricted kinetic-balance scheme  
+  !Array of the mono electronic mass hamiltonian on the AOs basis
+  ! in the 4x4 component formalism with cartesian basis and 
+  ! the unrestricted kinetic-balance scheme  
   END_DOC
- dirac_ao_mono_elec_mass_integral = 0
+  dirac_ao_mono_elec_mass_integral = 0
   do j = 1, 2*(dirac_ao_num)
    if (j .gt. 2*large_ao_num .and. j .le. (2*large_ao_num+small_ao_num)) then 
     j_minus = j - 2*large_ao_num
@@ -71,16 +71,16 @@
     enddo
    endif    
   enddo
-  END_PROVIDER
+ END_PROVIDER
 
 
  BEGIN_PROVIDER [ complex*16, dirac_ao_mono_elec_kinetic_integral,(2*dirac_ao_num,2*dirac_ao_num)]
   implicit none
   integer          :: i,i_minus,j,j_minus
   BEGIN_DOC
- ! array of the mono electronic kinetic hamiltonian on the AOs basis
- ! in the 4x4 component formalism with cartesian basis and 
- ! the unrestricted kinetic-balance scheme  
+  !Array of the mono electronic kinetic hamiltonian on the AOs basis
+  ! in the 4x4 component formalism with cartesian basis and 
+  ! the unrestricted kinetic-balance scheme  
   END_DOC
   dirac_ao_mono_elec_kinetic_integral = 0
   do j = 1, 2*(dirac_ao_num)
@@ -127,6 +127,6 @@
     enddo
    endif    
   enddo
-  END_PROVIDER
+ END_PROVIDER
 
 

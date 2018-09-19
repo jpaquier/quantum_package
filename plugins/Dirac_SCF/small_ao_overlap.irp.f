@@ -54,7 +54,7 @@
  BEGIN_PROVIDER [ double precision, small_ao_overlap_abs,(small_ao_num,small_ao_num) ]
   implicit none
   BEGIN_DOC  
- !Overlap between absolute value of atomic basis functions:
+ !Overlap between absolute value of small component atomic basis functions:
  !:math:`\int |\chi_i(r)| |\chi_j(r)| dr)`
   END_DOC
   integer :: i,j,n,l

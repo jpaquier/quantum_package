@@ -1,13 +1,10 @@
  program scf_dirac
   BEGIN_DOC
-  ! Produce `Hartree_Fock` MO orbital 
-  ! output: mo_basis.mo_tot_num mo_basis.mo_label mo_basis.ao_md5 mo_basis.mo_coef mo_basis.mo_occ
-  ! output: hartree_fock.energy
-  ! optional: mo_basis.mo_coef
+  ! Produce `Dirac-Hartree_Fock` MO orbital 
+  ! output: none for the moment
   END_DOC
   call create_dirac_guess
- !call orthonormalize_dirac_mos
-  call test_dirac
+ !call test_dirac
   call run_dirac
  !call test_dirac_end
  end
@@ -24,16 +21,16 @@
  ! dirac_mo_coef = dirac_mo_coef_guess
  ! print*, 'Non-relativistic Guess'
  !elseif (.not.exists) then
-  !if (mo_guess_type == "HCore") then
+   if (dirac_mo_guess_type == "HCore") then
     dirac_mo_coef = eigenvectors_dirac_mono_elec_ao
     TOUCH dirac_mo_coef       
     dirac_mo_label = 'Guess'
     SOFT_TOUCH dirac_mo_coef dirac_mo_label
     print*, 'HCore Guess'
-  !else
-  ! print *,  'Unrecognized MO guess type : '//mo_guess_type
-  ! stop 1
-  !endif
+   else
+    print *,  'Unrecognized MO guess type : '//mo_guess_type
+    stop 1
+   endif
  !endif              
  end
 
@@ -58,23 +55,18 @@
     ortho(j) += Conjg(dirac_mo_coef(i,2))*dirac_mo_coef(i,j)
    enddo
   !print*,'********************'     
- ! print*,j,ortho(j)
+  !print*,j,ortho(j)
   enddo
- 
   print*, nuclear_repulsion
   print*, dirac_HF_one_electron_energy
   print*, dirac_HF_two_electron_energy
   print*,'***********'
   print*, dirac_SCF_energy 
-
  !do i = 1, 2*dirac_ao_num
  ! print*,i,eigenvalues_dirac_fock_matrix_mo(i)
  !!print*,i,eigenvalues_dirac_mono_elec_mo(i)
  !!print*,'*********'
  !enddo
- 
-        
-  
  end
 
 
@@ -88,8 +80,15 @@
  !dirac_mo_label = "Canonical"
  !soft_touch dirac_mo_label
  !Choose SCF algorithm
-  call damping_Dirac_SCF  
- !call Roothaan_Hall_Dirac_SCF
+  if (dirac_interaction == "Coulomb") then
+   call damping_Dirac_SCF  
+  !call Roothaan_Hall_Dirac_SCF
+  elseif (dirac_interaction == "Coulomb_Gaunt") then
+   call damping_Dirac_Gaunt_SCF
+  else
+   print *,  'Unrecognized dirac_interaction : '//dirac_interaction
+   stop 1
+  endif
  end
 
  subroutine test_dirac_end
@@ -115,20 +114,15 @@
   !print*,'********************'     
  ! print*,j,ortho(j)
   enddo
-
   print*, nuclear_repulsion
   print*, dirac_HF_one_electron_energy
   print*, dirac_HF_two_electron_energy
   print*,'***********'
   print*, dirac_SCF_energy
-
   do i = 1, 2*dirac_ao_num
    print*,i,eigenvalues_dirac_fock_matrix_mo(i)
   !print*,i,eigenvalues_dirac_mono_elec_mo(i)
   !print*,'*********'
   enddo
-
-
-
  end
 

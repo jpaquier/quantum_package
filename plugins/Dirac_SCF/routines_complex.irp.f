@@ -1,5 +1,10 @@
  subroutine lapack_diag_complex(eigvalues,eigvectors,H,nmax,n)
-  implicit none
+  BEGIN_DOC
+  !Diagonalize a complex matrix H
+  !Gives its eigenvalues and eigenvectors
+  !Dimension of H is nmax x n 
+  END_DOC 
+ implicit none
   integer :: n,nmax
   complex*16, intent(in)        :: H(nmax,nmax)
   complex*16, intent(out)       :: eigvectors(nmax,n)
@@ -30,9 +35,9 @@
  subroutine svd_complex(A,LDA,U,LDU,D,Vt,LDVt,rwork,m,n)
   implicit none
   BEGIN_DOC
-  ! Compute A = U.D.Vt
-  ! LDx : leftmost dimension of x
-  ! Dimension of A is m x n
+  !Compute A = U.D.Vt
+  !LDx : leftmost dimension of x
+  !Dimension of A is m x n
   END_DOC
   integer, intent(in)             :: LDA, LDU, LDVt, m, n
   complex*16, intent(in)          :: A(LDA,n)
@@ -65,14 +70,13 @@
  subroutine ortho_canonical_complex(dirac_overlap,LDA,N,C,LDC,m)
   implicit none
   BEGIN_DOC
-  ! Compute C_new=C_old.U.s^-1/2 canonical orthogonalization.
-  ! overlap : overlap matrix 
-  ! LDA : leftmost dimension of overlap array
-  ! N : Overlap matrix is NxN (array is (LDA,N) )
-  ! C : Coefficients of the vectors to orthogonalize. On exit,
-  !     orthogonal vectors
-  ! LDC : leftmost dimension of C
-  ! m : Coefficients matrix is MxN, ( array is (LDC,N) )
+  !Compute C_new=C_old.U.s^-1/2 canonical orthogonalization.
+  !overlap : overlap matrix 
+  !LDA : leftmost dimension of overlap array
+  !N : Overlap matrix is NxN (array is (LDA,N) )
+  !C : Coefficients of the vectors to orthogonalize. On exit, orthogonal vectors
+  !LDC : leftmost dimension of C
+  !m : Coefficients matrix is MxN, ( array is (LDC,N) )
   END_DOC
   integer, intent(in)            :: lda, ldc, n
   integer, intent(out)           :: m

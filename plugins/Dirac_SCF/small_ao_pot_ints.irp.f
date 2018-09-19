@@ -1,7 +1,7 @@
  BEGIN_PROVIDER [ double precision, small_ao_nucl_elec_integral,(small_ao_num,small_ao_num)]
    BEGIN_DOC
-   ! interaction nucleus-electron for the AOs within the small component basis
-   ! set in the unrestricted kinetic balance scheme
+   !Interaction nucleus-electron for the AOs within the small component 
+   ! basis set in the unrestricted kinetic balance scheme
    END_DOC
    implicit none
    double precision               :: alpha, beta, gama, delta,c,Z,coef
@@ -45,8 +45,8 @@
 
  BEGIN_PROVIDER [ double precision, small_ao_nucl_elec_integral_per_atom, (small_ao_num,small_ao_num,nucl_num)]
    BEGIN_DOC
-   ! interaction nuclear electron for the AOs within the small component basis
-   ! set in unrestricted kinetic balance
+   !Interaction nucleus-electron per atom for the AOs within the small component 
+   ! basis set in the unrestricted kinetic balance
    END_DOC
    implicit none
    double precision               :: alpha, beta, delta,c,Z,coef

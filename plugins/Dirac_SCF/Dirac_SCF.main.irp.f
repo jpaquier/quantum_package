@@ -1,13 +1,15 @@
 program Dirac_SCF
   implicit none
   BEGIN_DOC
-! Print the small component basis, after unrestricted kinetic balance
+  !Print whatever tests one may deem useful or remotely interesting 
   END_DOC
   integer :: i,j,k,l,l_type,n,g,h,df_L
   double precision :: integral, ao_bielec_integral, dirac_ao_bielec_integral,eigenvalues(2)
   complex*16       :: ortho(2*dirac_ao_num),testm(2,2), eigenvectors(2,2)
   include 'Utils/constants.include.F'
 
+ print*,'************'
+ print*, 'speed_of_light = ', speed_of_light
  
 !print*,'************'
 !print*, large_ao_num,small_ao_num,dirac_ao_num
