@@ -20,7 +20,6 @@
  END_PROVIDER
 
 
-
  BEGIN_PROVIDER [ complex*16, dirac_ao_bi_elec_integral, (2*dirac_ao_num, 2*dirac_ao_num) ]
   use map_module
   implicit none
@@ -28,8 +27,8 @@
   !Array of the bi-electronic Fock matrix for the Coulomb interaction
   ! in Dirac AO basis set
   !Take care, the density matrix index
-  !have been correctly inverse, unlike
-  !in the non-relativistic code
+  ! have been correctly inverse, unlike
+  ! in the non-relativistic code
   END_DOC
   PROVIDE dirac_ao_bielec_integrals_in_map
   integer                        :: i,j,k,l,k1 
@@ -119,8 +118,8 @@
   !Array of the bi-electronic Fock matrix for the Coulomb-Gaunt interaction,
   ! in Dirac AO basis set.
   !Take care, the density matrix index
-  !have been correctly inverse, unlike
-  !in the non-relativistic code
+  ! have been correctly inverse, unlike
+  ! in the non-relativistic code
   END_DOC
   PROVIDE dirac_ao_bielec_integrals_in_map
   integer                        :: i,j,k,l,k1 
@@ -247,7 +246,6 @@
  END_PROVIDER
 
 
-
  BEGIN_PROVIDER [ complex*16, dirac_Fock_matrix_ao, (2*dirac_ao_num,2*dirac_ao_num) ]
   implicit none
   BEGIN_DOC
@@ -275,7 +273,6 @@
  END_PROVIDER
 
 
-
  BEGIN_PROVIDER [ double precision, dirac_extra_energy_contrib_from_density]
  implicit none
   BEGIN_DOC
@@ -285,10 +282,14 @@
  END_PROVIDER
 
 
-
  BEGIN_PROVIDER [ complex*16, dirac_HF_one_electron_energy_complex]
  &BEGIN_PROVIDER [ double precision, dirac_HF_one_electron_energy]
   implicit none
+  BEGIN_DOC
+  !One-electron energy of the Nucleus-Electron interaction
+  !The energy is supposed to be a real, thus we check for its complex part to be
+  ! a VERY small artifact and take only its real part
+  END_DOC
   integer :: i,j
   dirac_HF_one_electron_energy_complex = (0.d0,0.d0)
   do j=1, 2*dirac_ao_num
@@ -304,11 +305,15 @@
   endif
  END_PROVIDER
 
-
-
+ 
  BEGIN_PROVIDER [ complex*16, dirac_HF_two_electron_energy_complex]
  &BEGIN_PROVIDER [ double precision, dirac_HF_two_electron_energy] 
- implicit none
+  implicit none
+  BEGIN_DOC
+  !Two-electrons energy of the Coulomb ee interaction
+  !The energy is supposed to be a real, thus we check for its complex part to be
+  ! a VERY small artifact and take only its real part
+  END_DOC
   integer :: i,j
   dirac_HF_two_electron_energy_complex = (0.d0,0.d0)
   do j=1, 2*dirac_ao_num
@@ -326,7 +331,12 @@
 
  BEGIN_PROVIDER [ complex*16, dirac_HF_two_electron_Gaunt_energy_complex]
  &BEGIN_PROVIDER [ double precision, dirac_HF_two_electron_Gaunt_energy] 
- implicit none
+  implicit none
+  BEGIN_DOC
+  !Two-electrons energy of the Coulomb_Gaunt ee interaction
+  !The energy is supposed to be a real, thus we check for its complex part to be
+  ! a VERY small artifact and take only its real part
+  END_DOC
   integer :: i,j
   dirac_HF_two_electron_Gaunt_energy_complex = (0.d0,0.d0)
   do j=1, 2*dirac_ao_num
@@ -343,43 +353,44 @@
  END_PROVIDER
 
 
-
  BEGIN_PROVIDER [ double precision, dirac_HF_energy]
   implicit none
-  integer :: i,j
+  BEGIN_DOC
+  !Dirac-Hartree-Fock energy for the Coulomb ee interaction
+  END_DOC
   dirac_HF_energy = nuclear_repulsion + dirac_HF_two_electron_energy + dirac_HF_one_electron_energy
  END_PROVIDER
 
  BEGIN_PROVIDER [ double precision, dirac_HF_Gaunt_energy]
   implicit none
-  integer :: i,j
+  BEGIN_DOC
+  !Dirac-Hartree-Fock energy for the Coulomb_Gaunt ee interaction
+  END_DOC
   dirac_HF_Gaunt_energy = nuclear_repulsion + dirac_HF_two_electron_Gaunt_energy + dirac_HF_one_electron_energy
  END_PROVIDER
 
 
- 
  BEGIN_PROVIDER [ double precision, dirac_SCF_energy]
-  integer     :: i,j,k
+  implicit none 
   BEGIN_DOC
-  ! dirac_SCF energy 
+  !Dirac_SCF energy for a Coulomb ee interaction
   END_DOC 
   dirac_SCF_energy = dirac_HF_energy + dirac_extra_energy_contrib_from_density
  END_PROVIDER
 
  BEGIN_PROVIDER [ double precision, dirac_SCF_Gaunt_energy]
-  integer     :: i,j,k
+  implicit none
   BEGIN_DOC
-  ! dirac_SCF energy 
+  !Dirac_SCF energy for a Coulomb_Gaunt ee interaction
   END_DOC 
   dirac_SCF_Gaunt_energy = dirac_HF_Gaunt_energy + dirac_extra_energy_contrib_from_density
  END_PROVIDER
 
 
-
  BEGIN_PROVIDER [complex*16, dirac_Fock_matrix_mo,(2*dirac_mo_tot_num,2*dirac_mo_tot_num)]
   implicit none
   BEGIN_DOC
-  ! Fock matrix in the MO basis
+  ! Fock matrix in the MO basis for a Coulomb ee interaction
   END_DOC
     call dirac_ao_to_mo(                                              &
         dirac_Fock_matrix_ao,                                         &
@@ -392,7 +403,7 @@
  BEGIN_PROVIDER [complex*16, dirac_Fock_matrix_Gaunt_mo,(2*dirac_mo_tot_num,2*dirac_mo_tot_num)]
   implicit none
   BEGIN_DOC
-  ! Fock matrix in the MO basis
+  ! Fock matrix in the MO basis for a Coulomb_Gaunt ee interaction
   END_DOC
     call dirac_ao_to_mo(                                              &
         dirac_Fock_matrix_Gaunt_ao,                                         &
@@ -402,12 +413,11 @@
         )
  END_PROVIDER
 
-
  
  BEGIN_PROVIDER [complex*16, dirac_Fock_matrix_diag_mo,(2*dirac_mo_tot_num)]
   implicit none
   BEGIN_DOC
-  ! Fock matrix in the MO basis
+  !Diagonal of the Fock matrix in the MO basis for a Coulomb ee interaction
   END_DOC
   integer :: i
   do i = 1, 2*dirac_mo_tot_num
@@ -418,7 +428,8 @@
  BEGIN_PROVIDER [complex*16, dirac_Fock_matrix_Gaunt_diag_mo,(2*dirac_mo_tot_num)]
   implicit none
   BEGIN_DOC
-  ! Fock matrix in the MO basis
+  !Diagonal of the Fock matrix in the MO basis for a Coulomt_Gaunt ee
+  !interaction
   END_DOC
   integer :: i
   do i = 1, 2*dirac_mo_tot_num
@@ -427,10 +438,13 @@
  END_PROVIDER
 
 
-
  BEGIN_PROVIDER [double precision,eigenvalues_dirac_fock_matrix_mo,(2*(dirac_mo_tot_num))]
  &BEGIN_PROVIDER [complex*16, eigenvectors_dirac_fock_matrix_mo,(2*(dirac_mo_tot_num),2*(dirac_mo_tot_num))]
   implicit none
+  BEGIN_DOC
+  !The eigenvalues and eigenvectors in the MO basis for a Coulomb ee
+  ! interaction
+  END_DOC
   integer :: n,nmax
   double precision :: eigenvalues( 2*(dirac_mo_tot_num))
   complex*16       :: eigenvectors(2*(dirac_mo_tot_num),2*(dirac_mo_tot_num))
@@ -444,8 +458,8 @@
  BEGIN_PROVIDER [double precision,eigenvalues_dirac_fock_matrix_Gaunt_mo,(2*(dirac_mo_tot_num))]
  &BEGIN_PROVIDER [complex*16, eigenvectors_dirac_fock_matrix_Gaunt_mo,(2*(dirac_mo_tot_num),2*(dirac_mo_tot_num))]
  BEGIN_DOC
- ! The eigenvectors and eigenvalues in the AO basis, 
- ! which does diagonalize S
+ !The eigenvalues and eigenvectors in the MO basis for a Coulomb_Gaunt ee
+ ! interaction
  END_DOC
   implicit none
   integer :: n,nmax
@@ -459,12 +473,11 @@
  END_PROVIDER
 
 
-
  BEGIN_PROVIDER [complex*16, eigenvectors_dirac_Fock_matrix_ao, (2*(dirac_mo_tot_num),2*(dirac_mo_tot_num))]
  implicit none
  BEGIN_DOC
- ! The eigenvectors in the AO basis, which does not
- ! diagonalize S
+ !The eigenvectors in the AO basis, which does not diagonalize S, 
+ ! for a Coulomb ee interaction
  END_DOC
  integer :: n,nmax
   call zgemm('N','N', 2*(dirac_ao_num), 2*(dirac_mo_tot_num), 2*(dirac_ao_num),              &
@@ -476,8 +489,8 @@
  BEGIN_PROVIDER [complex*16, eigenvectors_dirac_Fock_matrix_Gaunt_ao, (2*(dirac_mo_tot_num),2*(dirac_mo_tot_num))]
  implicit none
  BEGIN_DOC
- ! The eigenvectors in the AO basis, which does not
- ! diagonalize S
+ !The eigenvectors in the AO basis, which does not diagonalize S,
+ ! for a Coulomb_Gaunt ee interaction
  END_DOC
  integer :: n,nmax
   call zgemm('N','N', 2*(dirac_ao_num), 2*(dirac_mo_tot_num), 2*(dirac_ao_num),              &

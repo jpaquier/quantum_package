@@ -10,7 +10,7 @@
  BEGIN_PROVIDER [ integer, dirac_ao_prim_num, (dirac_ao_num) ]
  implicit none
   BEGIN_DOC
-  !Concatenation of the largei_ao_prim_num and small_ao_prim_num 
+  !Concatenation of the large_ao_prim_num and small_ao_prim_num 
   END_DOC
   integer                        :: i,i_minus
   do i = 1, dirac_ao_num

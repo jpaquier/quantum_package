@@ -1,10 +1,8 @@
  BEGIN_PROVIDER [ complex*16, dirac_mo_coef, (2*(dirac_ao_num),2*(dirac_mo_tot_num))
  implicit none
   BEGIN_DOC
-  ! Molecular orbital coefficients on AO basis set
-  ! dirac_mo_coef(i,j) = coefficient of the ith ao on the jth mo
-  ! mo_label : Label characterizing the MOS (local, canonical, natural,
-  ! etc)
+  !Molecular orbital coefficients on AO basis set
+  !dirac_mo_coef(i,j) = coefficient of the ith ao on the jth mo
   END_DOC
   integer                        :: i,i_minus,j,j_minus
   PROVIDE ezfio_filename
@@ -48,11 +46,8 @@
  BEGIN_PROVIDER [ complex*16, dirac_mo_coef_S, (2*(dirac_ao_num),2*(dirac_mo_tot_num))
  implicit none
   BEGIN_DOC
-  ! Molecular orbital coefficients on AO basis set 
-  ! diagonalizing the overlap matrix S
-  ! dirac_mo_coef_S(i,j) = coefficient of the ith ao on the jth mo
-  ! mo_label : Label characterizing the MOS (local, canonical, natural,
-  ! etc)
+  !Molecular orbital coefficients on AO basis set diagonalizing the overlap matrix S
+  !dirac_mo_coef_S(i,j) = coefficient of the ith ao on the jth mo
   END_DOC
   integer                        :: i,i_minus,j,j_minus
   PROVIDE ezfio_filename
@@ -96,10 +91,9 @@
  BEGIN_PROVIDER [ double precision, dirac_mo_coef_guess, (2*(dirac_ao_num),2*(dirac_mo_tot_num))
  implicit none
   BEGIN_DOC
-  ! Molecular orbital coefficients on AO basis set
-  ! dirac_mo_coef(i,j) = coefficient of the ith ao on the jth mo
-  ! mo_label : Label characterizing the MOS (local, canonical, natural,
-  ! etc)
+  !Molecular orbital coefficients on AO basis set obtained from non-relativistic
+  ! calculations and transformed as a relativistic guess
+  !dirac_mo_coef(i,j) = coefficient of the ith ao on the jth mo
   END_DOC
   integer                        :: i,i_minus,i_plus,j,j_minus,j_plus
   PROVIDE ezfio_filename
@@ -123,10 +117,9 @@
  BEGIN_PROVIDER [ complex*16, dirac_mo_coef_guess_ortho_canonical, (2*(dirac_ao_num),2*(dirac_mo_tot_num))
  implicit none
   BEGIN_DOC
-  ! Molecular orbital coefficients on AO basis set
-  ! dirac_mo_coef(i,j) = coefficient of the ith ao on the jth mo
-  ! mo_label : Label characterizing the MOS (local, canonical, natural,
-  ! etc)
+  !Molecular orbital coefficients on AO basis set obtained from non-relativistic
+  ! calculations and transformed as an ortho_canonical relativistic guess
+  !dirac_mo_coef(i,j) = coefficient of the ith ao on the jth mo
   END_DOC
   integer                        :: i,i_minus,j,j_minus
   double precision               :: dirac_mo_coef_guess_ortho_canonical_tmp(2*(dirac_ao_num),2*(dirac_mo_tot_num))
@@ -146,6 +139,8 @@
   ! Transform A from the AO basis to the MO basis
   !
   ! Ct.A_ao.C
+  !
+  ! For complex matrices
   END_DOC
   integer, intent(in)            :: LDA_ao,LDA_mo
   complex*16, intent(in)         :: A_ao(LDA_ao,2*dirac_ao_num)
@@ -181,7 +176,9 @@
   BEGIN_DOC
   ! Transform A from the MO basis to the AO basis
   !
-  ! (S.C).A_mo.(S.C)t
+  ! (S.C).A_mo.(S.C)*
+  !
+  ! For complex matrices
   END_DOC
   integer, intent(in)            :: LDA_ao,LDA_mo
   complex*16, intent(in)         :: A_mo(LDA_mo,2*dirac_mo_tot_num)
@@ -202,6 +199,9 @@
 
  BEGIN_PROVIDER [ complex*16, dirac_mo_overlap_bis,(2*dirac_mo_tot_num,2*dirac_mo_tot_num)]
   implicit none
+  BEGIN_DOC
+  !Array of the overlap matrix of the MOs
+  END_DOC
   integer :: i,j,n,l
   double precision :: f
   integer :: lmax
@@ -230,10 +230,7 @@
  BEGIN_PROVIDER [complex*16, dirac_mo_overlap,(2*(dirac_mo_tot_num),2*(dirac_mo_tot_num))]
   implicit none
   BEGIN_DOC
-  ! array of the mono electronic hamiltonian on the MOs basis 
-  ! obtained from the canonical orthonormalisation of the AOs 
-  ! basis, in the 4x4 component formalism with cartesian basis 
-  ! and the unrestricted kinetic-balance scheme  
+  !Array of the overlap matrix of the MOs
   END_DOC
     call dirac_ao_to_mo(                                          &
         dirac_ao_overlap,                                         &
@@ -254,9 +251,9 @@
   logical                        :: exists
   PROVIDE ezfio_filename
   if (mpi_master) then
-    call ezfio_has_mo_basis_mo_label(exists)
+    call ezfio_has_dirac_scf_dirac_mo_label(exists)
     if (exists) then
-      call ezfio_get_mo_basis_mo_label(dirac_mo_label)
+      call ezfio_get_dirac_scf_dirac_mo_label(dirac_mo_label)
       dirac_mo_label = trim(dirac_mo_label)
     else
       dirac_mo_label = 'no_label'
@@ -275,6 +272,9 @@
 
  subroutine orthonormalize_dirac_mos
   implicit none
+  BEGIN_DOC
+  !Orthonormalized complex MOs
+  END_DOC 
   call ortho_canonical_complex(dirac_mo_overlap,2*dirac_mo_tot_num,2*dirac_mo_tot_num,dirac_mo_coef,2*dirac_ao_num,2*dirac_ao_num)
   dirac_mo_label = 'Orthonormalized'
   SOFT_TOUCH dirac_mo_coef dirac_mo_label
