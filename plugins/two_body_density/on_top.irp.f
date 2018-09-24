@@ -42,6 +42,34 @@
  deallocate(r)
  END_PROVIDER
 
+ BEGIN_PROVIDER [double precision, on_top_of_r_vector,(n_points_final_grid,N_states) ]
+ implicit none
+ integer :: i_point,istate
+ double precision :: two_dm_in_r_selected_points
+ istate = 1
+ do i_point = 1, n_points_final_grid
+  on_top_of_r_vector(i_point,istate) = two_dm_in_r_selected_points(i_point,1)
+ enddo
+ END_PROVIDER 
+ 
+
+ BEGIN_PROVIDER [double precision, on_top_of_r_vector_parallel,(n_points_final_grid,N_states) ]
+ implicit none
+ integer :: i_point,istate
+ double precision :: two_dm_in_r_selected_points
+ istate = 1
+ !$OMP PARALLEL DO &
+ !$OMP DEFAULT (NONE)  &
+ !$OMP PRIVATE (i_point) &
+ !$OMP SHARED(on_top_of_r_vector_parallel,istate,n_points_final_grid)
+ do i_point = 1, n_points_final_grid
+  on_top_of_r_vector_parallel(i_point,istate) = two_dm_in_r_selected_points(i_point,istate)
+ enddo
+ !$OMP END PARALLEL DO
+ END_PROVIDER 
+ 
+
+
 double precision function on_top_in_r_sorted(r,istate)
  implicit none
  BEGIN_DOC
@@ -93,5 +121,23 @@ double precision function two_dm_in_r(r1,r2,istate)
   enddo
  enddo
  two_dm_in_r = max(two_dm_in_r,1.d-15)
+end
+
+
+double precision function two_dm_in_r_selected_points(i_point,istate)
+ implicit none
+ integer, intent(in) :: istate,i_point
+ integer :: i,j,k,l
+ two_dm_in_r_selected_points = 0.d0
+ do i = 1, mo_tot_num
+  do j = 1, mo_tot_num
+   do k = 1, mo_tot_num
+    do l = 1, mo_tot_num
+     two_dm_in_r_selected_points += two_bod_alpha_beta_mo_transposed(l,k,j,i,istate) * mos_in_r_array(i,i_point) * mos_in_r_array(l,i_point) * mos_in_r_array(k,i_point) * mos_in_r_array(j,i_point)
+    enddo
+   enddo
+  enddo
+ enddo
+ two_dm_in_r_selected_points = max(two_dm_in_r_selected_points,1.d-15)
 end
 

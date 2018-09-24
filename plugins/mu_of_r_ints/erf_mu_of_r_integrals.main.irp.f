@@ -1,6 +1,8 @@
 program erf_mu_of_r_integrals
  implicit none 
- call test_int_erf_bielec_ijkl
+!call test_int_erf_bielec_ijkl_mo
+ call test_mu_erf
+!call test_int_erf_bielec_ijkl
 !call test_aos
 !call bis
 !call test_prim
@@ -8,6 +10,30 @@ program erf_mu_of_r_integrals
 !call test_erf
 end
 
+ subroutine test_mu_erf
+ implicit none
+ double precision, allocatable :: integrals_mo(:,:),mos_array(:)
+ double precision :: r(3),mu_in
+ allocate(integrals_mo(mo_tot_num,mo_tot_num),mos_array(mo_tot_num))
+ r = 0.d0
+ mu_in = 0.001d0
+ integer :: i_mu,n_mui,j,k,l
+ double precision :: dmu,mu_tot
+ mu_tot = 2.d0
+ n_mu = 100
+ do i_mu = 1, n_mu
+  call give_all_erf_mu_of_r_kl_mo(integrals_mo,mu_in,r)
+  call give_all_mos_at_r(r,mos_array)
+  tmp = 0.d0
+  do i = 1, elec_alpha_num
+   do j = 1, elec_beta_num
+    tmp += mos_array(j)**2 * integrals_mo(i,i)
+   enddo
+  enddo
+ enddo
+     
+
+ end
 
 subroutine test_erf
  implicit none
@@ -586,31 +612,36 @@ end
 
 subroutine test_int_erf_bielec_ijkl
  implicit none
- integer :: i,j,k,l,i_count
- double precision :: accu
+ integer :: i,j,k,l
+ double precision :: accu_relative,accu_absolute
  double precision, allocatable :: integrals_array(:,:)
  double precision :: integral_erf,erf_mu_of_r_ao,test,ao_bielec_integral_erf,test_2,erf_mu_of_r_ao_old
  allocate(integrals_array(ao_num,ao_num))
- accu = 0.d0
+ accu_relative = 0.d0
+ accu_absolute = 0.d0
  i_count = 0
  
  integral_erf = erf_mu_of_r_ao(1,1,1,1)
  print*,''
  call wall_time(wall1)
- provide ao_bielec_integrals_erf_in_map
- do i = 1, ao_num
-  do j = 1, ao_num
+ provide ao_bielec_integrals_erf_in_map ao_bielec_integrals_erf_mu_of_r_in_map 
+ do i = 1, ao_num ! electron 1 
+  do j = 1, ao_num ! electron 1 
    print*,i,j
-   call give_all_erf_mu_of_r_kl(i,j,integrals_array)
-   do k = 1, ao_num
-    do l = 1, ao_num
+!  call give_all_erf_mu_of_r_kl(i,j,integrals_array)
+   do k = 1, ao_num ! electron 2 
+    do l = 1, ao_num ! electron 2 
+     double precision :: get_ao_bielec_integral_erf_mu_of_r,integral_erf_map,i_count
+     
      integral_erf = ao_bielec_integral_erf(i,j,k,l)
-  !  integral_erf = erf_mu_of_r_ao(i,j,k,l)
+    !integral_erf = erf_mu_of_r_ao(i,j,k,l)
   ! !test = erf_mu_of_r_ao(i,j,k,l)
-     test = integrals_array(l,k)
+!    test = integrals_array(l,k)
+     test = get_ao_bielec_integral_erf_mu_of_r(i,k,j,l,ao_integrals_erf_mu_of_r_map)
      if(dabs(integral_erf + test).gt.0.d0)then
-      i_count += 1
-      accu += dabs(integral_erf - test)/dabs(integral_erf + test)*0.5d0
+      i_count += 1.d0
+      accu_absolute += dabs(integral_erf - test)!/dabs(integral_erf + test)*0.5d0
+      accu_relative += dabs(integral_erf - test)/dabs(integral_erf + test)*0.5d0
      endif
      if(dabs(integral_erf - test).gt.1.d-10)then
       print*,'AHAHAH'
@@ -625,6 +656,44 @@ subroutine test_int_erf_bielec_ijkl
  call wall_time(wall2)
  double precision :: wall1, wall2
  print*,'time = ',wall2-wall1
- accu = accu/dble(i_count)
- print*,'average error = ',accu
+ accu_absolute = accu_absolute/(i_count)
+ accu_relative = accu_relative/(i_count)
+ print*,'average absolute error = ',accu_absolute 
+ print*,'average relative error = ',accu_relative 
+end
+
+subroutine test_int_erf_bielec_ijkl_mo
+ implicit none
+ integer :: i,j,k,l
+ integer :: m,n,p,q
+ double precision :: accu,get_mo_bielec_integral_erf_mu_of_r, integral, get_ao_bielec_integral_erf_mu_of_r,integral_2
+
+ do i = 1, mo_tot_num ! 1 
+  do j = 1, mo_tot_num ! 2 
+   do k = 1, mo_tot_num ! 1 
+    do l = 1, mo_tot_num ! 2
+     integral = get_mo_bielec_integral_erf_mu_of_r(i,j,k,l,mo_integrals_erf_mu_of_r_map)
+     integral_2 = 0.d0
+     do m = 1, ao_num
+      do n = 1, ao_num
+       do p = 1, ao_num
+        do q = 1, ao_num   !                                                                          1             2                1              2
+         integral_2 += get_ao_bielec_integral_erf_mu_of_r(m,n,p,q,ao_integrals_erf_mu_of_r_map) * mo_coef(m,i) * mo_coef(n,j)  * mo_coef(p,k) * mo_coef(q,l)  
+        enddo
+       enddo
+      enddo
+     enddo
+      print*,i,j,k,l
+      print*,integral,integral_2
+     if(dabs(integral - integral_2).gt.1.d-6)then
+      print*,'AHAHAH'
+      print*,i,j,k,l
+      print*,integral,integral_2
+      print*,dabs(integral- integral_2),dabs(integral- integral_2)/dabs(integral+integral_2)*0.5d0
+     endif
+    enddo
+   enddo
+  enddo 
+ enddo
+
 end

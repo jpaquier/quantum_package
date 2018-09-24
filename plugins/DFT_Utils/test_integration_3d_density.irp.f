@@ -5,6 +5,7 @@ program pouet
  double precision :: rmax
  nx = 100
  rmax = 3.d0
+ call test_mu_erf
 !call test_erf_coulomb_oprerator
 !call test
 !call test_inv_erf
@@ -12,14 +13,14 @@ program pouet
 !call test_r12_psi(nx,rmax)
 !call test_one_dm_mo
 !call routine3
-call test_rho2
+!call test_rho2
 !call test_one_dm_ao
 !call test_coulomb_oprerator
 !call test_expectation_value
 !call test_erf_coulomb_oprerator
 !call test_nuclear_coulomb_oprerator
 !call test_integratio_mo
- call test_naive_grid
+!call test_naive_grid
 end
 
 subroutine test
@@ -41,40 +42,28 @@ end
 subroutine test_rho2
  implicit none
  integer :: j,k,l 
- double precision ::r(3),rho2,rho2_ap
- double precision :: test,test_bart
+ double precision ::r(3)
+ double precision :: test,integral_f
 
- r(1) = 0.d0
- r(2) = 0.d0
- r(3) = 0.d0
- call  two_dm_in_r(r,r,rho2)
- print*,'rho2(0) = ',rho2
-!call  on_top_pair_density_in_real_space_approx(r,rho2_ap)
-! print*,'rho2(0) = ',rho2_ap
-!stop
  test = 0.d0
-  do j = 1, nucl_num
-   do k = 1, n_points_radial_grid  -1
-    print*,k
-    do l = 1, n_points_integration_angular 
-     
-     r(1) = grid_points_per_atom(1,l,k,j)
-     r(2) = grid_points_per_atom(2,l,k,j)
-     r(3) = grid_points_per_atom(3,l,k,j)
-     call  two_dm_in_r(r,rho2)
-     !call  on_top_pair_density_in_real_space_approx(r,rho2_ap)
-     print*,'rho2(r) normal = ',rho2
- !    print*,'rho2(r) barth =  ',rho2_ap
-!    call  on_top_pair_density_in_real_space_from_ao(r,rho2)
-     test += rho2 * final_weight_functions_at_grid_points(l,k,j)
- !    test_bart += rho2_ap * final_weight_functions_at_grid_points(l,k,j) 
-     enddo
+ do j = 1, nucl_num
+  do k = 1, n_points_radial_grid  -1
+   do l = 1, n_points_integration_angular 
+    
+    r(1) = grid_points_per_atom(1,l,k,j)
+    r(2) = grid_points_per_atom(2,l,k,j)
+    r(3) = grid_points_per_atom(3,l,k,j)
+    call integral_of_f_12_on_hf(r,integral_f)
+    test += integral_f * final_weight_functions_at_grid_points(l,k,j) 
     enddo
    enddo
+  enddo
  print*,'test = ',test
 ! print*,'test Barth = ',test_bart
 
 end
+
+
 
 
 subroutine test_one_dm_mo

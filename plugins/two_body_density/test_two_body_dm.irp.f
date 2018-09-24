@@ -8,7 +8,15 @@ end
 
 subroutine test_2dm
  implicit none
- provide two_bod_alpha_beta_mo
+!provide two_bod_alpha_beta_mo
+ integer :: i,j
+ do i = 1, n_points_final_grid
+  if(dabs(on_top_of_r_vector_parallel(i,1) - on_top_of_r_vector(i,1)).gt.1.d-10)then 
+   print*,'ahahah'
+   print*,i,on_top_of_r_vector_parallel(i,1),on_top_of_r_vector(i,1)
+   print*,dabs(on_top_of_r_vector_parallel(i,1) - on_top_of_r_vector(i,1))
+  endif
+ enddo
 
 
 end
