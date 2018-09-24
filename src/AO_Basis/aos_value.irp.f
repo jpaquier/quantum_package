@@ -128,7 +128,7 @@ subroutine give_all_aos_and_grad_at_r(r,aos_array,aos_grad_array)
  END_DOC
  double precision, intent(in) :: r(3)
  double precision, intent(out) :: aos_array(ao_num)
- double precision, intent(out) :: aos_grad_array(3,ao_num)
+ double precision, intent(out) :: aos_grad_array(ao_num,3)
  
  integer :: power_ao(3) 
  integer :: i,j,k,l,m
@@ -146,9 +146,9 @@ subroutine give_all_aos_and_grad_at_r(r,aos_array,aos_grad_array)
   do j = 1,Nucl_N_Aos(i) 
    k = Nucl_Aos_transposed(j,i) ! index of the ao in the ordered format 
    aos_array(k) = 0.d0
-   aos_grad_array(1,k) = 0.d0
-   aos_grad_array(2,k) = 0.d0
-   aos_grad_array(3,k) = 0.d0
+   aos_grad_array(k,1) = 0.d0
+   aos_grad_array(k,2) = 0.d0
+   aos_grad_array(k,3) = 0.d0
    power_ao(1:3)= ao_power_ordered_transp_per_nucl(1:3,j,i)
    dx2 = dx**power_ao(1)
    dy2 = dy**power_ao(2)
@@ -177,14 +177,172 @@ subroutine give_all_aos_and_grad_at_r(r,aos_array,aos_grad_array)
     accu_2 += contrib * beta
    enddo
    aos_array(k) = accu_1 * dx2 * dy2 * dz2
-   aos_grad_array(1,k) = accu_1 * dx1  * dy2 * dz2- 2.d0 * dx2 * dx  * dy2 * dz2 * accu_2
-   aos_grad_array(2,k) = accu_1 * dx2  * dy1 * dz2- 2.d0 * dx2 * dy2 * dy  * dz2 * accu_2
-   aos_grad_array(3,k) = accu_1 * dx2  * dy2 * dz1- 2.d0 * dx2 * dy2 * dz2 * dz  * accu_2
+   aos_grad_array(k,1) = accu_1 * dx1  * dy2 * dz2- 2.d0 * dx2 * dx  * dy2 * dz2 * accu_2
+   aos_grad_array(k,2) = accu_1 * dx2  * dy1 * dz2- 2.d0 * dx2 * dy2 * dy  * dz2 * accu_2
+   aos_grad_array(k,3) = accu_1 * dx2  * dy2 * dz1- 2.d0 * dx2 * dy2 * dz2 * dz  * accu_2
   !if(isnan(aos_grad_array(1,k)))then
   ! print*, k
   ! print*, power_ao
   ! pause
   !endif
+  enddo
+ enddo
+end
+
+
+subroutine give_all_aos_and_grad_and_lapl_at_r(r,aos_array,aos_grad_array,aos_lapl_array)
+ implicit none
+ BEGIN_DOC
+! input      : r(1) ==> r(1) = x, r(2) = y, r(3) = z
+! output     : aos_array(i) = ao(i) evaluated at r
+!            : aos_grad_array(1,i) = gradient X of the ao(i) evaluated at r
+ END_DOC
+ double precision, intent(in) :: r(3)
+ double precision, intent(out) :: aos_array(ao_num)
+ double precision, intent(out) :: aos_grad_array(ao_num,3)
+ double precision, intent(out) :: aos_lapl_array(ao_num,3)
+
+ integer :: power_ao(3)
+ integer :: i,j,k,l,m
+ double precision :: dx,dy,dz,r2
+ double precision ::      dx2,dy2,dz2
+ double precision ::      dx1,dy1,dz1
+ double precision ::      dx3,dy3,dz3
+ double precision ::      dx4,dy4,dz4
+ double precision ::      dx5,dy5,dz5
+ double precision :: center_ao(3)
+ double precision :: beta,accu_1,accu_2,accu_3,contrib
+ do i = 1, nucl_num
+  center_ao(1:3) = nucl_coord(i,1:3)
+  dx = (r(1) - center_ao(1))
+  dy = (r(2) - center_ao(2))
+  dz = (r(3) - center_ao(3))
+  r2 = dx*dx + dy*dy + dz*dz
+  do j = 1,Nucl_N_Aos(i)
+   k = Nucl_Aos_transposed(j,i) ! index of the ao in the ordered format 
+   aos_array(k) = 0.d0
+   aos_grad_array(k,1) = 0.d0
+   aos_grad_array(k,2) = 0.d0
+   aos_grad_array(k,3) = 0.d0
+
+   aos_lapl_array(k,1) = 0.d0
+   aos_lapl_array(k,2) = 0.d0
+   aos_lapl_array(k,3) = 0.d0
+
+   power_ao(1:3)= ao_power_ordered_transp_per_nucl(1:3,j,i)
+   dx2 = dx**power_ao(1)
+   dy2 = dy**power_ao(2)
+   dz2 = dz**power_ao(3)
+   if(power_ao(1) .ne. 0)then
+    dx1 = dble(power_ao(1)) * dx**(power_ao(1)-1)
+   else  
+    dx1 = 0.d0
+   endif
+   ! For the Laplacian
+   if(power_ao(1) .ge. 2)then
+    dx3 = dble(power_ao(1)) * dble((power_ao(1)-1))  * dx**(power_ao(1)-2)
+   else
+    dx3 = 0.d0
+   endif
+   dx4 = dble((2 * power_ao(1) + 1))  * dx**(power_ao(1))
+   dx5 = dx**(power_ao(1)+2)
+
+   if(power_ao(2) .ne. 0)then
+    dy1 = dble(power_ao(2)) * dy**(power_ao(2)-1)
+   else
+    dy1 = 0.d0
+   endif
+   ! For the Laplacian
+   if(power_ao(2) .ge. 2)then
+    dy3 = dble(power_ao(2)) * dble((power_ao(2)-1))  * dy**(power_ao(2)-2)
+   else
+    dy3 = 0.d0
+   endif
+   dy4 = dble((2 * power_ao(2) + 1))  * dy**(power_ao(2))
+   dy5 = dy**(power_ao(2)+2)
+
+
+   if(power_ao(3) .ne. 0)then
+    dz1 = dble(power_ao(3)) * dz**(power_ao(3)-1)
+   else
+    dz1 = 0.d0
+   endif
+   ! For the Laplacian
+   if(power_ao(2) .ge. 2)then
+    dz3 = dble(power_ao(3)) * dble((power_ao(3)-1))  * dz**(power_ao(3)-2)
+   else
+    dz3 = 0.d0
+   endif
+   dz4 = dble((2 * power_ao(3) + 1))  * dz**(power_ao(3))
+   dz5 = dz**(power_ao(3)+2)
+
+
+   accu_1 = 0.d0
+   accu_2 = 0.d0
+   accu_3 = 0.d0
+   do l = 1,ao_prim_num(k)
+    beta = ao_expo_ordered_transp_per_nucl(l,j,i)
+    contrib = ao_coef_normalized_ordered_transp_per_nucl(l,j,i) * dexp(-beta*r2)
+    accu_1 += contrib
+    accu_2 += contrib * beta
+    accu_3 += contrib * beta**2
+   enddo
+   aos_array(k) = accu_1 * dx2 * dy2 * dz2
+
+   aos_grad_array(k,1) = accu_1 * dx1  * dy2 * dz2- 2.d0 * dx2 * dx  * dy2 * dz2 * accu_2
+   aos_grad_array(k,2) = accu_1 * dx2  * dy1 * dz2- 2.d0 * dx2 * dy2 * dy  * dz2 * accu_2
+   aos_grad_array(k,3) = accu_1 * dx2  * dy2 * dz1- 2.d0 * dx2 * dy2 * dz2 * dz  * accu_2
+
+   aos_lapl_array(k,1) = accu_1 * dx3  * dy2 * dz2- 2.d0 * dx4 * dy2 * dz2* accu_2 +4.d0 * dx5 *dy2 * dz2* accu_3
+   aos_lapl_array(k,2) = accu_1 * dx2  * dy3 * dz2- 2.d0 * dx2 * dy4 * dz2* accu_2 +4.d0 * dx2 *dy5 * dz2* accu_3
+   aos_lapl_array(k,3) = accu_1 * dx2  * dy2 * dz3- 2.d0 * dx2 * dy2 * dz4* accu_2 +4.d0 * dx2 *dy2 * dz5* accu_3
+ 
+  enddo
+ enddo
+end
+
+
+subroutine give_all_mos_and_grad_at_r(r,mos_array,mos_grad_array)
+ implicit none
+ double precision, intent(in) :: r(3)
+ double precision, intent(out) :: mos_array(mo_tot_num)
+ double precision, intent(out) :: mos_grad_array(mo_tot_num,3)
+ integer :: i,j,k
+ double precision :: aos_array(ao_num),aos_grad_array(ao_num,3)
+ call give_all_aos_and_grad_at_r(r,aos_array,aos_grad_array)
+ mos_array=0d0
+ mos_grad_array=0d0
+ do j = 1, mo_tot_num 
+  do k=1, ao_num
+   mos_array(j) += mo_coef(k,j)*aos_array(k)
+   mos_grad_array(j,1) += mo_coef(k,j)*aos_grad_array(k,1)
+   mos_grad_array(j,2) += mo_coef(k,j)*aos_grad_array(k,2)
+   mos_grad_array(j,3) += mo_coef(k,j)*aos_grad_array(k,3)
+  enddo
+ enddo
+end 
+
+
+subroutine give_all_mos_and_grad_and_lapl_at_r(r,mos_array,mos_grad_array,mos_lapl_array)
+ implicit none
+ double precision, intent(in) :: r(3)
+ double precision, intent(out) :: mos_array(mo_tot_num)
+ double precision, intent(out) :: mos_grad_array(mo_tot_num,3),mos_lapl_array(mo_tot_num,3)
+ integer :: i,j,k
+ double precision :: aos_array(ao_num),aos_grad_array(ao_num,3),aos_lapl_array(ao_num,3)
+ call give_all_aos_and_grad_and_lapl_at_r(r,aos_array,aos_grad_array,aos_lapl_array)
+ mos_array=0d0
+ mos_grad_array=0d0
+ mos_lapl_array=0d0
+ do j = 1, mo_tot_num
+  do k=1, ao_num
+   mos_array(j) += mo_coef(k,j)*aos_array(k)
+   mos_grad_array(j,1) += mo_coef(k,j)*aos_grad_array(k,1)
+   mos_grad_array(j,2) += mo_coef(k,j)*aos_grad_array(k,2)
+   mos_grad_array(j,3) += mo_coef(k,j)*aos_grad_array(k,3)
+   mos_lapl_array(j,1) += mo_coef(k,j)*aos_lapl_array(k,1)
+   mos_lapl_array(j,2) += mo_coef(k,j)*aos_lapl_array(k,2)
+   mos_lapl_array(j,3) += mo_coef(k,j)*aos_lapl_array(k,3)
   enddo
  enddo
 end

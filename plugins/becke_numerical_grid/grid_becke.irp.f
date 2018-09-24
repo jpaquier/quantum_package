@@ -176,6 +176,7 @@ BEGIN_PROVIDER [integer, n_points_final_grid]
  BEGIN_DOC
 ! number of points which are non zero 
  END_DOC
+ implicit none
  integer :: i,j,k
  n_points_final_grid = 0 
   do j = 1, nucl_num  

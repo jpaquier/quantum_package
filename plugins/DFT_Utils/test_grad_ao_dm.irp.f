@@ -1,12 +1,109 @@
 program pouet
  read_wf = .True.
  touch read_wf
- call test_grad_density
+! call test_grad_ao
+ !call test_grad_lapl_ao
+ call test_grad_lapl_mo
+! call test_grad_density
 !call test_v_corel_old
 !call test_v_corel_new
 !call test_v_corel
 !call test_int
 end
+
+subroutine test_grad_lapl_ao
+ implicit none
+ integer :: i,j,k,l,m,n
+ double precision :: r(3),rdx_plus(3),rdx_minus(3),accu(3),accu_2(3)
+ double precision :: grad_aos_array(ao_num,3),grad_aos_array_bis(ao_num,3)
+ double precision :: aos_array(ao_num),aos_array_plus(ao_num),aos_array_minus(ao_num)
+ double precision :: lapl_aos_array(ao_num,3),lapl_aos_array_bis(ao_num,3) 
+ double precision :: grad_aos_array_plus(ao_num,3),grad_aos_array_minus(ao_num,3) 
+ double precision :: dr
+print*,'dr,error grad, error lapl'
+ do n = 1, 16
+ dr = 10d0**(-n)
+ r = 0d0
+ accu = 0d0
+ accu_2 = 0d0
+  do j = 1,nucl_num
+   do k = 1, n_points_radial_grid -1
+    do l = 1 , n_points_integration_angular
+     r(1) = grid_points_per_atom(1,l,k,j)
+     r(2) = grid_points_per_atom(2,l,k,j)
+     r(3) = grid_points_per_atom(3,l,k,j)
+     call give_all_aos_and_grad_and_lapl_at_r(r,aos_array,grad_aos_array,lapl_aos_array)
+     do m = 1,3
+      rdx_plus = r
+      rdx_plus(m) = r(m) + dr
+      rdx_minus = r
+      rdx_minus(m) = r(m) - dr
+
+      call give_all_aos_and_grad_at_r(rdx_plus,aos_array_plus,grad_aos_array_plus)
+      call give_all_aos_and_grad_at_r(rdx_minus,aos_array_minus,grad_aos_array_minus) 
+
+      do i = 1, ao_num
+        grad_aos_array_bis(i,m) = (aos_array_plus(i) - aos_array_minus(i)) /(2.d0 * dr)
+        accu(m) += dabs(grad_aos_array_bis(i,m) - grad_aos_array(i,m)) * final_weight_functions_at_grid_points(l,k,j)
+
+        lapl_aos_array_bis(i,m) = (grad_aos_array_plus(i,m) - grad_aos_array_minus(i,m))/(2.d0 * dr)
+        accu_2(m) += dabs(lapl_aos_array_bis(i,m) - lapl_aos_array(i,m)) *final_weight_functions_at_grid_points(l,k,j)
+      enddo
+     enddo
+    enddo
+   enddo
+  enddo
+  print*,dr,accu(1),accu_2(1)
+ enddo
+
+end
+
+subroutine test_grad_lapl_mo
+ implicit none
+ integer :: i,j,k,l,m,n
+ double precision :: r(3),rdx_plus(3),rdx_minus(3),accu(3),accu_2(3)
+ double precision :: grad_mos_array_bis(ao_num,3)
+ double precision :: mos_array_plus(ao_num),mos_array_minus(ao_num)
+ double precision :: lapl_mos_array_bis(mo_tot_num,3)
+ double precision :: grad_mos_array_plus(mo_tot_num,3),grad_mos_array_minus(mo_tot_num,3)
+ double precision :: dr
+ print*,'\\\\\\\\\\\\\\\\\'
+ print*,' '
+ print*,'Test MO'
+ print*,'dr,error grad, error lapl'
+ do n = 1, 16
+  dr = 10d0**(-n)
+  r = 0d0
+  accu = 0d0
+  accu_2= 0d0
+  do i = 1, n_points_final_grid
+   r(1) = final_grid_points(1,i)
+   r(2) = final_grid_points(2,i)
+   r(3) = final_grid_points(3,i)
+   do m = 1,3
+    rdx_plus = r
+    rdx_plus(m) = r(m) + dr
+    rdx_minus = r
+    rdx_minus(m) = r(m) - dr 
+    call give_all_mos_and_grad_at_r(rdx_plus,mos_array_plus,grad_mos_array_plus)
+    call give_all_mos_and_grad_at_r(rdx_minus,mos_array_minus,grad_mos_array_minus)    
+    do j = 1, mo_tot_num
+!    if(dabs(mos_grad_in_r_array(1,i,1) - mos_grad_in_r_array(1,i,2)).gt.1.d-10)then
+!     print*,mos_grad_in_r_array(1,i,1),mos_grad_in_r_array(1,i,2)
+!    endif
+     grad_mos_array_bis(j,m) = (mos_array_plus(j) - mos_array_minus(j))/(2.d0 * dr)
+     accu(m) += dabs(grad_mos_array_bis(j,m) - mos_grad_in_r_array(j,i,m)) * final_weight_functions_at_final_grid_points(i)
+
+     lapl_mos_array_bis(j,m) = (grad_mos_array_plus(j,m) - grad_mos_array_minus(j,m))/(2.d0 * dr)
+     accu_2(m) += dabs(lapl_mos_array_bis(j,m) - mos_lapl_in_r_array(j,i,m)) * final_weight_functions_at_final_grid_points(i)
+    enddo
+   enddo
+  enddo
+  print*,dr,accu(1),accu(2),accu(3),accu_2(1),accu_2(2)
+ enddo
+end
+
+
 
 subroutine test_grad_ao
  implicit none
@@ -47,6 +144,9 @@ subroutine test_grad_ao
  enddo
 
 end
+
+
+
 
 
 subroutine test_grad_density
