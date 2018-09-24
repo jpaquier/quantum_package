@@ -4,12 +4,19 @@ program Dirac_SCF
   !Print whatever tests one may deem useful or remotely interesting 
   END_DOC
   integer :: i,j,k,l,l_type,n,g,h,df_L
-  double precision :: integral, ao_bielec_integral, dirac_ao_bielec_integral,eigenvalues(2)
+  double precision :: integral, ao_bielec_integral, dirac_ao_bielec_integral,eigenvalues(2),ao_bielec_integral_erf,dirac_ao_bielec_integral_erf
   complex*16       :: ortho(2*dirac_ao_num),testm(2,2), eigenvectors(2,2)
   include 'Utils/constants.include.F'
 
+ mu_erf = 1
  print*,'************'
- print*, 'speed_of_light = ', speed_of_light
+ do i = 1, dirac_ao_num
+ !print*,'integral =',  ao_bielec_integral(1,1,1,1)
+  print*,'dirac_integral =',  dirac_ao_bielec_integral(i,i,i,i)
+ !print*,'integral_erf =',  ao_bielec_integral_erf(1,1,1,1)
+  print*,'dirac_integral_erf =',  dirac_ao_bielec_integral_erf(i,i,i,i)
+  print*,'**************************'
+ enddo
  
 !print*,'************'
 !print*, large_ao_num,small_ao_num,dirac_ao_num
