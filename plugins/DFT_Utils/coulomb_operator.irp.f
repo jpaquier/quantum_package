@@ -385,6 +385,21 @@ BEGIN_PROVIDER [double precision, integrals_for_hf_potential, (mo_tot_num,mo_tot
  enddo
 END_PROVIDER 
 
+BEGIN_PROVIDER [double precision, integrals_for_hf_potential_integrated, (mo_tot_num,elec_alpha_num)]
+ implicit none
+ integer :: i,j,k
+ double precision :: get_mo_bielec_integral
+ integrals_for_hf_potential_integrated = 0.d0
+ do k = 1, elec_alpha_num ! electron 1 alpha 
+  do i = 1, mo_tot_num   ! electron 1 alpha
+   do j = 1, elec_beta_num ! electron 2 beta 
+    integrals_for_hf_potential_integrated(i,k) += get_mo_bielec_integral(i,j,k,j,mo_integrals_map) 
+   enddo
+  enddo
+ enddo
+END_PROVIDER 
+
+
 double precision function mu_coulomb(y,x)
  implicit none
  BEGIN_DOC
@@ -480,6 +495,53 @@ subroutine local_r12_operator_on_hf(r1,r2,integral_psi)
  endif
 
 end
+
+subroutine integral_of_f_12_on_hf(r1,integral_f)
+ implicit none
+ BEGIN_DOC
+! computes the following ANALYTICAL integral
+! int dr2 f_HF(r1,r2) with f_HF is the function f of the first paper but defined for a HF two-body tensor 
+ END_DOC
+ double precision, intent(in) :: r1(3)
+ double precision, intent(out):: integral_f
+ integer :: i,k
+ double precision :: mos_array_r1(mo_tot_num)
+ call give_all_mos_at_r(r1,mos_array_r1)
+
+ integral_f = 0.d0
+ do k = 1, elec_alpha_num
+  do i = 1, mo_tot_num
+   integral_f += integrals_for_hf_potential_integrated(i,k) * mos_array_r1(i) * mos_array_r1(k)
+  enddo
+ enddo
+
+end
+
+subroutine mu_integral_of_f_12_on_hf_over_density(r1,mu_local)
+ implicit none
+ BEGIN_DOC
+! computes the following ANALYTICAL integral
+! int dr2 f_HF(r1,r2) with f_HF is the function f of the first paper but defined for a HF two-body tensor 
+ END_DOC
+ double precision, intent(in) :: r1(3)
+ double precision, intent(out):: mu_local
+ double precision :: integral_f
+ integer :: i,k
+ double precision :: mos_array_r1(mo_tot_num),density
+ call give_all_mos_at_r(r1,mos_array_r1)
+
+ integral_f = 0.d0
+ density = 0.d0
+ do k = 1, elec_alpha_num
+  density += mos_array_r1(k) * mos_array_r1(k)
+  do i = 1, mo_tot_num
+   integral_f += integrals_for_hf_potential_integrated(i,k) * mos_array_r1(i) * mos_array_r1(k)
+  enddo
+ enddo
+ mu_local = integral_f / (density * dble(elec_beta_num)) !* dsqrt(dacos(-1.d0)) * 0.5d0
+
+end
+
 
 
 subroutine pure_expectation_value_on_hf(r1,r2,integral_psi)

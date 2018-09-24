@@ -55,22 +55,58 @@ end
  double precision, intent(out) :: integrals(ao_num,ao_num)
  integer :: i_point,i,j
  double precision :: integrals_kl_of_r(n_points_final_grid),r(3),NAI_pol_mult_erf_ao,tmp
- double precision,allocatable :: v_array(:,:)
- allocate(v_array(ao_num,n_points_final_grid))
+ double precision,allocatable :: v_array(:,:),v_vector(:)
+ allocate(v_array(ao_num,n_points_final_grid),v_vector(n_points_final_grid))
  integrals = 0.d0
  do i_point = 1, n_points_final_grid
   r(1) = final_grid_points(1,i_point) 
   r(2) = final_grid_points(2,i_point) 
   r(3) = final_grid_points(3,i_point) 
-  tmp = 0.d0
-! if(dabs(aos_in_r_array_transp(i_point,k) * aos_in_r_array_transp(i_point,l) * 2.d0/dsqrt(pi) * mu_of_r_prov_selected(i_point)) * ao_overlap_abs(k,l) .lt. threshold_grid_dft)then
-!  tmp = 0.d0
-! else 
-   tmp = NAI_pol_mult_erf_ao(k,l,mu_of_r_prov_selected(i_point),r) 
-! endif
+  tmp = NAI_pol_mult_erf_ao(k,l,mu_of_r_prov_selected(i_point),r) 
+  v_vector(i_point) = tmp
   do i = 1, ao_num
    v_array(i,i_point) = tmp * final_weight_functions_at_final_grid_points(i_point) * aos_in_r_array(i,i_point)
   enddo
  enddo
- call dgemm('N','N',ao_num,ao_num,n_points_final_grid,1.d0,v_array,size(v_array,1),aos_in_r_array_transp,size(aos_in_r_array_transp,1),1.d0,integrals,size(integrals,1))
+!call dgemm('N','N',ao_num,ao_num,n_points_final_grid,1.d0,v_array,size(v_array,1),aos_in_r_array_transp,size(aos_in_r_array_transp,1),1.d0,integrals,size(integrals,1))
+ do i_point = 1, n_points_final_grid
+  do i = 1, ao_num
+   do j = 1, ao_num
+    integrals(j,i) += v_vector(i_point) * aos_in_r_array(i,i_point) * aos_in_r_array(j,i_point) * final_weight_functions_at_final_grid_points(i_point)
+   enddo
+  enddo
+ enddo
  end
+
+subroutine give_all_erf_mu_of_r_kl_mo(integrals_mo,mu_in,r)
+ implicit none
+ double precision, intent(in)  :: mu_in,r(3)
+ double precision, intent(out) :: integrals_mo(mo_tot_num,mo_tot_num)
+ double precision :: integrals_ao(ao_num,ao_num), NAI_pol_mult_erf_ao
+ integer :: i,j,l,k,m
+ do k = 1, ao_num
+  do m = 1, ao_num
+   integrals_ao(m,k) = NAI_pol_mult_erf_ao(m,k,mu_in,r)
+  enddo
+ enddo
+
+ call ao_to_mo(                                           &
+      integrals_ao,                                       &
+      size(integrals_ao,1),                               &
+      integrals_mo,                                       &
+      size(integrals_mo,1)                                &
+      )
+end
+
+subroutine give_all_erf_mu_of_r_kl_ao(integrals_ao,mu_in,r)
+ implicit none
+ double precision, intent(in)  :: mu_in,r(3)
+ double precision, intent(out) :: integrals_ao(ao_num,ao_num)
+ double precision :: NAI_pol_mult_erf_ao
+ integer :: i,j,l,k,m
+ do k = 1, ao_num
+  do m = 1, ao_num
+   integrals_ao(m,k) = NAI_pol_mult_erf_ao(m,k,mu_in,r)
+  enddo
+ enddo
+end

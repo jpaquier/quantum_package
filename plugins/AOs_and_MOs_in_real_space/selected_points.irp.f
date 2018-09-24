@@ -18,9 +18,9 @@ BEGIN_PROVIDER [integer, n_points_final_grid]
       density += 2.d0 * mos_array(l)**2
      enddo
      density = density * 0.5d0 /dble(elec_alpha_num)
-     if(dabs(final_weight_functions_at_grid_points(k,i,j) * density ).gt.threshold_grid_dft)then
+!    if(dabs(final_weight_functions_at_grid_points(k,i,j) * density ).gt.threshold_grid_dft)then
       n_points_final_grid += 1
-     endif
+!    endif
     enddo
    enddo
   enddo
@@ -47,7 +47,7 @@ END_PROVIDER
       density += 2.d0 * mos_array(l)**2
      enddo
      density = density * 0.5d0 /dble(elec_alpha_num)
-     if(dabs(final_weight_functions_at_grid_points(k,i,j) * density ).gt.threshold_grid_dft)then
+    !if(dabs(final_weight_functions_at_grid_points(k,i,j) * density ).gt.threshold_grid_dft)then
       i_count += 1
       final_grid_points(1,i_count) = grid_points_per_atom(1,k,i,j)
       final_grid_points(2,i_count) = grid_points_per_atom(2,k,i,j)
@@ -56,7 +56,7 @@ END_PROVIDER
       index_final_points(1,i_count) = k
       index_final_points(2,i_count) = i
       index_final_points(3,i_count) = j
-     endif
+    !endif
     enddo
    enddo
   enddo
