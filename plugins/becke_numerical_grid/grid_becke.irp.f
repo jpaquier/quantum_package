@@ -11,8 +11,8 @@ BEGIN_PROVIDER [integer, n_points_integration_angular]
  END_DOC
 !n_points_integration_angular = 74
 !n_points_integration_angular = 266
- n_points_integration_angular = 590
-!n_points_integration_angular =1202
+!n_points_integration_angular = 590
+ n_points_integration_angular =1202
 !n_points_integration_angular = 2030
 !n_points_integration_angular = 5810
 END_PROVIDER 
@@ -22,7 +22,7 @@ BEGIN_PROVIDER [integer, n_points_radial_grid]
  BEGIN_DOC
 ! number of radial points per atom for 3d numerical integration, needed for DFT for example
  END_DOC
- n_points_radial_grid = 60
+ n_points_radial_grid = 50
 END_PROVIDER 
 
 
@@ -45,8 +45,8 @@ END_PROVIDER
  double precision :: x(n_points_integration_angular),y(n_points_integration_angular),z(n_points_integration_angular),w(n_points_integration_angular)
 !call LD5810(X,Y,Z,W,n_points_integration_angular)
 !call LD2030(X,Y,Z,W,n_points_integration_angular)
-!call LD1202(X,Y,Z,W,n_points_integration_angular)
- call LD0590(X,Y,Z,W,n_points_integration_angular)
+ call LD1202(X,Y,Z,W,n_points_integration_angular)
+!call LD0590(X,Y,Z,W,n_points_integration_angular)
 !call LD0266(X,Y,Z,W,n_points_integration_angular)
 !call LD0074(X,Y,Z,W,n_points_integration_angular)
 !call LD0050(X,Y,Z,W,n_points_integration_angular)
@@ -171,47 +171,3 @@ BEGIN_PROVIDER [double precision, final_weight_functions_at_grid_points, (n_poin
 
 END_PROVIDER 
 
-
-BEGIN_PROVIDER [integer, n_points_final_grid]
- BEGIN_DOC
-! number of points which are non zero 
- END_DOC
- integer :: i,j,k
- n_points_final_grid = 0 
-  do j = 1, nucl_num  
-   do i = 1, n_points_radial_grid -1 
-    do k = 1, n_points_integration_angular  
-     if(dabs(final_weight_functions_at_grid_points(k,i,j)).gt.threshold_grid_dft)then
-      n_points_final_grid += 1
-     endif
-    enddo
-   enddo
-  enddo
- print*,'n_points_final_grid = ',n_points_final_grid
- print*,'n max point         = ',n_points_integration_angular*n_points_radial_grid*nucl_num
-END_PROVIDER 
-
- BEGIN_PROVIDER [double precision, final_grid_points, (3,n_points_final_grid)]
-&BEGIN_PROVIDER [double precision, final_weight_functions_at_final_grid_points, (n_points_final_grid) ]
-&BEGIN_PROVIDER [integer, index_final_points, (3,n_points_final_grid) ]
- implicit none
- integer :: i,j,k,i_count
- i_count = 0
-  do j = 1, nucl_num  
-   do i = 1, n_points_radial_grid -1 
-    do k = 1, n_points_integration_angular  
-     if(dabs(final_weight_functions_at_grid_points(k,i,j)).gt.threshold_grid_dft)then
-      i_count += 1
-      final_grid_points(1,i_count) = grid_points_per_atom(1,k,i,j)
-      final_grid_points(2,i_count) = grid_points_per_atom(2,k,i,j)
-      final_grid_points(3,i_count) = grid_points_per_atom(3,k,i,j)
-      final_weight_functions_at_final_grid_points(i_count) = final_weight_functions_at_grid_points(k,i,j)
-      index_final_points(1,i_count) = k
-      index_final_points(2,i_count) = i
-      index_final_points(3,i_count) = j
-     endif
-    enddo
-   enddo
-  enddo
-
- END_PROVIDER 
