@@ -45,24 +45,6 @@ double precision function ao_bielec_integral_ijkl_r3(i,j,k,l)
       L_center(p) = nucl_coord(num_l,p)
     enddo
     
-!    schwartz_kl(0,0) = 0.d0
-!   do r = 1, ao_prim_num(k)
-!      coef1 = ao_coef_normalized_ordered_transp(r,k)*ao_coef_normalized_ordered_transp(r,k)
-!      schwartz_kl(0,r) = 0.d0
-!     do s = 1, ao_prim_num(l)
-!        coef2 = coef1 * ao_coef_normalized_ordered_transp(s,l) * ao_coef_normalized_ordered_transp(s,l)
-!       call give_explicit_poly_and_gaussian(Q_new,Q_center,qq,fact_q,iorder_q,&
-!           ao_expo_ordered_transp(r,k),ao_expo_ordered_transp(s,l),                 &
-!           K_power,L_power,K_center,L_center,dim1)
-!       q_inv = 1.d0/qq
-!        schwartz_kl(s,r) = general_primitive_integral(dim1,          &
-!            Q_new,Q_center,fact_q,qq,q_inv,iorder_q,                 &
-!            Q_new,Q_center,fact_q,qq,q_inv,iorder_q)                 &
-!            * coef2 
-!        schwartz_kl(0,r) = max(schwartz_kl(0,r),schwartz_kl(s,r))
-!     enddo
-!      schwartz_kl(0,0) = max(schwartz_kl(0,r),schwartz_kl(0,0))
-!   enddo
 
     do p = 1, ao_prim_num(i)
        coef1 = ao_coef_normalized_ordered_transp(p,i)
@@ -71,18 +53,9 @@ double precision function ao_bielec_integral_ijkl_r3(i,j,k,l)
         call give_explicit_poly_and_gaussian(P_new,P_center,pp,fact_p,iorder_p,&
             ao_expo_ordered_transp(p,i),ao_expo_ordered_transp(q,j),                 &
             I_power,J_power,I_center,J_center,dim1)
-        !if (schwartz_kl(0,0)*schwartz_ij < thr) then
-        !   cycle
-        !endif
         do r = 1, ao_prim_num(k)
-          !if (schwartz_kl(0,r)*schwartz_ij < thr) then
-          !   cycle
-          !endif
            coef3 = coef2*ao_coef_normalized_ordered_transp(r,k)
           do s = 1, ao_prim_num(l)
-            !if (schwartz_kl(s,r)*schwartz_ij < thr) then
-            !   cycle
-            !endif
              coef4 = coef3*ao_coef_normalized_ordered_transp(s,l)
             call give_explicit_poly_and_gaussian(Q_new,Q_center,qq,fact_q,iorder_q,&
                 ao_expo_ordered_transp(r,k),ao_expo_ordered_transp(s,l),             &
