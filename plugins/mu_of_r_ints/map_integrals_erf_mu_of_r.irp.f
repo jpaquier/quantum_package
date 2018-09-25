@@ -35,22 +35,26 @@ BEGIN_PROVIDER [ double precision, ao_integrals_erf_mu_of_r_cache, (0:64*64*64*6
  END_DOC
  PROVIDE ao_bielec_integrals_erf_mu_of_r_in_map
  integer                        :: i,j,k,l,ii
- integer(key_kind)              :: idx
- real(integral_kind)            :: integral
- !$OMP PARALLEL DO PRIVATE (i,j,k,l,idx,ii,integral)
+ integer(key_kind)              :: idx1,idx2
+ real(integral_kind)            :: integral1,integral2
+ !$OMP PARALLEL DO PRIVATE (i,j,k,l,idx1,idx2,ii,integral1,integral2)
  do l=ao_integrals_erf_mu_of_r_cache_min,ao_integrals_erf_mu_of_r_cache_max
    do k=ao_integrals_erf_mu_of_r_cache_min,ao_integrals_erf_mu_of_r_cache_max
      do j=ao_integrals_erf_mu_of_r_cache_min,ao_integrals_erf_mu_of_r_cache_max
        do i=ao_integrals_erf_mu_of_r_cache_min,ao_integrals_erf_mu_of_r_cache_max
          !DIR$ FORCEINLINE
-         call bielec_integrals_index(i,j,k,l,idx)
+         call bielec_integrals_index(i,j,k,l,idx1)
          !DIR$ FORCEINLINE
-         call map_get(ao_integrals_erf_mu_of_r_map,idx,integral)
+         call bielec_integrals_index(j,i,l,k,idx2)
+         !DIR$ FORCEINLINE
+         call map_get(ao_integrals_erf_mu_of_r_map,idx1,integral1)
+         !DIR$ FORCEINLINE
+         call map_get(ao_integrals_erf_mu_of_r_map,idx2,integral2)
          ii = l-ao_integrals_erf_mu_of_r_cache_min
          ii = ior( ishft(ii,6), k-ao_integrals_erf_mu_of_r_cache_min)
          ii = ior( ishft(ii,6), j-ao_integrals_erf_mu_of_r_cache_min)
          ii = ior( ishft(ii,6), i-ao_integrals_erf_mu_of_r_cache_min)
-         ao_integrals_erf_mu_of_r_cache(ii) = integral
+         ao_integrals_erf_mu_of_r_cache(ii) = 0.5D0 * (integral1 + integral2)
        enddo
      enddo
    enddo
@@ -59,8 +63,24 @@ BEGIN_PROVIDER [ double precision, ao_integrals_erf_mu_of_r_cache, (0:64*64*64*6
 
 END_PROVIDER
 
-
 double precision function get_ao_bielec_integral_erf_mu_of_r(i,j,k,l,map) result(result)
+  use map_module
+  implicit none
+  BEGIN_DOC
+  ! Gets one AO bi-electronic integral from the AO map
+  END_DOC
+  integer, intent(in)            :: i,j,k,l
+  integer(key_kind)              :: idx
+  type(map_type), intent(inout)  :: map
+  double precision :: get_ao_bielec_integral_erf_mu_of_r_first,get_ao_bielec_integral_erf_mu_of_r_second
+  real(integral_kind)            :: tmp1,tmp2
+  tmp1 = get_ao_bielec_integral_erf_mu_of_r_first(i,j,k,l,map)
+  tmp2 = get_ao_bielec_integral_erf_mu_of_r_first(j,i,l,k,map)
+  result = 0.5d0 * (tmp1 + tmp2) 
+end
+
+
+double precision function get_ao_bielec_integral_erf_mu_of_r_first(i,j,k,l,map) result(result)
   use map_module
   implicit none
   BEGIN_DOC
@@ -100,6 +120,49 @@ double precision function get_ao_bielec_integral_erf_mu_of_r(i,j,k,l,map) result
 end
 
 
+
+double precision function get_ao_bielec_integral_erf_mu_of_r_second(j,i,l,k,map) result(result)
+  use map_module
+  implicit none
+  BEGIN_DOC
+  ! Gets one AO bi-electronic integral from the AO map
+  END_DOC
+  integer, intent(in)            :: i,j,k,l
+  integer(key_kind)              :: idx
+  type(map_type), intent(inout)  :: map
+  integer                        :: ii
+  real(integral_kind)            :: tmp
+  PROVIDE ao_bielec_integrals_erf_mu_of_r_in_map ao_integrals_erf_mu_of_r_cache ao_integrals_erf_mu_of_r_cache_min
+  !DIR$ FORCEINLINE
+  if (ao_overlap_abs(i,k)*ao_overlap_abs(j,l) < ao_integrals_threshold ) then
+    tmp = 0.d0
+! else if (ao_bielec_integral_erf_mu_of_r_schwartz(i,k)*ao_bielec_integral_erf_mu_of_r_schwartz(j,l) < ao_integrals_threshold) then
+!   tmp = 0.d0
+  else
+    ii = l-ao_integrals_erf_mu_of_r_cache_min
+    ii = ior(ii, k-ao_integrals_erf_mu_of_r_cache_min)
+    ii = ior(ii, j-ao_integrals_erf_mu_of_r_cache_min)
+    ii = ior(ii, i-ao_integrals_erf_mu_of_r_cache_min)
+    if (iand(ii, -64) /= 0) then
+      !DIR$ FORCEINLINE
+      call bielec_integrals_index(i,j,k,l,idx)
+      !DIR$ FORCEINLINE
+      call map_get(map,idx,tmp)
+      tmp = tmp
+    else
+      ii = l-ao_integrals_erf_mu_of_r_cache_min
+      ii = ior( ishft(ii,6), k-ao_integrals_erf_mu_of_r_cache_min)
+      ii = ior( ishft(ii,6), j-ao_integrals_erf_mu_of_r_cache_min)
+      ii = ior( ishft(ii,6), i-ao_integrals_erf_mu_of_r_cache_min)
+      tmp = ao_integrals_erf_mu_of_r_cache(ii)
+    endif
+  endif
+  result = tmp
+end
+
+
+
+
 subroutine get_ao_bielec_integrals_erf_mu_of_r(j,k,l,sze,out_val)
   use map_module
   BEGIN_DOC
@@ -123,7 +186,9 @@ subroutine get_ao_bielec_integrals_erf_mu_of_r(j,k,l,sze,out_val)
   
   double precision :: get_ao_bielec_integral_erf_mu_of_r
   do i=1,sze
-    out_val(i) = get_ao_bielec_integral_erf_mu_of_r(i,j,k,l,ao_integrals_erf_mu_of_r_map)
+    !                                               1 2 1 2
+    out_val(i) = 0.5d0*(get_ao_bielec_integral_erf_mu_of_r(i,j,k,l,ao_integrals_erf_mu_of_r_map) &
+                       +get_ao_bielec_integral_erf_mu_of_r(j,i,l,k,ao_integrals_erf_mu_of_r_map) )
   enddo
   
 end
@@ -140,8 +205,8 @@ subroutine get_ao_bielec_integrals_erf_mu_of_r_non_zero(j,k,l,sze,out_val,out_va
   integer, intent(out)           :: out_val_index(sze),non_zero_int
   
   integer                        :: i
-  integer(key_kind)              :: hash
-  double precision               :: thresh,tmp
+  integer(key_kind)              :: hash1,hash2
+  double precision               :: thresh,tmp1,tmp2
   PROVIDE ao_bielec_integrals_erf_mu_of_r_in_map
   thresh = ao_integrals_threshold
   
@@ -159,12 +224,14 @@ subroutine get_ao_bielec_integrals_erf_mu_of_r_non_zero(j,k,l,sze,out_val,out_va
     if (ao_overlap_abs(i,k)*ao_overlap_abs(j,l) < thresh) then
       cycle
     endif
-    call bielec_integrals_index(i,j,k,l,hash)
-    call map_get(ao_integrals_erf_mu_of_r_map, hash,tmp)
-    if (dabs(tmp) < thresh ) cycle
+    call bielec_integrals_index(i,j,k,l,hash1)
+    call map_get(ao_integrals_erf_mu_of_r_map, hash1,tmp1)
+    if (dabs(tmp1) < thresh ) cycle
+    call bielec_integrals_index(j,i,l,k,hash2)
+    call map_get(ao_integrals_erf_mu_of_r_map, hash2,tmp2)
     non_zero_int = non_zero_int+1
     out_val_index(non_zero_int) = i
-    out_val(non_zero_int) = tmp
+    out_val(non_zero_int) = 0.5d0 * (tmp1 + tmp2)
   enddo
   
 end
