@@ -42,7 +42,8 @@ double precision function erf_mu_of_r_ao(i,j,k,l)
   r(2) = final_grid_points(2,i_point) 
   r(3) = final_grid_points(3,i_point) 
   call give_all_aos_at_r(r,aos_array)
-  erf_mu_of_r_ao += aos_array(i) * aos_array(j) * NAI_pol_mult_erf_ao(k,l,mu_of_r_prov_selected(i_point),r) * final_weight_functions_at_final_grid_points(i_point)
+  erf_mu_of_r_ao += 0.5d0 * aos_array(i) * aos_array(j) * NAI_pol_mult_erf_ao(k,l,mu_of_r_prov_selected(i_point),r) * final_weight_functions_at_final_grid_points(i_point)
+  erf_mu_of_r_ao += 0.5d0 * aos_array(k) * aos_array(l) * NAI_pol_mult_erf_ao(j,i,mu_of_r_prov_selected(i_point),r) * final_weight_functions_at_final_grid_points(i_point)
  enddo
  deallocate(aos_array)
 
