@@ -5,7 +5,7 @@ program pouet
  double precision :: rmax
  nx = 100
  rmax = 3.d0
- call test_mu_erf
+!call test_mu_erf
 !call test_erf_coulomb_oprerator
 !call test
 !call test_inv_erf
