@@ -46,10 +46,12 @@
  implicit none
  integer :: i_point,istate
  double precision :: two_dm_in_r_selected_points
+ print*,'providing the on_top_of_r_vector'
  istate = 1
  do i_point = 1, n_points_final_grid
   on_top_of_r_vector(i_point,istate) = two_dm_in_r_selected_points(i_point,1)
  enddo
+ print*,'provided the on_top_of_r_vector'
  END_PROVIDER 
  
 
@@ -58,6 +60,9 @@
  integer :: i_point,istate
  double precision :: two_dm_in_r_selected_points
  istate = 1
+ print*,'providing the on_top_of_r_vector_parallel'
+ i_point = 1
+ on_top_of_r_vector_parallel(i_point,istate) = two_dm_in_r_selected_points(i_point,istate)
  !$OMP PARALLEL DO &
  !$OMP DEFAULT (NONE)  &
  !$OMP PRIVATE (i_point) &
@@ -66,6 +71,36 @@
   on_top_of_r_vector_parallel(i_point,istate) = two_dm_in_r_selected_points(i_point,istate)
  enddo
  !$OMP END PARALLEL DO
+ print*,'provided  the on_top_of_r_vector_parallel'
+ END_PROVIDER 
+ 
+ BEGIN_PROVIDER [double precision, integral_two_body_parallel]
+ implicit none
+ integer :: i_point,istate
+ double precision :: cpu0,cpu1
+ istate = 1
+ integral_two_body_parallel = 0.d0
+ call wall_time(cpu0)
+ do i_point = 1, n_points_final_grid
+  integral_two_body_parallel += on_top_of_r_vector_parallel(i_point,istate)
+ enddo
+ call wall_time(cpu1)
+ print*,'Time to provide on_top_of_r parallel = ',cpu1-cpu0
+ END_PROVIDER 
+ 
+
+ BEGIN_PROVIDER [double precision, integral_two_body]
+ implicit none
+ integer :: i_point,istate
+ double precision :: cpu0,cpu1
+ istate = 1
+ integral_two_body = 0.d0
+ call wall_time(cpu0)
+ do i_point = 1, n_points_final_grid
+  integral_two_body += on_top_of_r_vector(i_point,istate)
+ enddo
+ call wall_time(cpu1)
+ print*,'Time to provide on_top_of_r = ',cpu1-cpu0
  END_PROVIDER 
  
 

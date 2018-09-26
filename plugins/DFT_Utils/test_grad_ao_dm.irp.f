@@ -88,9 +88,6 @@ subroutine test_grad_lapl_mo
     call give_all_mos_and_grad_at_r(rdx_plus,mos_array_plus,grad_mos_array_plus)
     call give_all_mos_and_grad_at_r(rdx_minus,mos_array_minus,grad_mos_array_minus)    
     do j = 1, mo_tot_num
-!    if(dabs(mos_grad_in_r_array(1,i,1) - mos_grad_in_r_array(1,i,2)).gt.1.d-10)then
-!     print*,mos_grad_in_r_array(1,i,1),mos_grad_in_r_array(1,i,2)
-!    endif
      grad_mos_array_bis(j,m) = (mos_array_plus(j) - mos_array_minus(j))/(2.d0 * dr)
      accu(m) += dabs(grad_mos_array_bis(j,m) - mos_grad_in_r_array(j,i,m)) * final_weight_functions_at_final_grid_points(i)
 
@@ -99,7 +96,7 @@ subroutine test_grad_lapl_mo
     enddo
    enddo
   enddo
-  print*,dr,accu(1),accu(2),accu(3),accu_2(1),accu_2(2)
+  print*,dr,accu(1),accu(2),accu(3),accu_2(1),accu_2(2),accu_2(3)
  enddo
 end
 
