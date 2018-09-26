@@ -383,7 +383,7 @@
   !  Needed to compute Schwartz inequalities
   END_DOC
   integer                        :: i,k
-  double precision               :: dirac_ao_bielec_integral,cpu_1,cpu_2, wall_1, wall_2
+  double precision               :: dirac_ao_bielec_integral_erf,cpu_1,cpu_2, wall_1, wall_2
   dirac_ao_bielec_integral_erf_schwartz(1,1) = dirac_ao_bielec_integral_erf(1,1,1,1)
  !$OMP PARALLEL DO PRIVATE(i,k)                                     &
  !$OMP DEFAULT(NONE)                                            &
@@ -552,7 +552,7 @@
   call end_zmq_push_socket(zmq_socket_push,thread)
  end
 
- subroutine compute_dirac_ao_integralsi_erf_jl(j,l,n_integrals,buffer_i,buffer_value)
+ subroutine compute_dirac_ao_integrals_erf_jl(j,l,n_integrals,buffer_i,buffer_value)
   implicit none
   use map_module
   BEGIN_DOC
