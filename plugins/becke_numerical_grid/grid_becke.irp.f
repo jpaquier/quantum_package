@@ -170,4 +170,3 @@ BEGIN_PROVIDER [double precision, final_weight_functions_at_grid_points, (n_poin
   enddo
 
 END_PROVIDER 
-

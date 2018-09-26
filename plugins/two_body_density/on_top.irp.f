@@ -42,6 +42,69 @@
  deallocate(r)
  END_PROVIDER
 
+ BEGIN_PROVIDER [double precision, on_top_of_r_vector,(n_points_final_grid,N_states) ]
+ implicit none
+ integer :: i_point,istate
+ double precision :: two_dm_in_r_selected_points
+ print*,'providing the on_top_of_r_vector'
+ istate = 1
+ do i_point = 1, n_points_final_grid
+  on_top_of_r_vector(i_point,istate) = two_dm_in_r_selected_points(i_point,1)
+ enddo
+ print*,'provided the on_top_of_r_vector'
+ END_PROVIDER 
+ 
+
+ BEGIN_PROVIDER [double precision, on_top_of_r_vector_parallel,(n_points_final_grid,N_states) ]
+ implicit none
+ integer :: i_point,istate
+ double precision :: two_dm_in_r_selected_points
+ istate = 1
+ print*,'providing the on_top_of_r_vector_parallel'
+ i_point = 1
+ on_top_of_r_vector_parallel(i_point,istate) = two_dm_in_r_selected_points(i_point,istate)
+ !$OMP PARALLEL DO &
+ !$OMP DEFAULT (NONE)  &
+ !$OMP PRIVATE (i_point) &
+ !$OMP SHARED(on_top_of_r_vector_parallel,istate,n_points_final_grid)
+ do i_point = 1, n_points_final_grid
+  on_top_of_r_vector_parallel(i_point,istate) = two_dm_in_r_selected_points(i_point,istate)
+ enddo
+ !$OMP END PARALLEL DO
+ print*,'provided  the on_top_of_r_vector_parallel'
+ END_PROVIDER 
+ 
+ BEGIN_PROVIDER [double precision, integral_two_body_parallel]
+ implicit none
+ integer :: i_point,istate
+ double precision :: cpu0,cpu1
+ istate = 1
+ integral_two_body_parallel = 0.d0
+ call wall_time(cpu0)
+ do i_point = 1, n_points_final_grid
+  integral_two_body_parallel += on_top_of_r_vector_parallel(i_point,istate)
+ enddo
+ call wall_time(cpu1)
+ print*,'Time to provide on_top_of_r parallel = ',cpu1-cpu0
+ END_PROVIDER 
+ 
+
+ BEGIN_PROVIDER [double precision, integral_two_body]
+ implicit none
+ integer :: i_point,istate
+ double precision :: cpu0,cpu1
+ istate = 1
+ integral_two_body = 0.d0
+ call wall_time(cpu0)
+ do i_point = 1, n_points_final_grid
+  integral_two_body += on_top_of_r_vector(i_point,istate)
+ enddo
+ call wall_time(cpu1)
+ print*,'Time to provide on_top_of_r = ',cpu1-cpu0
+ END_PROVIDER 
+ 
+
+
 double precision function on_top_in_r_sorted(r,istate)
  implicit none
  BEGIN_DOC
@@ -87,15 +150,29 @@ double precision function two_dm_in_r(r1,r2,istate)
   do j = 1, mo_tot_num
    do k = 1, mo_tot_num
     do l = 1, mo_tot_num
-     if(dabs(two_bod_alpha_beta_mo_transposed(l,k,j,i,istate)).gt.1.d-10)then
-    !  print*,l,k,j,i
-     ! print*,two_bod_alpha_beta_mo_transposed(l,k,j,i,istate)
-     endif
      two_dm_in_r += two_bod_alpha_beta_mo_transposed(l,k,j,i,istate) * mos_array_r1(i) * mos_array_r1(l) * mos_array_r2(k) * mos_array_r2(j)
     enddo
    enddo
   enddo
  enddo
  two_dm_in_r = max(two_dm_in_r,1.d-15)
+end
+
+
+double precision function two_dm_in_r_selected_points(i_point,istate)
+ implicit none
+ integer, intent(in) :: istate,i_point
+ integer :: i,j,k,l
+ two_dm_in_r_selected_points = 0.d0
+ do i = 1, mo_tot_num
+  do j = 1, mo_tot_num
+   do k = 1, mo_tot_num
+    do l = 1, mo_tot_num
+     two_dm_in_r_selected_points += two_bod_alpha_beta_mo_transposed(l,k,j,i,istate) * mos_in_r_array(i,i_point) * mos_in_r_array(l,i_point) * mos_in_r_array(k,i_point) * mos_in_r_array(j,i_point)
+    enddo
+   enddo
+  enddo
+ enddo
+ two_dm_in_r_selected_points = max(two_dm_in_r_selected_points,1.d-15)
 end
 

@@ -1,7 +1,7 @@
 program erf_mu_of_r_integrals
  implicit none 
 !call test_int_erf_bielec_ijkl_mo
- call test_mu_erf
+ !call test_mu_erf
 !call test_int_erf_bielec_ijkl
 !call test_aos
 !call bis
@@ -10,30 +10,30 @@ program erf_mu_of_r_integrals
 !call test_erf
 end
 
- subroutine test_mu_erf
- implicit none
- double precision, allocatable :: integrals_mo(:,:),mos_array(:)
- double precision :: r(3),mu_in
- allocate(integrals_mo(mo_tot_num,mo_tot_num),mos_array(mo_tot_num))
- r = 0.d0
- mu_in = 0.001d0
- integer :: i_mu,n_mui,j,k,l
- double precision :: dmu,mu_tot
- mu_tot = 2.d0
- n_mu = 100
- do i_mu = 1, n_mu
-  call give_all_erf_mu_of_r_kl_mo(integrals_mo,mu_in,r)
-  call give_all_mos_at_r(r,mos_array)
-  tmp = 0.d0
-  do i = 1, elec_alpha_num
-   do j = 1, elec_beta_num
-    tmp += mos_array(j)**2 * integrals_mo(i,i)
-   enddo
-  enddo
- enddo
-     
+!subroutine test_mu_erf
+!implicit none
+!double precision, allocatable :: integrals_mo(:,:),mos_array(:)
+!double precision :: r(3),mu_in
+!allocate(integrals_mo(mo_tot_num,mo_tot_num),mos_array(mo_tot_num))
+!r = 0.d0
+!mu_in = 0.001d0
+!integer :: i_mu,n_mui,j,k,l
+!double precision :: dmu,mu_tot
+!mu_tot = 2.d0
+!n_mu = 100
+!do i_mu = 1, n_mu
+! call give_all_erf_mu_of_r_kl_mo(integrals_mo,mu_in,r)
+! call give_all_mos_at_r(r,mos_array)
+! tmp = 0.d0
+! do i = 1, elec_alpha_num
+!  do j = 1, elec_beta_num
+!   tmp += mos_array(j)**2 * integrals_mo(i,i)
+!  enddo
+! enddo
+!enddo
+!    
 
- end
+!end
 
 subroutine test_erf
  implicit none
