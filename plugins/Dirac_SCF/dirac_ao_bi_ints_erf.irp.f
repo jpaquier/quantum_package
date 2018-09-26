@@ -327,7 +327,7 @@
  ! ao_bielec_integrals_in_map = .True.
  ! return
  !endif
-  print*, 'Providing the Dirac AO erf integrals'
+  print*, 'Providing the Dirac AO ERF integrals'
   call wall_time(wall_0)
   call wall_time(wall_1)
   call cpu_time(cpu_1)
@@ -357,15 +357,15 @@
         call dirac_ao_bielec_integrals_erf_in_map_slave_inproc(i)
       endif
  !$OMP END PARALLEL
-  call end_parallel_job(zmq_to_qp_run_socket, zmq_socket_pull, 'dirac_ao_integrals')
+  call end_parallel_job(zmq_to_qp_run_socket, zmq_socket_pull, 'dirac_ao_integrals_erf')
   print*, 'Sorting the map'
   call map_sort(dirac_ao_integrals_erf_map)
   call cpu_time(cpu_2)
   call wall_time(wall_2)
   integer(map_size_kind)         :: get_dirac_ao_erf_map_size, dirac_ao_erf_map_size
   dirac_ao_erf_map_size = get_dirac_ao_erf_map_size()
-  print*, 'DIRAC AO integrals provided:'
-  print*, ' Size of DIRAC AO map :         ', map_mb(dirac_ao_integrals_map) ,'MB'
+  print*, 'DIRAC AO ERF integrals provided:'
+  print*, ' Size of DIRAC AO ERF map :         ', map_mb(dirac_ao_integrals_erf_map) ,'MB'
   print*, ' Number of DIRAC AO integrals  :', dirac_ao_erf_map_size
   print*, ' cpu  time :',cpu_2 - cpu_1, 's'
   print*, ' wall time :',wall_2 - wall_1, 's  ( x ', (cpu_2-cpu_1)/(wall_2-wall_1+tiny(1.d0)), ' )'

@@ -241,6 +241,40 @@ BEGIN_PROVIDER [ integer, dirac_n_it_scf_max  ]
 
 END_PROVIDER
 
+BEGIN_PROVIDER [ character*(32), dirac_range_separation  ]
+  implicit none
+  BEGIN_DOC
+! Use of full-range interaction or only long-range interaction. Possible choices are [ Full-range | Long-range]
+  END_DOC
+
+  logical                        :: has
+  PROVIDE ezfio_filename
+  if (mpi_master) then
+    
+    call ezfio_has_dirac_scf_dirac_range_separation(has)
+    if (has) then
+      call ezfio_get_dirac_scf_dirac_range_separation(dirac_range_separation)
+    else
+      print *, 'dirac_scf/dirac_range_separation not found in EZFIO file'
+      stop 1
+    endif
+  endif
+  IRP_IF MPI
+    include 'mpif.h'
+    integer :: ierr
+    call MPI_BCAST( dirac_range_separation, 1*32, MPI_CHARACTER, 0, MPI_COMM_WORLD, ierr)
+    if (ierr /= MPI_SUCCESS) then
+      stop 'Unable to read dirac_range_separation with MPI'
+    endif
+  IRP_ENDIF
+
+  call write_time(6)
+  if (mpi_master) then
+    write(6, *) 'Read  dirac_range_separation'
+  endif
+
+END_PROVIDER
+
 BEGIN_PROVIDER [ character*(32), dirac_interaction  ]
   implicit none
   BEGIN_DOC

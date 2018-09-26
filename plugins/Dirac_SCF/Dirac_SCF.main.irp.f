@@ -8,7 +8,7 @@ program Dirac_SCF
   complex*16       :: ortho(2*dirac_ao_num),testm(2,2), eigenvectors(2,2)
   include 'Utils/constants.include.F'
 
- mu_erf = 1
+!mu_erf = 1
  print*,'************'
  do i = 1, dirac_ao_num
  !print*,'integral =',  ao_bielec_integral(1,1,1,1)
@@ -16,7 +16,10 @@ program Dirac_SCF
  !print*,'dirac_ao_bi_elec_integral =', dirac_ao_bi_elec_integral(i,i)
  !print*,'integral_erf =',  ao_bielec_integral_erf(1,1,1,1)
  !print*,'dirac_integral_erf =',  dirac_ao_bielec_integral_erf(i,i,i,i)
+  print*,'dirac_ao_bi_elec_integral =', dirac_ao_bi_elec_integral(i,i)
   print*,'dirac_ao_bi_elec_integral_erf =', dirac_ao_bi_elec_integral_erf(i,i)
+  print*,'dirac_ao_bi_elec_Gaunt_integral =', dirac_ao_bi_elec_Gaunt_integral(i,i)
+  print*,'dirac_ao_bi_elec_Gaunt_integral_erf =', dirac_ao_bi_elec_Gaunt_integral_erf(i,i)  
   print*,'**************************'
  enddo
  
