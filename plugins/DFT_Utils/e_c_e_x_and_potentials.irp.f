@@ -454,7 +454,7 @@ END_PROVIDER
  integer :: j,k,l
  double precision, allocatable :: r(:)
  double precision :: local_potential,two_body_dm
- double precision :: cpu0,cpu1
+ double precision :: cpu0,cpu1,integral_f,mu_integral
  print*,'providing the mu_of_r ...'
  print*,'basis_set_hf_potential = ',basis_set_hf_potential
  call cpu_time(cpu0)
@@ -466,12 +466,17 @@ END_PROVIDER
     r(1) = grid_points_per_atom(1,l,k,j)
     r(2) = grid_points_per_atom(2,l,k,j)
     r(3) = grid_points_per_atom(3,l,k,j)
-    if(basis_set_hf_potential)then
-     call local_r12_operator_on_hf(r,r,local_potential)
-    else
-     call expectation_value_in_real_space(r,r,local_potential,two_body_dm)
+    if(basis_set_hf_integral_potential)then
+     call integral_of_f_12_on_hf(r,integral_f)
+     mu_of_r(l,k,j) = mu_integral(integral_f,r)
+    else 
+     if(basis_set_hf_potential)then
+      call local_r12_operator_on_hf(r,r,local_potential)
+     else
+      call expectation_value_in_real_space(r,r,local_potential,two_body_dm)
+     endif
+     mu_of_r(l,k,j) =  local_potential * dsqrt(dacos(-1.d0)) * 0.5d0
     endif
-    mu_of_r(l,k,j) =  local_potential * dsqrt(dacos(-1.d0)) * 0.5d0
     mu_average +=  final_weight_functions_at_grid_points(l,k,j)*mu_of_r(l,k,j)*(one_body_dm_mo_alpha_at_grid_points(l,k,j,1)+one_body_dm_mo_beta_at_grid_points(l,k,j,1))
    enddo
   enddo

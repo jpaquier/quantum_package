@@ -71,6 +71,7 @@ subroutine print_variational_energy_dft_mu_of_r
  print*,  ' MR DFT energy with pure correlation part for the DFT '
  if(md_correlation_functional.EQ."basis_set_LDA")then
    write(*, '(A28,X,F16.10)') 'TOTAL ENERGY CORR         = ',psi_energy+Energy_c_md_mu_of_r_LDA+nuclear_repulsion
+   write(*, '(A28,X,F16.10)') 'TOTAL ENERGY CORR NO MD   = ',psi_energy+energy_c_LDA_mu_of_r+nuclear_repulsion
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    print*, ''
    write(*, '(A28,X,F16.10)') 'Variational energy of Psi = ',psi_energy
@@ -78,6 +79,7 @@ subroutine print_variational_energy_dft_mu_of_r
    print*, ''
    write(*, '(A28,X,F16.10)') 'nuclear_repulsion         = ',nuclear_repulsion
    write(*, '(A28,X,F16.10)') 'DFT mu(r)     correlation = ',Energy_c_md_mu_of_r_LDA
+   write(*, '(A28,X,F16.10)') 'DFT mu(r) NO MD corr      = ',energy_c_LDA_mu_of_r
    print*, ''
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

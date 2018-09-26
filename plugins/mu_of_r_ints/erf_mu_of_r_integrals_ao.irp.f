@@ -99,6 +99,28 @@ subroutine give_all_erf_mu_of_r_kl_mo(integrals_mo,mu_in,r)
       )
 end
 
+subroutine give_all_erf_mu_of_r_kl_mo_diag(integrals_mo,mu_in,r)
+ implicit none
+ double precision, intent(in)  :: mu_in,r(3)
+ double precision, intent(out) :: integrals_mo(mo_tot_num)
+ double precision :: integrals_ao(ao_num,ao_num), NAI_pol_mult_erf_ao
+ integer :: i,j,l,k,m
+ do k = 1, ao_num
+  do m = 1, ao_num
+   integrals_ao(m,k) = NAI_pol_mult_erf_ao(m,k,mu_in,r)
+  enddo
+ enddo
+ integrals_mo = 0.d0
+ do i = 1, mo_tot_num
+  do k = 1, ao_num
+   do m = 1, ao_num
+    integrals_mo(i) += mo_coef(m,i) * mo_coef(k,i) * integrals_ao(m,k)
+   enddo
+  enddo
+ enddo
+
+end
+
 subroutine give_all_erf_mu_of_r_kl_ao(integrals_ao,mu_in,r)
  implicit none
  double precision, intent(in)  :: mu_in,r(3)

@@ -5,13 +5,10 @@ BEGIN_PROVIDER [double precision, mu_of_r_prov, (n_points_integration_angular,n_
  ! value of mu(r) in each point in space
  END_DOC
  integer :: i_atom,k,l
- print*,'providing mu_of_r'
- pause
   do i_atom = 1,nucl_num
    do k = 1, n_points_radial_grid -1
     do l = 1 , n_points_integration_angular
      mu_of_r_prov(l,k,i_atom) = mu_of_r(l,k,i_atom)
-!    mu_of_r_prov(l,k,i_atom) = mu_erf 
     enddo
    enddo
   enddo

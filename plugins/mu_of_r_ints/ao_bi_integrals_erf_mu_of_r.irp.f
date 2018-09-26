@@ -1,4 +1,4 @@
-subroutine compute_ao_integrals_erf_mu_of_r_jl_old(j,l,n_integrals,buffer_i,buffer_value)
+subroutine compute_ao_integrals_erf_mu_of_r_jl(j,l,n_integrals,buffer_i,buffer_value)
   implicit none
   use map_module
   BEGIN_DOC
@@ -51,7 +51,7 @@ subroutine compute_ao_integrals_erf_mu_of_r_jl_old(j,l,n_integrals,buffer_i,buff
     
 end
 
-subroutine compute_ao_integrals_erf_mu_of_r_jl(j,l,n_integrals,buffer_i,buffer_value)
+subroutine compute_ao_integrals_erf_mu_of_r_jl_old(j,l,n_integrals,buffer_i,buffer_value)
   implicit none
   use map_module
   BEGIN_DOC
