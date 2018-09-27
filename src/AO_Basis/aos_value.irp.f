@@ -268,7 +268,7 @@ subroutine give_all_aos_and_grad_and_lapl_at_r(r,aos_array,aos_grad_array,aos_la
     dz1 = 0.d0
    endif
    ! For the Laplacian
-   if(power_ao(2) .ge. 2)then
+   if(power_ao(3) .ge. 2)then
     dz3 = dble(power_ao(3)) * dble((power_ao(3)-1))  * dz**(power_ao(3)-2)
    else
     dz3 = 0.d0

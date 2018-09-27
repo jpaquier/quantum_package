@@ -1,12 +1,12 @@
-subroutine spherical_averaged_two_dm_at_second_order(r1,r12,istate,two_dm,two_dm_laplacian,total_dm)
+subroutine spherical_averaged_two_dm_at_second_order(r1,r12,istate,two_dm,two_dm_laplacian,total_dm,total)
  implicit none
  integer, intent(in) :: istate
  double precision, intent(in) :: r1(3),r12
- double precision, intent(out) :: two_dm,two_dm_laplacian,total_dm
+ double precision, intent(out) :: two_dm,two_dm_laplacian,total_dm,total
  double precision, allocatable :: mos_array_r1(:)
  double precision, allocatable :: mos_grad_array_r1(:,:)
  double precision, allocatable :: mos_lapl_array_r1(:,:)
- integer :: i,j,k,l
+ integer :: i,j,k,l,ix
  double precision :: lapl_k,lapl_l,grad_k,grad_l,scalar_grad
  allocate(mos_array_r1(mo_tot_num),mos_grad_array_r1(mo_tot_num,3),mos_lapl_array_r1(mo_tot_num,3))
  call give_all_mos_and_grad_and_lapl_at_r(r1,mos_array_r1,mos_grad_array_r1,mos_lapl_array_r1)
