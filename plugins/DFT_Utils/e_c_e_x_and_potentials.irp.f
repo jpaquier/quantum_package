@@ -443,9 +443,25 @@ END_PROVIDER
 END_PROVIDER
 
 
+ BEGIN_PROVIDER [double precision, mu_of_r_cusp_condition, (n_points_integration_angular,n_points_radial_grid,nucl_num) ]
+ implicit none 
+ BEGIN_DOC
+ ! mu_of_r and mu_average computation 
+ END_DOC
+ integer :: i,j,k,i_point
+ double precision :: r(3),two_dm,two_dm_laplacian,total_dm
+ do i_point = 1, n_points_final_grid
+  k = index_final_points(1,i_point)
+  i = index_final_points(2,i_point)
+  j = index_final_points(3,i_point)
+  mu_of_r_cusp_condition(k,i,j) = mu_of_r_cusp_condition_vector(i_point,1)
+ enddo
+
+ END_PROVIDER 
 
 
  BEGIN_PROVIDER [double precision, mu_of_r, (n_points_integration_angular,n_points_radial_grid,nucl_num) ]
+&BEGIN_PROVIDER [double precision, mu_of_r_vector, (n_points_final_grid) ]
 &BEGIN_PROVIDER [double precision, mu_average]
  implicit none 
  BEGIN_DOC
@@ -466,18 +482,23 @@ END_PROVIDER
     r(1) = grid_points_per_atom(1,l,k,j)
     r(2) = grid_points_per_atom(2,l,k,j)
     r(3) = grid_points_per_atom(3,l,k,j)
-    if(basis_set_hf_integral_potential)then
-     call integral_of_f_12_on_hf(r,integral_f)
-     mu_of_r(l,k,j) = mu_integral(integral_f,r)
+    if(cusp_condition_potential)then
+     mu_of_r(l,k,j) = mu_of_r_cusp_condition(l,k,j) 
     else 
-     if(basis_set_hf_potential)then
-      call local_r12_operator_on_hf(r,r,local_potential)
-     else
-      call expectation_value_in_real_space(r,r,local_potential,two_body_dm)
+     if(basis_set_hf_integral_potential)then
+      call integral_of_f_12_on_hf(r,integral_f)
+      mu_of_r(l,k,j) = mu_integral(integral_f,r)
+     else 
+      if(basis_set_hf_potential)then
+       call local_r12_operator_on_hf(r,r,local_potential)
+      else
+       call expectation_value_in_real_space(r,r,local_potential,two_body_dm)
+      endif
+      mu_of_r(l,k,j) =  local_potential * dsqrt(dacos(-1.d0)) * 0.5d0
      endif
-     mu_of_r(l,k,j) =  local_potential * dsqrt(dacos(-1.d0)) * 0.5d0
     endif
     mu_average +=  final_weight_functions_at_grid_points(l,k,j)*mu_of_r(l,k,j)*(one_body_dm_mo_alpha_at_grid_points(l,k,j,1)+one_body_dm_mo_beta_at_grid_points(l,k,j,1))
+    mu_of_r_vector(index_final_points_reverse(l,k,j)) = mu_of_r(l,k,j)
    enddo
   enddo
  enddo

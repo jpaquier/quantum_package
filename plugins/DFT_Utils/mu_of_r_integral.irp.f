@@ -132,35 +132,12 @@ BEGIN_PROVIDER [double precision, HF_mu_of_r_bielec_energy]
   r(1:3) = final_grid_points(1:3,i)  
   weight = final_weight_functions_at_final_grid_points(i)
 
-  tmp = integral_of_mu_of_r_on_HF(r,mu_of_r_prov_selected(i))
+  tmp = integral_of_mu_of_r_on_HF(r,mu_of_r_vector(i))
   HF_mu_of_r_bielec_energy += weight * tmp
  enddo
 
 END_PROVIDER 
 
-BEGIN_PROVIDER [double precision, HF_mu_of_r_bielec_energy]
- implicit none
- integer :: i,j,k
- double precision :: r(3), weight,tmp
- double precision, allocatable :: integrals_mo(:,:),mos_array(:)
- allocate(integrals_mo(mo_tot_num,mo_tot_num),mos_array(mo_tot_num))
- HF_mu_of_r_bielec_energy = 0.d0
- do i = 1, n_points_final_grid
-  r(1:3) = final_grid_points(1:3,i)  
-  weight = final_weight_functions_at_final_grid_points(i)
-
-  call give_all_erf_mu_of_r_kl_mo(integrals_mo, mu_of_r_prov_selected(i), r)
-  call give_all_mos_at_r(r,mos_array)
-  tmp = 0.d0
-  do k = 1, elec_alpha_num
-   do j = 1, elec_beta_num
-    tmp += mos_array(j)*mos_array(j) * integrals_mo(k,k)
-   enddo
-  enddo
-  HF_mu_of_r_bielec_energy += weight * tmp
- enddo
-
-END_PROVIDER 
 
 BEGIN_PROVIDER [double precision, energy_c_LDA_mu_of_r]
  implicit none
@@ -171,7 +148,7 @@ BEGIN_PROVIDER [double precision, energy_c_LDA_mu_of_r]
   r(1:3) = final_grid_points(1:3,i)  
   weight = final_weight_functions_at_final_grid_points(i)
   call dm_dft_alpha_beta_at_r(r,rho_a,rho_b)
-  call ec_only_lda_sr(mu_of_r_prov_selected(i),rho_a,rho_b,e_lda)
+  call ec_only_lda_sr(mu_of_r_vector(i),rho_a,rho_b,e_lda)
   energy_c_LDA_mu_of_r += weight * e_lda
  enddo
 END_PROVIDER 

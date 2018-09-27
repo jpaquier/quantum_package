@@ -56,19 +56,33 @@
  
 
  BEGIN_PROVIDER [double precision, on_top_of_r_vector_parallel,(n_points_final_grid,N_states) ]
+&BEGIN_PROVIDER [double precision, mu_of_r_cusp_condition_vector,(n_points_final_grid,N_states) ]
  implicit none
  integer :: i_point,istate
- double precision :: two_dm_in_r_selected_points
+ double precision :: two_dm_in_r_selected_points,dpi,r(3),two_dm,two_dm_laplacian,total_dm
  istate = 1
  print*,'providing the on_top_of_r_vector_parallel'
  i_point = 1
  on_top_of_r_vector_parallel(i_point,istate) = two_dm_in_r_selected_points(i_point,istate)
+ dpi = 3.d0 * dsqrt(dacos(-1.d0))
  !$OMP PARALLEL DO &
  !$OMP DEFAULT (NONE)  &
- !$OMP PRIVATE (i_point) &
- !$OMP SHARED(on_top_of_r_vector_parallel,istate,n_points_final_grid)
+ !$OMP PRIVATE (i_point,r,two_dm,two_dm_laplacian,total_dm) &
+ !$OMP SHARED(on_top_of_r_vector_parallel,istate,n_points_final_grid,dpi,mu_of_r_cusp_condition_vector,final_grid_points)
  do i_point = 1, n_points_final_grid
-  on_top_of_r_vector_parallel(i_point,istate) = two_dm_in_r_selected_points(i_point,istate)
+! on_top_of_r_vector_parallel(i_point,istate) = two_dm_in_r_selected_points(i_point,istate)
+  r(1) = final_grid_points(1,i_point)
+  r(2) = final_grid_points(2,i_point)
+  r(3) = final_grid_points(3,i_point)
+  call spherical_averaged_two_dm_at_second_order(r,0.d0,istate,two_dm,two_dm_laplacian,total_dm)
+  two_dm = max(two_dm,1.d-15)
+  on_top_of_r_vector_parallel(i_point,istate) = two_dm
+  if(two_dm_laplacian*two_dm.lt.0.d0)then
+  print*,r
+  print*,two_dm,two_dm_laplacian
+  pause
+  endif
+  mu_of_r_cusp_condition_vector(i_point,istate) = dpi * two_dm_laplacian / two_dm
  enddo
  !$OMP END PARALLEL DO
  print*,'provided  the on_top_of_r_vector_parallel'

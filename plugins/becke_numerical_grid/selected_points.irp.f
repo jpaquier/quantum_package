@@ -31,6 +31,7 @@ END_PROVIDER
  BEGIN_PROVIDER [double precision, final_grid_points, (3,n_points_final_grid)]
 &BEGIN_PROVIDER [double precision, final_weight_functions_at_final_grid_points, (n_points_final_grid) ]
 &BEGIN_PROVIDER [integer, index_final_points, (3,n_points_final_grid) ]
+&BEGIN_PROVIDER [integer, index_final_points_reverse, (n_points_integration_angular,n_points_radial_grid,nucl_num) ]
  implicit none
  integer :: i,j,k,l,i_count
  double precision :: density, mos_array(mo_tot_num),r(3)
@@ -56,6 +57,7 @@ END_PROVIDER
       index_final_points(1,i_count) = k
       index_final_points(2,i_count) = i
       index_final_points(3,i_count) = j
+      index_final_points_reverse(k,i,j) = i_count
     !endif
     enddo
    enddo
