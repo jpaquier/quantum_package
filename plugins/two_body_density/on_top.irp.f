@@ -12,14 +12,18 @@
 
  r = 0.d0
  istate = 1
+ ! initialization for parallel loops
  If (ontop_approx .EQV. .TRUE.) Then
   on_top_of_r(1,1,1,1) = on_top_in_r_sorted(r,istate) 
  else      
+  double precision :: two_dm,two_dm_laplacian,total_dm
   on_top_of_r(1,1,1,1) = two_dm_in_r(r,r,istate)
+  call spherical_averaged_two_dm_at_second_order(r,0.d0,istate,two_dm,two_dm_laplacian,total_dm)
  endif
 
  print*,'providing the on_top_of_r ...'
- call cpu_time(cpu0)
+ call wall_time(cpu0)
+ If (ontop_approx .EQV. .TRUE.) Then
   do j = 1, nucl_num
    do k = 1, n_points_radial_grid  -1
     do l = 1, n_points_integration_angular
@@ -28,78 +32,64 @@
      r(3) = grid_points_per_atom(3,l,k,j)
      do istate = 1, N_states
 !!!!!!!!!!!! CORRELATION PART
-      If (ontop_approx .EQV. .TRUE.) Then
        on_top_of_r(l,k,j,istate) = on_top_in_r_sorted(r,istate) 
-      else      
-       on_top_of_r(l,k,j,istate) = two_dm_in_r(r,r,istate)
-      endif
      enddo
     enddo
    enddo
- enddo
- call cpu_time(cpu1)
+  enddo
+ else
+  integer :: i_point,i
+  do i_point = 1, n_points_final_grid
+   k = index_final_points(1,i_point)
+   i = index_final_points(2,i_point)
+   j = index_final_points(3,i_point)
+   on_top_of_r(k,i,j,istate) = on_top_of_r_vector(i_point,1)
+  enddo  
+ endif
+ call wall_time(cpu1)
  print*,'Time to provide on_top_of_r = ',cpu1-cpu0
  deallocate(r)
  END_PROVIDER
 
  BEGIN_PROVIDER [double precision, on_top_of_r_vector,(n_points_final_grid,N_states) ]
- implicit none
- integer :: i_point,istate
- double precision :: two_dm_in_r_selected_points
- print*,'providing the on_top_of_r_vector'
- istate = 1
- do i_point = 1, n_points_final_grid
-  on_top_of_r_vector(i_point,istate) = two_dm_in_r_selected_points(i_point,1)
- enddo
- print*,'provided the on_top_of_r_vector'
- END_PROVIDER 
- 
-
- BEGIN_PROVIDER [double precision, on_top_of_r_vector_parallel,(n_points_final_grid,N_states) ]
 &BEGIN_PROVIDER [double precision, mu_of_r_cusp_condition_vector,(n_points_final_grid,N_states) ]
  implicit none
  integer :: i_point,istate
  double precision :: two_dm_in_r_selected_points,dpi,r(3),two_dm,two_dm_laplacian,total_dm
+ double precision :: two_dm_HF,two_dm_laplacian_HF,total_dm_HF
+ double precision :: corr_hole_2,alpha,mu0
  istate = 1
- print*,'providing the on_top_of_r_vector_parallel'
+ double precision :: wall_0,wall_1
+ print*,'providing the on_top_of_r_vector'
  i_point = 1
- on_top_of_r_vector_parallel(i_point,istate) = two_dm_in_r_selected_points(i_point,istate)
- dpi = 3.d0 * dsqrt(dacos(-1.d0))
+ on_top_of_r_vector(i_point,istate) = two_dm_in_r_selected_points(i_point,istate)
+ dpi = 1.5d0 * dsqrt(dacos(-1.d0))
+ call wall_time(wall_0)
  !$OMP PARALLEL DO &
  !$OMP DEFAULT (NONE)  &
- !$OMP PRIVATE (i_point,r,two_dm,two_dm_laplacian,total_dm) &
- !$OMP SHARED(on_top_of_r_vector_parallel,istate,n_points_final_grid,dpi,mu_of_r_cusp_condition_vector,final_grid_points)
+ !$OMP PRIVATE (i_point,r,two_dm,two_dm_laplacian,total_dm,two_dm_HF,two_dm_laplacian_HF,total_dm_HF,alpha,mu0) &
+ !$OMP SHARED(on_top_of_r_vector,istate,n_points_final_grid,dpi,mu_of_r_cusp_condition_vector,final_grid_points)
  do i_point = 1, n_points_final_grid
-! on_top_of_r_vector_parallel(i_point,istate) = two_dm_in_r_selected_points(i_point,istate)
+! on_top_of_r_vector(i_point,istate) = two_dm_in_r_selected_points(i_point,istate)
   r(1) = final_grid_points(1,i_point)
   r(2) = final_grid_points(2,i_point)
   r(3) = final_grid_points(3,i_point)
   call spherical_averaged_two_dm_at_second_order(r,0.d0,istate,two_dm,two_dm_laplacian,total_dm)
+  call spherical_averaged_two_dm_HF_at_second_order(r,0.d0,istate,two_dm_HF,two_dm_laplacian_HF,total_dm_HF)
+! corr_hole_2 = (two_dm_laplacian - two_dm_laplacian_HF * two_dm/total_dm_HF)/two_dm_HF
   two_dm = max(two_dm,1.d-15)
-  on_top_of_r_vector_parallel(i_point,istate) = two_dm
-  if(two_dm_laplacian*two_dm.lt.0.d0)then
-  print*,r
-  print*,two_dm,two_dm_laplacian
-  pause
-  endif
-  mu_of_r_cusp_condition_vector(i_point,istate) = dpi * two_dm_laplacian / two_dm
+  two_dm_HF = max(two_dm_HF,1.d-15)
+  on_top_of_r_vector(i_point,istate) = two_dm
+  mu0 =  dpi * (two_dm_laplacian / two_dm - two_dm_laplacian_HF / two_dm_HF)
+  mu0 = max(mu0,1.d-15)
+! mu_of_r_cusp_condition_vector(i_point,istate) = mu0
+  alpha = 1.d0 + 2.d0/(dsqrt(dacos(-1.d0)) * mu0)
+  mu_of_r_cusp_condition_vector(i_point,istate) = mu0*alpha
  enddo
  !$OMP END PARALLEL DO
- print*,'provided  the on_top_of_r_vector_parallel'
- END_PROVIDER 
- 
- BEGIN_PROVIDER [double precision, integral_two_body_parallel]
- implicit none
- integer :: i_point,istate
- double precision :: cpu0,cpu1
- istate = 1
- integral_two_body_parallel = 0.d0
- call wall_time(cpu0)
- do i_point = 1, n_points_final_grid
-  integral_two_body_parallel += on_top_of_r_vector_parallel(i_point,istate)
- enddo
- call wall_time(cpu1)
- print*,'Time to provide on_top_of_r parallel = ',cpu1-cpu0
+ call wall_time(wall_1)
+ print*,'provided the on_top_of_r_vector'
+ print*,'Time to provide :',wall_1 - wall_0
  END_PROVIDER 
  
 

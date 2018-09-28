@@ -16,7 +16,7 @@ END_PROVIDER
  END_PROVIDER 
 
  BEGIN_PROVIDER [double precision, r_core_sphe]
- r_core_sphe=0.42
+ r_core_sphe=0.00001d0
  implicit none
  END_PROVIDER
 

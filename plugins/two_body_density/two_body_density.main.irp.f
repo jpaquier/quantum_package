@@ -36,4 +36,5 @@ program two_body_density
   print *, '            -------~              '
   print *, ''
   provide on_top_of_r
+  provide on_top_of_r_vector
 end

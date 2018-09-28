@@ -125,7 +125,8 @@ subroutine print_variational_energy_dft_mu_of_r
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  else if(md_correlation_functional.EQ."basis_set_on_top_PBE")then
-   write(*, '(A28,X,F16.10)') 'TOTAL ENERGY CORR CORRECTED =',psi_energy+Energy_c_md_mu_of_r_PBE_on_top_corrected+nuclear_repulsion
+   write(*, '(A34,X,F16.10)') 'TOTAL ENERGY CORR CORRECTED PBE n2=',psi_energy+Energy_c_md_mu_of_r_PBE_on_top_corrected+nuclear_repulsion
+   write(*, '(A34,X,F16.10)') 'TOTAL ENERGY CORR CORRECTED LDA   =',psi_energy+Energy_c_md_mu_of_r_LDA+nuclear_repulsion
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    print*, ''
    write(*, '(A28,X,F16.10)') 'Variational energy of Psi   = ',psi_energy
@@ -133,8 +134,8 @@ subroutine print_variational_energy_dft_mu_of_r
    print*, ''
    write(*, '(A28,X,F16.10)') 'nuclear_repulsion           = ',nuclear_repulsion
    !write(*, '(A28,X,F16.10)') 'DFT mu(r) correlation       = ',Energy_c_md_mu_of_r_PBE_on_top
-   write(*, '(A28,X,F16.10)') 'DFT mu(r) E_c,md corr  = ',Energy_c_md_mu_of_r_PBE_on_top_corrected
-   write(*, '(A28,X,F16.10)') 'DFT mu(r) E_c corr     = ',Energy_c_mu_of_r_PBE_on_top_corrected   
+   write(*, '(A28,X,F16.10)') 'DFT mu(r) E_c,md PBE n2= ',Energy_c_md_mu_of_r_PBE_on_top_corrected
+   write(*, '(A28,X,F16.10)') 'DFT mu(r) E_c,md LDA   = ',Energy_c_md_mu_of_r_LDA
 
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

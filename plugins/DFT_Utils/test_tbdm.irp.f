@@ -45,7 +45,7 @@ end
 
 subroutine test_mu
  implicit none
- provide on_top_of_r_vector_parallel
+ provide on_top_of_r_vector
 
 
 end
@@ -83,6 +83,7 @@ subroutine test_corr
  integer :: j,k,l 
  double precision :: r(3),two_dm,two_dm_laplacian,total_dm
  j = 1
+ provide mu_of_r_cusp_condition_vector
  print*,'n_points_radial_grid = ',n_points_radial_grid
   do k = 1, n_points_radial_grid  -1
    l = 1

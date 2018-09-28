@@ -4,30 +4,8 @@ program test_dm
  touch read_wf 
 !call test_energy_dm
 !call test_2dm
- call test_parallel
 end
 
-subroutine test_parallel
- implicit none 
- provide two_bod_alpha_beta_mo
- print*,'integral_two_body_parallel = ',integral_two_body_parallel
- print*,'integral_two_body          = ',integral_two_body
-end
-
-subroutine test_2dm
- implicit none
- provide two_bod_alpha_beta_mo
- integer :: i,j
- do i = 1, n_points_final_grid
-  if(dabs(on_top_of_r_vector_parallel(i,1) - on_top_of_r_vector(i,1)).gt.1.d-10)then 
-   print*,'ahahah'
-   print*,i,on_top_of_r_vector_parallel(i,1),on_top_of_r_vector(i,1)
-   print*,dabs(on_top_of_r_vector_parallel(i,1) - on_top_of_r_vector(i,1))
-  endif
- enddo
-
-
-end
 
 !subroutine test_energy_dm
 !integer :: i,j,k,l
