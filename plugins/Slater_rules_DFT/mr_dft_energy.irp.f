@@ -68,33 +68,14 @@ subroutine print_variational_energy_dft
   write(*, '(A22,X,F16.10)') 'nuclear_repulsion   = ',nuclear_repulsion
   write(*, '(A22,X,F16.10)') 'psi_energy_erf      = ',psi_energy_erf
   write(*, '(A22,X,F16.10)') 'psi_energy_core     = ',psi_energy_core
-  write(*, '(A22,X,F16.10)') 'short_range_Hartree = ',short_range_Hartree
-  write(*, '(A22,X,F16.10)') 'two_elec_energy     = ',two_elec_energy_dft
-  write(*, '(A22,X,F16.10)') 'energy_x            = ',energy_x
-  write(*, '(A22,X,F16.10)') 'energy_c            = ',energy_c
+  write(*, '(A22,X,F16.10)') 'E^LR                = ',psi_energy_core + psi_energy_erf
+  write(*, '(A22,X,F16.10)') 'E_Hxc_Toulouse      = ',energy_Hxc(1)
   print*, ''
   print*,  '****************************************'
   print*, ''
-  write(*, '(A22,X,F16.10)') 'Approx eigenvalue   = ',Fock_matrix_expectation_value + psi_energy_erf
-  write(*, '(A22,X,F16.10)') 'Trace_v_xc          = ',Trace_v_xc
-
   print*,  '****************************************'
   print*,  '****************************************'
-  print*,  ' MR DFT energy with pure correlation part for the DFT '
-  write(*, '(A22,X,F16.10)') 'TOTAL ENERGY CORR   = ',elec_energy_dft_pure_corr_funct+nuclear_repulsion
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  write(*, '(A22,X,F16.10)') 'CORRECTED E_TOT CORR= ',Energy_c_md_on_top(1)+psi_energy+nuclear_repulsion
-  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  print*, ''
-  print*, 'Component of the energy ....'
-  print*, ''
-  write(*, '(A28,X,F16.10)') 'nuclear_repulsion         = ',nuclear_repulsion
-  write(*, '(A28,X,F16.10)') 'Variational energy of Psi = ',psi_energy
-  write(*, '(A28,X,F16.10)') 'psi_energy_bielec         = ',psi_energy_bielec
-  write(*, '(A28,X,F16.10)') 'psi_energy_monoelec       = ',psi_energy_monoelec
-  write(*, '(A28,X,F16.10)') 'DFT Multi-det correlation = ',Energy_c_md
-  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  write(*, '(A28,X,F16.10)') 'corrected Multi-det correl= ',Energy_c_md_on_top(1)
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  endif
