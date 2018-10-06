@@ -344,7 +344,8 @@ END_PROVIDER
   enddo
  deallocate(aos_array,r,rho_a,rho_b, ec)
  call cpu_time(cpu1)
- print*,'Time for the ec_md integration :',cpu1-cpu0
+ print*,'Time for the Energy_c_md_LDA integration :',cpu1-cpu0
+ stop
 END_PROVIDER
 
 
@@ -391,7 +392,6 @@ END_PROVIDER
 
  BEGIN_PROVIDER [double precision, Energy_c_md_mu_of_r_PBE_on_top, (N_states)]
 &BEGIN_PROVIDER [double precision, Energy_c_md_mu_of_r_PBE_on_top_corrected, (N_states)]
-&BEGIN_PROVIDER [double precision, Energy_c_mu_of_r_PBE_on_top_corrected, (N_states)]
  implicit none
  BEGIN_DOC
  ! Corelation energy for the multi determinent short range LDA. PRB 73 155111 2006
@@ -406,7 +406,6 @@ END_PROVIDER
  threshold = 1.d-07
  Energy_c_md_mu_of_r_PBE_on_top = 0.d0
  Energy_c_md_mu_of_r_PBE_on_top_corrected = 0.d0
- Energy_c_mu_of_r_PBE_on_top_corrected = 0.d0
  double precision :: cpu0,cpu1
  allocate(aos_array(ao_num),r(3), rho_a(N_states), rho_b(N_states), ec(N_states),ec_corrected(N_states),eps_c_on_top_PBE(N_states))
 
@@ -427,10 +426,9 @@ END_PROVIDER
       mu = mu_of_r(l,k,j) 
       on_top = on_top_of_r(l,k,j,istate) 
       call give_epsilon_c_md_on_top_PBE_and_corrected(mu,r,on_top,ec(istate),ec_corrected(istate))
-      call give_epsilon_c_on_top_PBE_mu_corrected(mu,r,eps_c_on_top_PBE(istate))
+     !call give_epsilon_c_on_top_PBE_mu_corrected(mu,r,eps_c_on_top_PBE(istate))
       Energy_c_md_mu_of_r_PBE_on_top(istate) += final_weight_functions_at_grid_points(l,k,j) * ec(istate)
       Energy_c_md_mu_of_r_PBE_on_top_corrected(istate) += final_weight_functions_at_grid_points(l,k,j) * ec_corrected(istate)
-      Energy_c_mu_of_r_PBE_on_top_corrected(istate) += final_weight_functions_at_grid_points(l,k,j) * eps_c_on_top_PBE(istate)
      enddo
 
     enddo
@@ -443,75 +441,37 @@ END_PROVIDER
 END_PROVIDER
 
 
- BEGIN_PROVIDER [double precision, mu_of_r_cusp_condition, (n_points_integration_angular,n_points_radial_grid,nucl_num) ]
- implicit none 
- BEGIN_DOC
- ! mu_of_r and mu_average computation 
- END_DOC
- integer :: i,j,k,i_point
- double precision :: r(3),two_dm,two_dm_laplacian,total_dm
- do i_point = 1, n_points_final_grid
-  k = index_final_points(1,i_point)
-  i = index_final_points(2,i_point)
-  j = index_final_points(3,i_point)
-  mu_of_r_cusp_condition(k,i,j) = mu_of_r_cusp_condition_vector(i_point,1)
- enddo
-
- END_PROVIDER 
-
-
- BEGIN_PROVIDER [double precision, mu_of_r, (n_points_integration_angular,n_points_radial_grid,nucl_num) ]
-&BEGIN_PROVIDER [double precision, mu_of_r_vector, (n_points_final_grid) ]
-&BEGIN_PROVIDER [double precision, mu_average]
+ BEGIN_PROVIDER [double precision, mu_average]
  implicit none 
  BEGIN_DOC
  ! mu_of_r and mu_average computation 
  END_DOC
  integer :: j,k,l
- double precision, allocatable :: r(:)
- double precision :: local_potential,two_body_dm
- double precision :: cpu0,cpu1,integral_f,mu_integral,spherical_average
- print*,'providing the mu_of_r ...'
- call cpu_time(cpu0)
- allocate(r(3))
+ double precision :: r(3)
  mu_average = 0.d0
  do j = 1, nucl_num
   do k = 1, n_points_radial_grid  -1
-   spherical_average = 0.d0
    do l = 1, n_points_integration_angular 
     r(1) = grid_points_per_atom(1,l,k,j)
     r(2) = grid_points_per_atom(2,l,k,j)
     r(3) = grid_points_per_atom(3,l,k,j)
-    if(mu_of_r_potential.EQ."cusp_condition")then
-     mu_of_r(l,k,j) = mu_of_r_cusp_condition(l,k,j) 
-    else if(mu_of_r_potential.EQ."hf_coallescence")then
-     call local_r12_operator_on_hf(r,r,local_potential)
-     mu_of_r(l,k,j) =  local_potential * dsqrt(dacos(-1.d0)) * 0.5d0
-    else if(mu_of_r_potential.EQ."psi_coallescence")then
-     call expectation_value_in_real_space(r,r,local_potential,two_body_dm)
-     mu_of_r(l,k,j) =  local_potential * dsqrt(dacos(-1.d0)) * 0.5d0
-    else if(mu_of_r_potential.EQ."integral_hf")then
-      call integral_of_f_12_on_hf(r,integral_f)
-      mu_of_r(l,k,j) = mu_integral(integral_f,r)
-    else 
-      print*,'you requested the following mu_of_r_potential'
-      print*,mu_of_r_potential
-      print*,'which does not correspond to any of the options for such keyword'
-      stop
-    endif
-    spherical_average += final_weight_functions_at_grid_points(l,k,j)*mu_of_r(l,k,j)
     mu_average +=  final_weight_functions_at_grid_points(l,k,j)*mu_of_r(l,k,j)*(one_body_dm_mo_alpha_at_grid_points(l,k,j,1)+one_body_dm_mo_beta_at_grid_points(l,k,j,1))
-    mu_of_r_vector(index_final_points_reverse(l,k,j)) = mu_of_r(l,k,j)
    enddo
-   double precision :: distance
-   spherical_average = 1.d0/(4.d0 * dacos(-1.d0)) * spherical_average
-   distance = dsqrt( (grid_points_per_atom(1,1,k,j) - nucl_coord(1,j))**2  + (grid_points_per_atom(2,1,k,j) - nucl_coord(2,j))**2  + (grid_points_per_atom(3,1,k,j) - nucl_coord(3,j))**2 )
-!  write(33,'(100(F16.10,X))')distance,spherical_average,(one_body_dm_mo_alpha_at_grid_points(l,k,j,1)+one_body_dm_mo_beta_at_grid_points(l,k,j,1))
   enddo
  enddo
- call cpu_time(cpu1)
- print*,'Time to provide mu_of_r = ',cpu1-cpu0
  mu_average = mu_average / dble(elec_alpha_num + elec_beta_num)
- deallocate(r)
  END_PROVIDER 
 
+BEGIN_PROVIDER [double precision, energy_c_LDA_mu_of_r]
+ implicit none
+ integer :: i,j,k
+ double precision :: r(3), weight,tmp,rho_a,rho_b,e_lda
+ energy_c_LDA_mu_of_r = 0.d0
+ do i = 1, n_points_final_grid
+  r(1:3) = final_grid_points(1:3,i)  
+  weight = final_weight_functions_at_final_grid_points(i)
+  call dm_dft_alpha_beta_at_r(r,rho_a,rho_b)
+  call ec_only_lda_sr(mu_of_r_vector(i),rho_a,rho_b,e_lda)
+  energy_c_LDA_mu_of_r += weight * e_lda
+ enddo
+END_PROVIDER 

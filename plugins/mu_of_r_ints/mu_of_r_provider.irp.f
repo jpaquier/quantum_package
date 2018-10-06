@@ -8,7 +8,7 @@ BEGIN_PROVIDER [double precision, mu_of_r_prov, (n_points_integration_angular,n_
   do i_atom = 1,nucl_num
    do k = 1, n_points_radial_grid -1
     do l = 1 , n_points_integration_angular
-     mu_of_r_prov(l,k,i_atom) = mu_erf ! mu_of_r(l,k,i_atom)
+     mu_of_r_prov(l,k,i_atom) =  mu_of_r(l,k,i_atom)
     enddo
    enddo
   enddo
