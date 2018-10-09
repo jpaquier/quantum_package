@@ -1,8 +1,6 @@
 BEGIN_PROVIDER [ logical, read_ao_integrals_mu_of_r ]
-&BEGIN_PROVIDER [ logical, read_ao_integrals_mu_of_r_left ]
 &BEGIN_PROVIDER [ logical, read_mo_integrals_mu_of_r ]
 &BEGIN_PROVIDER [ logical, write_ao_integrals_mu_of_r ]
-&BEGIN_PROVIDER [ logical, write_ao_integrals_mu_of_r_left ]
 &BEGIN_PROVIDER [ logical, write_mo_integrals_mu_of_r ]
 
  BEGIN_DOC
@@ -24,24 +22,6 @@ implicit none
 
     else
         print *, 'bielec_integrals_mu_of_r/disk_access_ao_integrals_mu_of_r has a wrong type'
-        stop 1
-
-    endif
-
-    if (disk_access_ao_integrals_mu_of_r_left.EQ.'Read') then
-        read_ao_integrals_mu_of_r_left =  .True.
-        write_ao_integrals_mu_of_r_left = .False.
-
-    else if  (disk_access_ao_integrals_mu_of_r_left.EQ.'Write') then
-        read_ao_integrals_mu_of_r_left = .False.
-        write_ao_integrals_mu_of_r_left =  .True.
-    
-    else if (disk_access_ao_integrals_mu_of_r_left.EQ.'None') then
-        read_ao_integrals_mu_of_r_left = .False.
-        write_ao_integrals_mu_of_r_left = .False.
-
-    else
-        print *, 'bielec_integrals_mu_of_r/disk_access_ao_integrals_mu_of_r_left has a wrong type'
         stop 1
 
     endif

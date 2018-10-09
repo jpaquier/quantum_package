@@ -112,33 +112,6 @@ END_PROVIDER
         enddo
       enddo
       
-     !if (do_direct_integrals) then
-     !  double precision               :: ao_bielec_integral_erf_mu_of_r
-     !  do r=1,ao_num
-     !    call compute_ao_bielec_integrals_erf_mu_of_r(q,r,s,ao_num,int_value)
-     !    do p=1,ao_num
-     !      integral = int_value(p)
-     !      if (abs(integral) > ao_integrals_threshold) then
-     !        !DIR$ VECTOR ALIGNED
-     !        do i=1,mo_tot_num
-     !          iqrs(i,r) += mo_coef_transp(i,p) * integral
-     !        enddo
-     !      endif
-     !    enddo
-     !    call compute_ao_bielec_integrals_erf_mu_of_r(q,s,r,ao_num,int_value)
-     !    do p=1,ao_num
-     !      integral = int_value(p)
-     !      if (abs(integral) > ao_integrals_threshold) then
-     !        !DIR$ VECTOR ALIGNED
-     !        do i=1,mo_tot_num
-     !          iqsr(i,r) += mo_coef_transp(i,p) * integral
-     !        enddo
-     !      endif
-     !    enddo
-     !  enddo
-     !  
-     !else
-        
         do r=1,ao_num
           call get_ao_bielec_integrals_erf_mu_of_r_non_zero(q,r,s,ao_num,int_value,int_idx,n)
           do pp=1,n
