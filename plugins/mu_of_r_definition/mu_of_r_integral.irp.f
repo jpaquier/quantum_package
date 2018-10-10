@@ -40,7 +40,7 @@ end
  double precision :: threshold,mu_tmp,integrals_mo(mo_tot_num,mo_tot_num)
  integer :: i,j
  double precision :: integral_of_mu_of_r_on_HF
- threshold = 1.d-2
+ threshold = 1.d-4
  call give_all_mos_at_r(r,mos_array)
  call local_r12_operator_on_hf(r,r,local_potential)
  mu_0 =  local_potential * dsqrt(dacos(-1.d0)) * 0.5d0
@@ -88,4 +88,33 @@ BEGIN_PROVIDER [double precision, HF_mu_of_r_bielec_energy]
 
 END_PROVIDER 
 
+
+ BEGIN_PROVIDER [double precision, mu_of_r_integral_hf_vector, (n_points_final_grid) ]
+ implicit none 
+ BEGIN_DOC
+ ! mu_of_r and mu_average computation 
+ END_DOC
+ integer :: i_point
+ double precision :: r(3)
+ double precision :: local_potential,two_body_dm
+ double precision :: cpu0,cpu1,integral_f,mu_integral
+ print*,'providing the mu_of_r ...'
+ call wall_time(cpu0)
+ r = 0.d0
+ call integral_of_f_12_on_hf(r,integral_f)
+ !$OMP PARALLEL DO &
+ !$OMP DEFAULT (NONE)  &
+ !$OMP PRIVATE (i_point,r,integral_f) & 
+ !$OMP shARED (n_points_final_grid,final_grid_points,mu_of_r_integral_hf_vector) 
+ do i_point = 1, n_points_final_grid
+  r(1) = final_grid_points(1,i_point)
+  r(2) = final_grid_points(2,i_point)
+  r(3) = final_grid_points(3,i_point)
+  call integral_of_f_12_on_hf(r,integral_f)
+  mu_of_r_integral_hf_vector(i_point) = mu_integral(integral_f,r)
+ enddo
+ !$OMP END PARALLEL DO
+ call wall_time(cpu1)
+ print*,'Time to provide mu_of_r = ',cpu1-cpu0
+ END_PROVIDER 
 
