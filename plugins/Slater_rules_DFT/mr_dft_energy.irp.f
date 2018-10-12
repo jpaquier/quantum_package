@@ -61,7 +61,6 @@ subroutine print_variational_energy_dft
   print*,  '****************************************'
   print*,  ' Range separated DFT energy new Toulouse method '
   write(*, '(A22,X,F32.10)') 'mu_erf              = ',mu_erf
-  write(*, '(A22,X,F16.10)') 'TOTAL ENERGY        = ',electronic_energy_mr_dft+nuclear_repulsion
   print*, ''
   print*, 'Component of the energy ....'
   print*, ''
@@ -69,7 +68,12 @@ subroutine print_variational_energy_dft
   write(*, '(A22,X,F16.10)') 'psi_energy_erf      = ',psi_energy_erf
   write(*, '(A22,X,F16.10)') 'psi_energy_core     = ',psi_energy_core
   write(*, '(A22,X,F16.10)') 'E^LR                = ',psi_energy_core + psi_energy_erf
-  write(*, '(A22,X,F16.10)') 'E_Hxc_Toulouse      = ',energy_Hxc(1)
+  !write(*, '(A22,X,F16.10)') 'E_Hxc_Toulouse_1    = ',energy_Hxc(1)
+  !write(*, '(A22,X,F16.10)') 'E_Hxc_Toulouse_2    = ',energy_Hxc_bis(1)
+  write(*, '(A22,X,F16.10)') 'E_Hxc_Toulouse_3    = ',energy_Hxc_ter(1)
+  !write(*, '(A22,X,F16.10)') 'Tot_Toulouse_1      = ',nuclear_repulsion + psi_energy_core + psi_energy_erf + energy_Hxc
+  !write(*, '(A22,X,F16.10)') 'Tot_Toulouse_2      = ',nuclear_repulsion + psi_energy_core + psi_energy_erf + energy_Hxc_bis
+  write(*, '(A22,X,F16.10)') 'Tot_Toulouse_3      = ',nuclear_repulsion + psi_energy_core + psi_energy_erf + energy_Hxc_ter
   print*, ''
   print*,  '****************************************'
   print*, ''

@@ -56,7 +56,7 @@ BEGIN_PROVIDER [ double precision, total_range_separated_electronic_energy, (N_s
   If (SR_standard_decomposition .EQV. .TRUE.) Then
    total_range_separated_electronic_energy = psi_energy_core + short_range_Hartree + psi_energy_erf + energy_x + energy_c 
   else      
-   total_range_separated_electronic_energy = psi_energy_core + psi_energy_erf + energy_Hxc 
+   total_range_separated_electronic_energy = psi_energy_core + psi_energy_erf + energy_Hxc_bis 
   endif
 END_PROVIDER
 
