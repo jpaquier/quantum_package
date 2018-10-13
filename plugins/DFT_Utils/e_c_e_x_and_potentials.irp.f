@@ -447,16 +447,25 @@ END_PROVIDER
  ! mu_of_r and mu_average computation 
  END_DOC
  integer :: j,k,l
- double precision :: r(3)
+ double precision :: r(3),spherical_average, distance,spherical_average_density
  mu_average = 0.d0
  do j = 1, nucl_num
   do k = 1, n_points_radial_grid  -1
+   spherical_average = 0.d0
+   spherical_average_density = 0.d0
    do l = 1, n_points_integration_angular 
     r(1) = grid_points_per_atom(1,l,k,j)
     r(2) = grid_points_per_atom(2,l,k,j)
     r(3) = grid_points_per_atom(3,l,k,j)
+    if(mu_of_r(l,k,j) .lt. 1.d2)then
     mu_average +=  final_weight_functions_at_grid_points(l,k,j)*mu_of_r(l,k,j)*(one_body_dm_mo_alpha_at_grid_points(l,k,j,1)+one_body_dm_mo_beta_at_grid_points(l,k,j,1))
+    spherical_average += final_weight_functions_at_grid_points(l,k,j)*mu_of_r(l,k,j)*(one_body_dm_mo_alpha_at_grid_points(l,k,j,1)+one_body_dm_mo_beta_at_grid_points(l,k,j,1))
+    spherical_average_density += final_weight_functions_at_grid_points(l,k,j)*(one_body_dm_mo_alpha_at_grid_points(l,k,j,1)+one_body_dm_mo_beta_at_grid_points(l,k,j,1))
+    endif
    enddo
+   distance = grid_points_per_atom(1,1,k,j)**2 + grid_points_per_atom(2,1,k,j)**2 + grid_points_per_atom(3,1,k,j)**2
+   distance = dsqrt(distance)
+    write(33,*)distance, spherical_average,spherical_average_density
   enddo
  enddo
  mu_average = mu_average / dble(elec_alpha_num + elec_beta_num)
@@ -475,3 +484,33 @@ BEGIN_PROVIDER [double precision, energy_c_LDA_mu_of_r]
   energy_c_LDA_mu_of_r += weight * e_lda
  enddo
 END_PROVIDER 
+
+ BEGIN_PROVIDER [double precision, HF_mu_of_r_bielec_energy]
+&BEGIN_PROVIDER [double precision, HF_alpha_beta_bielec_energy]
+ implicit none
+ integer :: i,j,k
+ double precision :: r(3), weight,tmp,integral_of_mu_of_r_on_HF
+ double precision, allocatable :: integrals_mo(:,:),mos_array(:)
+ allocate(integrals_mo(mo_tot_num,mo_tot_num),mos_array(mo_tot_num))
+ HF_mu_of_r_bielec_energy = 0.d0
+  
+ integer                        :: occ(N_int*bit_kind_size,2)
+ call bitstring_to_list(ref_bitmask(1,1), occ(1,1), i, N_int)
+ call bitstring_to_list(ref_bitmask(1,2), occ(1,2), i, N_int)
+ 
+ do j= 1, elec_beta_num
+  do i= 1, elec_alpha_num
+    HF_mu_of_r_bielec_energy += mo_bielec_integral_erf_mu_of_r_jj(occ(i,1),occ(j,2))
+  enddo
+ enddo
+
+ HF_alpha_beta_bielec_energy = 0.d0
+ do j= 1, elec_beta_num
+  do i= 1, elec_alpha_num
+    HF_alpha_beta_bielec_energy += mo_bielec_integral_jj(occ(i,1),occ(j,2))
+  enddo
+ enddo
+
+
+END_PROVIDER 
+

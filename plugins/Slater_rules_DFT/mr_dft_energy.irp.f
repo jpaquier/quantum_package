@@ -106,8 +106,9 @@ subroutine print_variational_energy_dft_mu_of_r
  implicit none
 
  print*,  '****************************************'
- print*, 'Functional used = ',md_correlation_functional
+ print*, 'Functional used   = ',md_correlation_functional
  print*,  '****************************************'
+ print*, 'mu_of_r_potential = ',mu_of_r_potential
  print*,  ' MR DFT energy with pure correlation part for the DFT '
  if(md_correlation_functional.EQ."basis_set_LDA")then
    write(*, '(A28,X,F16.10)') 'TOTAL ENERGY CORR         = ',psi_energy+Energy_c_md_mu_of_r_LDA+nuclear_repulsion
@@ -144,6 +145,14 @@ subroutine print_variational_energy_dft_mu_of_r
 
  endif 
    write(*, '(A28,X,F16.10)') 'mu_average for basis set  = ',mu_average
+ if(mu_of_r_potential.EQ."hf_integral")then
+  print*,'integral_f_hf              = ',integral_f_hf
+  print*,'HF_alpha_beta_bielec_energy= ',HF_alpha_beta_bielec_energy
+  print*,'mu(r) expectation values .......'
+  print*,'HF_mu_of_r_bielec_energy   = ',HF_mu_of_r_bielec_energy
+  print*,'absolute error             = ',HF_mu_of_r_bielec_energy - HF_alpha_beta_bielec_energy
+  print*,'relative error             = ',dabs(HF_mu_of_r_bielec_energy - HF_alpha_beta_bielec_energy)/dabs(HF_alpha_beta_bielec_energy)
+ endif
 
 
 end
