@@ -8,7 +8,7 @@ BEGIN_PROVIDER [double precision, mo_coef_spherical, (n_spherical_AOs_in_basis,m
  do i = 1, mo_tot_num
   do k =1, n_spherical_AOs_in_basis
    do j = 1, ao_num 
-   mo_coef_spherical(k,i) += cartesian_to_spherical_matrix(j,k) * mo_coef(j,i)
+   mo_coef_spherical(k,i) += cartesian_to_spherical_matrix(j,k) * mo_coef(j,i)/ao_coef_normalization_factor(j)
    enddo
   enddo
  enddo
