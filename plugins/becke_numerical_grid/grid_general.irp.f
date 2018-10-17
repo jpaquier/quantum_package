@@ -6,17 +6,17 @@
 ! number of radial points per atom for 3d numerical integration, needed for DFT
 ! for example
  END_DOC
- n_points_radial_grid_spherical= 1000
+ n_points_radial_grid_spherical= 100
  n_points_total_shperical = n_points_radial_grid_spherical*n_points_integration_angular
 END_PROVIDER 
 
  BEGIN_PROVIDER [double precision, r_max_grid_spherical]
- r_max_grid_spherical=8.d0
+ r_max_grid_spherical=6.d0
  implicit none
  END_PROVIDER 
 
  BEGIN_PROVIDER [double precision, r_core_sphe]
- r_core_sphe=0.42
+ r_core_sphe=0.00001d0
  implicit none
  END_PROVIDER
 
@@ -39,7 +39,7 @@ END_PROVIDER
  implicit none
  double precision :: r_localoca
  integer :: i,j
- r_localoca=0
+ r_localoca=pas_grid_sphe
 
  do i = 1,n_points_radial_grid_spherical
   do j=1,n_points_integration_angular

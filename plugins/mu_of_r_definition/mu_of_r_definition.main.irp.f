@@ -1,4 +1,4 @@
-program Data_energy_and_density
+program mu_of_r_definition
   implicit none
   BEGIN_DOC
 ! TODO

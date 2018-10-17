@@ -1,4 +1,4 @@
-program two_body_density
+program projected_operators
   implicit none
   BEGIN_DOC
 ! TODO
@@ -35,6 +35,4 @@ program two_body_density
   print *, '           . .... : .             '
   print *, '            -------~              '
   print *, ''
-  provide on_top_of_r
-  provide on_top_of_r_vector
 end

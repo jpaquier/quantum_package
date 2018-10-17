@@ -33,6 +33,27 @@ subroutine bielec_integrals_index(i,j,k,l,i1)
   i1 = i1+ishft(i2*i2-i2,-1)
 end
 
+subroutine bielec_integrals_index_no_sym(i,j,k,l,n,i1)
+  use map_module
+  implicit none
+ BEGIN_DOC
+! symetric index for (i,k) and (j,l) but between (i,k) and (j,l)
+! n is the maximum value of the indices
+ END_DOC
+  integer, intent(in)            :: i,j,k,l
+  integer, intent(in)            :: n 
+  integer(key_kind), intent(out) :: i1
+  integer(key_kind)              :: p,q,r,s,i2
+  p = min(i,k)
+  r = max(i,k)
+  p = p+ishft(r*r-r,-1)
+  q = min(j,l)
+  s = max(j,l)
+  q = q+ishft(s*s-s,-1)
+  i1 = (p-1)*n*n + q
+end
+
+
 subroutine bielec_integrals_index_reverse(i,j,k,l,i1)
   use map_module
   implicit none

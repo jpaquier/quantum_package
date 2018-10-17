@@ -4,6 +4,7 @@ program pouet
 ! call test_grad_ao
  !call test_grad_lapl_ao
  call test_grad_lapl_mo
+!call test_grad_lapl_ao
 ! call test_grad_density
 !call test_v_corel_old
 !call test_v_corel_new
@@ -53,7 +54,7 @@ print*,'dr,error grad, error lapl'
     enddo
    enddo
   enddo
-  print*,dr,accu(1),accu_2(1)
+  write(*,'(100(F16.10,X))')dr,accu(1),accu_2(1),accu_2(2), accu_2(3)
  enddo
 
 end
@@ -96,7 +97,7 @@ subroutine test_grad_lapl_mo
     enddo
    enddo
   enddo
-  print*,dr,accu(1),accu(2),accu(3),accu_2(1),accu_2(2),accu_2(3)
+  write(33,'(100(F16.10,X))'),dr,accu(1),accu(2),accu(3),accu_2(1),accu_2(2),accu_2(3)
  enddo
 end
 

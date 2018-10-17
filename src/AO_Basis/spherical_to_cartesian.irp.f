@@ -32,6 +32,11 @@ BEGIN_PROVIDER [ double precision, cart_to_sphe_2, (6,5) ]
   implicit none
   BEGIN_DOC
 ! Spherical -> Cartesian Transformation matrix for l=2
+! 1 ==C(2,0) == z2     == d0
+! 2 ==C(2,1) == xz     == d+1
+! 3 ==S(2,1) == yz     == d-1
+! 4 ==C(2,2) == x2-y2  == d+2
+! 5 ==S(2,2) == xy     == d-2
   END_DOC
   cart_to_sphe_2 = 0.d0
 
@@ -50,6 +55,13 @@ BEGIN_PROVIDER [ double precision, cart_to_sphe_3, (10,7) ]
   implicit none
   BEGIN_DOC
 ! Spherical -> Cartesian Transformation matrix for l=3
+! 1 ==C(3,0) == (xx+yy+zz)z + zzz == f0
+! 2 ==C(3,1) == x(-(xx+yy+zz)+zz) == f+1
+! 3 ==S(3,1) == y(-(xx+yy+zz)+zz) == f-1
+! 4 ==C(3,2) == zxx - zyy         == f+2
+! 5 ==S(3,2) == xyz               == f-2
+! 6 ==C(3,3) == xxx -xyy          == f+3
+! 7 ==S(3,3) == xyz               == f-3
   END_DOC
   cart_to_sphe_3 = 0.d0
 
@@ -76,6 +88,15 @@ BEGIN_PROVIDER [ double precision, cart_to_sphe_4, (15,9) ]
   implicit none
   BEGIN_DOC
 ! Spherical -> Cartesian Transformation matrix for l=4
+! 1 == G0 
+! 2 == G+1 
+! 3 == G-1 
+! 4 == G+2 
+! 5 == G-2 
+! 6 == G+3 
+! 7 == G-3 
+! 8 == G+4 
+! 9 == G-4 
   END_DOC
   cart_to_sphe_4 = 0.d0
 

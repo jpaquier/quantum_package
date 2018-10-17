@@ -1,6 +1,27 @@
 program erf_mu_of_r_integrals
  implicit none 
 !call test_int_erf_bielec_ijkl_mo
+ provide ao_bielec_integrals_erf_mu_of_r_in_map
+ integer :: i,j,k,l
+ double precision :: integral,integral_2,integral_3
+ double precision :: get_ao_bielec_integral_erf_mu_of_r, erf_mu_of_r_ao
+ do i =1, ao_num!1
+  do j = 1, ao_num!2
+   do k = 1, ao_num!1
+    do l =1,  ao_num!2
+     integral   = get_ao_bielec_integral_erf_mu_of_r(i,j,k,l,ao_integrals_erf_mu_of_r_map)
+     integral_2 = integral
+     integral_3 = erf_mu_of_r_ao(i,k,j,l) 
+     if(dabs(0.5D0 * (integral + integral_2) - integral_3) .GT.1.d-10)then
+      print*,'ijkl',i,j,k,l
+      print*,'integral, integral_left, integral correct'
+      print*,integral , integral_2, integral_3  
+      print*,dabs(0.5D0 * (integral + integral_2) - integral_3)
+     endif
+    enddo
+   enddo
+  enddo
+ enddo
  !call test_mu_erf
 !call test_int_erf_bielec_ijkl
 !call test_aos

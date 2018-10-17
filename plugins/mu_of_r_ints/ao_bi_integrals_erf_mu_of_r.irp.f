@@ -78,24 +78,19 @@ subroutine compute_ao_integrals_erf_mu_of_r_jl(j,l,n_integrals,buffer_i,buffer_v
   j1 = j+ishft(l*l-l,-1)
   do k = 1, ao_num           ! r1
     i1 = ishft(k*k-k,-1)
-    if (i1 > j1) then
-      exit
-    endif
-    do i = 1, k
+    do i = 1, ao_num
       i1 += 1
-      if (i1 > j1) then
-        exit
-      endif
       integral = integrals_matrix(k,i)  ! i,k : r1    j,l : r2
       if (abs(integral) < thr) then
         cycle
       endif
       n_integrals += 1
       !DIR$ FORCEINLINE
-      call bielec_integrals_index(i,j,k,l,buffer_i(n_integrals))
+      call bielec_integrals_index_no_sym(i,j,k,l,ao_num,buffer_i(n_integrals))
       buffer_value(n_integrals) = integral
     enddo
   enddo
     
 end
+
 

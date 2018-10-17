@@ -49,6 +49,7 @@ double precision function erf_mu_of_r_ao(i,j,k,l)
 
 end
 
+
  subroutine give_all_erf_mu_of_r_kl(k,l,integrals)
  implicit none 
  include 'Utils/constants.include.F'
@@ -79,35 +80,3 @@ end
  enddo
  end
 
-subroutine give_all_erf_mu_of_r_kl_mo(integrals_mo,mu_in,r)
- implicit none
- double precision, intent(in)  :: mu_in,r(3)
- double precision, intent(out) :: integrals_mo(mo_tot_num,mo_tot_num)
- double precision :: integrals_ao(ao_num,ao_num), NAI_pol_mult_erf_ao
- integer :: i,j,l,k,m
- do k = 1, ao_num
-  do m = 1, ao_num
-   integrals_ao(m,k) = NAI_pol_mult_erf_ao(m,k,mu_in,r)
-  enddo
- enddo
-
- call ao_to_mo(                                           &
-      integrals_ao,                                       &
-      size(integrals_ao,1),                               &
-      integrals_mo,                                       &
-      size(integrals_mo,1)                                &
-      )
-end
-
-subroutine give_all_erf_mu_of_r_kl_ao(integrals_ao,mu_in,r)
- implicit none
- double precision, intent(in)  :: mu_in,r(3)
- double precision, intent(out) :: integrals_ao(ao_num,ao_num)
- double precision :: NAI_pol_mult_erf_ao
- integer :: i,j,l,k,m
- do k = 1, ao_num
-  do m = 1, ao_num
-   integrals_ao(m,k) = NAI_pol_mult_erf_ao(m,k,mu_in,r)
-  enddo
- enddo
-end

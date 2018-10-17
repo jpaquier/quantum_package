@@ -385,15 +385,15 @@ BEGIN_PROVIDER [double precision, integrals_for_hf_potential, (mo_tot_num,mo_tot
  enddo
 END_PROVIDER 
 
-BEGIN_PROVIDER [double precision, integrals_for_hf_potential_integrated, (mo_tot_num,elec_alpha_num)]
+BEGIN_PROVIDER [double precision, integrals_for_hf_potential_integrated_on_beta, (mo_tot_num,elec_alpha_num)]
  implicit none
  integer :: i,j,k
  double precision :: get_mo_bielec_integral
- integrals_for_hf_potential_integrated = 0.d0
+ integrals_for_hf_potential_integrated_on_beta = 0.d0
  do k = 1, elec_alpha_num ! electron 1 alpha 
   do i = 1, mo_tot_num   ! electron 1 alpha
    do j = 1, elec_beta_num ! electron 2 beta 
-    integrals_for_hf_potential_integrated(i,k) += get_mo_bielec_integral(i,j,k,j,mo_integrals_map) 
+    integrals_for_hf_potential_integrated_on_beta(i,k) += get_mo_bielec_integral(i,j,k,j,mo_integrals_map) 
    enddo
   enddo
  enddo
@@ -496,11 +496,11 @@ subroutine local_r12_operator_on_hf(r1,r2,integral_psi)
 
 end
 
-subroutine integral_of_f_12_on_hf(r1,integral_f)
+subroutine integral_of_f_12_hf_over_beta(r1,integral_f)
  implicit none
  BEGIN_DOC
 ! computes the following ANALYTICAL integral
-! int dr2 f_HF(r1,r2) with f_HF is the function f of the first paper but defined for a HF two-body tensor 
+! integral_(r2,beta) f_HF(r1,r2) with f_HF is the function f of the first paper but defined for a HF two-body tensor 
  END_DOC
  double precision, intent(in) :: r1(3)
  double precision, intent(out):: integral_f
@@ -511,37 +511,29 @@ subroutine integral_of_f_12_on_hf(r1,integral_f)
  integral_f = 0.d0
  do k = 1, elec_alpha_num
   do i = 1, mo_tot_num
-   integral_f += integrals_for_hf_potential_integrated(i,k) * mos_array_r1(i) * mos_array_r1(k)
+   integral_f += integrals_for_hf_potential_integrated_on_beta(i,k) * mos_array_r1(i) * mos_array_r1(k)
   enddo
  enddo
 
 end
 
-subroutine mu_integral_of_f_12_on_hf_over_density(r1,mu_local)
+ BEGIN_PROVIDER [double precision, integral_f_hf ]
  implicit none
- BEGIN_DOC
-! computes the following ANALYTICAL integral
-! int dr2 f_HF(r1,r2) with f_HF is the function f of the first paper but defined for a HF two-body tensor 
+ BEGIN_DOC 
+! should be the average value of the alpha/beta bielectronic repulsion over the HF wave function
  END_DOC
- double precision, intent(in) :: r1(3)
- double precision, intent(out):: mu_local
- double precision :: integral_f
- integer :: i,k
- double precision :: mos_array_r1(mo_tot_num),density
- call give_all_mos_at_r(r1,mos_array_r1)
-
- integral_f = 0.d0
- density = 0.d0
- do k = 1, elec_alpha_num
-  density += mos_array_r1(k) * mos_array_r1(k)
-  do i = 1, mo_tot_num
-   integral_f += integrals_for_hf_potential_integrated(i,k) * mos_array_r1(i) * mos_array_r1(k)
-  enddo
+ double precision :: r(3),integral_f,weight
+ integer :: i_point
+ integral_f_hf= 0.D0
+ do i_point = 1, n_points_final_grid
+  r(1) = final_grid_points(1,i_point)
+  r(2) = final_grid_points(2,i_point)
+  r(3) = final_grid_points(3,i_point)
+  call integral_of_f_12_hf_over_beta(r,integral_f)
+  weight = final_weight_functions_at_final_grid_points(i_point)
+  integral_f_hf += weight * integral_f
  enddo
- mu_local = integral_f / (density * dble(elec_beta_num)) !* dsqrt(dacos(-1.d0)) * 0.5d0
-
-end
-
+ END_PROVIDER 
 
 
 subroutine pure_expectation_value_on_hf(r1,r2,integral_psi)

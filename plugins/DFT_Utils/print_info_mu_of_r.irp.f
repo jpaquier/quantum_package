@@ -1,15 +1,8 @@
 program test
  read_wf = .True.
  touch read_wf
-!call test_subou
-call test_potepote
-end
-
-subroutine test_potepote
- implicit none
- !double precision :: Energy_c_md_mu_of_r_PBE_on_top_corrected,Energy_c_mu_of_r_PBE_on_top_corrected
- print*,'Ec,md on top corr =  ', Energy_c_md_mu_of_r_PBE_on_top_corrected
- print*,'Ec, on top corr =  ', Energy_c_mu_of_r_PBE_on_top_corrected
+ call test_subou
+!call test_potepote
 end
 
 
@@ -39,7 +32,7 @@ subroutine test_subou
  nbE_core=0.0
  nbE_valence=0.0
  do i = 1, n_points_radial_grid_spherical
-  write(i_unit_output,'(100(F10.5,X))')list_r(i),rho_r(1,i),rhomu_r(1,i),Energy_c_md_LDA_mu_of_r_grille_sphe_of_r(1,i)
+  write(i_unit_output,'(100(F16.8,X))')list_r(i),rho_r(1,i),mu_r(1,i),Energy_c_md_LDA_mu_of_r_grille_sphe_of_r(1,i)
   nbE += rho_r(1,i) *pas_grid_sphe 
   if(list_r(i)< r_core_sphe) then
     nbE_core += rho_r(1,i) *pas_grid_sphe 
@@ -52,10 +45,10 @@ print*,'nbre delectrons core=  ',nbE_core
 print*,'nbre delectrons valence=  ',nbE_valence
 
 write(*, '(A28,X,F16.10)') 'DFT mu(r) correlation new grid =',Energy_c_md_LDA_mu_of_r_grille_sphe_of_r_integrated
-write(*, '(A28,X,F16.10)') 'DFT mu(r) correlation old grid =',Energy_c_md_mu_of_r_LDA
+!write(*, '(A28,X,F16.10)') 'DFT mu(r) correlation old grid =',Energy_c_md_mu_of_r_LDA
 
-write(*, '(A28,X,F16.10)') 'DFT mu correlation core =',Energy_c_md_LDA_mu_of_r_integrated_core
-write(*, '(A28,X,F16.10)') 'DFT mu correlation valence=',Energy_c_md_LDA_mu_of_r_integrated_valence
+!write(*, '(A28,X,F16.10)') 'DFT mu correlation core =',Energy_c_md_LDA_mu_of_r_integrated_core
+!write(*, '(A28,X,F16.10)') 'DFT mu correlation valence=',Energy_c_md_LDA_mu_of_r_integrated_valence
 
 write(*, '(A28,X,F16.10)') 'Mu moyen new    = ',rhomu_r_integrated
 write(*, '(A28,X,F16.10)') 'mu_average old  = ',mu_average
