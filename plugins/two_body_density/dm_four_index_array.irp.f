@@ -110,11 +110,44 @@
     call get_mo_bielec_integrals_ij(i,j,mo_tot_num,integrals_array,mo_integrals_map) 
     do l = 1, mo_tot_num
      do k = 1, mo_tot_num
- !    if(dabs(integrals_array(k,l)).le.threshold)cycle
- !    if(dabs(two_bod_alpha_beta_mo_transposed_bis_sum(k,l,istate)).le.threshold)cycle
       do m = 1, mo_tot_num
        do n = 1, mo_tot_num
           two_bod_alpha_beta_mo_contracted(n,m,j,i,istate)+= integrals_array(k,l) * two_bod_alpha_beta_mo_transposed_bis(n,m,k,l,istate)
+       enddo
+      enddo
+     enddo
+    enddo
+   enddo
+  enddo
+ enddo
+ call cpu_time(cpu_1)
+ print*,'two_bod_alpha_beta_mo_contracted provided in',dabs(cpu_1-cpu_0)
+
+ END_PROVIDER 
+
+ BEGIN_PROVIDER [double precision, two_bod_alpha_beta_mo_contracted_parallel, (mo_tot_num,mo_tot_num,mo_tot_num,mo_tot_num,N_states)]
+ implicit none
+ BEGIN_DOC
+ !  two_bod_alpha_beta_mo_contracted(n,m,j,i) = \sum_{k,l} <ij|kl> <\Psi|a^{dagger}_{k,alpha} a^{dagger}_{l,beta} a_{n,beta} a_{m,alpha}|\Psi>
+ END_DOC
+ integer :: i,j,k,l,istate,m,n
+ double precision :: cpu_0,cpu_1
+ double precision :: integrals_array(mo_tot_num,mo_tot_num)
+ two_bod_alpha_beta_mo_contracted_parallel = 0.d0
+ double precision :: threshold 
+ threshold = 0.d0
+ print*,'providing two_bod_alpha_beta_mo_contracted...'
+ call cpu_time(cpu_0)
+ do istate = 1, N_states 
+  do i = 1, mo_tot_num ! 1 
+   do j = 1, mo_tot_num  ! 2 
+    call get_mo_bielec_integrals_ij(i,j,mo_tot_num,integrals_array,mo_integrals_map) 
+    do m = 1, mo_tot_num ! 1 
+     do n = 1, mo_tot_num ! 2 
+      do l = 1, mo_tot_num ! 2
+       do k = 1, mo_tot_num ! 1
+        !                                1 2 2 1
+        two_bod_alpha_beta_mo_contracted_parallel(n,m,j,i,istate) += two_bod_alpha_beta_mo_transposed(k,l,n,m,istate) * integrals_array(k,l) 
        enddo
       enddo
      enddo
@@ -237,26 +270,6 @@
   ! -------------------------------------------------
 
   PROVIDE N_int nthreads_davidson
- !!$OMP PARALLEL DEFAULT(NONE) NUM_THREADS(nthreads_davidson)        &
- !    !$OMP   SHARED(psi_bilinear_matrix_rows, N_det,N_states,       &
- !    !$OMP          psi_bilinear_matrix_columns,                    &
- !    !$OMP          psi_det_alpha_unique, psi_det_beta_unique,      &
- !    !$OMP          n_det_alpha_unique, n_det_beta_unique, N_int,   &
- !    !$OMP          psi_bilinear_matrix_transp_rows,                &
- !    !$OMP          psi_bilinear_matrix_transp_columns,             &
- !    !$OMP          psi_bilinear_matrix_transp_order, N_st,         &
- !    !$OMP          psi_bilinear_matrix_order_transp_reverse,       &
- !    !$OMP          psi_bilinear_matrix_columns_loc,                &
- !    !$OMP          psi_bilinear_matrix_transp_rows_loc,            &
- !    !$OMP          istart, iend, istep, irp_here,big_array,        &
- !    !$OMP          dim1,dim2,dim3,dim4,                            &
- !    !$OMP          ishift, idx0, u_t, maxab)                       &
- !    !$OMP   PRIVATE(krow, kcol, tmp_det, spindet, k_a, k_b, i,     &
- !    !$OMP          lcol, lrow, l_a, l_b,c_1,c_2,                  &
- !    !$OMP          buffer, doubles, n_doubles,                     &
- !    !$OMP          tmp_det2, hij, sij, idx, l, kcol_prev,          &
- !    !$OMP          singles_a, n_singles_a, singles_b,              &
- !    !$OMP          n_singles_b, k8)
   
   ! Alpha/Beta double excitations
   ! =============================
@@ -273,7 +286,6 @@
   ASSERT (istart > 0)
   ASSERT (istep  > 0)
 
-  !$OMP DO SCHEDULE(dynamic,64)
   do k_a=istart+ishift,iend,istep
 
     krow = psi_bilinear_matrix_rows(k_a)
@@ -342,9 +354,8 @@
     enddo
 
   enddo
- !!$OMP END DO 
 
- !!$OMP DO SCHEDULE(dynamic,64)
+
   do k_a=istart+ishift,iend,istep
 
 
@@ -539,9 +550,7 @@
     call diagonal_contrib_to_two_body_ab_dm(tmp_det,c_1,big_array,dim1,dim2,dim3,dim4)
 
   end do
- !!$OMP END DO 
   deallocate(buffer, singles_a, singles_b, doubles, idx)
- !!$OMP END PARALLEL
 
  end
 

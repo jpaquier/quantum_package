@@ -21,6 +21,7 @@ program pouet
 !call test_nuclear_coulomb_oprerator
 !call test_integratio_mo
 !call test_naive_grid
+ call test_one_dm_mo_new
 end
 
 subroutine test
@@ -53,7 +54,7 @@ subroutine test_rho2
     r(1) = grid_points_per_atom(1,l,k,j)
     r(2) = grid_points_per_atom(2,l,k,j)
     r(3) = grid_points_per_atom(3,l,k,j)
-    call integral_of_f_12_on_hf(r,integral_f)
+!   call integral_of_f_12_on_hf(r,integral_f)
     test += integral_f * final_weight_functions_at_grid_points(l,k,j) 
     enddo
    enddo
@@ -497,4 +498,46 @@ subroutine test_naive_grid
 
 
 
+end
+
+
+subroutine test_one_dm_mo_new
+ implicit none
+ double precision :: r(3)
+ double precision, allocatable :: mos_array(:), nos_array(:)
+ allocate(mos_array(mo_tot_num),nos_array(mo_tot_num))
+ integer :: m,n,p
+ integer :: j,k,l 
+ double precision :: mos,nos_1,nos_2,dm_a,dm_b
+ nos_1 = 0.d0
+ nos_2 = 0.d0
+ mos = 0.d0
+  do j = 1, nucl_num
+   do k = 1, n_points_radial_grid  -1
+    do l = 1, n_points_integration_angular 
+     r(1) = grid_points_per_atom(1,l,k,j)
+     r(2) = grid_points_per_atom(2,l,k,j)
+     r(3) = grid_points_per_atom(3,l,k,j)
+     call give_all_mos_at_r(r,mos_array) 
+     do m = 1, mo_tot_num
+      nos_array(m) = 0.d0
+      do n = 1, mo_tot_num
+       nos_array(m) += mos_array(n) * natorb_coef_on_mo_basis(n,m)
+      enddo
+     enddo
+     do n = 1, mo_tot_num
+      nos_1 += nos_array(n) * nos_array(n) * natural_occ_numbers(n) * final_weight_functions_at_grid_points(l,k,j)
+     enddo
+     do n = 1, mo_tot_num
+      do m = 1, mo_tot_num
+       nos_2 += nos_array(n) * nos_array(m) * (dm_alpha_on_natorb_basis(m,n) + dm_beta_on_natorb_basis(m,n)) * final_weight_functions_at_grid_points(l,k,j)
+      enddo
+     enddo
+     call dm_dft_alpha_beta_at_r(r,dm_a,dm_b) 
+     mos += (dm_a + dm_b) * final_weight_functions_at_grid_points(l,k,j)
+    enddo
+   enddo
+  enddo
+  print*,'mos,nos_1,nos_2'
+  print*,mos,nos_1,nos_2
 end
