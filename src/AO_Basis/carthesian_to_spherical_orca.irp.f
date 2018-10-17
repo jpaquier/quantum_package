@@ -230,11 +230,16 @@ END_PROVIDER
    n_shell_passed += 1
   else if (ao_l(i_start)==1)then
    i_start_0 = i_start
-   do i = 1, 3 
-    cartesian_to_spherical_matrix(i_start, n_shell_passed) = 1.d0
-    i_start += 1
-    n_shell_passed += 1
+   do i = 1, 3
+    do k = 1, 3
+     do l = 1,3 
+!     print*,i+i_start_0-1,l+i_start_0-1,ao_overlap(i+i_start_0-1,l+i_start_0-1)
+      cartesian_to_spherical_matrix(i_start_0+i-1,n_shell_passed-1+k) += cart_to_sphe_1(l,k) * ao_overlap(i+i_start_0-1,l+i_start_0-1)
+     enddo
+    enddo
    enddo
+   n_shell_passed += 3
+   i_start += 3
   else if (ao_l(i_start)==2)then
    i_start_0 = i_start
    do i = 1, 6
