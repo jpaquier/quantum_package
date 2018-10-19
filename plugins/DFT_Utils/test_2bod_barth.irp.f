@@ -92,69 +92,6 @@ end
 
 
 
-subroutine number_of_k(nktotto)
- implicit none
- integer, intent(out) :: nktotto
- double precision :: tmp,tmp2,E_cor_loc
- integer :: icouple,jcouple,l,i,j,k,t,m,s,istate,nbre,icoupleloc
- double precision :: wall_1, wall_2
- double precision, allocatable :: integrals_ij(:,:),vecteuur(:,:)
- integer, allocatable :: order_loc(:)
- allocate(integrals_ij(mo_tot_num,mo_tot_num),order_loc(mo_tot_num*mo_tot_num),vecteuur(mo_tot_num*mo_tot_num,2))
- do istate = 1, N_states
-  nktotto = 0
-  vecteuur = 0.d0
-  print*,'nbre dorb  =',mo_tot_num
-  do m = 1, n_couple_ec(istate)
-   i = couple_to_array_reverse(E_cor_couple_sorted_order(m,istate),1)
-   j = couple_to_array_reverse(E_cor_couple_sorted_order(m,istate),2)
-   tmp= 0.d0
-   call get_mo_bielec_integrals_ijkl_r3_ij(i,j,mo_tot_num,integrals_ij,mo_integrals_ijkl_r3_map)
-   icoupleloc = 0
-   order_loc = 0
-   icouple = couple_to_array(j,i)
-   do k = 1, mo_tot_num
-    do l = 1, mo_tot_num
-     icoupleloc += 1
-     order_loc(icoupleloc) = icoupleloc
-     jcouple = couple_to_array(l,k)
-     if(icouple == jcouple)then 
-      vecteuur(icoupleloc,1) = -dabs(two_bod_alpha_beta_mo_transposed(k,l,j,i,istate) *integrals_ij(l,k))
-      vecteuur(icoupleloc,2) = two_bod_alpha_beta_mo_transposed(k,l,j,i,istate) *integrals_ij(l,k) 
-      tmp += two_bod_alpha_beta_mo_transposed(k,l,j,i,istate) *integrals_ij(l,k)
-     else if (icouple.gt.jcouple)then
-      vecteuur(icoupleloc,1) = -2.d0 * dabs(two_bod_alpha_beta_mo_transposed(k,l,j,i,istate) *integrals_ij(l,k))
-      vecteuur(icoupleloc,2) = 2.d0 *two_bod_alpha_beta_mo_transposed(k,l,j,i,istate) * integrals_ij(l,k) 
-      tmp +=2.d0 *two_bod_alpha_beta_mo_transposed(k,l,j,i,istate) *integrals_ij(l,k)
-     else
-      vecteuur(icoupleloc,1) = 0.d0
-      vecteuur(icoupleloc,2) = 0.d0
-      tmp += 0
-     endif
-    enddo
-   enddo
-   call dsort(vecteuur(1,1),order_loc,mo_tot_num*mo_tot_num)
-   E_cor_loc =0 
-   nbre = 0
-   nbre +=1
-   E_cor_loc += vecteuur(order_loc(nbre),2)
-   print*,'/////'
-   do while (dabs(E_cor_loc - E_cor_couple_sorted(m,istate))/dabs(E_cor_couple_sorted(m,istate)) .ge. 0.0000001 )
-    nbre +=1
-    E_cor_loc += vecteuur(order_loc(nbre),2)
-!   print*, vecteuur(order_loc(nbre),2), E_cor_loc
-   enddo
-   print*,m,nbre,E_cor_couple_sorted(m,istate)
-   !write(33,*),m,nbre,E_cor_couple_sorted(m,istate)
-   nktotto += nbre
-  enddo
-  print*,'nktotto = ',nktotto
-  print*,'n4      = ',mo_tot_num**4
- enddo
-deallocate(integrals_ij)
-end
-
-
 subroutine test_rho2_bourrin(test)
  implicit none
  double precision, intent(out) :: test

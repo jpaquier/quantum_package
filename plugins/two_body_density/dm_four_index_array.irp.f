@@ -2,6 +2,7 @@
  implicit none
  BEGIN_DOC
  !  two_bod_alpha_beta(i,j,k,l) = <Psi| a^{dagger}_{j,alpha} a^{dagger}_{l,beta} a_{k,beta} a_{i,alpha} | Psi>
+ !                     1 1 2 2
  !  note that no 1/2 factor is introduced in order to take into acccount for the spin symmetry
  END_DOC
  integer :: dim1,dim2,dim3,dim4
@@ -22,8 +23,8 @@
  BEGIN_PROVIDER [double precision, two_bod_alpha_beta_mo_transposed, (mo_tot_num,mo_tot_num,mo_tot_num,mo_tot_num,N_states)]
  implicit none
  BEGIN_DOC
- !                                   1 2 2 1
  !  two_bod_alpha_beta_mo_transposed(i,j,k,l) = <Psi| a^{dagger}_{l,alpha} a^{dagger}_{k,beta} a_{j,beta} a_{i,alpha} | Psi>
+ !                                   1 2 2 1
  !  note that no 1/2 factor is introduced in order to take into acccount for the spin symmetry
  END_DOC
  integer :: i,j,k,l,istate
@@ -36,6 +37,7 @@
    do j = 1, mo_tot_num
     do k = 1, mo_tot_num
      do l = 1, mo_tot_num
+      !                                1 2 2 1                                 1 1 2 2
       two_bod_alpha_beta_mo_transposed(l,k,j,i,istate) = two_bod_alpha_beta_mo(i,l,j,k,istate)
      enddo
     enddo
@@ -52,20 +54,20 @@
 &BEGIN_PROVIDER [double precision, two_bod_alpha_beta_mo_transposed_bis_sum, (mo_tot_num,mo_tot_num,N_states)]
  implicit none
  BEGIN_DOC
- !  two_bod_alpha_beta(i,j,k,l) = <Psi| a^{dagger}_{l,alpha} a^{dagger}_{k,beta} a_{j,beta} a_{i,alpha} | Psi>
- !  note that no 1/2 factor is introduced in order to take into acccount for the spin symmetry
+ ! 1 2 1 2 
  END_DOC
  integer :: i,j,k,l,istate
  double precision :: cpu_0,cpu_1
  two_bod_alpha_beta_mo_transposed_bis = 0.d0
- print*,'providing two_bod_alpha_beta ...'
+ print*,'providing two_bod_alpha_beta_mo_transposed_bis ...'
  call cpu_time(cpu_0)
  do istate = 1, N_states 
   do i = 1, mo_tot_num
    do j = 1, mo_tot_num
     do k = 1, mo_tot_num
      do l = 1, mo_tot_num
-      two_bod_alpha_beta_mo_transposed_bis(l,k,j,i,istate) = two_bod_alpha_beta_mo(i,l,j,k,istate)
+      !                                    1 2 2 1                                 1 1 2 2 
+      two_bod_alpha_beta_mo_transposed_bis(l,k,i,j,istate) = two_bod_alpha_beta_mo(i,l,j,k,istate)
      enddo
     enddo
    enddo
@@ -84,7 +86,7 @@
   enddo
  enddo
  call cpu_time(cpu_1)
- print*,'two_bod_alpha_beta provided in',dabs(cpu_1-cpu_0)
+ print*,'two_bod_alpha_beta_mo_transposed_bis provided in',dabs(cpu_1-cpu_0)
 
  END_PROVIDER 
 
@@ -112,7 +114,7 @@
      do k = 1, mo_tot_num
       do m = 1, mo_tot_num
        do n = 1, mo_tot_num
-          two_bod_alpha_beta_mo_contracted(n,m,j,i,istate)+= integrals_array(k,l) * two_bod_alpha_beta_mo_transposed_bis(n,m,k,l,istate)
+          two_bod_alpha_beta_mo_contracted(n,m,j,i,istate)+= integrals_array(k,l) * two_bod_alpha_beta_mo_transposed(n,m,k,l,istate)
        enddo
       enddo
      enddo
@@ -132,28 +134,32 @@
  END_DOC
  integer :: i,j,k,l,istate,m,n
  double precision :: cpu_0,cpu_1
- double precision :: integrals_array(mo_tot_num,mo_tot_num)
+ double precision :: integrals_array(mo_tot_num,mo_tot_num),accu
  two_bod_alpha_beta_mo_contracted_parallel = 0.d0
- double precision :: threshold 
- threshold = 0.d0
  print*,'providing two_bod_alpha_beta_mo_contracted...'
  call cpu_time(cpu_0)
  do istate = 1, N_states 
+!!$OMP DO              &
+!!$OMP DEFAULT (NONE)  &
+!!$OMP PRIVATE (l,k,i,j,n,m,accu,integrals_array) &
+!!$OMP SHARED  (mo_tot_num,two_bod_alpha_beta_mo_transposed,istate,two_bod_alpha_beta_mo_contracted_parallel) & 
   do i = 1, mo_tot_num ! 1 
    do j = 1, mo_tot_num  ! 2 
     call get_mo_bielec_integrals_ij(i,j,mo_tot_num,integrals_array,mo_integrals_map) 
     do m = 1, mo_tot_num ! 1 
      do n = 1, mo_tot_num ! 2 
-      do l = 1, mo_tot_num ! 2
-       do k = 1, mo_tot_num ! 1
-        !                                1 2 2 1
-        two_bod_alpha_beta_mo_contracted_parallel(n,m,j,i,istate) += two_bod_alpha_beta_mo_transposed(k,l,n,m,istate) * integrals_array(k,l) 
+      accu = 0.d0
+      do l = 1, mo_tot_num
+       do k = 1, mo_tot_num
+        accu += two_bod_alpha_beta_mo_transposed(k,l,n,m,istate) * integrals_array(k,l) 
        enddo
       enddo
+      two_bod_alpha_beta_mo_contracted_parallel(n,m,j,i,istate) = accu 
      enddo
     enddo
    enddo
   enddo
+! !$OMP END DO
  enddo
  call cpu_time(cpu_1)
  print*,'two_bod_alpha_beta_mo_contracted provided in',dabs(cpu_1-cpu_0)

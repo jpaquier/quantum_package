@@ -21,7 +21,8 @@ program pouet
 !call test_nuclear_coulomb_oprerator
 !call test_integratio_mo
 !call test_naive_grid
- call test_one_dm_mo_new
+!call test_one_dm_mo_new
+ call test_data_dm
 end
 
 subroutine test
@@ -497,6 +498,26 @@ subroutine test_naive_grid
 !enddo
 
 
+
+end
+
+subroutine test_data_dm
+ implicit none
+ integer :: i,j,istate
+ istate = 1
+ do i = 1, mo_tot_num
+  do j = 1, mo_tot_num
+   if (dabs(data_one_body_alpha_dm_mo(j,i,istate) - one_body_dm_mo_alpha(j,i,istate)).gt.1.d-10)then
+    print*,i,j
+    print*,dabs(data_one_body_alpha_dm_mo(j,i,istate) - one_body_dm_mo_alpha(j,i,istate)),data_one_body_alpha_dm_mo(j,i,istate) , one_body_dm_mo_alpha(j,i,istate)
+   endif
+
+   if (dabs(data_one_body_beta_dm_mo(j,i,istate) - one_body_dm_mo_beta(j,i,istate)).gt.1.d-10)then
+    print*,i,j
+    print*,dabs(data_one_body_beta_dm_mo(j,i,istate) - one_body_dm_mo_beta(j,i,istate)),data_one_body_beta_dm_mo(j,i,istate) , one_body_dm_mo_beta(j,i,istate)
+   endif
+  enddo
+ enddo
 
 end
 
