@@ -95,8 +95,8 @@ subroutine give_all_spherical_averages(i,istate,ec_int,rho_r_int,mu_r_int,rhomu_
      delta = 2.d0/dsqrt(dacos(-1.d0))
      mu = 1.d0/(2.d0*beta)*(alpha_bis + dsqrt(alpha_bis*alpha_bis + 4.d0 * alpha_bis * beta * delta))
     else if(mu_of_r_potential.EQ."integral_hf")then
-     call integral_of_f_12_on_hf(r,integral_f)
-     mu = mu_integral(integral_f,r)
+ !   call integral_of_f_12_on_hf(r,integral_f)
+ !   mu = mu_integral(integral_f,r)
     else if(mu_of_r_potential.EQ."hf_coallescence")then
      call local_r12_operator_on_hf(r,r,local_potential)
      mu =  local_potential * dsqrt(dacos(-1.d0)) * 0.5d0
