@@ -120,7 +120,7 @@
     dirac_mo_coef (i,j) = eigenvectors_dirac_fock_matrix_mo (i,j_plus)
    enddo
   enddo
-  SOFT_TOUCH dirac_mo_coef
+! SOFT_TOUCH dirac_mo_coef
  !call save_mos
   deallocate(A)
  end

@@ -3,6 +3,40 @@
 ! from file /nas/home_lct/jpaquier/programs/quantum_package_master/src/Dirac_SCF/EZFIO.cfg
 
 
+BEGIN_PROVIDER [ character*(32), dirac_correlation_functional  ]
+  implicit none
+  BEGIN_DOC
+! name of the relativistic correlation functional
+  END_DOC
+
+  logical                        :: has
+  PROVIDE ezfio_filename
+  if (mpi_master) then
+    
+    call ezfio_has_dirac_scf_dirac_correlation_functional(has)
+    if (has) then
+      call ezfio_get_dirac_scf_dirac_correlation_functional(dirac_correlation_functional)
+    else
+      print *, 'dirac_scf/dirac_correlation_functional not found in EZFIO file'
+      stop 1
+    endif
+  endif
+  IRP_IF MPI
+    include 'mpif.h'
+    integer :: ierr
+    call MPI_BCAST( dirac_correlation_functional, 1*32, MPI_CHARACTER, 0, MPI_COMM_WORLD, ierr)
+    if (ierr /= MPI_SUCCESS) then
+      stop 'Unable to read dirac_correlation_functional with MPI'
+    endif
+  IRP_ENDIF
+
+  call write_time(6)
+  if (mpi_master) then
+    write(6, *) 'Read  dirac_correlation_functional'
+  endif
+
+END_PROVIDER
+
 BEGIN_PROVIDER [ double precision, dirac_thresh_scf  ]
   implicit none
   BEGIN_DOC
@@ -173,6 +207,40 @@ BEGIN_PROVIDER [ logical, dirac_ao_cartesian  ]
 
 END_PROVIDER
 
+BEGIN_PROVIDER [ character*(32), dirac_exchange_functional  ]
+  implicit none
+  BEGIN_DOC
+! name of the relativistic exchange functional
+  END_DOC
+
+  logical                        :: has
+  PROVIDE ezfio_filename
+  if (mpi_master) then
+    
+    call ezfio_has_dirac_scf_dirac_exchange_functional(has)
+    if (has) then
+      call ezfio_get_dirac_scf_dirac_exchange_functional(dirac_exchange_functional)
+    else
+      print *, 'dirac_scf/dirac_exchange_functional not found in EZFIO file'
+      stop 1
+    endif
+  endif
+  IRP_IF MPI
+    include 'mpif.h'
+    integer :: ierr
+    call MPI_BCAST( dirac_exchange_functional, 1*32, MPI_CHARACTER, 0, MPI_COMM_WORLD, ierr)
+    if (ierr /= MPI_SUCCESS) then
+      stop 'Unable to read dirac_exchange_functional with MPI'
+    endif
+  IRP_ENDIF
+
+  call write_time(6)
+  if (mpi_master) then
+    write(6, *) 'Read  dirac_exchange_functional'
+  endif
+
+END_PROVIDER
+
 BEGIN_PROVIDER [ character*(32), dirac_scf_algorithm  ]
   implicit none
   BEGIN_DOC
@@ -244,7 +312,7 @@ END_PROVIDER
 BEGIN_PROVIDER [ character*(32), dirac_range_separation  ]
   implicit none
   BEGIN_DOC
-! Use of full-range interaction or only long-range interaction. Possible choices are [ Full-range | Long-range]
+! Use of full-range interaction or only long-range interaction. Possible choices are [ Full_range | Long_range]
   END_DOC
 
   logical                        :: has

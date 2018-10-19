@@ -17,9 +17,9 @@ program Dirac_SCF
  !print*,'integral_erf =',  ao_bielec_integral_erf(1,1,1,1)
  !print*,'dirac_integral_erf =',  dirac_ao_bielec_integral_erf(i,i,i,i)
   print*,'dirac_ao_bi_elec_integral =', dirac_ao_bi_elec_integral(i,i)
-  print*,'dirac_ao_bi_elec_integral_erf =', dirac_ao_bi_elec_integral_erf(i,i)
+  print*,'dirac_ao_bi_elec_erf_integral =', dirac_ao_bi_elec_erf_integral(i,i)
   print*,'dirac_ao_bi_elec_Gaunt_integral =', dirac_ao_bi_elec_Gaunt_integral(i,i)
-  print*,'dirac_ao_bi_elec_Gaunt_integral_erf =', dirac_ao_bi_elec_Gaunt_integral_erf(i,i)  
+  print*,'dirac_ao_bi_elec_Gaunt_erf_integral =', dirac_ao_bi_elec_Gaunt_erf_integral(i,i)  
   print*,'**************************'
  enddo
  

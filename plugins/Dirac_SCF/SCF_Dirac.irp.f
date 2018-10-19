@@ -3,11 +3,59 @@
   ! Produce `Dirac-Hartree_Fock` MO orbital 
   ! output: none for the moment
   END_DOC
-  call create_dirac_guess
+  call check_range_separation
+ !call create_dirac_guess
  !call test_dirac
-  call run_dirac
+ !call run_dirac
  !call test_dirac_end
  end
+
+ subroutine check_range_separation
+  implicit none
+  BEGIN_DOC
+  ! Checks for the use of fullrange or long-range Hartree-Fock
+  END_DOC
+  if (dirac_range_separation == "Full_range") then
+   print *, 'DHF calculation'
+   call create_dirac_guess
+   call run_dirac
+  elseif (dirac_range_separation == "Long_range") then
+   print *, 'Range-separated RDFT calculation'
+ ! call check_coherence_functional
+   call create_dirac_guess
+   call run_dirac_erf
+  else
+   print *,  'Unrecognized dirac_range_separation : '//dirac_range_separation
+   stop 1
+  endif 
+ end
+ 
+!subroutine check_coherence_functional
+! implicit none
+! BEGIN_DOC
+! ! Checks for the use of a short-range functional
+! END_DOC
+! integer :: ifound_x,ifound_c
+! if(dirac_exchange_functional == "None")then
+!  ifound_x = 1
+! else
+!  ifound_x = index(dirac_exchange_functional,"short_range")
+! endif
+! if(dirac_correlation_functional == "None")then
+!  ifound_c = 1
+! else
+!  ifound_c = index(dirac_correlation_functional,"short_range")
+! endif
+! print*,ifound_x,ifound_c
+! if(ifound_x .eq.0 .or. ifound_c .eq. 0)then
+!  print*,'YOU ARE USING THE RELATIVISTIC RANGE SEPARATED KS PROGRAM BUT YOUR INPUT KEYWORD FOR '
+!  print*,'dirac_exchange_functional is ', dirac_exchange_functional
+!  print*,'dirac_correlation_functional is ', dirac_correlation_functional
+!  print*,'CHANGE THE dirac_exchange_functional and dirac_correlation_functional keywords to relativistic range separated functionals'
+!  stop
+! endif
+!end
+
 
  subroutine create_dirac_guess
   implicit none
@@ -57,11 +105,11 @@
   !print*,'********************'     
   !print*,j,ortho(j)
   enddo
-  print*, nuclear_repulsion
-  print*, dirac_HF_one_electron_energy
-  print*, dirac_HF_two_electron_energy
+ !print*, nuclear_repulsion
+ !print*, dirac_HF_one_electron_energy
+ !print*, dirac_HF_two_electron_energy
   print*,'***********'
-  print*, dirac_SCF_energy 
+ !print*, dirac_SCF_energy 
  !do i = 1, 2*dirac_ao_num
  ! print*,i,eigenvalues_dirac_fock_matrix_mo(i)
  !!print*,i,eigenvalues_dirac_mono_elec_mo(i)
@@ -91,6 +139,25 @@
   endif
  end
 
+ subroutine run_dirac_erf
+  BEGIN_DOC
+  ! Run SCF_dirac calculation
+  END_DOC
+  use bitmasks
+  implicit none
+ !dirac_mo_label = "Canonical"
+ !soft_touch dirac_mo_label
+ !Choose SCF algorithm
+  if (dirac_interaction == "Coulomb") then
+   call damping_Dirac_erf_SCF  
+  !call Roothaan_Hall_Dirac_SCF
+  elseif (dirac_interaction == "Coulomb_Gaunt") then
+   call damping_Dirac_Gaunt_erf_SCF
+  else
+   print *,  'Unrecognized dirac_interaction : '//dirac_interaction
+   stop 1
+  endif
+ end
  subroutine test_dirac_end
   implicit none
   integer   :: i,j
@@ -114,13 +181,13 @@
   !print*,'********************'     
  ! print*,j,ortho(j)
   enddo
-  print*, nuclear_repulsion
-  print*, dirac_HF_one_electron_energy
-  print*, dirac_HF_two_electron_energy
-  print*,'***********'
-  print*, dirac_SCF_energy
+ !print*, nuclear_repulsion
+ !print*, dirac_HF_one_electron_energy
+ !print*, dirac_HF_two_electron_energy
+ !print*,'***********'
+ !print*, dirac_SCF_energy
   do i = 1, 2*dirac_ao_num
-   print*,i,eigenvalues_dirac_fock_matrix_mo(i)
+  !print*,i,eigenvalues_dirac_fock_matrix_mo(i)
   !print*,i,eigenvalues_dirac_mono_elec_mo(i)
   !print*,'*********'
   enddo

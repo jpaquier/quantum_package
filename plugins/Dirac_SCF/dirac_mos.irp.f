@@ -1,45 +1,119 @@
- BEGIN_PROVIDER [ complex*16, dirac_mo_coef, (2*(dirac_ao_num),2*(dirac_mo_tot_num))
- implicit none
+!BEGIN_PROVIDER [ complex*16, dirac_mo_coef, (2*(dirac_ao_num),2*(dirac_mo_tot_num))
+!implicit none
+! BEGIN_DOC
+! !Molecular orbital coefficients on AO basis set
+! !dirac_mo_coef(i,j) = coefficient of the ith ao on the jth mo
+! END_DOC
+! integer                        :: i,i_minus,j,j_minus
+! PROVIDE ezfio_filename
+! dirac_mo_coef = (0.d0,0.d0)
+! do j=1, 2*dirac_mo_tot_num
+!  if (j .le. large_mo_tot_num) then
+!   do i=1, 2*dirac_ao_num
+!    if (i .le. large_ao_num) then
+!     dirac_mo_coef(i,j) = (1.d0,0.d0)*large_mo_coef(i,j)
+!    endif
+!   enddo
+!  elseif (j .gt. large_mo_tot_num .and. j .le. 2*large_mo_tot_num) then
+!   j_minus = j - large_mo_tot_num
+!   do i=1, 2*dirac_ao_num
+!    if (i .gt. large_ao_num .and. i .le. 2*large_ao_num) then
+!     i_minus = i - large_ao_num
+!     dirac_mo_coef(i,j) = (1.d0,0.d0)*large_mo_coef(i_minus,j_minus)
+!    endif
+!   enddo
+!  elseif (j.gt. 2*large_mo_tot_num .and. j .le. (2*large_mo_tot_num+small_mo_tot_num)) then
+!   j_minus = j - 2*large_mo_tot_num
+!   do i=1, 2*dirac_ao_num
+!   i_minus = i - 2*large_ao_num
+!    if (i .gt. 2*large_ao_num .and. i .le. (2*large_ao_num+small_ao_num)) then
+!     dirac_mo_coef(i,j) = (1.d0,0.d0)*small_mo_coef(i_minus,j_minus)
+!    endif
+!   enddo
+!  elseif (j .gt. (2*large_ao_num + small_ao_num)) then
+!   j_minus = j - (2*large_mo_tot_num + small_mo_tot_num)
+!   do i=1, 2*(large_ao_num+small_ao_num)
+!    if (i .gt. (2*large_ao_num+small_ao_num)) then
+!     i_minus = i - (2*large_ao_num + small_ao_num)
+!     dirac_mo_coef(i,j) = (1.d0,0.d0)*small_mo_coef(i_minus,j_minus)
+!    endif
+!   enddo
+!  endif
+! enddo
+!END_PROVIDER
+
+
+ BEGIN_PROVIDER [ complex*16, dirac_mo_coef, (2*dirac_ao_num,2*dirac_mo_tot_num) ]
+  implicit none
   BEGIN_DOC
-  !Molecular orbital coefficients on AO basis set
-  !dirac_mo_coef(i,j) = coefficient of the ith ao on the jth mo
+  ! Molecular orbital coefficients on AO basis set
+  ! dirac_mo_coef(i,j) = coefficient of the ith ao on the jth mo
+  ! dirac_mo_label : Label characterizing the MOS (local, canonical, natural, etc)
   END_DOC
   integer                        :: i,i_minus,j,j_minus
-  PROVIDE ezfio_filename
-  dirac_mo_coef = (0.d0,0.d0)
-  do j=1, 2*dirac_mo_tot_num
-   if (j .le. large_mo_tot_num) then
-    do i=1, 2*dirac_ao_num
-     if (i .le. large_ao_num) then
-      dirac_mo_coef(i,j) = (1.d0,0.d0)*large_mo_coef(i,j)
-     endif
-    enddo
-   elseif (j .gt. large_mo_tot_num .and. j .le. 2*large_mo_tot_num) then
-    j_minus = j - large_mo_tot_num
-    do i=1, 2*dirac_ao_num
-     if (i .gt. large_ao_num .and. i .le. 2*large_ao_num) then
-      i_minus = i - large_ao_num
-      dirac_mo_coef(i,j) = (1.d0,0.d0)*large_mo_coef(i_minus,j_minus)
-     endif
-    enddo
-   elseif (j.gt. 2*large_mo_tot_num .and. j .le. (2*large_mo_tot_num+small_mo_tot_num)) then
-    j_minus = j - 2*large_mo_tot_num
-    do i=1, 2*dirac_ao_num
-    i_minus = i - 2*large_ao_num
-     if (i .gt. 2*large_ao_num .and. i .le. (2*large_ao_num+small_ao_num)) then
-      dirac_mo_coef(i,j) = (1.d0,0.d0)*small_mo_coef(i_minus,j_minus)
-     endif
-    enddo
-   elseif (j .gt. (2*large_ao_num + small_ao_num)) then
-    j_minus = j - (2*large_mo_tot_num + small_mo_tot_num)
-    do i=1, 2*(large_ao_num+small_ao_num)
-     if (i .gt. (2*large_ao_num+small_ao_num)) then
-      i_minus = i - (2*large_ao_num + small_ao_num)
-      dirac_mo_coef(i,j) = (1.d0,0.d0)*small_mo_coef(i_minus,j_minus)
-     endif
-    enddo
-   endif
-  enddo
+  double precision, allocatable  :: buffer(:,:)
+  logical                        :: exists
+  PROVIDE ezfio_filename 
+  if (mpi_master) then
+    ! Coefs
+    call ezfio_has_dirac_scf_dirac_mo_coef(exists)
+  endif
+  IRP_IF MPI
+    include 'mpif.h'
+    integer :: ierr
+    call MPI_BCAST(exists, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
+    if (ierr /= MPI_SUCCESS) then
+      stop 'Unable to read dirac_mo_coef with MPI'
+    endif
+  IRP_ENDIF
+  if (exists) then
+    if (mpi_master) then
+      call ezfio_get_dirac_scf_dirac_mo_coef(dirac_mo_coef)
+      write(*,*) 'Read  dirac_mo_coef'
+    endif
+    IRP_IF MPI
+      call MPI_BCAST( dirac_mo_coef, 2*dirac_mo_tot_num*2*dirac_ao_num, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
+      if (ierr /= MPI_SUCCESS) then
+        stop 'Unable to read dirac_mo_coef with MPI'
+      endif
+    IRP_ENDIF
+  else
+    ! Orthonormalized AO basis
+   dirac_mo_coef = (0.d0,0.d0)
+   do j=1, 2*dirac_mo_tot_num
+    if (j .le. large_mo_tot_num) then
+     do i=1, 2*dirac_ao_num
+      if (i .le. large_ao_num) then
+       dirac_mo_coef(i,j) = (1.d0,0.d0)*large_mo_coef(i,j)
+      endif
+     enddo
+    elseif (j .gt. large_mo_tot_num .and. j .le. 2*large_mo_tot_num) then
+     j_minus = j - large_mo_tot_num
+     do i=1, 2*dirac_ao_num
+      if (i .gt. large_ao_num .and. i .le. 2*large_ao_num) then
+       i_minus = i - large_ao_num
+       dirac_mo_coef(i,j) = (1.d0,0.d0)*large_mo_coef(i_minus,j_minus)
+      endif
+     enddo
+    elseif (j.gt. 2*large_mo_tot_num .and. j .le. (2*large_mo_tot_num+small_mo_tot_num)) then
+     j_minus = j - 2*large_mo_tot_num
+     do i=1, 2*dirac_ao_num
+     i_minus = i - 2*large_ao_num
+      if (i .gt. 2*large_ao_num .and. i .le. (2*large_ao_num+small_ao_num)) then
+       dirac_mo_coef(i,j) = (1.d0,0.d0)*small_mo_coef(i_minus,j_minus)
+      endif
+     enddo
+    elseif (j .gt. (2*large_ao_num + small_ao_num)) then
+     j_minus = j - (2*large_mo_tot_num + small_mo_tot_num)
+     do i=1, 2*(large_ao_num+small_ao_num)
+      if (i .gt. (2*large_ao_num+small_ao_num)) then
+       i_minus = i - (2*large_ao_num + small_ao_num)
+       dirac_mo_coef(i,j) = (1.d0,0.d0)*small_mo_coef(i_minus,j_minus)
+      endif
+     enddo
+    endif
+   enddo
+  endif
  END_PROVIDER
 
 
@@ -277,7 +351,7 @@
   END_DOC 
   call ortho_canonical_complex(dirac_mo_overlap,2*dirac_mo_tot_num,2*dirac_mo_tot_num,dirac_mo_coef,2*dirac_ao_num,2*dirac_ao_num)
   dirac_mo_label = 'Orthonormalized'
-  SOFT_TOUCH dirac_mo_coef dirac_mo_label
+! SOFT_TOUCH dirac_mo_coef dirac_mo_label
  end
 
  

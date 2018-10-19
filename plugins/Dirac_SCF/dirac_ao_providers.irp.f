@@ -6,6 +6,38 @@
   dirac_ao_num = large_ao_num + small_ao_num 
   END_PROVIDER
 
+!BEGIN_PROVIDER [ integer, dirac_ao_num  ]
+! implicit none
+! BEGIN_DOC
+! !Concatenation of the large_ao_num and small_ao_num
+! END_DOC
+! logical                        :: has
+! PROVIDE ezfio_filename
+! if (mpi_master) then
+!   call ezfio_has_dirac_scf_dirac_ao_num(has)
+!  if (.not.has) then
+!   dirac_ao_num = large_ao_num + small_ao_num
+!  elseif (has) then
+!     call ezfio_get_scf_dirac_dirac_ao_num(dirac_ao_num)
+!   else
+!     print *, 'scf_dirac/dirac_ao_num not found in EZFIO file'
+!     stop 1
+!   endif
+! endif
+! IRP_IF MPI
+!   include 'mpif.h'
+!   integer :: ierr
+!   call MPI_BCAST( ao_num, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
+!   if (ierr /= MPI_SUCCESS) then
+!     stop 'Unable to read dirac_ao_num with MPI'
+!   endif
+! IRP_ENDIF
+! call write_time(6)
+! if (mpi_master) then
+!   write(6, *) 'Read  dirac_ao_num'
+! endif
+!END_PROVIDER
+
 
  BEGIN_PROVIDER [ integer, dirac_ao_prim_num, (dirac_ao_num) ]
  implicit none
@@ -38,6 +70,42 @@
   END_DOC
   dirac_mo_tot_num = large_mo_tot_num + small_mo_tot_num
  END_PROVIDER
+
+!BEGIN_PROVIDER [ integer, dirac_mo_tot_num ]
+! implicit none
+! BEGIN_DOC
+! !Concatenation of the large_mo_tot_num and small_mo_tot_num
+! END_DOC
+! logical                        :: has
+! PROVIDE ezfio_filename
+! if (mpi_master) then
+!   call ezfio_has_scf_dirac_dirac_mo_tot_num(has)
+! endif
+! IRP_IF MPI
+!   include 'mpif.h'
+!   integer                        :: ierr
+!   call MPI_BCAST( has, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
+!   if (ierr /= MPI_SUCCESS) then
+!     stop 'Unable to read dirac_mo_tot_num with MPI'
+!   endif
+! IRP_ENDIF
+! if (.not.has) then
+!   dirac_mo_tot_num = large_mo_tot_num + small_mo_tot_num
+! else
+!   if (mpi_master) then
+!     call ezfio_get_dirac_scf_dirac_mo_tot_num(dirac_mo_tot_num)
+!   endif
+!   IRP_IF MPI
+!     call MPI_BCAST( dirac_mo_tot_num, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
+!     if (ierr /= MPI_SUCCESS) then
+!       stop 'Unable to read dirac_mo_tot_num with MPI'
+!     endif
+!   IRP_ENDIF
+! endif
+! call write_int(6,dirac_mo_tot_num,'dirac_mo_tot_num')
+! ASSERT (dirac_mo_tot_num > 0)
+!END_PROVIDER
+
 
 
  BEGIN_PROVIDER [ integer, dirac_ao_power, (dirac_ao_num,3) ]
