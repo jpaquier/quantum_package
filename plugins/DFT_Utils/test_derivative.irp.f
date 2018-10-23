@@ -5,7 +5,27 @@ program pouet
  !call test_delta_derivative
  !call test_delta_derivative_xi
  call test_delta_total_derivative_bis 
+ !call test_provider
 end
+
+!subroutine test_provider
+!implicit none
+!integer :: i,j
+!double precision :: accu_1,accu_2,accu_3,accu_4
+!accu_1 = 0d0
+!accu_1 = 0d0
+!accu_3 = 0d0
+!accu_4 = 0d0
+!do i = 1, ao_num
+! do j = 1, ao_num
+!  accu_1 += dabs(potential_deltarho_ecmd_alpha_ao(j,i,1) - potential_deltarho_ecmd_alpha_ao_2(j,i,1))
+!  accu_2 += dabs(potential_deltarho_ecmd_beta_ao(j,i,1) - potential_deltarho_ecmd_beta_ao_2(j,i,1))
+!  accu_3 += dabs(potential_e_c_lda_ecmd_alpha_ao(j,i,1) - potential_e_c_lda_ecmd_alpha_ao_2(j,i,1))
+!  accu_4 += dabs(potential_e_c_lda_ecmd_beta_ao(j,i,1) - potential_e_c_lda_ecmd_beta_ao_2(j,i,1))
+! enddo
+!enddo
+!print*,'dn=n*',accu_1,accu_2,accu_3,accu_4
+!end
 
 
 

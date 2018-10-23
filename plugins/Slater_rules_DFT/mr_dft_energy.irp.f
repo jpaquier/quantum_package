@@ -70,10 +70,14 @@ subroutine print_variational_energy_dft
   write(*, '(A22,X,F16.10)') 'E^LR                = ',psi_energy_core + psi_energy_erf
   !write(*, '(A22,X,F16.10)') 'E_Hxc_Toulouse_1    = ',energy_Hxc(1)
   !write(*, '(A22,X,F16.10)') 'E_Hxc_Toulouse_2    = ',energy_Hxc_bis(1)
-  write(*, '(A22,X,F16.10)') 'E_Hxc_Toulouse_3    = ',energy_Hxc_ter(1)
+  !write(*, '(A22,X,F16.10)') 'E_Hxc_Toulouse_3    = ',energy_Hxc_ter(1)
+  !write(*, '(A22,X,F16.10)') 'E_Hxc_Toulouse_4    = ',energy_Hxc_4(1)
+  write(*, '(A22,X,F16.10)') 'E_Hxc_Toulouse_5    = ',energy_Hxc_5(1)
   !write(*, '(A22,X,F16.10)') 'Tot_Toulouse_1      = ',nuclear_repulsion + psi_energy_core + psi_energy_erf + energy_Hxc
   !write(*, '(A22,X,F16.10)') 'Tot_Toulouse_2      = ',nuclear_repulsion + psi_energy_core + psi_energy_erf + energy_Hxc_bis
-  write(*, '(A22,X,F16.10)') 'Tot_Toulouse_3      = ',nuclear_repulsion + psi_energy_core + psi_energy_erf + energy_Hxc_ter
+  !write(*, '(A22,X,F16.10)') 'Tot_Toulouse_3      = ',nuclear_repulsion + psi_energy_core + psi_energy_erf + energy_Hxc_ter
+  !write(*, '(A22,X,F16.10)') 'Tot_Toulouse_4      = ',nuclear_repulsion + psi_energy_core + psi_energy_erf + energy_Hxc_4
+  write(*, '(A22,X,F16.10)') 'Tot_Toulouse_5      = ',nuclear_repulsion + psi_energy_core + psi_energy_erf + energy_Hxc_5
   print*, ''
   print*,  '****************************************'
   print*, ''
@@ -102,6 +106,10 @@ subroutine print_variational_energy_dft_mu_of_r
    print*, ''
    write(*, '(A28,X,F16.10)') 'Variational energy of Psi = ',psi_energy
    print*, 'Component of the energy ....'
+   write(*, '(A28,X,F16.10)') 'psi_energy_bielec         = ',psi_energy_bielec
+   write(*, '(A28,X,F16.10)') 'psi_energy_monoelec       = ',psi_energy_monoelec
+   write(*, '(A28,X,F16.10)') 'psi_kinetic_energy        = ',psi_kinetic_energy
+   write(*, '(A28,X,F16.10)') 'psi_nuclear_elec_energy   = ',psi_nuclear_elec_energy
    print*, ''
    write(*, '(A28,X,F16.10)') 'nuclear_repulsion         = ',nuclear_repulsion
    write(*, '(A28,X,F16.10)') 'DFT mu(r)     correlation = ',Energy_c_md_mu_of_r_LDA
@@ -238,3 +246,23 @@ subroutine print_projected_energy_dft
 
 
 end
+
+
+ BEGIN_PROVIDER [double precision, psi_kinetic_energy, (N_states) ]
+&BEGIN_PROVIDER [double precision, psi_nuclear_elec_energy, (N_states) ]
+ implicit none
+ integer :: i,j,istate
+ psi_kinetic_energy = 0.d0
+ psi_nuclear_elec_energy = 0.d0 
+ do istate = 1, N_states 
+  do i = 1, mo_tot_num
+   do j = 1, mo_tot_num
+    psi_kinetic_energy(istate)      += ( one_body_dm_mo_alpha(j,i,istate)+one_body_dm_mo_beta(j,i,istate)) * mo_kinetic_integral(j,i) 
+    psi_nuclear_elec_energy(istate) += ( one_body_dm_mo_alpha(j,i,istate)+one_body_dm_mo_beta(j,i,istate)) * mo_nucl_elec_integral(j,i) 
+   enddo
+  enddo
+ enddo
+
+
+
+END_PROVIDER 
