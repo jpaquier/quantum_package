@@ -67,7 +67,6 @@ implicit none
   !write(*, '(A22,X,F16.10)') 'Tot_Toulouse_3      = ',nuclear_repulsion + psi_energy_core + psi_energy_erf + energy_Hxc_ter
   !write(*, '(A22,X,F16.10)') 'Tot_Toulouse_4      = ',nuclear_repulsion + psi_energy_core + psi_energy_erf + energy_Hxc_4
   write(*, '(A22,X,F16.10)') 'Tot_Toulouse_5      = ',nuclear_repulsion +psi_energy_core + psi_energy_erf + energy_Hxc_5
-
 end
 
 subroutine print_variational_energy_dft_mu_of_r
