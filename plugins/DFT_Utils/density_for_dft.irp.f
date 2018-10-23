@@ -3,29 +3,38 @@ BEGIN_PROVIDER [double precision, one_body_dm_alpha_mo_for_dft, (mo_tot_num,mo_t
  BEGIN_DOC
 ! density used for all DFT calculations based on the density 
  END_DOC
-
- if(read_density_from_input)then
+ double precision :: delta_alpha(mo_tot_num,mo_tot_num,N_states)
+ if(density_for_dft .EQ. "damping_rs_dft")then
+  delta_alpha = one_body_dm_mo_alpha - data_one_body_alpha_dm_mo 
+  one_body_dm_alpha_mo_for_dft = data_one_body_alpha_dm_mo + damping_for_rs_dft * delta_alpha
+ else if (density_for_dft .EQ. "input_density")then
   one_body_dm_alpha_mo_for_dft = data_one_body_alpha_dm_mo
- else 
+ else if (density_for_dft .EQ. "WFT")then
   provide mo_coef
   one_body_dm_alpha_mo_for_dft = one_body_dm_mo_alpha
  endif
 
 END_PROVIDER 
 
+
 BEGIN_PROVIDER [double precision, one_body_dm_beta_mo_for_dft, (mo_tot_num,mo_tot_num, N_states)]
  implicit none
  BEGIN_DOC
 ! density used for all DFT calculations based on the density 
  END_DOC
- if(read_density_from_input)then
+ double precision :: delta_beta(mo_tot_num,mo_tot_num,N_states)
+ if(density_for_dft .EQ. "damping_rs_dft")then
+  delta_beta = one_body_dm_mo_beta - data_one_body_beta_dm_mo 
+  one_body_dm_beta_mo_for_dft = data_one_body_beta_dm_mo + damping_for_rs_dft * delta_beta
+ else if (density_for_dft .EQ. "input_density")then
   one_body_dm_beta_mo_for_dft = data_one_body_beta_dm_mo
- else
+ else if (density_for_dft .EQ. "WFT")then
   provide mo_coef
   one_body_dm_beta_mo_for_dft = one_body_dm_mo_beta
  endif
 
 END_PROVIDER 
+
 
 
 BEGIN_PROVIDER [double precision, one_body_dm_mo_for_dft, (mo_tot_num,mo_tot_num, N_states)]

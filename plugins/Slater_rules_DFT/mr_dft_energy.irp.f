@@ -15,10 +15,11 @@ BEGIN_PROVIDER [double precision, electronic_energy_mr_dft, (N_states)]
 
 END_PROVIDER 
 
-subroutine print_variational_energy_dft
+ subroutine print_variational_energy_dft
  implicit none
- If (SR_standard_decomposition .EQV. .TRUE.) Then
+ print*,'/////////////////////////'
   print*,  '****************************************'
+  print*,'///////////////////'
   print*,  ' Regular range separated DFT energy '
   write(*, '(A22,X,F32.10)') 'mu_erf              = ',mu_erf          
   write(*, '(A22,X,F16.10)') 'TOTAL ENERGY        = ',electronic_energy_mr_dft+nuclear_repulsion
@@ -38,26 +39,14 @@ subroutine print_variational_energy_dft
   write(*, '(A22,X,F16.10)') 'Approx eigenvalue   = ',Fock_matrix_expectation_value + psi_energy_erf
   write(*, '(A22,X,F16.10)') 'Trace_v_xc          = ',Trace_v_xc
  
-  print*,  '****************************************'
-  print*,  '****************************************'
-  print*,  ' MR DFT energy with pure correlation part for the DFT '
-  write(*, '(A22,X,F16.10)') 'TOTAL ENERGY CORR   = ',elec_energy_dft_pure_corr_funct+nuclear_repulsion
-  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  write(*, '(A22,X,F16.10)') 'CORRECTED E_TOT CORR= ',Energy_c_md_on_top(1)+psi_energy+nuclear_repulsion
-  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  print*, ''
-  print*, 'Component of the energy ....'
-  print*, ''
-  write(*, '(A28,X,F16.10)') 'nuclear_repulsion         = ',nuclear_repulsion
   write(*, '(A28,X,F16.10)') 'Variational energy of Psi = ',psi_energy
   write(*, '(A28,X,F16.10)') 'psi_energy_bielec         = ',psi_energy_bielec
   write(*, '(A28,X,F16.10)') 'psi_energy_monoelec       = ',psi_energy_monoelec
-  write(*, '(A28,X,F16.10)') 'DFT Multi-det correlation = ',Energy_c_md
-  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  write(*, '(A28,X,F16.10)') 'corrected Multi-det correl= ',Energy_c_md_on_top(1)
-  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
- else
+! write(*, '(A28,X,F16.10)') 'corrected Multi-det correl= ',Energy_c_md_on_top(1)
+ end
+
+subroutine print_variational_energy_dftTest_julien
+implicit none
   print*,  '****************************************'
   print*,  ' Range separated DFT energy new Toulouse method '
   write(*, '(A22,X,F32.10)') 'mu_erf              = ',mu_erf
@@ -73,23 +62,13 @@ subroutine print_variational_energy_dft
   !write(*, '(A22,X,F16.10)') 'E_Hxc_Toulouse_3    = ',energy_Hxc_ter(1)
   !write(*, '(A22,X,F16.10)') 'E_Hxc_Toulouse_4    = ',energy_Hxc_4(1)
   write(*, '(A22,X,F16.10)') 'E_Hxc_Toulouse_5    = ',energy_Hxc_5(1)
-  !write(*, '(A22,X,F16.10)') 'Tot_Toulouse_1      = ',nuclear_repulsion + psi_energy_core + psi_energy_erf + energy_Hxc
-  !write(*, '(A22,X,F16.10)') 'Tot_Toulouse_2      = ',nuclear_repulsion + psi_energy_core + psi_energy_erf + energy_Hxc_bis
+  !write(*, '(A22,X,F16.10)') 'Tot_Toulouse_1      = ',nuclear_repulsion +  psi_energy_core + psi_energy_erf + energy_Hxc
+  !write(*, '(A22,X,F16.10)') 'Tot_Toulouse_2      = ',nuclear_repulsion +  psi_energy_core + psi_energy_erf + energy_Hxc_bis
   !write(*, '(A22,X,F16.10)') 'Tot_Toulouse_3      = ',nuclear_repulsion + psi_energy_core + psi_energy_erf + energy_Hxc_ter
   !write(*, '(A22,X,F16.10)') 'Tot_Toulouse_4      = ',nuclear_repulsion + psi_energy_core + psi_energy_erf + energy_Hxc_4
-  write(*, '(A22,X,F16.10)') 'Tot_Toulouse_5      = ',nuclear_repulsion + psi_energy_core + psi_energy_erf + energy_Hxc_5
-  print*, ''
-  print*,  '****************************************'
-  print*, ''
-  print*,  '****************************************'
-  print*,  '****************************************'
-  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
- endif
+  write(*, '(A22,X,F16.10)') 'Tot_Toulouse_5      = ',nuclear_repulsion +psi_energy_core + psi_energy_erf + energy_Hxc_5
 
 end
-
 
 subroutine print_variational_energy_dft_mu_of_r
  implicit none

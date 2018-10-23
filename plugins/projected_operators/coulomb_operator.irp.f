@@ -197,33 +197,19 @@ use map_module
 
  two_body_dm = 0.d0
  coulomb = 0.d0
-!!$OMP PARALLEL DO &
-!!$OMP DEFAULT (NONE)  &
-!!$OMP PRIVATE (i,j,m,n,a1,c1,a2,c2,a3,c3,a4,c4) & 
-!!$OMP SHARED (mo_tot_num,mos_array_r1,mos_array_r2,threshold,two_bod_alpha_beta_mo_transposed,two_bod_alpha_beta_mo_contracted) & 
-!!$OMP REDUCTION (+:coulomb,two_body_dm)       
- do i = 1, mo_tot_num
-  a1 = mos_array_r1(i) 
-  c1 = dabs(a1)
-  if(c1.le.threshold)cycle
-  do j = 1, mo_tot_num 
-   a2 = a1 * mos_array_r2(j)
-   c2 = dabs(a2)
-   if(c2.le.threshold)cycle
-   do m = 1, mo_tot_num
-    a3 = a2 * mos_array_r1(m)
-    c3 = dabs(a3)
-    if(c3.le.threshold)cycle
-    do n = 1, mo_tot_num
-     a4 = a3 * mos_array_r2(n)
-     c4 = dabs(a4)
-     two_body_dm +=  two_bod_alpha_beta_mo_transposed(n,m,j,i,1) * mos_array_r1(i) * mos_array_r1(n) * mos_array_r2(j) * mos_array_r2(m)
-     coulomb += a4 * two_bod_alpha_beta_mo_contracted(n,m,j,i,1)
+ double precision :: tmp1
+ do i = 1, mo_tot_num ! 1
+  do j = 1, mo_tot_num ! 2 
+   do m = 1, mo_tot_num ! 1
+    do n = 1, mo_tot_num ! 2
+     !                                               2 1 2 1
+     tmp1 = mos_array_r2(n) * mos_array_r1(m) * mos_array_r2(j) * mos_array_r1(i)
+     coulomb     += two_bod_alpha_beta_mo_contracted(n,m,j,i,1) * tmp1 
+     two_body_dm += two_bod_alpha_beta_mo_physician (n,m,j,i,1) * tmp1 
     enddo
    enddo
   enddo
  enddo
-!!$OMP END PARALLEL DO
  if(two_body_dm.gt.1.d-12.and.coulomb.gt.1.d-12)then
   coulomb = coulomb/two_body_dm
  else 
@@ -236,6 +222,9 @@ end
 subroutine pure_expectation_value_in_real_space(r1,r2,coulomb)
 use map_module
  implicit none
+ BEGIN_DOC
+ ! f(1,2) of equation (22) of the first paper in JCP
+ END_DOC
  double precision, intent(in) :: r1(3), r2(3)
  double precision, intent(out):: coulomb
  integer :: i,j,k,l,m,n  
@@ -252,37 +241,39 @@ use map_module
  call give_all_mos_at_r(r2,mos_array_r2) 
 
  coulomb = 0.d0
- !$OMP PARALLEL DO &
- !$OMP DEFAULT (NONE)  &
- !$OMP PRIVATE (i,j,m,n,a1,c1,a2,c2,a3,c3,a4,c4) & 
- !$OMP SHARED (mo_tot_num,mos_array_r1,mos_array_r2,threshold,two_bod_alpha_beta_mo_transposed,two_bod_alpha_beta_mo_contracted) & 
- !$OMP REDUCTION (+:coulomb)       
- do i = 1, mo_tot_num
-  a1 = mos_array_r1(i) 
-  c1 = dabs(a1)
-  if(c1.le.threshold)cycle
-  do j = 1, mo_tot_num 
-   a2 = a1 * mos_array_r2(j)
-   c2 = dabs(a2)
-   if(c2.le.threshold)cycle
-   do m = 1, mo_tot_num
-    a3 = a2 * mos_array_r1(m)
-    c3 = dabs(a3)
-    if(c3.le.threshold)cycle
-    do n = 1, mo_tot_num
-     a4 = a3 * mos_array_r2(n)
-     c4 = dabs(a4)
-     coulomb += a4 * two_bod_alpha_beta_mo_contracted(n,m,j,i,1)
+ do i = 1, mo_tot_num ! 1
+  do j = 1, mo_tot_num ! 2 
+   do m = 1, mo_tot_num ! 1
+    do n = 1, mo_tot_num ! 2
+     !                                           2 1 2 1
+     coulomb += two_bod_alpha_beta_mo_contracted(n,m,j,i,1) * mos_array_r2(n) * mos_array_r1(m) * mos_array_r2(j) * mos_array_r1(i) 
     enddo
    enddo
   enddo
  enddo
- !$OMP END PARALLEL DO
 
 end
 
 
-
+double precision function integral_pure_expectation_value_in_real_space(r)
+ implicit none
+! integral over 2 of pure_expectation_value_in_real_space(1,2) 
+ double precision, intent(in) :: r(3)
+ double precision :: mos_array_r(mo_tot_num)
+ integer :: i,j,m,n
+ call give_all_mos_at_r(r,mos_array_r)
+ integral_pure_expectation_value_in_real_space = 0.d0
+ do i = 1, mo_tot_num ! 1
+  do j = 1, mo_tot_num ! 2 
+   do m = 1, mo_tot_num ! 1
+    do n = j,j           ! 2 :: kronecker(n,j) because of orthogonality of MOs
+     !                                                            2 1 2 1
+     integral_pure_expectation_value_in_real_space += two_bod_alpha_beta_mo_contracted(n,m,j,i,1) * mos_array_r(m) * mos_array_r(i) 
+    enddo
+   enddo
+  enddo
+ enddo
+end
 
 subroutine numerical_delta_function_coulomb(r1,r2,integral)
  implicit none
