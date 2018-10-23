@@ -203,21 +203,22 @@ use map_module
 !!$OMP SHARED (mo_tot_num,mos_array_r1,mos_array_r2,threshold,two_bod_alpha_beta_mo_transposed,two_bod_alpha_beta_mo_contracted) & 
 !!$OMP REDUCTION (+:coulomb,two_body_dm)       
  do i = 1, mo_tot_num
-  a1 = mos_array_r1(i) 
+  a1 = mos_array_r1(i) ! 1
   c1 = dabs(a1)
   if(c1.le.threshold)cycle
   do j = 1, mo_tot_num 
-   a2 = a1 * mos_array_r2(j)
+   a2 = a1 * mos_array_r2(j) ! 2 
    c2 = dabs(a2)
    if(c2.le.threshold)cycle
    do m = 1, mo_tot_num
-    a3 = a2 * mos_array_r1(m)
+    a3 = a2 * mos_array_r1(m) ! 1
     c3 = dabs(a3)
     if(c3.le.threshold)cycle
     do n = 1, mo_tot_num
-     a4 = a3 * mos_array_r2(n)
+     a4 = a3 * mos_array_r2(n) ! 2 
      c4 = dabs(a4)
      two_body_dm +=  two_bod_alpha_beta_mo_transposed(n,m,j,i,1) * mos_array_r1(i) * mos_array_r1(n) * mos_array_r2(j) * mos_array_r2(m)
+     !                                                2 1 2 1
      coulomb += a4 * two_bod_alpha_beta_mo_contracted(n,m,j,i,1)
     enddo
    enddo
