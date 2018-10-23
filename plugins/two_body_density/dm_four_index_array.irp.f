@@ -50,7 +50,7 @@
  END_PROVIDER 
 
 
- BEGIN_PROVIDER [double precision, two_bod_alpha_beta_mo_transposed_bis, (mo_tot_num,mo_tot_num,mo_tot_num,mo_tot_num,N_states)]
+ BEGIN_PROVIDER [double precision, two_bod_alpha_beta_mo_physician, (mo_tot_num,mo_tot_num,mo_tot_num,mo_tot_num,N_states)]
 &BEGIN_PROVIDER [double precision, two_bod_alpha_beta_mo_transposed_bis_sum, (mo_tot_num,mo_tot_num,N_states)]
  implicit none
  BEGIN_DOC
@@ -58,7 +58,7 @@
  END_DOC
  integer :: i,j,k,l,istate
  double precision :: cpu_0,cpu_1
- two_bod_alpha_beta_mo_transposed_bis = 0.d0
+ two_bod_alpha_beta_mo_physician = 0.d0
  print*,'providing two_bod_alpha_beta_mo_transposed_bis ...'
  call cpu_time(cpu_0)
  do istate = 1, N_states 
@@ -66,8 +66,8 @@
    do j = 1, mo_tot_num
     do k = 1, mo_tot_num
      do l = 1, mo_tot_num
-      !                                    1 2 2 1                                 1 1 2 2 
-      two_bod_alpha_beta_mo_transposed_bis(l,k,i,j,istate) = two_bod_alpha_beta_mo(i,l,j,k,istate)
+      !                                          1 2 1 2                                 1 1 2 2 
+      two_bod_alpha_beta_mo_physician(l,k,i,j,istate) = two_bod_alpha_beta_mo(i,l,j,k,istate)
      enddo
     enddo
    enddo
@@ -79,7 +79,7 @@
    do k = 1, mo_tot_num
     do m = 1, mo_tot_num
      do n = 1, mo_tot_num
-      two_bod_alpha_beta_mo_transposed_bis_sum(k,l,istate)+= dabs(two_bod_alpha_beta_mo_transposed_bis(n,m,k,l,istate))
+      two_bod_alpha_beta_mo_transposed_bis_sum(k,l,istate)+= dabs(two_bod_alpha_beta_mo_physician(n,m,k,l,istate))
      enddo
     enddo
    enddo
@@ -93,7 +93,7 @@
 
 
 
- BEGIN_PROVIDER [double precision, two_bod_alpha_beta_mo_contracted, (mo_tot_num,mo_tot_num,mo_tot_num,mo_tot_num,N_states)]
+ BEGIN_PROVIDER [double precision, two_bod_alpha_beta_mo_contracted_serial, (mo_tot_num,mo_tot_num,mo_tot_num,mo_tot_num,N_states)]
  implicit none
  BEGIN_DOC
  !  two_bod_alpha_beta_mo_contracted(n,m,j,i) = \sum_{k,l} <ij|kl> <\Psi|a^{dagger}_{k,alpha} a^{dagger}_{l,beta} a_{n,beta} a_{m,alpha}|\Psi>
@@ -101,20 +101,23 @@
  integer :: i,j,k,l,istate,m,n
  double precision :: cpu_0,cpu_1
  double precision :: integrals_array(mo_tot_num,mo_tot_num)
- two_bod_alpha_beta_mo_contracted = 0.d0
+ two_bod_alpha_beta_mo_contracted_serial = 0.d0
  double precision :: threshold 
  threshold = 0.d0
  print*,'providing two_bod_alpha_beta_mo_contracted...'
  call cpu_time(cpu_0)
  do istate = 1, N_states 
-  do i = 1, mo_tot_num
-   do j = 1, mo_tot_num 
+  do i = 1, mo_tot_num ! 1 
+   do j = 1, mo_tot_num ! 2 
+                                 !  1 2 
     call get_mo_bielec_integrals_ij(i,j,mo_tot_num,integrals_array,mo_integrals_map) 
-    do l = 1, mo_tot_num
-     do k = 1, mo_tot_num
-      do m = 1, mo_tot_num
-       do n = 1, mo_tot_num
-          two_bod_alpha_beta_mo_contracted(n,m,j,i,istate)+= integrals_array(k,l) * two_bod_alpha_beta_mo_transposed(n,m,k,l,istate)
+    do m = 1, mo_tot_num ! 1
+     do n = 1, mo_tot_num ! 2
+      do l = 1, mo_tot_num ! 2
+       do k = 1, mo_tot_num ! 1 
+
+         !                                2 1 2 1                            1 2                                     1 2 2 1
+         two_bod_alpha_beta_mo_contracted_serial(n,m,j,i,istate) += integrals_array(k,l) * two_bod_alpha_beta_mo_transposed(k,l,n,m,istate)
        enddo
       enddo
      enddo
@@ -127,40 +130,55 @@
 
  END_PROVIDER 
 
- BEGIN_PROVIDER [double precision, two_bod_alpha_beta_mo_contracted_parallel, (mo_tot_num,mo_tot_num,mo_tot_num,mo_tot_num,N_states)]
+ BEGIN_PROVIDER [double precision, two_bod_alpha_beta_mo_contracted, (mo_tot_num,mo_tot_num,mo_tot_num,mo_tot_num,N_states)]
  implicit none
  BEGIN_DOC
  !  two_bod_alpha_beta_mo_contracted(n,m,j,i) = \sum_{k,l} <ij|kl> <\Psi|a^{dagger}_{k,alpha} a^{dagger}_{l,beta} a_{n,beta} a_{m,alpha}|\Psi>
  END_DOC
  integer :: i,j,k,l,istate,m,n
- double precision :: cpu_0,cpu_1
- double precision :: integrals_array(mo_tot_num,mo_tot_num),accu
- two_bod_alpha_beta_mo_contracted_parallel = 0.d0
+ double precision :: cpu_0,cpu_1,accu
+ two_bod_alpha_beta_mo_contracted = 0.d0
  print*,'providing two_bod_alpha_beta_mo_contracted...'
  call cpu_time(cpu_0)
+ i=1 
+ j=1
+ double precision, allocatable :: integrals_array(:,:)
+ allocate(integrals_array(mo_tot_num,mo_tot_num))
+ call get_mo_bielec_integrals_ij(i,j,mo_tot_num,integrals_array,mo_integrals_map) 
+ deallocate(integrals_array)
+
+ !$OMP PARALLEL        &
+ !$OMP DEFAULT (NONE)  &
+ !$OMP PRIVATE (l,k,i,j,n,m,accu,integrals_array,istate,mo_integrals_map) &
+ !$OMP SHARED  (mo_tot_num,two_bod_alpha_beta_mo_transposed,N_states,two_bod_alpha_beta_mo_contracted) 
+ allocate(integrals_array(mo_tot_num,mo_tot_num))
  do istate = 1, N_states 
-!!$OMP DO              &
-!!$OMP DEFAULT (NONE)  &
-!!$OMP PRIVATE (l,k,i,j,n,m,accu,integrals_array) &
-!!$OMP SHARED  (mo_tot_num,two_bod_alpha_beta_mo_transposed,istate,two_bod_alpha_beta_mo_contracted_parallel) & 
+ !$OMP DO              
   do i = 1, mo_tot_num ! 1 
    do j = 1, mo_tot_num  ! 2 
+                                 !  1 2 
     call get_mo_bielec_integrals_ij(i,j,mo_tot_num,integrals_array,mo_integrals_map) 
     do m = 1, mo_tot_num ! 1 
      do n = 1, mo_tot_num ! 2 
       accu = 0.d0
-      do l = 1, mo_tot_num
-       do k = 1, mo_tot_num
+      do l = 1, mo_tot_num ! 2 
+       do k = 1, mo_tot_num ! 1 
+        !                                        
+        !                                        1 2 2 1                           1 2
         accu += two_bod_alpha_beta_mo_transposed(k,l,n,m,istate) * integrals_array(k,l) 
        enddo
       enddo
-      two_bod_alpha_beta_mo_contracted_parallel(n,m,j,i,istate) = accu 
+      !                                         2 1 2 1           
+      two_bod_alpha_beta_mo_contracted(n,m,j,i,istate) = accu 
      enddo
     enddo
    enddo
   enddo
-! !$OMP END DO
+ !$OMP END DO
  enddo
+ deallocate(integrals_array)
+ !$OMP END PARALLEL
+
  call cpu_time(cpu_1)
  print*,'two_bod_alpha_beta_mo_contracted provided in',dabs(cpu_1-cpu_0)
 
@@ -704,3 +722,7 @@
  END_DOC
   two_bod_alpha_beta_ao = 0.d0
  END_PROVIDER 
+
+
+
+
