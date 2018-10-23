@@ -50,7 +50,7 @@
  END_PROVIDER 
 
 
- BEGIN_PROVIDER [double precision, two_bod_alpha_beta_mo_transposed_bis, (mo_tot_num,mo_tot_num,mo_tot_num,mo_tot_num,N_states)]
+ BEGIN_PROVIDER [double precision, two_bod_alpha_beta_mo_physician, (mo_tot_num,mo_tot_num,mo_tot_num,mo_tot_num,N_states)]
 &BEGIN_PROVIDER [double precision, two_bod_alpha_beta_mo_transposed_bis_sum, (mo_tot_num,mo_tot_num,N_states)]
  implicit none
  BEGIN_DOC
@@ -58,7 +58,7 @@
  END_DOC
  integer :: i,j,k,l,istate
  double precision :: cpu_0,cpu_1
- two_bod_alpha_beta_mo_transposed_bis = 0.d0
+ two_bod_alpha_beta_mo_physician = 0.d0
  print*,'providing two_bod_alpha_beta_mo_transposed_bis ...'
  call cpu_time(cpu_0)
  do istate = 1, N_states 
@@ -66,8 +66,8 @@
    do j = 1, mo_tot_num
     do k = 1, mo_tot_num
      do l = 1, mo_tot_num
-      !                                    1 2 2 1                                 1 1 2 2 
-      two_bod_alpha_beta_mo_transposed_bis(l,k,i,j,istate) = two_bod_alpha_beta_mo(i,l,j,k,istate)
+      !                                          1 2 1 2                                 1 1 2 2 
+      two_bod_alpha_beta_mo_physician(l,k,i,j,istate) = two_bod_alpha_beta_mo(i,l,j,k,istate)
      enddo
     enddo
    enddo
@@ -79,7 +79,7 @@
    do k = 1, mo_tot_num
     do m = 1, mo_tot_num
      do n = 1, mo_tot_num
-      two_bod_alpha_beta_mo_transposed_bis_sum(k,l,istate)+= dabs(two_bod_alpha_beta_mo_transposed_bis(n,m,k,l,istate))
+      two_bod_alpha_beta_mo_transposed_bis_sum(k,l,istate)+= dabs(two_bod_alpha_beta_mo_physician(n,m,k,l,istate))
      enddo
     enddo
    enddo
@@ -93,7 +93,7 @@
 
 
 
- BEGIN_PROVIDER [double precision, two_bod_alpha_beta_mo_contracted, (mo_tot_num,mo_tot_num,mo_tot_num,mo_tot_num,N_states)]
+ BEGIN_PROVIDER [double precision, two_bod_alpha_beta_mo_contracted_serial, (mo_tot_num,mo_tot_num,mo_tot_num,mo_tot_num,N_states)]
  implicit none
  BEGIN_DOC
  !  two_bod_alpha_beta_mo_contracted(n,m,j,i) = \sum_{k,l} <ij|kl> <\Psi|a^{dagger}_{k,alpha} a^{dagger}_{l,beta} a_{n,beta} a_{m,alpha}|\Psi>
@@ -101,7 +101,7 @@
  integer :: i,j,k,l,istate,m,n
  double precision :: cpu_0,cpu_1
  double precision :: integrals_array(mo_tot_num,mo_tot_num)
- two_bod_alpha_beta_mo_contracted = 0.d0
+ two_bod_alpha_beta_mo_contracted_serial = 0.d0
  double precision :: threshold 
  threshold = 0.d0
  print*,'providing two_bod_alpha_beta_mo_contracted...'
@@ -111,13 +111,13 @@
    do j = 1, mo_tot_num ! 2 
                                  !  1 2 
     call get_mo_bielec_integrals_ij(i,j,mo_tot_num,integrals_array,mo_integrals_map) 
-    do m = 1, mo_tot_num ! 2
-     do n = 1, mo_tot_num ! 1
+    do m = 1, mo_tot_num ! 1
+     do n = 1, mo_tot_num ! 2
+      do l = 1, mo_tot_num ! 2
+       do k = 1, mo_tot_num ! 1 
 
-       do l = 1, mo_tot_num ! 2
-        do k = 1, mo_tot_num ! 1 
-          !                                1 2 2 1                            1 2                                     1 2 2 1
-          two_bod_alpha_beta_mo_contracted(n,m,j,i,istate) += integrals_array(k,l) * two_bod_alpha_beta_mo_transposed(l,k,m,n,istate)
+         !                                2 1 2 1                            1 2                                     1 2 2 1
+         two_bod_alpha_beta_mo_contracted_serial(n,m,j,i,istate) += integrals_array(k,l) * two_bod_alpha_beta_mo_transposed(k,l,n,m,istate)
        enddo
       enddo
      enddo
@@ -130,14 +130,14 @@
 
  END_PROVIDER 
 
- BEGIN_PROVIDER [double precision, two_bod_alpha_beta_mo_contracted_parallel, (mo_tot_num,mo_tot_num,mo_tot_num,mo_tot_num,N_states)]
+ BEGIN_PROVIDER [double precision, two_bod_alpha_beta_mo_contracted, (mo_tot_num,mo_tot_num,mo_tot_num,mo_tot_num,N_states)]
  implicit none
  BEGIN_DOC
  !  two_bod_alpha_beta_mo_contracted(n,m,j,i) = \sum_{k,l} <ij|kl> <\Psi|a^{dagger}_{k,alpha} a^{dagger}_{l,beta} a_{n,beta} a_{m,alpha}|\Psi>
  END_DOC
  integer :: i,j,k,l,istate,m,n
  double precision :: cpu_0,cpu_1,accu
- two_bod_alpha_beta_mo_contracted_parallel = 0.d0
+ two_bod_alpha_beta_mo_contracted = 0.d0
  print*,'providing two_bod_alpha_beta_mo_contracted...'
  call cpu_time(cpu_0)
  i=1 
@@ -150,24 +150,26 @@
  !$OMP PARALLEL        &
  !$OMP DEFAULT (NONE)  &
  !$OMP PRIVATE (l,k,i,j,n,m,accu,integrals_array,istate,mo_integrals_map) &
- !$OMP SHARED  (mo_tot_num,two_bod_alpha_beta_mo_transposed,N_states,two_bod_alpha_beta_mo_contracted_parallel) 
+ !$OMP SHARED  (mo_tot_num,two_bod_alpha_beta_mo_transposed,N_states,two_bod_alpha_beta_mo_contracted) 
  allocate(integrals_array(mo_tot_num,mo_tot_num))
  do istate = 1, N_states 
  !$OMP DO              
   do i = 1, mo_tot_num ! 1 
    do j = 1, mo_tot_num  ! 2 
+                                 !  1 2 
     call get_mo_bielec_integrals_ij(i,j,mo_tot_num,integrals_array,mo_integrals_map) 
     do m = 1, mo_tot_num ! 1 
      do n = 1, mo_tot_num ! 2 
       accu = 0.d0
-      do l = 1, mo_tot_num
-       do k = 1, mo_tot_num
-        !                                        1 2 2 1
-        !                                                                          1 2
+      do l = 1, mo_tot_num ! 2 
+       do k = 1, mo_tot_num ! 1 
+        !                                        
+        !                                        1 2 2 1                           1 2
         accu += two_bod_alpha_beta_mo_transposed(k,l,n,m,istate) * integrals_array(k,l) 
        enddo
       enddo
-      two_bod_alpha_beta_mo_contracted_parallel(n,m,j,i,istate) = accu 
+      !                                         2 1 2 1           
+      two_bod_alpha_beta_mo_contracted(n,m,j,i,istate) = accu 
      enddo
     enddo
    enddo
@@ -722,83 +724,5 @@
  END_PROVIDER 
 
 
-double precision function test_1_contract(r1,r2)
- implicit none
- double precision, intent(in) :: r1(3),r2(3)
- double precision :: mos_array_r1(mo_tot_num),mos_array_r2(mo_tot_num)
- integer :: i,j,m,n
- call give_all_mos_at_r(r,mos_array_r1)
- call give_all_mos_at_r(r,mos_array_r2)
- do i = 1, mo_tot_num
-  do j = 1, mo_tot_num
-   do m = 1, mo_tot_num
-    do n = 1, mo_tot_num
-     !                                                   1 2 2 1
-     test_1_contract += two_bod_alpha_beta_mo_contracted(n,m,j,i,1) * mos_array_r1(i) * mos_array_r2(j) * mos_array_r1(n) * mos_array_r1(m) 
-    enddo
-   enddo
-  enddo
- enddo
-end
-
-
-double precision function test_2_contract(r1,r2)
- implicit none
- double precision, intent(in) :: r1(3),r2(3)
- double precision :: mos_array_r1(mo_tot_num),mos_array_r2(mo_tot_num)
- integer :: i,j,m,n
- call give_all_mos_at_r(r,mos_array_r1)
- call give_all_mos_at_r(r,mos_array_r2)
- do i = 1, mo_tot_num
-  do j = 1, mo_tot_num
-   do m = 1, mo_tot_num
-    do n = 1, mo_tot_num
-     !                                                   1 2 2 1
-     test_1_contract += two_bod_alpha_beta_mo_contracted_parallel(n,m,j,i,1) * mos_array_r1(i) * mos_array_r2(j) * mos_array_r1(n) * mos_array_r1(m) 
-    enddo
-   enddo
-  enddo
- enddo
-end
-
-
-double precision function test_1_contract(r1,r2)
- implicit none
- double precision, intent(in) :: r1(3),r2(3)
- double precision :: mos_array_r1(mo_tot_num),mos_array_r2(mo_tot_num)
- integer :: i,j,m,n
- call give_all_mos_at_r(r,mos_array_r1)
- call give_all_mos_at_r(r,mos_array_r2)
- do i = 1, mo_tot_num
-  do j = 1, mo_tot_num
-   do m = 1, mo_tot_num
-    do n = 1, mo_tot_num
-     !                                                   1 2 2 1
-     test_1_contract += two_bod_alpha_beta_mo_contracted(n,m,j,i,1) * mos_array_r1(i) * mos_array_r2(j) * mos_array_r1(n) * mos_array_r1(m) 
-    enddo
-   enddo
-  enddo
- enddo
-end
-
-
-double precision function test_2_contract(r1,r2)
- implicit none
- double precision, intent(in) :: r1(3),r2(3)
- double precision :: mos_array_r1(mo_tot_num),mos_array_r2(mo_tot_num)
- integer :: i,j,m,n
- call give_all_mos_at_r(r,mos_array_r1)
- call give_all_mos_at_r(r,mos_array_r2)
- do i = 1, mo_tot_num
-  do j = 1, mo_tot_num
-   do m = 1, mo_tot_num
-    do n = 1, mo_tot_num
-     !                                                            1 2 2 1
-     test_1_contract += two_bod_alpha_beta_mo_contracted_parallel(n,m,j,i,1) * mos_array_r1(i) * mos_array_r2(j) * mos_array_r1(n) * mos_array_r1(m) 
-    enddo
-   enddo
-  enddo
- enddo
-end
 
 
