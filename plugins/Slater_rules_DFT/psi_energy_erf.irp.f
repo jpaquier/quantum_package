@@ -50,14 +50,9 @@ END_PROVIDER
 BEGIN_PROVIDER [ double precision, total_range_separated_electronic_energy, (N_states) ]
   implicit none
   BEGIN_DOC
-! If SR_standard_decomposition = true then total_range_separated_electronic_energy = <Psi| h_{core} |Psi> + (1/2) <Psi| v_{H}^{sr} |Psi> + <i|W_{ee}^{lr}|i> + E_{x} + E_{c}
-! esle  total_range_separated_electronic_energy= <Psi| h_core |Psi> + <Psi|W_ee^lr|Psi> + E_Hxc(n,n2)
+! Total_range_separated_electronic_energy = <Psi| h_{core} |Psi> + (1/2) <Psi| v_{H}^{sr} |Psi> + <i|W_{ee}^{lr}|i> + E_{x} + E_{c}
   END_DOC
-  If (SR_standard_decomposition .EQV. .TRUE.) Then
    total_range_separated_electronic_energy = psi_energy_core + short_range_Hartree + psi_energy_erf + energy_x + energy_c 
-  else      
-   total_range_separated_electronic_energy = psi_energy_core + psi_energy_erf + energy_Hxc 
-  endif
 END_PROVIDER
 
 

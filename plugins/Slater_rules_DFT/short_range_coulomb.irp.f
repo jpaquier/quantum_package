@@ -36,7 +36,7 @@ END_PROVIDER
  integer :: i,j,i_state
  effective_one_e_potential = 0.d0
  BEGIN_DOC 
-! effective_one_e_potential(i,j) = <i| v_{H}^{sr} |j> + <i| h_{core} |j> + <i| v_{xc} |j>
+! effective_one_e_potential(i,j) = <i| v_{H}^{sr} |j> + <i| h_{core} |j> + <i|v_{xc} |j> 
 ! Taking the expectation value does not provide any energy
 ! but effective_one_e_potential(i,j) is the potential coupling DFT and WFT part to be used in any WFT calculation
  END_DOC
@@ -53,6 +53,29 @@ END_PROVIDER
   enddo
  enddo
 END_PROVIDER 
+
+ BEGIN_PROVIDER [double precision, effective_one_e_potential_ecmd_lda, (mo_tot_num,mo_tot_num,N_states)]
+&BEGIN_PROVIDER [double precision, effective_one_e_potential_without_kin_ecmd_lda, (mo_tot_num, mo_tot_num,N_states)]
+ implicit none
+ integer :: i,j,i_state
+ effective_one_e_potential_ecmd_lda = 0.d0
+ BEGIN_DOC
+! effective_one_e_potential(i,j) = <i| h_{core} |j> + <i| v_{ecmd,LDA} |j>
+! Taking the expectation value does not provide any energy but effective_one_e_potential(i,j) is the potential coupling DFT and WFT part to be used in any WFT calculation
+ END_DOC
+ do i_state = 1, N_states
+  do i = 1, mo_tot_num
+   do j = 1, mo_tot_num
+    effective_one_e_potential_ecmd_lda(i,j,i_state) = mo_nucl_elec_integral(i,j) + mo_kinetic_integral(i,j) &
+                                   + 0.5d0 * (potential_deltarho_ecmd_alpha_mo(i,j,i_state) + potential_deltarho_ecmd_beta_mo(i,j,i_state)  &
+                                   + potential_e_c_lda_ecmd_alpha_mo(i,j,i_state) + potential_e_c_lda_ecmd_beta_mo(i,j,i_state)   )
+    effective_one_e_potential_without_kin_ecmd_lda(i,j,i_state) =  mo_nucl_elec_integral(i,j)  &
+                                   + 0.5d0 * (potential_deltarho_ecmd_alpha_mo(i,j,i_state) + potential_deltarho_ecmd_beta_mo(i,j,i_state)  &
+                                   + potential_e_c_lda_ecmd_alpha_mo(i,j,i_state) + potential_e_c_lda_ecmd_beta_mo(i,j,i_state)   ) 
+   enddo
+  enddo
+ enddo
+END_PROVIDER
 
 
 BEGIN_PROVIDER [double precision, Fock_matrix_expectation_value]
