@@ -168,7 +168,7 @@
         accu += two_bod_alpha_beta_mo_transposed(k,l,n,m,istate) * integrals_array(k,l) 
        enddo
       enddo
-      !                                         2 1 2 1           
+      !                                2 1 2 1           
       two_bod_alpha_beta_mo_contracted(n,m,j,i,istate) = accu 
      enddo
     enddo

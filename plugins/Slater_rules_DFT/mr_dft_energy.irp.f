@@ -82,14 +82,14 @@ subroutine print_variational_energy_dft_mu_of_r
    write(*, '(A28,X,F16.10)') 'TOTAL ENERGY CORR NO MD   = ',psi_energy+energy_c_LDA_mu_of_r+nuclear_repulsion
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    print*, ''
-   write(*, '(A28,X,F16.10)') 'Variational energy of Psi = ',psi_energy
+   write(*, '(A28,X,F16.10)') 'Variational energy of Psi = ',psi_energy + nuclear_repulsion
    print*, 'Component of the energy ....'
    write(*, '(A28,X,F16.10)') 'psi_energy_bielec         = ',psi_energy_bielec
-   write(*, '(A28,X,F16.10)') 'psi_energy_monoelec       = ',psi_energy_monoelec
+   write(*, '(A28,X,F16.10)') 'psi_energy_monoelec       = ',psi_kinetic_energy+psi_nuclear_elec_energy
    write(*, '(A28,X,F16.10)') 'psi_kinetic_energy        = ',psi_kinetic_energy
    write(*, '(A28,X,F16.10)') 'psi_nuclear_elec_energy   = ',psi_nuclear_elec_energy
-   print*, ''
    write(*, '(A28,X,F16.10)') 'nuclear_repulsion         = ',nuclear_repulsion
+   print*, ''
    write(*, '(A28,X,F16.10)') 'DFT mu(r)     correlation = ',Energy_c_md_mu_of_r_LDA
    write(*, '(A28,X,F16.10)') 'DFT mu(r) NO MD corr      = ',energy_c_LDA_mu_of_r
    print*, ''
