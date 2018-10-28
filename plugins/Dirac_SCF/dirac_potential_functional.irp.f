@@ -1,11 +1,3 @@
- BEGIN_PROVIDER [integer, N_states]
-  implicit none
-  BEGIN_DOC
-  ! Just to have N_states defined...
-  END_DOC
-  N_states = 1
- END_PROVIDER
- 
  BEGIN_PROVIDER [double precision, dirac_energy_x, (N_states)]
  &BEGIN_PROVIDER [double precision, dirac_energy_c, (N_states)]
  &BEGIN_PROVIDER [double precision, dirac_potential_x_ao,(2*dirac_ao_num,2*dirac_ao_num,N_states)]
@@ -15,38 +7,36 @@
  integer :: m,n,p,q
  double precision, allocatable :: aos_array(:)
  double precision, allocatable :: r(:)
- double precision :: rho_a(N_states),rho_b(N_states),ex(N_states),ec(N_states)
- double precision :: vx_rho_a(N_states),vx_rho_b(N_states),vc_rho_a(N_states),vc_rho_b(N_states)
- double precision, allocatable :: tmp_c_a(:,:,:),tmp_c_b(:,:,:),tmp_x_a(:,:,:),tmp_x_b(:,:,:)
+ double precision :: rho(N_states),ex(N_states),ec(N_states)
+ double precision :: vx_rho(N_states),vc_rho(N_states)
+ double precision, allocatable :: tmp_c(:,:,:),tmp_x(:,:,:)
  double precision :: weight
- double precision :: dvx_rho_a(3,N_states), dvx_rho_b(3,N_states)
- double precision :: dvc_rho_a(3,N_states), dvc_rho_b(3,N_states)
- double precision :: vx_grad_rho_a_2(N_states),vx_grad_rho_b_2(N_states),vx_grad_rho_a_b(N_states)
- double precision :: vc_grad_rho_a_2(N_states),vc_grad_rho_b_2(N_states),vc_grad_rho_a_b(N_states)
- double precision :: grad_rho_a_2(N_states),grad_rho_b_2(N_states),grad_rho_a_b(N_states)
- double precision :: grad_rho_a(3,N_states),grad_rho_b(3,N_states)
- double precision :: grad_aos_array(3,ao_num)
- double precision :: grad_aos_array_transpose(ao_num,3)
- double precision :: dtmp_x_a(3,N_states),dtmp_x_b(3,N_states)
- double precision :: dtmp_c_a(3,N_states),dtmp_c_b(3,N_states)
+ double precision :: dvx_rho(3,N_states)
+ double precision :: dvc_rho(3,N_states)
+ double precision :: vx_grad_rho_2(N_states)
+ double precision :: vc_grad_rho_2(N_states)
+ double precision :: grad_rho_2(N_states)
+ double precision :: grad_rho(3,N_states)
+ double precision :: grad_aos_array(3,dirac_ao_num)
+ double precision :: grad_aos_array_transpose(dirac_ao_num,3)
+ double precision :: dtmp_x(3,N_states)
+ double precision :: dtmp_c(3,N_states)
   dirac_energy_x = 0.d0
   dirac_energy_c = 0.d0
   dirac_potential_c_ao = 0.d0
   dirac_potential_x_ao = 0.d0
   do j = 1, nucl_num
    do k = 1, n_points_radial_grid  -1
-    allocate(tmp_c_a(ao_num,ao_num,N_states),tmp_c_b(ao_num,ao_num,N_states),tmp_x_a(ao_num,ao_num,N_states),tmp_x_b(ao_num,ao_num,N_states),aos_array(ao_num),r(3))
-!   tmp_c_a = 0.d0
-!   tmp_c_b = 0.d0
-!   tmp_x_a = 0.d0
-!   tmp_x_b = 0.d0
-!   do l = 1, n_points_integration_angular 
-!    r(1) = grid_points_per_atom(1,l,k,j)
-!    r(2) = grid_points_per_atom(2,l,k,j)
-!    r(3) = grid_points_per_atom(3,l,k,j)
-!    weight = final_weight_functions_at_grid_points(l,k,j)
-!    if(DIRAC_DFT_TYPE=="LDA")then
-!  !  call dm_dft_alpha_beta_and_all_aos_at_r(r,rho_a,rho_b,aos_array)
+    allocate(tmp_c(2*dirac_ao_num,2*dirac_ao_num,N_states),tmp_x(2*dirac_ao_num,2*dirac_ao_num,N_states),aos_array(dirac_ao_num),r(3))
+    tmp_c = 0.d0
+    tmp_x = 0.d0
+    do l = 1, n_points_integration_angular 
+     r(1) = grid_points_per_atom(1,l,k,j)
+     r(2) = grid_points_per_atom(2,l,k,j)
+     r(3) = grid_points_per_atom(3,l,k,j)
+     weight = final_weight_functions_at_grid_points(l,k,j)
+     if(DIRAC_DFT_TYPE=="LDA")then
+      call dm_dft_and_all_dirac_aos_at_r(r,rho,aos_array)
 !     call LDA_type_dirac_functional(rho_a,rho_b,vx_rho_a,vx_rho_b,vc_rho_a,vc_rho_b,ex,ec)
 !     do istate = 1, N_states
 !      energy_x(istate) += weight *  ex(istate) 
@@ -89,14 +79,14 @@
 !     call update_potentials_scalar_dger(tmp_c_a,tmp_c_b,tmp_x_a,tmp_x_b,vc_rho_a,vc_rho_b,vx_rho_a,vx_rho_b,aos_array)
 !     call dtranspose(grad_aos_array,3,grad_aos_array_transpose,ao_num,3,ao_num)
 !     call update_potentials_gradient_dger(dtmp_x_a,dtmp_x_b,dtmp_c_a,dtmp_c_b,aos_array,grad_aos_array_transpose,tmp_x_a,tmp_x_b,tmp_c_a,tmp_c_b)
-!    endif
-!   enddo ! angular points 
+     endif
+    enddo ! angular points 
 
-    do istate = 1,N_states
-     potential_c_ao(:,:,istate) += tmp_c_a(:,:,istate)
-     potential_x_ao(:,:,istate) += tmp_x_a(:,:,istate)
-    enddo
-    deallocate(tmp_x_a,tmp_x_b,tmp_c_a,tmp_c_b,aos_array,r)
+!   do istate = 1,N_states
+!    potential_c_ao(:,:,istate) += tmp_c_a(:,:,istate)
+!    potential_x_ao(:,:,istate) += tmp_x_a(:,:,istate)
+!   enddo
+    deallocate(tmp_x,tmp_c,aos_array,r)
    enddo
   enddo
  END_PROVIDER 

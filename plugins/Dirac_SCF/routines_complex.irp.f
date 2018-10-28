@@ -125,4 +125,29 @@
   call zgemm('N','N',n,n,n,(1.d0,0.d0),U,size(U,1),S,size(S,1),(0.d0,0.d0),C,size(C,1))
   deallocate (U, Vt, D, S)
  end
+
  
+ subroutine dm_dft_and_all_dirac_aos_at_r(r,dm,aos_array)
+  BEGIN_DOC
+  ! input: r(1) ==> r(1) = x, r(2) = y, r(3) = z
+  ! output : dm = density evaluated at r
+  ! output : aos_array(i) = ao(i) evaluated at r
+  END_DOC
+  implicit none
+  double precision, intent(in) :: r(3)
+  double precision, intent(out) :: dm(N_states)
+  double precision, intent(out) :: aos_array(dirac_ao_num)
+  integer :: istate
+  double precision  :: aos_array_bis(dirac_ao_num),u_dot_v
+  call give_all_dirac_aos_at_r(r,aos_array)
+ !do istate = 1, N_states
+ ! aos_array_bis = aos_array
+ ! ! alpha density
+ ! call dsymv('U',ao_num,1.d0,one_body_dm_alpha_ao_for_dft(1,1,istate),size(one_body_dm_alpha_ao_for_dft,1),aos_array,1,0.d0,aos_array_bis,1)
+ ! dm_a(istate) = u_dot_v(aos_array,aos_array_bis,ao_num)
+ ! ! beta density
+ ! aos_array_bis = aos_array
+ ! call dsymv('U',ao_num,1.d0,one_body_dm_beta_ao_for_dft(1,1,istate),size(one_body_dm_beta_ao_for_dft,1),aos_array,1,0.d0,aos_array_bis,1)
+ ! dm_b(istate) = u_dot_v(aos_array,aos_array_bis,ao_num)
+ !enddo
+ end

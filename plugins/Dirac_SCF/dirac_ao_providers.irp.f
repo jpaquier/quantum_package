@@ -63,6 +63,40 @@
  dirac_ao_prim_num_max = maxval(dirac_ao_prim_num)
  END_PROVIDER
 
+ BEGIN_PROVIDER [ integer, Nucl_N_dirac_Aos, (nucl_num)]
+ &BEGIN_PROVIDER [ integer, N_dirac_AOs_max ]
+ implicit none
+ integer :: i
+ BEGIN_DOC
+ ! Number of dirac_AOs per atom
+ END_DOC
+ Nucl_N_dirac_Aos = 0
+ do i = 1, dirac_ao_num
+  Nucl_N_dirac_Aos(dirac_ao_nucl(i)) +=1
+ enddo
+ N_dirac_AOs_max = maxval(Nucl_N_dirac_Aos)
+ END_PROVIDER
+
+ BEGIN_PROVIDER [ integer, Nucl_dirac_Aos, (nucl_num,N_dirac_AOs_max)]
+ &BEGIN_PROVIDER [ integer, Nucl_dirac_Aos_transposed, (N_dirac_AOs_max,nucl_num)]
+ implicit none
+ BEGIN_DOC
+ ! List of dirac AOs attached on each atom
+ END_DOC
+  integer :: i
+  integer, allocatable :: nucl_tmp(:)
+  allocate(nucl_tmp(nucl_num))
+  nucl_tmp = 0
+  Nucl_dirac_Aos = 0
+  do i = 1, dirac_ao_num
+   nucl_tmp(dirac_ao_nucl(i))+=1
+   Nucl_dirac_Aos(dirac_ao_nucl(i),nucl_tmp(dirac_ao_nucl(i))) = i
+   Nucl_dirac_Aos_transposed(nucl_tmp(dirac_ao_nucl(i)),dirac_ao_nucl(i)) = i
+  enddo
+  deallocate(nucl_tmp)
+ END_PROVIDER
+
+
  BEGIN_PROVIDER [ integer, dirac_mo_tot_num ]
   implicit none
   BEGIN_DOC
