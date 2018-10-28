@@ -1,3 +1,11 @@
+ BEGIN_PROVIDER [integer, N_states]
+  implicit none
+  BEGIN_DOC
+  ! Just to have N_states defined...
+  END_DOC
+  N_states = 1
+ END_PROVIDER
+ 
  BEGIN_PROVIDER [double precision, dirac_energy_x, (N_states)]
  &BEGIN_PROVIDER [double precision, dirac_energy_c, (N_states)]
  &BEGIN_PROVIDER [double precision, dirac_potential_x_ao,(2*dirac_ao_num,2*dirac_ao_num,N_states)]
@@ -5,29 +13,29 @@
  implicit none
  integer :: j,k,l,istate
  integer :: m,n,p,q
-!double precision, allocatable :: aos_array(:)
-!double precision, allocatable :: r(:)
-!double precision :: rho_a(N_states),rho_b(N_states),ex(N_states),ec(N_states)
-!double precision :: vx_rho_a(N_states),vx_rho_b(N_states),vc_rho_a(N_states),vc_rho_b(N_states)
-!double precision, allocatable :: tmp_c_a(:,:,:),tmp_c_b(:,:,:),tmp_x_a(:,:,:),tmp_x_b(:,:,:)
-!double precision :: weight
-!double precision :: dvx_rho_a(3,N_states), dvx_rho_b(3,N_states)
-!double precision :: dvc_rho_a(3,N_states), dvc_rho_b(3,N_states)
-!double precision :: vx_grad_rho_a_2(N_states),vx_grad_rho_b_2(N_states),vx_grad_rho_a_b(N_states)
-!double precision :: vc_grad_rho_a_2(N_states),vc_grad_rho_b_2(N_states),vc_grad_rho_a_b(N_states)
-!double precision :: grad_rho_a_2(N_states),grad_rho_b_2(N_states),grad_rho_a_b(N_states)
-!double precision :: grad_rho_a(3,N_states),grad_rho_b(3,N_states)
-!double precision :: grad_aos_array(3,ao_num)
-!double precision :: grad_aos_array_transpose(ao_num,3)
-!double precision :: dtmp_x_a(3,N_states),dtmp_x_b(3,N_states)
-!double precision :: dtmp_c_a(3,N_states),dtmp_c_b(3,N_states)
+ double precision, allocatable :: aos_array(:)
+ double precision, allocatable :: r(:)
+ double precision :: rho_a(N_states),rho_b(N_states),ex(N_states),ec(N_states)
+ double precision :: vx_rho_a(N_states),vx_rho_b(N_states),vc_rho_a(N_states),vc_rho_b(N_states)
+ double precision, allocatable :: tmp_c_a(:,:,:),tmp_c_b(:,:,:),tmp_x_a(:,:,:),tmp_x_b(:,:,:)
+ double precision :: weight
+ double precision :: dvx_rho_a(3,N_states), dvx_rho_b(3,N_states)
+ double precision :: dvc_rho_a(3,N_states), dvc_rho_b(3,N_states)
+ double precision :: vx_grad_rho_a_2(N_states),vx_grad_rho_b_2(N_states),vx_grad_rho_a_b(N_states)
+ double precision :: vc_grad_rho_a_2(N_states),vc_grad_rho_b_2(N_states),vc_grad_rho_a_b(N_states)
+ double precision :: grad_rho_a_2(N_states),grad_rho_b_2(N_states),grad_rho_a_b(N_states)
+ double precision :: grad_rho_a(3,N_states),grad_rho_b(3,N_states)
+ double precision :: grad_aos_array(3,ao_num)
+ double precision :: grad_aos_array_transpose(ao_num,3)
+ double precision :: dtmp_x_a(3,N_states),dtmp_x_b(3,N_states)
+ double precision :: dtmp_c_a(3,N_states),dtmp_c_b(3,N_states)
   dirac_energy_x = 0.d0
   dirac_energy_c = 0.d0
   dirac_potential_c_ao = 0.d0
   dirac_potential_x_ao = 0.d0
-! do j = 1, nucl_num
-!  do k = 1, n_points_radial_grid  -1
-!   allocate(tmp_c_a(ao_num,ao_num,N_states),tmp_c_b(ao_num,ao_num,N_states),tmp_x_a(ao_num,ao_num,N_states),tmp_x_b(ao_num,ao_num,N_states),aos_array(ao_num),r(3))
+  do j = 1, nucl_num
+   do k = 1, n_points_radial_grid  -1
+    allocate(tmp_c_a(ao_num,ao_num,N_states),tmp_c_b(ao_num,ao_num,N_states),tmp_x_a(ao_num,ao_num,N_states),tmp_x_b(ao_num,ao_num,N_states),aos_array(ao_num),r(3))
 !   tmp_c_a = 0.d0
 !   tmp_c_b = 0.d0
 !   tmp_x_a = 0.d0
@@ -84,15 +92,13 @@
 !    endif
 !   enddo ! angular points 
 
-!   do istate = 1,N_states
-!    potential_c_alpha_ao(:,:,istate) = potential_c_alpha_ao(:,:,istate) + tmp_c_a(:,:,istate)
-!    potential_x_alpha_ao(:,:,istate) = potential_x_alpha_ao(:,:,istate) + tmp_x_a(:,:,istate)
-!    potential_c_beta_ao(:,:,istate)  =  potential_c_beta_ao(:,:,istate) + tmp_c_b(:,:,istate)
-!    potential_x_beta_ao(:,:,istate)  =  potential_x_beta_ao(:,:,istate) + tmp_x_b(:,:,istate)
-!   enddo
-!   deallocate(tmp_x_a,tmp_x_b,tmp_c_a,tmp_c_b,aos_array,r)
-!  enddo
-! enddo
+    do istate = 1,N_states
+     potential_c_ao(:,:,istate) += tmp_c_a(:,:,istate)
+     potential_x_ao(:,:,istate) += tmp_x_a(:,:,istate)
+    enddo
+    deallocate(tmp_x_a,tmp_x_b,tmp_c_a,tmp_c_b,aos_array,r)
+   enddo
+  enddo
  END_PROVIDER 
 
 !subroutine LDA_type_dirac_functional(rho_a,rho_b,vx_a,vx_b,vc_a,vc_b,ex,ec)
@@ -206,16 +212,16 @@
 
 
 
-!BEGIN_PROVIDER [double precision, dirac_ao_potential_xc, (2*dirac_ao_num, *dirac_ao_num)] 
-!implicit none
-!integer :: i,j,k,l
-!dirac_ao_potential_xc = 0.d0
-! do i = 1, 2*dirac_ao_num
-!  do j = 1, 2*dirac_ao_num
-!   dirac_ao_potential_xc(i,j)  =  dirac_potential_c_ao(i,j,1)  + dirac_potential_x_ao(i,j,1)
-!  enddo
-! enddo
-!END_PROVIDER 
+ BEGIN_PROVIDER [double precision, dirac_ao_potential_xc, (2*dirac_ao_num, 2*dirac_ao_num)] 
+ implicit none
+ integer :: i,j,k,l
+ dirac_ao_potential_xc = 0.d0
+  do i = 1, 2*dirac_ao_num
+   do j = 1, 2*dirac_ao_num
+    dirac_ao_potential_xc(i,j)  =  dirac_potential_c_ao(i,j,1)  + dirac_potential_x_ao(i,j,1)
+   enddo
+  enddo
+ END_PROVIDER 
   
  BEGIN_PROVIDER [double precision, dirac_e_exchange_dft]
   implicit none
