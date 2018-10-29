@@ -184,6 +184,46 @@
   enddo
  END_PROVIDER
 
+ BEGIN_PROVIDER [ double precision, dirac_ao_power_ordered_transp_per_nucl, (3,N_AOs_max,nucl_num) ]
+ implicit none
+ integer :: i,j,k,l
+  do i = 1, nucl_num
+   do j = 1,Nucl_N_dirac_Aos(i)
+    k = Nucl_dirac_Aos_transposed(j,i)
+    do l = 1, 3
+     dirac_ao_power_ordered_transp_per_nucl(l,j,i) = dirac_ao_power(k,l)
+    enddo
+   enddo
+  enddo
+ END_PROVIDER
+
+ BEGIN_PROVIDER [double precision, dirac_ao_expo_ordered_transp_per_nucl, (dirac_ao_prim_num_max,N_dirac_AOs_max,nucl_num) ]
+ implicit none
+ integer :: i,j,k,l
+  do i = 1, nucl_num
+   do j = 1,Nucl_N_dirac_Aos(i)
+    k = Nucl_dirac_Aos_transposed(j,i)
+    do l = 1, dirac_ao_prim_num(k)
+     dirac_ao_expo_ordered_transp_per_nucl(l,j,i) = dirac_ao_expo_ordered_transp(l,k)
+    enddo
+   enddo
+  enddo
+ END_PROVIDER 
+
+ BEGIN_PROVIDER [ double precision, dirac_ao_coef_normalized_ordered_transp_per_nucl, (dirac_ao_prim_num_max,N_dirac_AOs_max,nucl_num) ]
+  implicit none
+  integer :: i,j,k,l
+  do i = 1, nucl_num
+   do j = 1,Nucl_N_dirac_Aos(i)
+    k = Nucl_dirac_Aos_transposed(j,i)
+    do l = 1, dirac_ao_prim_num(k)
+     dirac_ao_coef_normalized_ordered_transp_per_nucl(l,j,i) = dirac_ao_coef_normalized_ordered_transp(l,k)
+    enddo
+   enddo
+  enddo
+ END_PROVIDER 
+
+
  BEGIN_PROVIDER [ complex*16, dirac_ao_overlap,(2*dirac_ao_num,2*dirac_ao_num) ]
   implicit none
   BEGIN_DOC
