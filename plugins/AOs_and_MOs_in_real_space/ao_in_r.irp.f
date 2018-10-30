@@ -20,16 +20,16 @@
  implicit none
  integer :: i,j,m
  double precision :: aos_array(ao_num), r(3)
- double precision :: aos_grad_array(ao_num,3)
+ double precision :: aos_grad_array(3,ao_num)
  do i = 1, n_points_final_grid
   r(1) = final_grid_points(1,i)
   r(2) = final_grid_points(2,i)
   r(3) = final_grid_points(3,i)
   call give_all_aos_and_grad_at_r(r,aos_array,aos_grad_array)
-  do j = 1, ao_num
-   do m = 1, 3
-    aos_grad_in_r_array(j,i,m) = aos_grad_array(j,m)
-    aos_grad_in_r_array_transp(i,j,m) = aos_grad_array(j,m)
+  do m = 1, 3
+   do j = 1, ao_num
+    aos_grad_in_r_array(j,i,m) = aos_grad_array(m,j)
+    aos_grad_in_r_array_transp(i,j,m) = aos_grad_array(m,j)
    enddo
   enddo
  enddo

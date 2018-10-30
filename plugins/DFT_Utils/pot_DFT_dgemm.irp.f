@@ -1,48 +1,46 @@
- BEGIN_PROVIDER [double precision, energy_x, (N_states)]
-&BEGIN_PROVIDER [double precision, energy_c, (N_states)]
-&BEGIN_PROVIDER [double precision, potential_x_alpha_ao,(ao_num,ao_num,N_states)]
-&BEGIN_PROVIDER [double precision, potential_x_beta_ao,(ao_num,ao_num,N_states)]
-&BEGIN_PROVIDER [double precision, potential_c_alpha_ao,(ao_num,ao_num,N_states)]
-&BEGIN_PROVIDER [double precision, potential_c_beta_ao,(ao_num,ao_num,N_states)]
+  BEGIN_PROVIDER [double precision, energy_x, (N_states)]
+ &BEGIN_PROVIDER [double precision, energy_c, (N_states)]
+ &BEGIN_PROVIDER [double precision, potential_x_alpha_ao,(ao_num,ao_num,N_states)]
+ &BEGIN_PROVIDER [double precision, potential_x_beta_ao,(ao_num,ao_num,N_states)]
+ &BEGIN_PROVIDER [double precision, potential_c_alpha_ao,(ao_num,ao_num,N_states)]
+ &BEGIN_PROVIDER [double precision, potential_c_beta_ao,(ao_num,ao_num,N_states)]
 
  implicit none
  integer :: j,k
  double precision, allocatable :: tmp_c_a(:,:,:),tmp_c_b(:,:,:),tmp_x_a(:,:,:),tmp_x_b(:,:,:)
- double precision, allocatable :: dtmp_x_a(:,:),dtmp_x_b(:,:)
- double precision, allocatable :: dtmp_c_a(:,:),dtmp_c_b(:,:)
- double precision, allocatable :: ao_matrix(:,:) 
- double precision, allocatable :: ao_matrix_vc_a(:,:,:) 
- double precision, allocatable :: ao_matrix_vx_a(:,:,:) 
- double precision, allocatable :: ao_matrix_vc_b(:,:,:) 
- double precision, allocatable :: ao_matrix_vx_b(:,:,:) 
- double precision, allocatable :: ao_matrix_dvc_a(:,:,:,:) 
- double precision, allocatable :: ao_matrix_dvx_a(:,:,:,:) 
- double precision, allocatable :: ao_matrix_dvc_b(:,:,:,:) 
- double precision, allocatable :: ao_matrix_dvx_b(:,:,:,:) 
- double precision, allocatable :: grad_ao_matrix(:,:,:) 
- double precision, allocatable :: grad_ao_matrix_dvc_a(:,:,:,:) 
- double precision, allocatable :: grad_ao_matrix_dvx_a(:,:,:,:) 
- double precision, allocatable :: grad_ao_matrix_dvc_b(:,:,:,:) 
- double precision, allocatable :: grad_ao_matrix_dvx_b(:,:,:,:) 
+ double precision, allocatable ::  dtmp_x_a(:,:),dtmp_x_b(:,:)
+ double precision, allocatable ::  dtmp_c_a(:,:),dtmp_c_b(:,:)
+ double precision, allocatable ::  ao_matrix(:,:) 
+ double precision, allocatable ::  ao_matrix_vc_a(:,:,:) 
+ double precision, allocatable ::  ao_matrix_vx_a(:,:,:) 
+ double precision, allocatable ::  ao_matrix_vc_b(:,:,:) 
+ double precision, allocatable ::  ao_matrix_vx_b(:,:,:) 
+ double precision, allocatable ::  ao_matrix_dvc_a(:,:,:,:) 
+ double precision, allocatable ::  ao_matrix_dvx_a(:,:,:,:) 
+ double precision, allocatable ::  ao_matrix_dvc_b(:,:,:,:) 
+ double precision, allocatable ::  ao_matrix_dvx_b(:,:,:,:) 
+ double precision, allocatable ::  grad_ao_matrix(:,:,:) 
+ double precision, allocatable ::  grad_ao_matrix_dvc_a(:,:,:,:) 
+ double precision, allocatable ::  grad_ao_matrix_dvx_a(:,:,:,:) 
+ double precision, allocatable ::  grad_ao_matrix_dvc_b(:,:,:,:) 
+ double precision, allocatable ::  grad_ao_matrix_dvx_b(:,:,:,:) 
 
- allocate( dtmp_x_a(3,N_states),dtmp_x_b(3,N_states))
- allocate( dtmp_c_a(3,N_states),dtmp_c_b(3,N_states))
- allocate( ao_matrix(ao_num,n_points_integration_angular)) 
- allocate( ao_matrix_vc_a(ao_num,n_points_integration_angular,N_states)) 
- allocate( ao_matrix_vx_a(ao_num,n_points_integration_angular,N_states)) 
- allocate( ao_matrix_vc_b(ao_num,n_points_integration_angular,N_states)) 
- allocate( ao_matrix_vx_b(ao_num,n_points_integration_angular,N_states)) 
- allocate( ao_matrix_dvc_a(ao_num,n_points_integration_angular,3,N_states)) 
- allocate( ao_matrix_dvx_a(ao_num,n_points_integration_angular,3,N_states)) 
- allocate( ao_matrix_dvc_b(ao_num,n_points_integration_angular,3,N_states)) 
- allocate( ao_matrix_dvx_b(ao_num,n_points_integration_angular,3,N_states)) 
- allocate( grad_ao_matrix(ao_num,n_points_integration_angular,3)) 
- allocate( grad_ao_matrix_dvc_a(ao_num,n_points_integration_angular,3,N_states)) 
- allocate( grad_ao_matrix_dvx_a(ao_num,n_points_integration_angular,3,N_states)) 
- allocate( grad_ao_matrix_dvc_b(ao_num,n_points_integration_angular,3,N_states)) 
- allocate( grad_ao_matrix_dvx_b(ao_num,n_points_integration_angular,3,N_states)) 
-
-
+ allocate(   dtmp_x_a(3,N_states) ,dtmp_x_b(3,N_states) )
+ allocate(   dtmp_c_a(3,N_states) ,dtmp_c_b(3,N_states) )
+ allocate(   ao_matrix(ao_num,n_points_integration_angular) ) 
+ allocate(   ao_matrix_vc_a(ao_num,n_points_integration_angular,N_states) ) 
+ allocate(   ao_matrix_vx_a(ao_num,n_points_integration_angular,N_states) ) 
+ allocate(   ao_matrix_vc_b(ao_num,n_points_integration_angular,N_states) ) 
+ allocate(   ao_matrix_vx_b(ao_num,n_points_integration_angular,N_states) ) 
+ allocate(   ao_matrix_dvc_a(ao_num,n_points_integration_angular,3,N_states) ) 
+ allocate(   ao_matrix_dvx_a(ao_num,n_points_integration_angular,3,N_states) ) 
+ allocate(   ao_matrix_dvc_b(ao_num,n_points_integration_angular,3,N_states) ) 
+ allocate(   ao_matrix_dvx_b(ao_num,n_points_integration_angular,3,N_states) ) 
+ allocate(   grad_ao_matrix(ao_num,n_points_integration_angular,3) ) 
+ allocate(   grad_ao_matrix_dvc_a(ao_num,n_points_integration_angular,3,N_states) ) 
+ allocate(   grad_ao_matrix_dvx_a(ao_num,n_points_integration_angular,3,N_states) ) 
+ allocate(   grad_ao_matrix_dvc_b(ao_num,n_points_integration_angular,3,N_states) ) 
+ allocate(   grad_ao_matrix_dvx_b(ao_num,n_points_integration_angular,3,N_states) ) 
   energy_x = 0.d0
   energy_c = 0.d0
   potential_c_alpha_ao = 0.d0
@@ -50,10 +48,10 @@
   potential_c_beta_ao = 0.d0
   potential_x_beta_ao = 0.d0
 
-! provide one_body_dm_beta_mo_for_dft
-! double precision :: r(3),rho_a,rho_b
-! r = 0.d0
-! call dm_dft_alpha_beta_at_r(r,rho_a,rho_b)
+  provide one_body_dm_beta_mo_for_dft
+  double precision :: r(3),rho_a,rho_b
+  r = 0.d0
+  call dm_dft_alpha_beta_at_r(r,rho_a,rho_b)
   do j = 1, nucl_num
    do k = 1, n_points_radial_grid  -1
     allocate(tmp_c_a(ao_num,ao_num,N_states),tmp_c_b(ao_num,ao_num,N_states),tmp_x_a(ao_num,ao_num,N_states),tmp_x_b(ao_num,ao_num,N_states))
@@ -75,7 +73,7 @@
    enddo
   enddo
 
-END_PROVIDER 
+ END_PROVIDER 
 
 
  subroutine create_matrix_for_LDA_potential_update_energy(k_radial,j_nucl,ao_matrix,ao_matrix_vc_a,ao_matrix_vc_b,ao_matrix_vx_a,ao_matrix_vx_b,ex_tot,ec_tot)
@@ -94,7 +92,7 @@ END_PROVIDER
    r(2) = grid_points_per_atom(2,l_angular,k_radial,j_nucl)
    r(3) = grid_points_per_atom(3,l_angular,k_radial,j_nucl)
    weight = final_weight_functions_at_grid_points(l_angular,k_radial,j_nucl)
-!  call dm_dft_alpha_beta_and_all_aos_at_r(r,rho_a,rho_b,aos_array)
+ ! call dm_dft_alpha_beta_and_all_aos_at_r(r,rho_a,rho_b,aos_array)
    call give_all_aos_at_r(r,aos_array)
    rho_a(:) = one_body_dm_mo_alpha_at_grid_points(l_angular,k_radial,j_nucl,:)
    rho_b(:) = one_body_dm_mo_beta_at_grid_points(l_angular,k_radial,j_nucl,:)
@@ -141,29 +139,17 @@ END_PROVIDER
   double precision, intent(inout) :: grad_ao_matrix_dvx_a(ao_num,n_points_integration_angular,3,N_states)
   double precision, intent(inout) :: grad_ao_matrix_dvx_b(ao_num,n_points_integration_angular,3,N_states)
  
-  double precision, allocatable :: r(:)
-  double precision, allocatable :: weight
-  double precision, allocatable :: aos_array(:)
-  double precision, allocatable :: ex(:), ec(:)
-  double precision, allocatable :: rho_a(:), rho_b(:)
-  double precision, allocatable :: grad_rho_a(:,:),grad_rho_b(:,:)
-  double precision, allocatable :: grad_rho_a_2(:),grad_rho_b_2(:),grad_rho_a_b(:)
-  double precision, allocatable :: grad_aos_array(:,:),grad_aos_array_transpose(:,:)
-  double precision, allocatable :: vc_rho_a(:), vc_rho_b(:), vx_rho_a(:), vx_rho_b(:)
-  double precision, allocatable :: vx_grad_rho_a_2(:), vx_grad_rho_b_2(:), vx_grad_rho_a_b(:), vc_grad_rho_a_2(:), vc_grad_rho_b_2(:), vc_grad_rho_a_b(:)
-  double precision, allocatable :: contrib_grad_xa(:,:), contrib_grad_xb(:,:), contrib_grad_ca(:,:), contrib_grad_cb(:,:)
-
-  allocate ( r(3))
-  allocate ( aos_array(ao_num))
-  allocate ( ex(N_states), ec(N_states))
-  allocate ( rho_a(N_states), rho_b(N_states))
-  allocate ( grad_rho_a(3,N_states),grad_rho_b(3,N_states))
-  allocate ( grad_rho_a_2(N_states),grad_rho_b_2(N_states),grad_rho_a_b(N_states))
-  allocate ( grad_aos_array(3,ao_num),grad_aos_array_transpose(ao_num,3))
-  allocate ( vc_rho_a(N_states), vc_rho_b(N_states), vx_rho_a(N_states), vx_rho_b(N_states))
-  allocate ( vx_grad_rho_a_2(N_states), vx_grad_rho_b_2(N_states), vx_grad_rho_a_b(N_states), vc_grad_rho_a_2(N_states), vc_grad_rho_b_2(N_states), vc_grad_rho_a_b(N_states))
-  allocate ( contrib_grad_xa(3,N_states), contrib_grad_xb(3,N_states), contrib_grad_ca(3,N_states), contrib_grad_cb(3,N_states))
-
+  double precision :: r(3)
+  double precision :: weight
+  double precision :: aos_array(ao_num)
+  double precision :: ex(N_states), ec(N_states)
+  double precision :: rho_a(N_states), rho_b(N_states)
+  double precision :: grad_rho_a(3,N_states),grad_rho_b(3,N_states)
+  double precision :: grad_rho_a_2(N_states),grad_rho_b_2(N_states),grad_rho_a_b(N_states)
+  double precision :: grad_aos_array(3,ao_num),grad_aos_array_transpose(ao_num,3)
+  double precision :: vc_rho_a(N_states), vc_rho_b(N_states), vx_rho_a(N_states), vx_rho_b(N_states)
+  double precision :: vx_grad_rho_a_2(N_states), vx_grad_rho_b_2(N_states), vx_grad_rho_a_b(N_states), vc_grad_rho_a_2(N_states), vc_grad_rho_b_2(N_states), vc_grad_rho_a_b(N_states)
+  double precision :: contrib_grad_xa(3,N_states), contrib_grad_xb(3,N_states), contrib_grad_ca(3,N_states), contrib_grad_cb(3,N_states)
   integer :: i,istate,m,l_angular
  
   do l_angular = 1, n_points_integration_angular 
@@ -171,7 +157,6 @@ END_PROVIDER
    r(2) = grid_points_per_atom(2,l_angular,k_radial,j_nucl)
    r(3) = grid_points_per_atom(3,l_angular,k_radial,j_nucl)
 
-!  call density_and_grad_alpha_beta_and_all_aos_and_grad_aos_at_r(r,rho_a,rho_b, grad_rho_a, grad_rho_b, aos_array, grad_aos_array)
    rho_a(:) = one_body_dm_mo_alpha_and_grad_at_grid_points(4,l_angular,k_radial,j_nucl,:)
    rho_b(:) = one_body_dm_mo_beta_and_grad_at_grid_points(4,l_angular,k_radial,j_nucl,:)
    grad_rho_a(1:3,:) =  one_body_dm_mo_alpha_and_grad_at_grid_points(1:3,l_angular,k_radial,j_nucl,:)
@@ -188,6 +173,7 @@ END_PROVIDER
      grad_rho_a_b(istate) += grad_rho_a(m,istate) * grad_rho_b(m,istate)
     enddo
    enddo
+!  write(34,'(100(F16.10,X))')grad_rho_a(1:3,1),grad_rho_b(1:3,1),grad_rho_a_2(1),grad_rho_b_2(1),grad_rho_a_b(1)
   !if(isnan(rho_a(1)))then
   ! print*,'NAN ALPHA !!' 
   !endif

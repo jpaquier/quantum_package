@@ -62,7 +62,8 @@ subroutine dm_dft_alpha_beta_and_all_aos_at_r(r,dm_a,dm_b,aos_array)
 end
 
 
-subroutine density_and_grad_alpha_beta_and_all_aos_and_grad_aos_at_r(r,dm_a,dm_b, grad_dm_a, grad_dm_b, aos_array, grad_aos_array)
+
+ subroutine density_and_grad_alpha_beta_and_all_aos_and_grad_aos_at_r(r,dm_a,dm_b, grad_dm_a, grad_dm_b, aos_array, grad_aos_array)
  implicit none
  BEGIN_DOC
 ! input      : r(1) ==> r(1) = x, r(2) = y, r(3) = z
@@ -85,7 +86,7 @@ subroutine density_and_grad_alpha_beta_and_all_aos_and_grad_aos_at_r(r,dm_a,dm_b
  call give_all_aos_and_grad_at_r(r,aos_array,grad_aos_array)
  do i = 1, ao_num
   do j = 1, 3
-   aos_grad_array(i,j) = grad_aos_array(j,i)
+   aos_grad_array(i,j) =  grad_aos_array(j,i) 
   enddo
  enddo
  
@@ -94,7 +95,7 @@ subroutine density_and_grad_alpha_beta_and_all_aos_and_grad_aos_at_r(r,dm_a,dm_b
  ! aos_array_bis = aos_array
    ! alpha density
    ! aos_array_bis = \rho_ao * aos_array
-   call dsymv('U',ao_num,1.d0,one_body_dm_alpha_ao_for_dft(1,1,istate),size(one_body_dm_beta_ao_for_dft,1),aos_array,1,0.d0,aos_array_bis,1)
+   call dsymv('U',ao_num,1.d0,one_body_dm_alpha_ao_for_dft(1,1,istate),size(one_body_dm_alpha_ao_for_dft,1),aos_array,1,0.d0,aos_array_bis,1)
    dm_a(istate) = u_dot_v(aos_array,aos_array_bis,ao_num)
    
    ! grad_dm(1) = \sum_i aos_grad_array(i,1) * aos_array_bis(i)
@@ -126,8 +127,10 @@ subroutine density_and_grad_alpha_beta_and_all_aos_and_grad_aos_at_r(r,dm_a,dm_b
  ! grad_dm_b(2,istate)+= u_dot_v(aos_array(1),aos_grad_array_bis,ao_num)
  ! grad_dm_b(3,istate)+= u_dot_v(aos_array(1),aos_grad_array_bis,ao_num)
  enddo
+!write(35,'(100(F16.10,X))')r(:),grad_dm_a(:,1)
+
   
-end
+ end
 
  BEGIN_PROVIDER [double precision, one_body_dm_mo_alpha_at_grid_points, (n_points_integration_angular,n_points_radial_grid,nucl_num,N_states) ]
 &BEGIN_PROVIDER [double precision, one_body_dm_mo_beta_at_grid_points, (n_points_integration_angular,n_points_radial_grid,nucl_num,N_states) ]
