@@ -1,6 +1,6 @@
 ! DO NOT MODIFY BY HAND
 ! Created by $QP_ROOT/scripts/ezfio_interface/ei_handler.py
-! from file /home/akhron/quantum_package/src/Dirac_SCF/EZFIO.cfg
+! from file /nas/home_lct/jpaquier/programs/quantum_package_master/src/Dirac_SCF/EZFIO.cfg
 
 
 BEGIN_PROVIDER [ character*(32), dirac_correlation_functional  ]

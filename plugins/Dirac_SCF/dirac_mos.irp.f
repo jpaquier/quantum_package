@@ -42,6 +42,73 @@
 ! enddo
 !END_PROVIDER
 
+ BEGIN_PROVIDER [ double precision, dirac_mo_coef_re ,(two_dirac_ao_num,two_dirac_mo_tot_num) ]
+  implicit none
+  BEGIN_DOC
+  ! Real part of the coefficient of the ith ao on the jth mo
+  END_DOC
+  logical                        :: has
+  PROVIDE ezfio_filename
+  if (mpi_master) then
+    if (size(dirac_mo_coef_re) == 0) return
+    call ezfio_has_dirac_scf_dirac_mo_coef_re(has)
+    if (has) then
+     call ezfio_get_dirac_scf_dirac_mo_coef_re(dirac_mo_coef_re)
+    else
+    !dirac_mo_coef_re = 0
+    !call ezfio_set_dirac_scf_dirac_mo_coef_re(dirac_mo_coef_re)    
+    ! print *, 'dirac_scf/dirac_mo_coef_re not found in EZFIO file'
+    ! stop 1
+    endif
+  endif
+  IRP_IF MPI
+    include 'mpif.h'
+    integer :: ierr
+    call MPI_BCAST( dirac_mo_coef_re, (two_dirac_ao_num)*(two_dirac_mo_tot_num), MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
+    if (ierr /= MPI_SUCCESS) then
+      stop 'Unable to read dirac_mo_coef_re with MPI'
+    endif
+  IRP_ENDIF
+  call write_time(6)
+  if (mpi_master) then
+    write(6, *) 'Read  dirac_mo_coef_re'
+  endif
+ END_PROVIDER
+
+ BEGIN_PROVIDER [ double precision, dirac_mo_coef_im ,(two_dirac_ao_num,two_dirac_mo_tot_num) ]
+  implicit none
+  BEGIN_DOC
+  ! Imaginary part of the coefficient of the ith ao on the jth mo
+  END_DOC
+  logical                        :: has
+  PROVIDE ezfio_filename
+  if (mpi_master) then
+    if (size(dirac_mo_coef_im) == 0) return
+
+    call ezfio_has_dirac_scf_dirac_mo_coef_im(has)
+    if (has) then
+      call ezfio_get_dirac_scf_dirac_mo_coef_im(dirac_mo_coef_im)
+    else
+    !dirac_mo_coef_im = 0
+    !call ezfio_set_dirac_scf_dirac_mo_coef_im(dirac_mo_coef_im)      
+    !print *, 'dirac_scf/dirac_mo_coef_im not found in EZFIO file'
+    !stop 1
+    endif
+  endif
+  IRP_IF MPI
+    include 'mpif.h'
+    integer :: ierr
+    call MPI_BCAST( dirac_mo_coef_im, (two_dirac_ao_num)*(two_dirac_mo_tot_num),MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
+    if (ierr /= MPI_SUCCESS) then
+      stop 'Unable to read dirac_mo_coef_im with MPI'
+    endif
+  IRP_ENDIF
+  call write_time(6)
+  if (mpi_master) then
+    write(6, *) 'Read  dirac_mo_coef_im'
+  endif
+ END_PROVIDER
+
 
  BEGIN_PROVIDER [ complex*16, dirac_mo_coef, (2*dirac_ao_num,2*dirac_mo_tot_num) ]
   implicit none
@@ -52,29 +119,41 @@
   END_DOC
   integer                        :: i,i_minus,j,j_minus
   double precision, allocatable  :: buffer(:,:)
-  logical                        :: exists
+  logical                        :: exists_Re,exists_Im
   PROVIDE ezfio_filename 
   if (mpi_master) then
     ! Coefs
-    call ezfio_has_dirac_scf_dirac_mo_coef(exists)
+    call ezfio_has_dirac_scf_dirac_mo_coef_Re(exists_Re)
+    call ezfio_has_dirac_scf_dirac_mo_coef_Im(exists_Im)
   endif
   IRP_IF MPI
     include 'mpif.h'
     integer :: ierr
-    call MPI_BCAST(exists, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
+    call MPI_BCAST(exists_Re, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
     if (ierr /= MPI_SUCCESS) then
-      stop 'Unable to read dirac_mo_coef with MPI'
+      stop 'Unable to read dirac_mo_coef_Re with MPI'
+    endif
+    call MPI_BCAST(exists_Im, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
+    if (ierr /= MPI_SUCCESS) then
+      stop 'Unable to read dirac_mo_coef_Im with MPI'
     endif
   IRP_ENDIF
-  if (exists) then
+  if (exists_Re .and. exists_Im)  then
     if (mpi_master) then
-      call ezfio_get_dirac_scf_dirac_mo_coef(dirac_mo_coef)
-      write(*,*) 'Read  dirac_mo_coef'
+      call ezfio_get_dirac_scf_dirac_mo_coef_Re(dirac_mo_coef_Re)
+     !write(*,*) 'Read  dirac_mo_coef_Re'
+      call ezfio_get_dirac_scf_dirac_mo_coef_Im(dirac_mo_coef_Im)
+     !write(*,*) 'Read  dirac_mo_coef_Im'
+      dirac_mo_coef = (1,0)*dirac_mo_coef_Re  + (0,1)*dirac_mo_coef_Im
     endif
     IRP_IF MPI
-      call MPI_BCAST( dirac_mo_coef, 2*dirac_mo_tot_num*2*dirac_ao_num, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
+      call MPI_BCAST( dirac_mo_coef_Re, 2*dirac_mo_tot_num*2*dirac_ao_num, MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
       if (ierr /= MPI_SUCCESS) then
-        stop 'Unable to read dirac_mo_coef with MPI'
+        stop 'Unable to read dirac_mo_coef_Re with MPI'
+      endif
+      call MPI_BCAST( dirac_mo_coef_Im, 2*dirac_mo_tot_num*2*dirac_ao_num,MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
+      if (ierr /= MPI_SUCCESS) then
+        stop 'Unable to read dirac_mo_coef_Im with MPI'
       endif
     IRP_ENDIF
   else
