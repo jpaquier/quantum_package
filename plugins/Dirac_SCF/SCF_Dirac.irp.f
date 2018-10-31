@@ -5,7 +5,7 @@
   END_DOC
   call check_range_separation
   call print_dirac_mo_coef
-  call test_dirac_end
+ !call test_dirac_end
  end
 
  subroutine check_range_separation
@@ -17,7 +17,7 @@
   if (dirac_range_separation == "Full_range") then
    print *, 'DHF calculation'
    call create_dirac_guess
-   call test_dirac
+ ! call test_dirac
    call run_dirac
   elseif (dirac_range_separation == "Long_range") then
    print *, '          '
@@ -87,8 +87,8 @@
   integer   :: i,j
   complex*16 :: ortho(2*dirac_ao_num)
   ortho = (0.d0,0.d0)
-  do j= 2*dirac_ao_num-3, 2*dirac_ao_num
-   do i= 1,4
+  do j= 2*small_ao_num+2, 2*small_ao_num+2
+   do i= 1, 2*dirac_ao_num
    !print*, i, j, dirac_mo_coef_guess(i,j)
     print*,i,j,dirac_mo_coef(i,j)
    !print*,i,j,dirac_mo_coef_S(i,j) 
@@ -176,8 +176,8 @@
   integer   :: i,j
   complex*16 :: ortho(2*dirac_ao_num)
   ortho = (0.d0,0.d0)
-  do j= 2*dirac_ao_num-3, 2*dirac_ao_num
-   do i= 1,4
+  do j= 2*small_ao_num+2, 2*small_ao_num+2
+   do i= 1,2*dirac_ao_num
    !print*, i, j, dirac_mo_coef_guess(i,j)
     print*,i,j,dirac_mo_coef(i,j)
    !print*,i,j,dirac_mo_coef_S(i,j) 

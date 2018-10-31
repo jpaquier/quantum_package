@@ -23,8 +23,12 @@ program Dirac_SCF
  !print*,'dirac_ao_bi_elec_Gaunt_erf_integral =', dirac_ao_bi_elec_Gaunt_erf_integral(i,i)  
  !print*,'**************************'
   do i = 1, 2*dirac_ao_num
-   print*, j, i, dirac_mo_coef(i,j)
+   print*, i, j, dirac_mo_coef(i,j)
   enddo
+ enddo
+ 
+ do i =1, 2*dirac_ao_num
+  print*, i, eigenvalues_dirac_mono_elec_mo(i)
  enddo
  
 !print*,'************'
