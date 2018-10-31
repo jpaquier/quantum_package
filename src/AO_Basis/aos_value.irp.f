@@ -128,7 +128,7 @@ subroutine give_all_aos_and_grad_at_r(r,aos_array,aos_grad_array)
  END_DOC
  double precision, intent(in) :: r(3)
  double precision, intent(out) :: aos_array(ao_num)
- double precision, intent(out) :: aos_grad_array(ao_num,3)
+ double precision, intent(out) :: aos_grad_array(3,ao_num)
  
  integer :: power_ao(3) 
  integer :: i,j,k,l,m
@@ -146,9 +146,9 @@ subroutine give_all_aos_and_grad_at_r(r,aos_array,aos_grad_array)
   do j = 1,Nucl_N_Aos(i) 
    k = Nucl_Aos_transposed(j,i) ! index of the ao in the ordered format 
    aos_array(k) = 0.d0
-   aos_grad_array(k,1) = 0.d0
-   aos_grad_array(k,2) = 0.d0
-   aos_grad_array(k,3) = 0.d0
+   aos_grad_array(1,k) = 0.d0
+   aos_grad_array(2,k) = 0.d0
+   aos_grad_array(3,k) = 0.d0
    power_ao(1:3)= ao_power_ordered_transp_per_nucl(1:3,j,i)
    dx2 = dx**power_ao(1)
    dy2 = dy**power_ao(2)
@@ -177,9 +177,9 @@ subroutine give_all_aos_and_grad_at_r(r,aos_array,aos_grad_array)
     accu_2 += contrib * beta
    enddo
    aos_array(k) = accu_1 * dx2 * dy2 * dz2
-   aos_grad_array(k,1) = accu_1 * dx1  * dy2 * dz2- 2.d0 * dx2 * dx  * dy2 * dz2 * accu_2
-   aos_grad_array(k,2) = accu_1 * dx2  * dy1 * dz2- 2.d0 * dx2 * dy2 * dy  * dz2 * accu_2
-   aos_grad_array(k,3) = accu_1 * dx2  * dy2 * dz1- 2.d0 * dx2 * dy2 * dz2 * dz  * accu_2
+   aos_grad_array(1,k) = accu_1 * dx1  * dy2 * dz2- 2.d0 * dx2 * dx  * dy2 * dz2 * accu_2
+   aos_grad_array(2,k) = accu_1 * dx2  * dy1 * dz2- 2.d0 * dx2 * dy2 * dy  * dz2 * accu_2
+   aos_grad_array(3,k) = accu_1 * dx2  * dy2 * dz1- 2.d0 * dx2 * dy2 * dz2 * dz  * accu_2
   !if(isnan(aos_grad_array(1,k)))then
   ! print*, k
   ! print*, power_ao

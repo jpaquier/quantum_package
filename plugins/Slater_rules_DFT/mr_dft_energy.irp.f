@@ -41,7 +41,7 @@ END_PROVIDER
  
   write(*, '(A28,X,F16.10)') 'Variational energy of Psi = ',psi_energy
   write(*, '(A28,X,F16.10)') 'psi_energy_bielec         = ',psi_energy_bielec
-  write(*, '(A28,X,F16.10)') 'psi_energy_monoelec       = ',psi_energy_monoelec
+  write(*, '(A28,X,F16.10)') 'psi_energy_monoelec       = ',psi_kinetic_energy+psi_nuclear_elec_energy
 ! write(*, '(A28,X,F16.10)') 'corrected Multi-det correl= ',Energy_c_md_on_top(1)
  end
 

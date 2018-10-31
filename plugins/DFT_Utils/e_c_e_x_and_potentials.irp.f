@@ -223,6 +223,7 @@ subroutine GGA_type_functionals(r,rho_a,rho_b,grad_rho_a_2,grad_rho_b_2,grad_rho
    stop
   endif
  enddo
+!write(34,'(100(F16.10,X))')r(1),r(2),r(3), rho_a(1),rho_b(1),grad_rho_a_2(1),grad_rho_b_2(1),grad_rho_a_b(1) ,  ec(1),ex(1)
 end
 
 subroutine update_potentials_scalar_dger(vc_a_array,vc_b_array,vx_a_array,vx_b_array,vc_a,vc_b,vx_a,vx_b,aos_array)
@@ -465,7 +466,7 @@ END_PROVIDER
    enddo
    distance = grid_points_per_atom(1,1,k,j)**2 + grid_points_per_atom(2,1,k,j)**2 + grid_points_per_atom(3,1,k,j)**2
    distance = dsqrt(distance)
-    write(33,*)distance, spherical_average,spherical_average_density
+!   write(33,*)distance, spherical_average,spherical_average_density
   enddo
  enddo
  mu_average = mu_average / dble(elec_alpha_num + elec_beta_num)

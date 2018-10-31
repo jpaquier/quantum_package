@@ -62,9 +62,9 @@ BEGIN_PROVIDER [ double precision, HF_density_matrix_ao, (ao_num,ao_num) ]
      HF_density_matrix_ao = HF_density_matrix_ao_alpha + HF_density_matrix_ao_beta
    endif
    integer :: i
-   do i = 1, ao_num
-    write(33,'(1000(F16.10,X))') HF_density_matrix_ao(i,:)
-   enddo
+  !do i = 1, ao_num
+  ! write(33,'(1000(F16.10,X))') HF_density_matrix_ao(i,:)
+  !enddo
    
 END_PROVIDER
  

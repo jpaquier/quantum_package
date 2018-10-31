@@ -19,7 +19,7 @@ subroutine test_grad_lapl_ao
  double precision :: grad_aos_array(ao_num,3),grad_aos_array_bis(ao_num,3)
  double precision :: aos_array(ao_num),aos_array_plus(ao_num),aos_array_minus(ao_num)
  double precision :: lapl_aos_array(ao_num,3),lapl_aos_array_bis(ao_num,3) 
- double precision :: grad_aos_array_plus(ao_num,3),grad_aos_array_minus(ao_num,3) 
+ double precision :: grad_aos_array_plus(3,ao_num),grad_aos_array_minus(3,ao_num) 
  double precision :: dr
 print*,'dr,error grad, error lapl'
  do n = 1, 16
@@ -47,7 +47,7 @@ print*,'dr,error grad, error lapl'
         grad_aos_array_bis(i,m) = (aos_array_plus(i) - aos_array_minus(i)) /(2.d0 * dr)
         accu(m) += dabs(grad_aos_array_bis(i,m) - grad_aos_array(i,m)) * final_weight_functions_at_grid_points(l,k,j)
 
-        lapl_aos_array_bis(i,m) = (grad_aos_array_plus(i,m) - grad_aos_array_minus(i,m))/(2.d0 * dr)
+        lapl_aos_array_bis(i,m) = (grad_aos_array_plus(m,i) - grad_aos_array_minus(m,i))/(2.d0 * dr)
         accu_2(m) += dabs(lapl_aos_array_bis(i,m) - lapl_aos_array(i,m)) *final_weight_functions_at_grid_points(l,k,j)
       enddo
      enddo
@@ -66,7 +66,7 @@ subroutine test_grad_lapl_mo
  double precision :: grad_mos_array_bis(ao_num,3)
  double precision :: mos_array_plus(ao_num),mos_array_minus(ao_num)
  double precision :: lapl_mos_array_bis(mo_tot_num,3)
- double precision :: grad_mos_array_plus(mo_tot_num,3),grad_mos_array_minus(mo_tot_num,3)
+ double precision :: grad_mos_array_plus(3,mo_tot_num),grad_mos_array_minus(3,mo_tot_num)
  double precision :: dr
  print*,'\\\\\\\\\\\\\\\\\'
  print*,' '
@@ -92,7 +92,7 @@ subroutine test_grad_lapl_mo
      grad_mos_array_bis(j,m) = (mos_array_plus(j) - mos_array_minus(j))/(2.d0 * dr)
      accu(m) += dabs(grad_mos_array_bis(j,m) - mos_grad_in_r_array(j,i,m)) * final_weight_functions_at_final_grid_points(i)
 
-     lapl_mos_array_bis(j,m) = (grad_mos_array_plus(j,m) - grad_mos_array_minus(j,m))/(2.d0 * dr)
+     lapl_mos_array_bis(j,m) = (grad_mos_array_plus(m,j) - grad_mos_array_minus(m,j))/(2.d0 * dr)
      accu_2(m) += dabs(lapl_mos_array_bis(j,m) - mos_lapl_in_r_array(j,i,m)) * final_weight_functions_at_final_grid_points(i)
     enddo
    enddo
