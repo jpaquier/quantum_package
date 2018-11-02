@@ -18,6 +18,7 @@
    enddo
   enddo
   call write_time(6)
+  call write_double(6, mu_erf, 'mu_erf')
   write(6,'(A4,1X,A16, 1X, A16, 1X, A16, 1X, A4 )')  &
     '====','================','================','================', '===='
   write(6,'(A4,1X,A16, 1X, A16, 1X, A16, 1X, A4 )')  &

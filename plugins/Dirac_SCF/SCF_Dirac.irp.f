@@ -90,7 +90,7 @@
   do j= 2*small_ao_num+2, 2*small_ao_num+2
    do i= 1, 2*dirac_ao_num
    !print*, i, j, dirac_mo_coef_guess(i,j)
-    print*,i,j,dirac_mo_coef(i,j)
+   !print*,i,j,dirac_mo_coef(i,j)
    !print*,i,j,dirac_mo_coef_S(i,j) 
    !print*,i,j,dirac_mo_overlap(i,j) 
    !print*,i,j,dirac_mo_overlap_bis(i,j) 

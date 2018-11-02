@@ -4,14 +4,11 @@ program Dirac_SCF
   !Print whatever tests one may deem useful or remotely interesting 
   END_DOC
   integer :: i,j,k,l,l_type,n,g,h,df_L
-  double precision :: integral, ao_bielec_integral, dirac_ao_bielec_integral,eigenvalues(2),ao_bielec_integral_erf,dirac_ao_bielec_integral_erf
   complex*16       :: ortho(2*dirac_ao_num),testm(2,2), eigenvectors(2,2)
   include 'Utils/constants.include.F'
 
-!mu_erf = 1
- print*,'************'
  do j = 1, 2*dirac_ao_num
-  print*,'********************************'
+! print*,'********************************'
  !print*,'integral =',  ao_bielec_integral(1,1,1,1)
  !print*,'dirac_integral =',  dirac_ao_bielec_integral(i,i,i,i)
  !print*,'dirac_ao_bi_elec_integral =', dirac_ao_bi_elec_integral(i,i)
@@ -23,12 +20,12 @@ program Dirac_SCF
  !print*,'dirac_ao_bi_elec_Gaunt_erf_integral =', dirac_ao_bi_elec_Gaunt_erf_integral(i,i)  
  !print*,'**************************'
   do i = 1, 2*dirac_ao_num
-   print*, i, j, dirac_mo_coef(i,j)
+!  print*, i, j, dirac_mo_coef(i,j)
   enddo
  enddo
  
  do i =1, 2*dirac_ao_num
-  print*, i, eigenvalues_dirac_mono_elec_mo(i)
+ !print*, i, eigenvalues_dirac_mono_elec_mo(i)
  enddo
  
 !print*,'************'
