@@ -12,31 +12,15 @@ program print_ecmd_energy
  call pouet 
 end
 
+
 subroutine pouet
  implicit none
- integer :: i,j,k,l,m
- double precision:: r(3)
-  write(*, '(A22,X,F16.10)') 'energy_x            = ',energy_x
-  write(*, '(A22,X,F16.10)') 'energy_c            = ',energy_c
 
-  do j = 1,nucl_num
-   do k = 1, n_points_radial_grid -1
-    do l = 1 , n_points_integration_angular
-     r(1) = grid_points_per_atom(1,l,k,j)
-     r(2) = grid_points_per_atom(2,l,k,j)
-     r(3) = grid_points_per_atom(3,l,k,j)
-
-!    write(34,'(100(F16.10,X))')r(:),one_body_dm_mo_alpha_and_grad_at_grid_points(:,l,k,j,1)
-    enddo
-   enddo
-  enddo
-!do i = 1, mo_tot_num
-! write(33,'(1000(F16.10,X))')  one_body_dm_alpha_mo_for_dft(i,:,1)
-!enddo
+ write(*, '(A28,X,F16.10)') 'on_top Multi-det correl   = ',Energy_c_md_on_top(1)
+!write(*, '(A22,X,F16.10)') 'EC_MD_ON_TOP_PBE_cor= ',Energy_c_md_on_top_PBE_mu_corrected_UEG(1)+psi_energy+nuclear_repulsion
+!write(*, '(A28,X,F16.10)') 'on_top_PBE_cor MD correl  = ',Energy_c_md_on_top_PBE_mu_corrected_UEG(1)
 
 end
-
-
 
 subroutine ecmd_energy_printer
  implicit none
