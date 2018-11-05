@@ -22,7 +22,8 @@ program pouet
 !call test_integratio_mo
 !call test_naive_grid
 !call test_one_dm_mo_new
- call test_data_dm
+!call test_data_dm
+ call test_new_pot
 end
 
 subroutine test
@@ -497,6 +498,39 @@ subroutine test_naive_grid
 ! enddo
 !enddo
 
+
+
+end
+
+subroutine test_new_pot
+ implicit none
+ integer :: i,j,istate
+ double precision :: accu_ca,accu_cb,accu_xa,accu_xb
+ do istate =1 , N_states
+  accu_ca = 0.d0
+  accu_xa = 0.d0
+  accu_cb = 0.d0
+  accu_xb = 0.d0
+  do i = 1, ao_num
+   do j = 1, ao_num 
+    accu_ca += dabs( potential_c_alpha_ao_LDA(j,i,istate) - potential_c_alpha_ao(j,i,istate) ) 
+    accu_cb += dabs( potential_c_beta_ao_LDA(j,i,istate)  - potential_c_beta_ao(j,i,istate)  ) 
+    accu_xa += dabs( potential_x_alpha_ao_LDA(j,i,istate) - potential_x_alpha_ao(j,i,istate) ) 
+    accu_xb += dabs( potential_x_beta_ao_LDA(j,i,istate)  - potential_x_beta_ao(j,i,istate)  )  
+   enddo
+  enddo
+ enddo
+ print*,'energy_x     = ',energy_x
+ print*,'energy_x_LDA = ',energy_x_LDA
+ print*,'energy_c     = ',energy_c
+ print*,'energy_c_LDA = ',energy_c_LDA 
+ print*,''
+ print*,'*****'
+ print*,''
+ print*,'accu_ca',accu_ca
+ print*,'accu_cb',accu_cb
+ print*,'accu_xa',accu_xa
+ print*,'accu_xb',accu_xb
 
 
 end
