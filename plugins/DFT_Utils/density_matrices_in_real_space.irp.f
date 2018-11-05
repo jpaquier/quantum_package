@@ -162,6 +162,77 @@ end
 END_PROVIDER 
 
 
+ BEGIN_PROVIDER [double precision, one_body_dm_alpha_at_r, (n_points_final_grid,N_states) ]
+&BEGIN_PROVIDER [double precision, one_body_dm_beta_at_r, (n_points_final_grid,N_states) ]
+ implicit none
+ BEGIN_DOC
+! one_body_dm_alpha_at_r(i,istate) = n_alpha(r_i,istate)
+! one_body_dm_beta_at_r(i,istate) =  n_beta(r_i,istate)
+! where r_i is the ith point of the grid and istate is the state number
+ END_DOC
+ integer :: i,istate
+ double precision :: r(3)
+ double precision, allocatable :: dm_a(:),dm_b(:)
+ allocate(dm_a(N_states),dm_b(N_states))
+ do istate = 1, N_states
+  do i = 1, n_points_final_grid
+   r(1) = final_grid_points(1,i)
+   r(2) = final_grid_points(2,i)
+   r(3) = final_grid_points(3,i)
+   call dm_dft_alpha_beta_at_r(r,dm_a,dm_b)
+   one_body_dm_alpha_at_r(i,istate) = dm_a(istate)
+   one_body_dm_beta_at_r(i,istate) = dm_b(istate)
+  enddo
+ enddo
+
+END_PROVIDER 
+
+
+ BEGIN_PROVIDER [double precision, one_body_dm_alpha_and_grad_at_r, (4,n_points_final_grid,N_states) ]
+&BEGIN_PROVIDER [double precision, one_body_dm_beta_and_grad_at_r,  (4,n_points_final_grid,N_states) ]
+&BEGIN_PROVIDER [double precision, one_body_grad_2_dm_alpha_at_r, (n_points_final_grid,N_states) ]
+&BEGIN_PROVIDER [double precision, one_body_grad_2_dm_beta_at_r, (n_points_final_grid,N_states) ]
+ BEGIN_DOC
+! one_body_dm_alpha_and_grad_at_r(1,i,i_state) = d\dx n_alpha(r_i,istate)
+! one_body_dm_alpha_and_grad_at_r(2,i,i_state) = d\dy n_alpha(r_i,istate)
+! one_body_dm_alpha_and_grad_at_r(3,i,i_state) = d\dz n_alpha(r_i,istate)
+! one_body_dm_alpha_and_grad_at_r(4,i,i_state) = n_alpha(r_i,istate)
+! one_body_grad_2_dm_alpha_at_r(i,istate)      = d\dx n_alpha(r_i,istate)^2 + d\dy n_alpha(r_i,istate)^2 + d\dz n_alpha(r_i,istate)^2
+! where r_i is the ith point of the grid and istate is the state number
+ END_DOC
+ implicit none
+ integer :: i,j,k,l,m,istate
+ double precision :: contrib
+ double precision :: r(3)
+ double precision, allocatable :: aos_array(:),grad_aos_array(:,:)
+ double precision, allocatable :: dm_a(:),dm_b(:), dm_a_grad(:,:), dm_b_grad(:,:)
+ allocate(dm_a(N_states),dm_b(N_states), dm_a_grad(3,N_states), dm_b_grad(3,N_states))
+ allocate(aos_array(ao_num),grad_aos_array(3,ao_num))
+ do istate = 1, N_states 
+  do i = 1, n_points_final_grid
+  r(1) = final_grid_points(1,i)
+  r(2) = final_grid_points(2,i)
+  r(3) = final_grid_points(3,i)
+ !!!! Works also with the ao basis 
+   call density_and_grad_alpha_beta_and_all_aos_and_grad_aos_at_r(r,dm_a,dm_b,  dm_a_grad, dm_b_grad, aos_array, grad_aos_array)
+   one_body_dm_alpha_and_grad_at_r(1,i,istate)  =  dm_a_grad(1,istate)
+   one_body_dm_alpha_and_grad_at_r(2,i,istate)  =  dm_a_grad(2,istate)
+   one_body_dm_alpha_and_grad_at_r(3,i,istate)  =  dm_a_grad(3,istate)
+   one_body_dm_alpha_and_grad_at_r(4,i,istate)  =  dm_a(istate)
+   one_body_grad_2_dm_alpha_at_r(i,istate) = dm_a_grad(1,istate) * dm_a_grad(1,istate) + dm_a_grad(2,istate) * dm_a_grad(2,istate) + dm_a_grad(3,istate) * dm_a_grad(3,istate)
+   
+   one_body_dm_beta_and_grad_at_r(1,i,istate)  =  dm_b_grad(1,istate)
+   one_body_dm_beta_and_grad_at_r(2,i,istate)  =  dm_b_grad(2,istate)
+   one_body_dm_beta_and_grad_at_r(3,i,istate)  =  dm_b_grad(3,istate)
+   one_body_dm_beta_and_grad_at_r(4,i,istate)  =  dm_b(istate)
+   one_body_grad_2_dm_beta_at_r(i,istate) = dm_b_grad(1,istate) * dm_b_grad(1,istate) + dm_b_grad(2,istate) * dm_b_grad(2,istate) + dm_b_grad(3,istate) * dm_b_grad(3,istate)
+  enddo
+ enddo
+
+END_PROVIDER 
+
+
+
  BEGIN_PROVIDER [double precision, one_body_dm_mo_alpha_and_grad_at_grid_points, (4,n_points_integration_angular,n_points_radial_grid,nucl_num,N_states) ]
 &BEGIN_PROVIDER [double precision, one_body_dm_mo_beta_and_grad_at_grid_points, (4,n_points_integration_angular,n_points_radial_grid,nucl_num,N_states) ]
  BEGIN_DOC

@@ -23,7 +23,9 @@ program pouet
 !call test_naive_grid
 !call test_one_dm_mo_new
 !call test_data_dm
- call test_new_pot
+!call test_new_pot_LDA
+ call test_new_pot_PBE
+ call test_new_grad_dm
 end
 
 subroutine test
@@ -502,7 +504,44 @@ subroutine test_naive_grid
 
 end
 
-subroutine test_new_pot
+subroutine test_new_grad_dm
+ implicit none
+ integer :: i,j,k,ipoint,m,istate
+ double precision :: accu_a(4),weight, accu_b(4),accu(2),test
+ do istate = 1, N_states
+  accu_a = 0.d0
+  accu_b = 0.d0
+  accu = 0.d0
+  do ipoint = 1, n_points_final_grid
+   i = index_final_points(1,ipoint) 
+   j = index_final_points(2,ipoint) 
+   k = index_final_points(3,ipoint) 
+   weight=final_weight_functions_at_final_grid_points(ipoint)
+
+   test  = one_body_dm_alpha_and_grad_at_r(1,ipoint,istate) * one_body_dm_alpha_and_grad_at_r(1,ipoint,istate)
+   test += one_body_dm_alpha_and_grad_at_r(2,ipoint,istate) * one_body_dm_alpha_and_grad_at_r(2,ipoint,istate)
+   test += one_body_dm_alpha_and_grad_at_r(3,ipoint,istate) * one_body_dm_alpha_and_grad_at_r(3,ipoint,istate)
+
+   accu(1) += dabs(test - one_body_grad_2_dm_alpha_at_r(ipoint,istate)) * weight
+
+   test  = one_body_dm_beta_and_grad_at_r(1,ipoint,istate) * one_body_dm_beta_and_grad_at_r(1,ipoint,istate)
+   test += one_body_dm_beta_and_grad_at_r(2,ipoint,istate) * one_body_dm_beta_and_grad_at_r(2,ipoint,istate)
+   test += one_body_dm_beta_and_grad_at_r(3,ipoint,istate) * one_body_dm_beta_and_grad_at_r(3,ipoint,istate)
+
+   accu(2) += dabs(test - one_body_grad_2_dm_beta_at_r(ipoint,istate)) * weight
+   do m = 1, 4
+    accu_a(m) += dabs(one_body_dm_alpha_and_grad_at_r(m,ipoint,istate) - one_body_dm_mo_alpha_and_grad_at_grid_points(m,i,j,k,istate) ) * weight
+    accu_b(m) += dabs(one_body_dm_beta_and_grad_at_r(m,ipoint,istate) - one_body_dm_mo_beta_and_grad_at_grid_points(m,i,j,k,istate) ) * weight
+   enddo
+  enddo
+ enddo
+ print*,'accu   = ',accu
+ print*,'accu_a = ',accu_a
+ print*,'accu_b = ',accu_b
+
+end
+
+subroutine test_new_pot_LDA
  implicit none
  integer :: i,j,istate
  double precision :: accu_ca,accu_cb,accu_xa,accu_xb
@@ -524,6 +563,39 @@ subroutine test_new_pot
  print*,'energy_x_LDA = ',energy_x_LDA
  print*,'energy_c     = ',energy_c
  print*,'energy_c_LDA = ',energy_c_LDA 
+ print*,''
+ print*,'*****'
+ print*,''
+ print*,'accu_ca',accu_ca
+ print*,'accu_cb',accu_cb
+ print*,'accu_xa',accu_xa
+ print*,'accu_xb',accu_xb
+
+
+end
+
+subroutine test_new_pot_PBE
+ implicit none
+ integer :: i,j,istate
+ double precision :: accu_ca,accu_cb,accu_xa,accu_xb
+ do istate =1 , N_states
+  accu_ca = 0.d0
+  accu_xa = 0.d0
+  accu_cb = 0.d0
+  accu_xb = 0.d0
+  do i = 1, ao_num
+   do j = 1, ao_num 
+    accu_ca += dabs( potential_c_alpha_ao_PBE(j,i,istate) - potential_c_alpha_ao(j,i,istate) ) 
+    accu_cb += dabs( potential_c_beta_ao_PBE(j,i,istate)  - potential_c_beta_ao(j,i,istate)  ) 
+    accu_xa += dabs( potential_x_alpha_ao_PBE(j,i,istate) - potential_x_alpha_ao(j,i,istate) ) 
+    accu_xb += dabs( potential_x_beta_ao_PBE(j,i,istate)  - potential_x_beta_ao(j,i,istate)  )  
+   enddo
+  enddo
+ enddo
+ print*,'energy_x     = ',energy_x
+ print*,'energy_x_PBE = ',energy_x_PBE
+ print*,'energy_c     = ',energy_c
+ print*,'energy_c_PBE = ',energy_c_PBE 
  print*,''
  print*,'*****'
  print*,''
