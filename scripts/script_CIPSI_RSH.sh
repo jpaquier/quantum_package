@@ -17,6 +17,7 @@ if [ "$ezfio" = "--help" ]; then
  echo "******** ASSUMPTIONS *********"
  echo "1) The mo_class should be specified in the EZFIO folder"
  echo "2) The wave function stored in the EZFIO folder, whatever it is, will be used as the starting point to run the RSH calculation"
+ echo "   Usually a single Slater determinant RSH wave function with the same mu and functional is a good starting point (run the RS_KS_SCF program) "
  echo "********            *********"
  echo "                             "
  echo "Here are the INPUTS ARGUMENT for the script"
@@ -29,15 +30,28 @@ if [ "$ezfio" = "--help" ]; then
  echo "      0 <=> pure DFT calculation, Infinity <=> pure WFT calculation "
  echo "\$4 : pt2max  : maximum value of the PT2 for the CIPSI calculation (note that it is with the effective hamiltonian so it can be self-consistent) "
  echo "      0 <=> FCI calculation, any bigger value is selected CI"
- echo "\$5 : thresh : value of the convergence of the energy for the self-consistent CIPSI calculation for a given set of Slater determinants"  
- echo "      a value of 0.0000001 is in general more than sufficient for regular calculations"
+ echo "\$5 : thresh : (OPTIONAL) value of the convergence of the energy for the self-consistent CIPSI calculation for a given set of Slater determinants"  
+ echo "      if not specified, a value of 0.0000001 is set by default (more than enough for regular calculations)"
  echo "********            *********"
  echo "                             "
  echo "                             "
  exit
 fi
-if [ -f $ezfio ]; then
-   echo "File $ezfio exists."
+if [ "$ezfio" = "" ]; then
+   echo "You did not specify any input EZFIO folder ! "
+   echo "stopping ..."
+   echo "run script_CIPSI_RSH.sh --help to have information on how to run the script !"
+   echo "......"
+   echo "......"
+   exit
+fi
+
+echo "  **********"
+echo "Here are the following INPUT parameters for the RSH-CIPSI run .."
+echo "  **********"
+echo "EZFIO folder :  "$ezfio 
+if [ -d $ezfio ]; then
+   echo "File $ezfio does exist !"
 else
    echo "Input EZFIO folder does not exists !"
    echo "Folder $ezfio does not exist."
@@ -45,17 +59,40 @@ else
    echo "......"
    echo "......"
    echo "......"
+   exit
 fi
-exit
 # define the exchange / correlation functionals to be used in RS-DFT calculation
 functional=$2
+echo "FUNCTIONAL for RS-DFT:  "$functional
+if [ "$functional" = "" ]; then
+ echo "you did not specify the \$functional parameter, it will be set to PBE by default (run --help for explanations)"
+fi
+ echo "\$functional is " $functional
 # splitting of the interaction to be used in RS-DFT calculation 
 mu=$3
+echo "MU for RS-DFT:  "$mu
+if [ "$mu" = "" ]; then
+ echo "you did not specify the \$mu parameter, it will be set to 0.5 by default (run --help for explanations)"
+ mu=0.5
+fi
+ echo "\$mu is " $mu
+ mu="$mu"
 # maximum value of the PT2 for the CIPSI calculation (note that it is with the effective hamiltonian so it can be self-consistent)
 pt2max=$4
+echo "PT2MAX for RS-DFT:  "$pt2max
+if [ "$pt2max" = "" ]; then
+ echo "you did not specify the \$pt2max parameter, it will be set to 0.001 by default (run --help for explanations)"
+ pt2max=0.001
+fi
+ echo "\$pt2max is " $pt2max
+pt2max="$pt2max"
 # value of the convergence of the energy for the self-consistent CIPSI calculation at a given number of determinant
 thresh=$5
-
+if [ "$thresh" = "" ]; then
+ echo "you did not specify the \$thresh parameter, it will be set to 0.0000001 by default (run --help for explanations)"
+ thresh=0.0000001
+fi
+ echo "\$thresh is " $thresh
 
 ################################################## CREATION OF THE EZFIO FOLDER ##########################################################
 
@@ -88,23 +125,24 @@ echo "0.75"            > ${ezfio}/dft_keywords/damping_for_rs_dft
 for i in {1..3}
 do
 #  run the CIPSI calculation with the effective Hamiltonian already stored in the EZFIO folder 
-   qp_run fci_zmq ${ezfio} | tee H2O-fci-$i
+   qp_run fci_zmq ${ezfio} | tee ${ezfio}-fci-$i
    # run 
    EV=0
 
+   echo "#" iter evar evar new  deltae  threshold  >> ${ezfio}/data_conv_${i}
    for j in {1..100}
    do
       # write the new effective Hamiltonian with the damped density (and the current density to be damped with the next density)
-      qp_run write_integrals_restart_dft_no_ecmd ${ezfio} | tee rsdft-${i}-${j}
+      qp_run write_integrals_restart_dft_no_ecmd ${ezfio} | tee ${ezfio}_rsdft-${i}-${j}
       # value of the variational RS-DFT energy 
-      EV_new=`grep "TOTAL ENERGY        =" rsdft-${i}-${j} | cut -d "=" -f 2`
+      EV_new=`grep "TOTAL ENERGY        =" ${ezfio}_rsdft-${i}-${j} | cut -d "=" -f 2`
       # rediagonalize the new effective Hamiltonian to obtain a new wave function and a new density 
-      qp_run diag_restart_save_lowest_state ${ezfio} | tee diag-${i}-${j}
+      qp_run diag_restart_save_lowest_state ${ezfio} | tee ${ezfio}_diag-${i}-${j}
       # checking the convergence
       DE=`echo "${EV} - ${EV_new}" | bc`
-      DE=`echo "print abs(${DE})" | python `
-      CONV=`echo "${DE} > ${thresh}" | bc`
-      echo $j $EV $EV_new $DE $thresh $CONV >> data_conv_${i}
+      DEabs=`echo "print abs(${DE})" | python `
+      CONV=`echo "${DEabs} > ${thresh}" | bc`
+      echo $j $EV $EV_new $DE $thresh >> ${ezfio}/data_conv_${i}
       if [ "$CONV" -eq "0" ]; then
         break
       fi
@@ -112,5 +150,5 @@ do
       DE1=0
       EV=$EV_new
     done
-    qp_run write_integrals_restart_dft_no_ecmd ${ezfio} | tee rsdft-${i}-final
+    qp_run write_integrals_restart_dft_no_ecmd ${ezfio} | tee ${ezfio}_rsdft-${i}-final
 done
