@@ -23,8 +23,8 @@ program pouet
 !call test_naive_grid
 !call test_one_dm_mo_new
 !call test_data_dm
-!call test_new_pot_LDA
- call test_new_pot_PBE
+ call test_new_pot_LDA
+!call test_new_pot_PBE
  call test_new_grad_dm
 end
 

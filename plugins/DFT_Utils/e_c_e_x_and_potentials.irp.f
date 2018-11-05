@@ -111,7 +111,7 @@ subroutine LDA_type_functional(r,rho_a,rho_b,vx_a,vx_b,vc_a,vc_b,ex,ec)
  double precision :: r2(3),dr2(3), local_potential,r12,dx2,mu,mu_coulomb
 !!!!!!! EXCHANGE PART
  do istate = 1, N_states
-  if(exchange_functional.EQ."short_range_LDA")then
+  if(trim(exchange_functional)=="short_range_LDA")then
    call ex_lda_sr(mu_erf,rho_a(istate),rho_b(istate),ex(istate),vx_a(istate),vx_b(istate))
   else if(exchange_functional.EQ."LDA")then
    call ex_lda(rho_a(istate),rho_b(istate),ex(istate),vx_a(istate),vx_b(istate))
@@ -132,7 +132,7 @@ subroutine LDA_type_functional(r,rho_a,rho_b,vx_a,vx_b,vc_a,vc_b,ex,ec)
    vx_b = 0.d0
   else
    print*,'Exchange functional required does not exist ...'
-   print*,'exchange_functional ',exchange_functional
+   print*,'exchange_functional = ',exchange_functional
    stop
   endif
 !!!!!!! CORRELATION PART
