@@ -61,6 +61,13 @@ else
    echo "......"
    exit
 fi
+size=${#ezfio}
+let size--
+last=`echo "${ezfio: -1}"`
+if [ "$last" = "/" ]; then
+ echo "/ is the last character"
+ ezfio=${ezfio:0:${size}}
+fi
 # define the exchange / correlation functionals to be used in RS-DFT calculation
 functional=$2
 echo "FUNCTIONAL for RS-DFT:  "$functional
@@ -125,24 +132,24 @@ echo "0.75"            > ${ezfio}/dft_keywords/damping_for_rs_dft
 for i in {1..3}
 do
 #  run the CIPSI calculation with the effective Hamiltonian already stored in the EZFIO folder 
-   qp_run fci_zmq ${ezfio} | tee ${ezfio}-fci-$i
+   qp_run fci_zmq ${ezfio} | tee ${ezfio}/fci-$i
    # run 
    EV=0
 
-   echo "#" iter evar old     evar new    deltae      threshold  >> ${ezfio}/data_conv_${i}
+   echo "#" iter evar old     evar new    deltae      threshold  >> ${ezfio}_data_conv_${i}
    for j in {1..100}
    do
       # write the new effective Hamiltonian with the damped density (and the current density to be damped with the next density)
-      qp_run write_integrals_restart_dft_no_ecmd ${ezfio} | tee ${ezfio}_rsdft-${i}-${j}
+      qp_run write_integrals_restart_dft_no_ecmd ${ezfio} | tee ${ezfio}/rsdft-${i}-${j}
       # value of the variational RS-DFT energy 
-      EV_new=`grep "TOTAL ENERGY        =" ${ezfio}_rsdft-${i}-${j} | cut -d "=" -f 2`
+      EV_new=`grep "TOTAL ENERGY        =" ${ezfio}/rsdft-${i}-${j} | cut -d "=" -f 2`
       # rediagonalize the new effective Hamiltonian to obtain a new wave function and a new density 
-      qp_run diag_restart_save_lowest_state ${ezfio} | tee ${ezfio}_diag-${i}-${j}
+      qp_run diag_restart_save_lowest_state ${ezfio} | tee ${ezfio}/diag-${i}-${j}
       # checking the convergence
       DE=`echo "${EV_new} - ${EV}" | bc`
       DEabs=`echo "print abs(${DE})" | python `
       CONV=`echo "print ${DEabs} < ${thresh}" | python`
-      echo $j $EV $EV_new $DE $DEabs $CONV $thresh >> ${ezfio}/data_conv_${i}
+      echo $j $EV $EV_new $DE $thresh >> ${ezfio}_data_conv_${i}
       if [ "$CONV" = "True" ]; then
         break
       fi
