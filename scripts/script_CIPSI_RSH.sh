@@ -30,7 +30,9 @@ if [ "$ezfio" = "--help" ]; then
  echo "      0 <=> pure DFT calculation, Infinity <=> pure WFT calculation "
  echo "\$4 : pt2max  : maximum value of the PT2 for the CIPSI calculation (note that it is with the effective hamiltonian so it can be self-consistent) "
  echo "      0 <=> FCI calculation, any bigger value is selected CI"
- echo "\$5 : thresh : (OPTIONAL) value of the convergence of the energy for the self-consistent CIPSI calculation for a given set of Slater determinants"  
+ echo "\$5 : ndetmax  : maximum size of the CIPSI wave function "
+ echo "                                                            "
+ echo "\$6 : thresh : (OPTIONAL) value of the convergence of the energy for the self-consistent CIPSI calculation for a given set of Slater determinants"  
  echo "      if not specified, a value of 0.0000001 is set by default (more than enough for regular calculations)"
  echo "********            *********"
  echo "                             "
@@ -93,8 +95,16 @@ if [ "$pt2max" = "" ]; then
 fi
  echo "\$pt2max is " $pt2max
 pt2max="$pt2max"
+# ndetmax  : maximum size of the CIPSI wave function 
+ndetmax=$5
+echo "NDETMAX for RS-DFT:  "$ndetmax
+if [ "$ndetmax" = "" ]; then
+ echo "you did not specify the \$ndetmax parameter, it will be set to 10000000 by default (run --help for explanations)"
+ ndetmax=10000000
+fi
+
 # value of the convergence of the energy for the self-consistent CIPSI calculation at a given number of determinant
-thresh=$5
+thresh=$6
 if [ "$thresh" = "" ]; then
  echo "you did not specify the \$thresh parameter, it will be set to 0.0000001 by default (run --help for explanations)"
  thresh=0.0000001
@@ -114,6 +124,10 @@ echo  $mu                        > ${ezfio}/dft_keywords/mu_erf
 # set the maximum value of the PT2 for CIPSI calculation 
 echo $pt2max > ${ezfio}/perturbation/pt2_max
 
+################################################## RUNNING THE SELF-CONSISTENT CIPSI-RS-DFT CALCULATION  #################################
+# set the maximum size of the CIPSI wave function 
+echo $ndetmax > ${ezfio}/determinants/n_det_max
+
 # ####### INITIALIZATION OF THE RS-DFT CALCULATION : CIPSI WITH AN EFFECTIVE HAMILTONIAN BUILT WITH THE RS-KS DENSITY ################## #
 # specify that you use the wave function stored in the EZFIO (i.e. RS_KS) to build the density used in the construction of the effective short-range potential 
 echo "WFT"  > ${ezfio}/dft_keywords/density_for_dft
@@ -132,6 +146,7 @@ echo "0.75"            > ${ezfio}/dft_keywords/damping_for_rs_dft
 for i in {1..3}
 do
 #  run the CIPSI calculation with the effective Hamiltonian already stored in the EZFIO folder 
+   echo "F"  >    ${ezfio}/determinants/read_wf 
    qp_run fci_zmq ${ezfio} | tee ${ezfio}/fci-$i
    # run 
    EV=0
