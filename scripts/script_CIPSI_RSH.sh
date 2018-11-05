@@ -129,7 +129,7 @@ do
    # run 
    EV=0
 
-   echo "#" iter evar evar new  deltae  threshold  >> ${ezfio}/data_conv_${i}
+   echo "#" iter evar old     evar new    deltae      threshold  >> ${ezfio}/data_conv_${i}
    for j in {1..100}
    do
       # write the new effective Hamiltonian with the damped density (and the current density to be damped with the next density)
@@ -139,15 +139,13 @@ do
       # rediagonalize the new effective Hamiltonian to obtain a new wave function and a new density 
       qp_run diag_restart_save_lowest_state ${ezfio} | tee ${ezfio}_diag-${i}-${j}
       # checking the convergence
-      DE=`echo "${EV} - ${EV_new}" | bc`
+      DE=`echo "${EV_new} - ${EV}" | bc`
       DEabs=`echo "print abs(${DE})" | python `
-      CONV=`echo "${DEabs} > ${thresh}" | bc`
-      echo $j $EV $EV_new $DE $thresh >> ${ezfio}/data_conv_${i}
-      if [ "$CONV" -eq "0" ]; then
+      CONV=`echo "print ${DEabs} < ${thresh}" | python`
+      echo $j $EV $EV_new $DE $DEabs $CONV $thresh >> ${ezfio}/data_conv_${i}
+      if [ "$CONV" = "True" ]; then
         break
       fi
-      DE=0
-      DE1=0
       EV=$EV_new
     done
     qp_run write_integrals_restart_dft_no_ecmd ${ezfio} | tee ${ezfio}_rsdft-${i}-final
