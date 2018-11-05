@@ -113,7 +113,7 @@ echo "WFT"  > ${ezfio}/dft_keywords/density_for_dft
 qp_edit -c ${ezfio}
 
 # write the effective Hamiltonian containing long-range interaction and short-range effective potential to be diagonalized in a self-consistent way
-qp_run write_integrals_restart_dft_no_ecmd ${ezfio} | tee rsdft-0
+qp_run write_integrals_restart_dft_no_ecmd ${ezfio} | tee ${ezfio}_rsdft-0
 
 # save the RS-KS one-body density for the damping on the density 
 qp_run save_one_body_dm ${ezfio} 
