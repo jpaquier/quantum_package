@@ -107,6 +107,9 @@ subroutine print_variational_energy_dft_mu_of_r
    write(*, '(A28,X,F16.10)') 'nuclear_repulsion           = ',nuclear_repulsion
    !write(*, '(A28,X,F16.10)') 'DFT mu(r) correlation       = ',Energy_c_md_mu_of_r_PBE_on_top
    write(*, '(A28,X,F16.10)') 'DFT mu(r) E_c,md PBE n2= ',Energy_c_md_mu_of_r_PBE_on_top_corrected
+   write(*, '(A28,X,F16.10)') 'new UEG                = ',Energy_c_md_on_top_PBE_mu_of_r_corrected_UEG_vector
+   write(*, '(A28,X,F16.10)') 'new NO UEG             = ',Energy_c_md_on_top_PBE_mu_of_r_corrected_vector
+   print*,''
    write(*, '(A28,X,F16.10)') 'DFT mu(r) E_c,md LDA   = ',Energy_c_md_mu_of_r_LDA
 
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

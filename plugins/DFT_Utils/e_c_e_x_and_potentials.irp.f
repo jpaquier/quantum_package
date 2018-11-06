@@ -346,7 +346,6 @@ END_PROVIDER
  deallocate(aos_array,r,rho_a,rho_b, ec)
  call cpu_time(cpu1)
  print*,'Time for the Energy_c_md_LDA integration :',cpu1-cpu0
- stop
 END_PROVIDER
 
 
@@ -420,7 +419,7 @@ END_PROVIDER
      r(2) = grid_points_per_atom(2,l,k,j)
      r(3) = grid_points_per_atom(3,l,k,j)
      call dm_dft_alpha_beta_and_all_aos_at_r(r,rho_a,rho_b,aos_array)
-     if(dabs(final_weight_functions_at_grid_points(l,k,j) * (rho_a(1)+rho_b(1))).lt.threshold)cycle
+!    if(dabs(final_weight_functions_at_grid_points(l,k,j) * (rho_a(1)+rho_b(1))).lt.threshold)cycle
 
      do istate = 1, N_states
 !!!!!!!!!!!! CORRELATION PART
@@ -441,6 +440,45 @@ END_PROVIDER
  print*,'Time for the Energy_c_md_mu_of_r_PBE_on_top :',cpu1-cpu0
 END_PROVIDER
 
+ BEGIN_PROVIDER [double precision, Energy_c_md_on_top_PBE_mu_of_r_corrected_UEG_vector, (N_states)]
+&BEGIN_PROVIDER [double precision, Energy_c_md_on_top_PBE_mu_of_r_corrected_vector, (N_states)]
+ BEGIN_DOC
+  ! Energy_c_md_on_top_PBE_mu_of_r_corrected_UEG_vector = PBE-on_top multi determinant functional with exact on top extracted from the UEG 
+  ! Energy_c_md_on_top_PBE_mu_of_r_corrected_vector     = PBE-on_top multi determinant functional with exact on top extrapolated for large mu
+ END_DOC
+ implicit none
+ double precision ::  r(3)
+ double precision :: weight,mu
+ integer :: i,istate
+ double precision,allocatable  :: eps_c_md_on_top_PBE(:),two_dm(:)
+ allocate(eps_c_md_on_top_PBE(N_states),two_dm(N_states))
+ Energy_c_md_on_top_PBE_mu_of_r_corrected_UEG_vector = 0.d0
+ Energy_c_md_on_top_PBE_mu_of_r_corrected_vector = 0.d0
+  
+ print*,'Providing Energy_c_md_mu_of_r_PBE_on_top ...'
+ call wall_time(wall0)
+ do i = 1, n_points_final_grid
+  r(1) = final_grid_points(1,i)
+  r(2) = final_grid_points(2,i)
+  r(3) = final_grid_points(3,i)
+  weight=final_weight_functions_at_final_grid_points(i)
+  two_dm(:) = on_top_of_r_vector(i,:)
+  mu = mu_of_r_vector(i)
+
+  call give_epsilon_c_md_on_top_PBE_mu_corrected_UEG_from_two_dm(mu,r,two_dm,eps_c_md_on_top_PBE)
+  do istate = 1, N_states
+   Energy_c_md_on_top_PBE_mu_of_r_corrected_UEG_vector(istate) += eps_c_md_on_top_PBE(istate) * weight
+  enddo
+  call give_epsilon_c_md_on_top_PBE_mu_corrected_from_two_dm(mu,r,two_dm,eps_c_md_on_top_PBE)
+  do istate = 1, N_states
+   Energy_c_md_on_top_PBE_mu_of_r_corrected_vector(istate) += eps_c_md_on_top_PBE(istate) * weight
+  enddo
+ enddo
+ double precision :: wall1, wall0
+ call wall_time(wall1)
+ print*,'Time for the Energy_c_md_mu_of_r_PBE_on_top :',wall1-wall0
+
+ END_PROVIDER
 
  BEGIN_PROVIDER [double precision, mu_average]
  implicit none 
