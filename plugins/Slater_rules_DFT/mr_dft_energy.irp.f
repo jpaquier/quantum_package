@@ -78,8 +78,8 @@ subroutine print_variational_energy_dft_mu_of_r
  print*, 'mu_of_r_potential = ',mu_of_r_potential
  print*,  ' MR DFT energy with pure correlation part for the DFT '
  if(md_correlation_functional.EQ."basis_set_LDA")then
-   write(*, '(A28,X,F16.10)') 'TOTAL ENERGY CORR         = ',psi_energy+Energy_c_md_mu_of_r_LDA+nuclear_repulsion
-   write(*, '(A28,X,F16.10)') 'TOTAL ENERGY CORR NO MD   = ',psi_energy+energy_c_LDA_mu_of_r+nuclear_repulsion
+   write(*, '(A34,X,F16.10)') 'TOTAL ENERGY ECMD LDA             =',psi_energy+Energy_c_md_mu_of_r_LDA+nuclear_repulsion
+   write(*, '(A28,X,F16.10)') 'TOTAL ENERGY EC   LDA             =',psi_energy+energy_c_LDA_mu_of_r+nuclear_repulsion
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    print*, ''
    write(*, '(A28,X,F16.10)') 'Variational energy of Psi = ',psi_energy + nuclear_repulsion
@@ -97,26 +97,19 @@ subroutine print_variational_energy_dft_mu_of_r
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  else if(md_correlation_functional.EQ."basis_set_on_top_PBE")then
-   write(*, '(A34,X,F16.10)') 'TOTAL ENERGY CORR CORRECTED PBE n2=',psi_energy+Energy_c_md_mu_of_r_PBE_on_top_corrected+nuclear_repulsion
-   write(*, '(A34,X,F16.10)') 'TOTAL ENERGY CORR CORRECTED LDA   =',psi_energy+Energy_c_md_mu_of_r_LDA+nuclear_repulsion
+   write(*, '(A34,X,F16.10)') 'TOTAL ENERGY ECMD PBE n2 UEG      =',psi_energy+Energy_c_md_on_top_PBE_mu_of_r_UEG+nuclear_repulsion
+   write(*, '(A34,X,F16.10)') 'TOTAL ENERGY ECMD PBE n2 NO UEG   =',psi_energy+Energy_c_md_on_top_PBE_mu_of_r+nuclear_repulsion
+   write(*, '(A34,X,F16.10)') 'TOTAL ENERGY ECMD LDA             =',psi_energy+Energy_c_md_mu_of_r_LDA+nuclear_repulsion
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    print*, ''
    write(*, '(A28,X,F16.10)') 'Variational energy of Psi   = ',psi_energy
    print*, 'Component of the energy ....'
    print*, ''
    write(*, '(A28,X,F16.10)') 'nuclear_repulsion           = ',nuclear_repulsion
-   !write(*, '(A28,X,F16.10)') 'DFT mu(r) correlation       = ',Energy_c_md_mu_of_r_PBE_on_top
-   write(*, '(A28,X,F16.10)') 'DFT mu(r) E_c,md PBE n2= ',Energy_c_md_mu_of_r_PBE_on_top_corrected
-   write(*, '(A28,X,F16.10)') 'new UEG                = ',Energy_c_md_on_top_PBE_mu_of_r_corrected_UEG_vector
-   write(*, '(A28,X,F16.10)') 'new NO UEG             = ',Energy_c_md_on_top_PBE_mu_of_r_corrected_vector
+   write(*, '(A28,X,F16.10)') 'Energy ECMD UEG        = ',Energy_c_md_on_top_PBE_mu_of_r_UEG
+   write(*, '(A28,X,F16.10)') 'Energy ECMD NO UEG     = ',Energy_c_md_on_top_PBE_mu_of_r
    print*,''
-   write(*, '(A28,X,F16.10)') 'DFT mu(r) E_c,md LDA   = ',Energy_c_md_mu_of_r_LDA
-
-   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
+   write(*, '(A28,X,F16.10)') 'Energy ECMD LDA        = ',Energy_c_md_mu_of_r_LDA
  endif 
    write(*, '(A28,X,F16.10)') 'mu_average for basis set  = ',mu_average
  if(mu_of_r_potential.EQ."hf_integral")then
@@ -147,7 +140,7 @@ subroutine print_contribution_dft_mu_of_r
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !else if(md_correlation_functional.EQ."basis_set_on_top_PBE")then
-!  write(*, '(A34,X,F16.10)') 'TOTAL ENERGY CORR CORRECTED PBE n2=',psi_energy+Energy_c_md_mu_of_r_PBE_on_top_corrected+nuclear_repulsion
+!  write(*, '(A34,X,F16.10)') 'TOTAL ENERGY CORR CORRECTED PBE n2=',psi_energy+Energy_c_md_mu_of_r_PBE_on_top+nuclear_repulsion
 !  write(*, '(A34,X,F16.10)') 'TOTAL ENERGY CORR CORRECTED LDA   =',psi_energy+Energy_c_md_mu_of_r_LDA+nuclear_repulsion
 !  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !  print*, ''
@@ -156,7 +149,7 @@ subroutine print_contribution_dft_mu_of_r
 !  print*, ''
 !  write(*, '(A28,X,F16.10)') 'nuclear_repulsion           = ',nuclear_repulsion
 !  !write(*, '(A28,X,F16.10)') 'DFT mu(r) correlation       = ',Energy_c_md_mu_of_r_PBE_on_top
-!  write(*, '(A28,X,F16.10)') 'DFT mu(r) E_c,md PBE n2= ',Energy_c_md_mu_of_r_PBE_on_top_corrected
+!  write(*, '(A28,X,F16.10)') 'DFT mu(r) E_c,md PBE n2= ',Energy_c_md_mu_of_r_PBE_on_top
 !  write(*, '(A28,X,F16.10)') 'DFT mu(r) E_c,md LDA   = ',Energy_c_md_mu_of_r_LDA
 
 !  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
