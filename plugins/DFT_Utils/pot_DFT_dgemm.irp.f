@@ -6,6 +6,7 @@
  &BEGIN_PROVIDER [double precision, potential_c_beta_ao,(ao_num,ao_num,N_states)]
 
  implicit none
+ double precision :: wall_1,wall_2
  integer :: j,k
  double precision, allocatable :: tmp_c_a(:,:,:),tmp_c_b(:,:,:),tmp_x_a(:,:,:),tmp_x_b(:,:,:)
  double precision, allocatable ::  dtmp_x_a(:,:),dtmp_x_b(:,:)
@@ -25,6 +26,7 @@
  double precision, allocatable ::  grad_ao_matrix_dvc_b(:,:,:,:) 
  double precision, allocatable ::  grad_ao_matrix_dvx_b(:,:,:,:) 
 
+ call wall_time(wall_1)
  allocate(   dtmp_x_a(3,N_states) ,dtmp_x_b(3,N_states) )
  allocate(   dtmp_c_a(3,N_states) ,dtmp_c_b(3,N_states) )
  allocate(   ao_matrix(ao_num,n_points_integration_angular) ) 
@@ -72,6 +74,8 @@
     deallocate(tmp_x_a,tmp_x_b,tmp_c_a,tmp_c_b)
    enddo
   enddo
+ call wall_time(wall_2)
+ print*,'time to provide the potential ',wall_2 - wall_1
 
  END_PROVIDER 
 
