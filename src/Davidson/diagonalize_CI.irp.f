@@ -16,6 +16,7 @@ BEGIN_PROVIDER [ double precision, CI_energy, (N_states_diag) ]
     call write_double(6,CI_energy(j),'Energy of state '//trim(st))
     call write_double(6,CI_eigenvectors_s2(j),'S^2 of state '//trim(st))
   enddo
+  print*,'passed CI_energy'
 
 END_PROVIDER
 
@@ -53,17 +54,18 @@ END_PROVIDER
        CI_eigenvectors(i,j) = 0.d0
      enddo
    enddo
-   
+   print*,'diag_algorithm = ',diag_algorithm 
    if (diag_algorithm == "Davidson") then
      
      call davidson_diag_HS2(psi_det,CI_eigenvectors, CI_eigenvectors_s2, &
          size(CI_eigenvectors,1),CI_electronic_energy,               &
-         N_det,min(N_det,N_states),min(N_det,N_states_diag),N_int,6)
+         N_det,min(N_det,N_states),min(N_det,N_states_diag),N_int,0)
      
    else if (diag_algorithm == "Lapack") then
      
      allocate (eigenvectors(size(H_matrix_all_dets,1),N_det))
      allocate (eigenvalues(N_det))
+     print*,'diagonalizing with lapack ...'
      call lapack_diag(eigenvalues,eigenvectors,                      &
          H_matrix_all_dets,size(H_matrix_all_dets,1),N_det)
      print*,'ENERGY'
@@ -133,6 +135,7 @@ END_PROVIDER
        deallocate(index_good_state_array,good_state_array)
        deallocate(s2_eigvalues)
      else
+       print*,'before S2'
        call u_0_S2_u_0(CI_eigenvectors_s2,eigenvectors,N_det,psi_det,N_int,&
           min(N_det,N_states_diag),size(eigenvectors,1))
        ! Select the "N_states_diag" states of lowest energy
@@ -148,6 +151,7 @@ END_PROVIDER
    do i = 2, N_states
     print*, ' Delta E = ',CI_electronic_energy(i) - CI_electronic_energy(1)
    enddo
+   print*,'passed the diagonalization'
    
 END_PROVIDER
  
@@ -164,4 +168,5 @@ subroutine diagonalize_CI
     enddo
   enddo
   SOFT_TOUCH psi_coef CI_electronic_energy CI_energy CI_eigenvectors CI_eigenvectors_s2
+  print*,'passed diagonalize_CI'
 end

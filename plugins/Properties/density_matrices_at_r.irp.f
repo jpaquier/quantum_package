@@ -63,7 +63,7 @@ subroutine density_matrices_and_gradients_alpha_beta_at_r(r,dm_a,dm_b, dm_a_grad
  double precision  :: aos_array(ao_num),aos_array_bis(ao_num),u_dot_v
  double precision  :: aos_grad_array_tmp(3,ao_num),aos_grad_array(ao_num,3)
 
- call give_all_aos_and_grad_at_r_new(r,aos_array,aos_grad_array_tmp)
+ call give_all_aos_and_grad_at_r(r,aos_array,aos_grad_array_tmp)
  do i = 1, ao_num
   do j = 1, 3
    aos_grad_array(i,j) = aos_grad_array_tmp(j,i)

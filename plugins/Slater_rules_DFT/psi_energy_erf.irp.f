@@ -50,16 +50,16 @@ END_PROVIDER
 BEGIN_PROVIDER [ double precision, total_range_separated_electronic_energy, (N_states) ]
   implicit none
   BEGIN_DOC
-! total_range_separated_electronic_energy = <Psi| h_{core} |Psi> + <Psi| v_{H}^{sr} |Psi> + <i|W_{ee}^{lr}|i> + E_{x} + E_{c}
+! Total_range_separated_electronic_energy = <Psi| h_{core} |Psi> + (1/2) <Psi| v_{H}^{sr} |Psi> + <i|W_{ee}^{lr}|i> + E_{x} + E_{c}
   END_DOC
-  total_range_separated_electronic_energy = psi_energy_core + short_range_Hartree + psi_energy_erf + energy_x + energy_c
+   total_range_separated_electronic_energy = psi_energy_core + short_range_Hartree + psi_energy_erf + energy_x + energy_c 
 END_PROVIDER
 
 
 BEGIN_PROVIDER [ double precision, two_elec_energy_dft, (N_states) ]
   implicit none
   BEGIN_DOC
-! two_elec_energy_dft = <Psi| v_{H}^{sr} |Psi> + <i|W_{ee}^{lr}|i> 
+! two_elec_energy_dft = (1/2) <Psi| v_{H}^{sr} |Psi> + <i|W_{ee}^{lr}|i> 
   END_DOC
    two_elec_energy_dft = short_range_Hartree + psi_energy_erf
 END_PROVIDER

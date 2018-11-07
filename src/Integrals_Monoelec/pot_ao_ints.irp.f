@@ -146,6 +146,85 @@ END_PROVIDER
 
 END_PROVIDER
 
+subroutine potential_mono_elec_integral_mo_at_r_on_1s(r,mo_ints_array)
+ implicit none
+ double precision, intent(in)  :: r(3)
+ double precision, intent(out) :: mo_ints_array(mo_tot_num)
+ double precision:: ao_ints_array(ao_num,ao_num)
+ call  potential_mono_elec_integral_ao_at_r(r,ao_ints_array)
+ integer :: i,l,n
+ do i = 1, mo_tot_num
+  mo_ints_array(i) = 0.d0
+  do n = 1, ao_num
+   do l = 1, ao_num
+    mo_ints_array(i) += mo_coef(l,i) * mo_coef(n,1) * ao_ints_array(l,n)
+   enddo
+  enddo
+ enddo
+
+end
+
+subroutine potential_mono_elec_integral_mo_at_r(r,mo_ints_array)
+ implicit none
+ double precision, intent(in)  :: r(3)
+ double precision, intent(out) :: mo_ints_array(mo_tot_num,mo_tot_num)
+
+ double precision:: ao_ints_array(ao_num,ao_num)
+ call  potential_mono_elec_integral_ao_at_r(r,ao_ints_array)
+ call ao_to_mo(                                                   &
+     ao_ints_array,                                       &
+     size(ao_ints_array,1),                               &
+     mo_ints_array,                                       &
+     size(mo_ints_array,1)                                &
+     )
+end
+
+
+subroutine potential_mono_elec_integral_ao_at_r(r,ao_ints_array)
+ implicit none
+ double precision, intent(in)  :: r(3)
+ double precision, intent(out) :: ao_ints_array(ao_num,ao_num)
+
+ double precision  :: alpha, beta, gama, delta,c 
+ integer :: i_c,num_A,num_B
+ double precision :: A_center(3),B_center(3),C_center(3)
+ integer :: power_A(3),power_B(3)
+ integer :: i,j,l,n_pt_in,m
+ double precision ::overlap_x,overlap_y,overlap_z,overlap,dx,NAI_pol_mult
+ n_pt_in = n_pt_max_integrals
+  C_center(1) = r(1)
+  C_center(2) = r(2)
+  C_center(3) = r(3)
+  do j = 1, ao_num
+   power_A(1)= ao_power(j,1)
+   power_A(2)= ao_power(j,2)
+   power_A(3)= ao_power(j,3)
+   num_A = ao_nucl(j)
+   A_center(1) = nucl_coord(num_A,1)
+   A_center(2) = nucl_coord(num_A,2)
+   A_center(3) = nucl_coord(num_A,3)
+    do i = 1, ao_num
+     power_B(1)= ao_power(i,1)
+     power_B(2)= ao_power(i,2)
+     power_B(3)= ao_power(i,3)
+     num_B = ao_nucl(i)
+     B_center(1) = nucl_coord(num_B,1)
+     B_center(2) = nucl_coord(num_B,2)
+     B_center(3) = nucl_coord(num_B,3)
+     c = 0.d0
+     do l=1,ao_prim_num(j)
+      alpha = ao_expo_ordered_transp(l,j)
+      do m=1,ao_prim_num(i)
+       beta = ao_expo_ordered_transp(m,i)
+       c = c + NAI_pol_mult(A_center,B_center,power_A,power_B,alpha,beta,C_center,n_pt_in) &
+           * ao_coef_normalized_ordered_transp(l,j)*ao_coef_normalized_ordered_transp(m,i)
+      enddo
+     enddo
+     ao_ints_array(i,j) = c
+    enddo
+  enddo
+
+end
 
 
 double precision function NAI_pol_mult(A_center,B_center,power_A,power_B,alpha,beta,C_center,n_pt_in)

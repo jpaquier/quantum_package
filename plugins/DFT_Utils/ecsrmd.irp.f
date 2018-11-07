@@ -1,5 +1,5 @@
 C****************************************************************************
-      subroutine ESRC_MD_LDAERF (rho_a,rho_b,dospin,e)
+      subroutine ESRC_MD_LDAERF (mu,rho_a,rho_b,dospin,e)
 C*****************************************************************************
 C     Short-range spin-dependent LDA correlation functional with multideterminant reference
 C       for OEP calculations from Section V of 
@@ -16,7 +16,7 @@ C     Created: 26-08-11, J. Toulouse
 C*****************************************************************************
       implicit none
 
-      double precision, intent(in) :: rho_a,rho_b
+      double precision, intent(in) :: rho_a,rho_b,mu
       logical, intent(in)          :: dospin
       double precision, intent(out):: e
 
@@ -28,8 +28,8 @@ C*****************************************************************************
       rhot = rhoa + rhob
       rhos = rhoa - rhob
 
-      call ec_only_lda_sr(rho_a,rho_b,e1)
-      call DELTA_LRSR_LDAERF (rhot,rhos,mu_erf,dospin,e)
+      call ec_only_lda_sr(mu,rho_a,rho_b,e1)
+      call DELTA_LRSR_LDAERF (rhot,rhos,mu,dospin,e)
       e = e1 + e
 
       end
@@ -125,14 +125,14 @@ C     multiply by rhot to get energy density
 
       end
 
-C*****************************************************************************
+!*****************************************************************************
       double precision function g0s(rs)
-C*****************************************************************************
-C     g"(0,rs,z=1) from Eq. 32 of
-C       Paziani, Moroni, Gori-Giorgi and Bachelet, PRB 73, 155111 (2006)
-C
-C     Created: 26-08-11, J. Toulouse
-C*****************************************************************************
+!*****************************************************************************
+!     g"(0,rs,z=1) from Eq. 32 of
+!       Paziani, Moroni, Gori-Giorgi and Bachelet, PRB 73, 155111 (2006)
+!
+!     Created: 26-08-11, J. Toulouse
+!*****************************************************************************
       implicit none
       double precision rs
       double precision rs2, f53, alpha2

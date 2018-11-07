@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 """configure
 
@@ -76,6 +76,11 @@ from collections import namedtuple
 Info = namedtuple("Info", ["url", "description", "default_path"])
 
 path_github = {"head": "http://github.com", "tail": "archive/master.tar.gz"}
+def path_gitlab(user,project,branch):
+  """For example,
+      https://gitlab.com/scemama/resultsFile/-/archive/master/resultsFile-master.tar.gz
+  """
+  return "http://gitlab.com/%(user)s/%(project)s/-/archive/%(branch)s/%(project)s-%(branch)s.tar.gz"%locals()
 
 ocaml = Info(
     url='http://raw.github.com/ocaml/opam/master/shell/opam_installer.sh',
@@ -113,7 +118,7 @@ docopt = Info(
     default_path=join(QP_ROOT_INSTALL, "docopt"))
 
 resultsFile = Info(
-    url='{head}/LCPQ/resultsFile/{tail}'.format(**path_github),
+    url=path_gitlab("scemama","resultsFile","master"),
     description=' resultsFile',
     default_path=join(QP_ROOT_INSTALL, "resultsFile"))
 
@@ -128,7 +133,7 @@ emsl = Info(
     default_path=join(QP_ROOT_INSTALL, "emsl"))
 
 ezfio = Info(
-    url='{head}/LCPQ/EZFIO/{tail}'.format(**path_github),
+    url=path_gitlab("scemama","EZFIO","master"),
     description=' EZFIO',
     default_path=join(QP_ROOT_INSTALL, "EZFIO"))
 
@@ -138,7 +143,7 @@ zeromq = Info(
     default_path=join(QP_ROOT_LIB, "libzmq.a"))
 
 gmp= Info(
-    url='https://gmplib.org/download/gmp/gmp-6.1.2.tar.bz2',
+    url='ftp://ftp.gnu.org/gnu/gmp/gmp-6.1.2.tar.bz2',
     description=' The GNU Multiple Precision Arithmetic Library',
     default_path=join(QP_ROOT_LIB, "libgmp.a"))
 
@@ -242,7 +247,7 @@ def checking(d_dependency):
                 version = check_output("irpf90 -v".split()).strip()
 
                 from distutils.version import LooseVersion
-                if LooseVersion(version) < LooseVersion("1.6.7"):
+                if LooseVersion(version) < LooseVersion("1.7.2"):
                     return 0
                 else:
                     return a
@@ -497,7 +502,7 @@ def create_ninja_and_rc(l_installed):
         'export LIBRARY_PATH=$(qp_prepend_export "LIBRARY_PATH" "${QP_ROOT}"/lib:"${QP_ROOT}"/lib64)',
         'export C_INCLUDE_PATH=$(qp_prepend_export "C_INCLUDE_PATH" "${QP_ROOT}"/include)',
         '',
-        'if [[ $SHELL == "bash" ]] ; then',
+        'if [[ $SHELL == "/bin/bash" ]] ; then',
         '  source ${QP_ROOT}/install/EZFIO/Bash/ezfio.sh',
         'fi',
         '',

@@ -45,20 +45,20 @@ subroutine ec_lda(rho_a,rho_b,ec,vc_a,vc_b)
       vc_a = vcup
       vc_b = vcdown
       else
-       ec = 0.d0
-       vc_a = 0.d0
-       vc_b = 0.d0
+       ec = 1.d-15
+       vc_a = 1.d-15
+       vc_b = 1.d-15
 
       endif
 
 end
 
-subroutine ec_lda_sr(rho_a,rho_b,ec,vc_a,vc_b)
+subroutine ec_lda_sr(mu,rho_a,rho_b,ec,vc_a,vc_b)
       implicit none
  include 'constants.include.F'
       double precision, intent(out) ::  ec
       double precision, intent(out) ::  vc_a,vc_b
-      double precision, intent(in)  ::  rho_a,rho_b
+      double precision, intent(in)  ::  mu,rho_a,rho_b
 
 ! Double precision numbers
       
@@ -80,30 +80,30 @@ subroutine ec_lda_sr(rho_a,rho_b,ec,vc_a,vc_b)
       z=(rhoa-rhob)/(rhoa+rhob)
 
       call ecPW(rs,z,eccoul,ecd,ecz,ecdd,eczd)
-      call ecorrlr(rs,z,mu_erf,eclr)
+      call ecorrlr(rs,z,mu,eclr)
       ec=(eccoul-eclr)*rho
 
 
       vcup=eccoul-rs/3.d0*ecd-(z-1.d0)*ecz
       vcdown=eccoul-rs/3.d0*ecd-(z+1.d0)*ecz
-      call vcorrlr(rs,z,mu_erf,vclrup,vclrdown,vclrupd,vclrdownd)
+      call vcorrlr(rs,z,mu,vclrup,vclrdown,vclrupd,vclrdownd)
       vc_a = vcup-vclrup
       vc_b = vcdown-vclrdown
       
       else
-       ec = 0.d0
-       vc_a = 0.d0
-       vc_b = 0.d0
+       ec = 1.d-15
+       vc_a = 1.d-15
+       vc_b = 1.d-15
        
       endif
 
 end
 
-subroutine ec_only_lda_sr(rho_a,rho_b,ec)
+subroutine ec_only_lda_sr(mu,rho_a,rho_b,ec)
       implicit none
  include 'constants.include.F'
       double precision, intent(out) ::  ec
-      double precision, intent(in)  ::  rho_a,rho_b
+      double precision, intent(in)  ::  mu,rho_a,rho_b
 
 ! Double precision numbers
       
@@ -123,7 +123,7 @@ subroutine ec_only_lda_sr(rho_a,rho_b,ec)
       z=(rhoa-rhob)/(rhoa+rhob)
 
       call ecPW(rs,z,eccoul,ecd,ecz,ecdd,eczd)
-      call ecorrlr(rs,z,mu_erf,eclr)
+      call ecorrlr(rs,z,mu,eclr)
       ec=(eccoul-eclr)*rho
 
       endif
@@ -199,6 +199,12 @@ subroutine ecorrlr(rs,z,mu,eclr)
       a3=b0**8*coe3
       a4=b0**6*(b0**2*coe2+4.d0*ec)
 
+      if(mu*sqrt(rs)/phi.lt.0.d0)then
+       print*,'phi',phi
+       print*,'mu ',mu
+       print*,'rs ',rs
+       pause
+      endif
       eclr=(phi**3*Qrpa(mu*sqrt(rs)/phi)+a1*mu**3+a2*mu**4+a3*mu**5+ &
            a4*mu**6+b0**8*mu**8*ec)/((1.d0+b0**2*mu**2)**4)
 
@@ -645,6 +651,13 @@ subroutine vcorrlr(rs,z,mu,vclrup,vclrdown,vclrupd,vclrdownd)
       c2              = 3.91744d0
       d2              = 3.44851d0
       b2=d2-3.d0/(2.d0*pi*Acoul)*(4.d0/(9.d0*pi))**(1.d0/3.d0)
+     !if(((1.d0+a2*x+b2*x**2+c2*x**3)/(1.d0+a2*x+d2*x**2)).le.0.d0)then
+     ! print*,(1.d0+a2*x+b2*x**2+c2*x**3)/(1.d0+a2*x+d2*x**2)
+     ! print*,(1.d0+a2*x+b2*x**2+c2*x**3),(1.d0+a2*x+d2*x**2)
+     ! print*,x
+     ! pause
+     !endif
+     !Qrpa=Acoul*log(dabs((1.d0+a2*x+b2*x**2+c2*x**3)/(1.d0+a2*x+d2*x**2)))
       Qrpa=Acoul*log((1.d0+a2*x+b2*x**2+c2*x**3)/(1.d0+a2*x+d2*x**2))
       return
       end

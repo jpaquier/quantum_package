@@ -1,10 +1,5 @@
 use bitmasks
 
-BEGIN_PROVIDER [ integer, psi_selectors_size ]
- implicit none
- psi_selectors_size = psi_det_size
-END_PROVIDER
-
 BEGIN_PROVIDER [ integer, N_det_selectors]
   implicit none
   BEGIN_DOC
@@ -19,9 +14,13 @@ END_PROVIDER
   implicit none
   BEGIN_DOC
   ! Determinants on which we apply <i|H|psi> for perturbation.
+  ! The selectors are equivalent to Selectors_full, but in a different
+  ! order. The Generators_CAS determinants appear first, then all the
+  ! others.
   END_DOC
   integer                        :: i, k, l, m
   logical                        :: good
+  integer, external :: number_of_holes,number_of_particles
 
   do i=1,N_det_generators
     do k=1,N_int
@@ -38,19 +37,7 @@ END_PROVIDER
   m=N_det_generators
 
   do i=1,N_det
-    do l=1,n_cas_bitmask
-      good = .True.
-      do k=1,N_int
-        good = good .and. (                                         &
-            iand(not(cas_bitmask(k,1,l)), psi_det_sorted(k,1,i)) ==         &
-            iand(not(cas_bitmask(k,1,l)), HF_bitmask(k,1)) .and. (   &
-            iand(not(cas_bitmask(k,2,l)), psi_det_sorted(k,2,i)) ==         &
-            iand(not(cas_bitmask(k,2,l)), HF_bitmask(k,2) )) )
-      enddo
-      if (good) then
-        exit
-      endif
-    enddo
+    good = ( number_of_holes(psi_det_sorted(1,1,i)) ==0).and.(number_of_particles(psi_det_sorted(1,1,i))==0 )
     if (.not.good) then
       m = m+1
       do k=1,N_int
@@ -62,7 +49,7 @@ END_PROVIDER
   enddo
   if (N_det /= m) then
     print *,  N_det, m
-    stop 'N_det /= m'
+    stop 'Selectors_CASSD : N_det /= m'
   endif
 END_PROVIDER
 

@@ -27,6 +27,29 @@ double precision function binom_func(i,j)
   endif
 end
 
+double precision function inverse_erf(y,thr)
+ implicit none
+ BEGIN_DOC
+! y  = erf(inverser_erf) +- thr
+ END_DOC
+ double precision, intent(in) :: thr, y
+ double precision :: xmin,xmax,xminbefore
+ xmin = 0.d0
+ xmax = 6.d0
+!do while (dabs((xmin)-(xmax)).gt.thr)
+ do while (dabs(erf(xmin) - y).gt.thr)
+  if(erf(xmin).le.y)then
+   xminbefore = xmin
+   xmin += (xmax-xmin) * 0.5d0
+  else if(erf(xmin).gt.y)then
+   xmax = xmin
+   xmin = xminbefore + (xmin-xminbefore) * 0.5d0
+  endif
+ enddo
+ inverse_erf = xmin
+
+end
+
 
  BEGIN_PROVIDER [ double precision, binom, (0:40,0:40) ]
 &BEGIN_PROVIDER [ double precision, binom_transp, (0:40,0:40) ]
