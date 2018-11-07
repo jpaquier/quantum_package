@@ -5,12 +5,12 @@ BEGIN_PROVIDER [double precision, V_kl_contracted_transposed, (n_points_final_gr
  END_DOC
  integer :: i,j,k,l
  integer :: ipoint
- double precision, allocatable :: integrals_array(:,:,:), mos_array_r(:),r(:)
+ double precision, allocatable :: integrals_array(:,:), mos_array_r(:),r(:)
  ! just not to mess with parallelization
- allocate(integrals_array(mo_tot_num,mo_tot_num,mo_tot_num))
+ allocate(integrals_array(mo_tot_num,mo_tot_num))
   k = 1
   l = 1
-  call get_mo_bielec_integrals_ijl(k,mo_tot_num,integrals_array,mo_integrals_map) 
+  call get_mo_bielec_integrals_ij(k,l,mo_tot_num,integrals_array,mo_integrals_map) 
  deallocate(integrals_array)
  double precision :: wall0,wall1
  call wall_time(wall0)
@@ -19,17 +19,17 @@ BEGIN_PROVIDER [double precision, V_kl_contracted_transposed, (n_points_final_gr
  !$OMP DEFAULT (NONE)  &
  !$OMP PRIVATE (ipoint,r,k,l,i,j,integrals_array) & 
  !$OMP SHARED (mo_tot_num, n_points_final_grid, V_kl_contracted_transposed, mo_integrals_map,final_grid_points,mos_in_r_array_transp)
- allocate(integrals_array(mo_tot_num,mo_tot_num,mo_tot_num),r(3))
+ allocate(integrals_array(mo_tot_num,mo_tot_num),r(3))
  !$OMP DO              
   do l = 1, mo_tot_num ! 2 
-   call get_mo_bielec_integrals_ijl(l,mo_tot_num,integrals_array,mo_integrals_map) 
    do k = 1, mo_tot_num ! 1 
+    call get_mo_bielec_integrals_ij(k,l,mo_tot_num,integrals_array,mo_integrals_map) 
     V_kl_contracted_transposed(k,l,:) = 0.d0
-    do j = 1, mo_tot_num
-     do i = 1, mo_tot_num
+    do ipoint = 1, n_points_final_grid
+     do j = 1, mo_tot_num
+      do i = 1, mo_tot_num
                      !1 2                            1 2 1
-     do ipoint = 1, n_points_final_grid
-      V_kl_contracted_transposed(ipoint,k,l) += integrals_array(i,j,k) * mos_in_r_array_transp(ipoint,j) * mos_in_r_array_transp(ipoint,i)
+      V_kl_contracted_transposed(ipoint,k,l) += integrals_array(i,j) * mos_in_r_array(j,ipoint) * mos_in_r_array_transp(i,ipoint)
      enddo
     enddo
    enddo
