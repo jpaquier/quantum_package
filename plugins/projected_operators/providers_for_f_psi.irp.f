@@ -1,40 +1,35 @@
-BEGIN_PROVIDER [double precision, V_kl_contracted, (mo_tot_num,mo_tot_num,n_points_final_grid)]
+BEGIN_PROVIDER [double precision, V_kl_contracted_transposed, (n_points_final_grid,mo_tot_num,mo_tot_num)]
  implicit none
  BEGIN_DOC
-! V_kl_contracted(k,l,ipoint) = \sum_{ij} V_{ij}^{kl} phi_i(r_ipoint) phi_j(r_ipoint)
+! V_kl_contracted_transposed(ipoint,k,l) = \sum_{ij} V_{ij}^{kl} phi_i(r_ipoint) phi_j(r_ipoint)
  END_DOC
  integer :: i,j,k,l
  integer :: ipoint
- double precision, allocatable :: integrals_array(:,:), mos_array_r(:),r(:)
+ double precision, allocatable :: integrals_array(:,:,:), mos_array_r(:),r(:)
  ! just not to mess with parallelization
- allocate(integrals_array(mo_tot_num,mo_tot_num))
+ allocate(integrals_array(mo_tot_num,mo_tot_num,mo_tot_num))
   k = 1
   l = 1
-  call get_mo_bielec_integrals_ij(k,l,mo_tot_num,integrals_array,mo_integrals_map) 
+  call get_mo_bielec_integrals_ijl(k,mo_tot_num,integrals_array,mo_integrals_map) 
  deallocate(integrals_array)
  double precision :: wall0,wall1
  call wall_time(wall0)
- print*,'Providing  V_kl_contracted ..... '
+ print*,'Providing  V_kl_contracted_transposed ..... '
  !$OMP PARALLEL        &
  !$OMP DEFAULT (NONE)  &
- !$OMP PRIVATE (ipoint,r,mos_array_r,k,l,i,j,integrals_array) & 
- !$OMP SHARED (mo_tot_num, n_points_final_grid, V_kl_contracted, mo_integrals_map,final_grid_points)
- allocate(integrals_array(mo_tot_num,mo_tot_num),mos_array_r(mo_tot_num),r(3))
+ !$OMP PRIVATE (ipoint,r,k,l,i,j,integrals_array) & 
+ !$OMP SHARED (mo_tot_num, n_points_final_grid, V_kl_contracted_transposed, mo_integrals_map,final_grid_points,mos_in_r_array_transp)
+ allocate(integrals_array(mo_tot_num,mo_tot_num,mo_tot_num),r(3))
  !$OMP DO              
- do ipoint = 1, n_points_final_grid
-  r(1) = final_grid_points(1,ipoint)
-  r(2) = final_grid_points(2,ipoint)
-  r(3) = final_grid_points(3,ipoint)
-  call give_all_mos_at_r(r,mos_array_r) 
   do l = 1, mo_tot_num ! 2 
+   call get_mo_bielec_integrals_ijl(l,mo_tot_num,integrals_array,mo_integrals_map) 
    do k = 1, mo_tot_num ! 1 
-    V_kl_contracted(k,l,ipoint) = 0.d0
-    call get_mo_bielec_integrals_ij(k,l,mo_tot_num,integrals_array,mo_integrals_map) 
-    integrals_array = 0.d0
+    V_kl_contracted_transposed(k,l,:) = 0.d0
     do j = 1, mo_tot_num
      do i = 1, mo_tot_num
-                     !1 2                            1 2
-      V_kl_contracted(k,l,ipoint) += integrals_array(i,j) * mos_array_r(i) * mos_array_r(j)
+                     !1 2                            1 2 1
+     do ipoint = 1, n_points_final_grid
+      V_kl_contracted_transposed(ipoint,k,l) += integrals_array(i,j,k) * mos_in_r_array_transp(ipoint,j) * mos_in_r_array_transp(ipoint,i)
      enddo
     enddo
    enddo
@@ -45,7 +40,23 @@ BEGIN_PROVIDER [double precision, V_kl_contracted, (mo_tot_num,mo_tot_num,n_poin
  !$OMP END PARALLEL
 
  call wall_time(wall1)
- print*,'Time to provide V_kl_contracted = ',wall1 - wall0
+ print*,'Time to provide V_kl_contracted_transposed = ',wall1 - wall0
+END_PROVIDER 
+
+BEGIN_PROVIDER [double precision, V_kl_contracted, (mo_tot_num,mo_tot_num,n_points_final_grid)]
+ implicit none
+ BEGIN_DOC
+! V_kl_contracted(k,l,ipoint) = \sum_{ij} V_{ij}^{kl} phi_i(r_ipoint) phi_j(r_ipoint)
+ END_DOC
+ integer :: ipoint,k,l
+ do k = 1, mo_tot_num
+  do l = 1, mo_tot_num
+   do ipoint = 1, n_points_final_grid
+    V_kl_contracted(k,l,ipoint) = V_kl_contracted_transposed(ipoint,k,l)
+   enddo
+  enddo
+ enddo
+
 END_PROVIDER 
 
 BEGIN_PROVIDER [double precision, rho2_kl_contracted, (mo_tot_num,mo_tot_num,n_points_final_grid)]

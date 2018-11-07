@@ -542,6 +542,7 @@ subroutine get_mo_bielec_integrals_ijl(k,sze,out_array,map)
   ! Returns multiple integrals <ij|kl> in the MO basis, all
   ! i(1)j(2) 1/r12 k(1)l(2)
   ! i,j,l for k fixed.
+  ! out_array(i,j,l) = <ij|kl>
   END_DOC
   integer, intent(in)            :: k, sze
   double precision, intent(out)  :: out_array(sze,sze,sze)
@@ -553,7 +554,7 @@ subroutine get_mo_bielec_integrals_ijl(k,sze,out_array,map)
 
   PROVIDE mo_bielec_integrals_in_map
   allocate (hash(sze*sze*sze), pairs(3,sze*sze*sze),iorder(sze*sze*sze), &
-  tmp_val(sze*sze))
+  tmp_val(sze*sze*sze))
   
   kk=0
   out_array = 0.d0
