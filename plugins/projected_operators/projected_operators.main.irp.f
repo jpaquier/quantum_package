@@ -54,8 +54,8 @@ subroutine routine_final
  accu = 0.d0
  do ipoint  = 1, n_points_final_grid
   weight=final_weight_functions_at_final_grid_points(ipoint)
-  accu += dabs(f_psi_B_old(ipoint) - f_psi_B(ipoint)) *weight
-! accu += dabs(f_psi_B(ipoint)) *weight
+! accu += dabs(f_psi_B_old(ipoint) - f_psi_B(ipoint)) *weight
+  accu += dabs(f_psi_B(ipoint)) *weight
  enddo
  print*,'accu = ',accu
 

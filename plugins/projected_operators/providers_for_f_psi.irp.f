@@ -18,7 +18,7 @@ BEGIN_PROVIDER [double precision, V_kl_contracted_transposed, (n_points_final_gr
  !$OMP PARALLEL        &
  !$OMP DEFAULT (NONE)  &
  !$OMP PRIVATE (ipoint,r,k,l,i,j,integrals_array) & 
- !$OMP SHARED (mo_tot_num, n_points_final_grid, V_kl_contracted_transposed, mo_integrals_map,final_grid_points,mos_in_r_array_transp)
+ !$OMP SHARED (mo_tot_num, n_points_final_grid, V_kl_contracted_transposed, mo_integrals_map,final_grid_points,mos_in_r_array)
  allocate(integrals_array(mo_tot_num,mo_tot_num),r(3))
  !$OMP DO              
   do l = 1, mo_tot_num ! 2 
@@ -29,7 +29,7 @@ BEGIN_PROVIDER [double precision, V_kl_contracted_transposed, (n_points_final_gr
      do j = 1, mo_tot_num
       do i = 1, mo_tot_num
                      !1 2                            1 2 1
-      V_kl_contracted_transposed(ipoint,k,l) += integrals_array(i,j) * mos_in_r_array(j,ipoint) * mos_in_r_array_transp(i,ipoint)
+      V_kl_contracted_transposed(ipoint,k,l) += integrals_array(i,j) * mos_in_r_array(j,ipoint) * mos_in_r_array(i,ipoint)
      enddo
     enddo
    enddo
