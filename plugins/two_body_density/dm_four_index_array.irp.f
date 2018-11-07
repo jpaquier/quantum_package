@@ -66,7 +66,7 @@
    do j = 1, mo_tot_num
     do k = 1, mo_tot_num
      do l = 1, mo_tot_num
-      !                                          1 2 1 2                                 1 1 2 2 
+      !                               1 2 1 2                                 1 1 2 2 
       two_bod_alpha_beta_mo_physician(l,k,i,j,istate) = two_bod_alpha_beta_mo(i,l,j,k,istate)
      enddo
     enddo
@@ -116,7 +116,7 @@
       do l = 1, mo_tot_num ! 2
        do k = 1, mo_tot_num ! 1 
 
-         !                                2 1 2 1                            1 2                                     1 2 2 1
+         !                                       2 1 2 1                            1 2                                     1 2 2 1
          two_bod_alpha_beta_mo_contracted_serial(n,m,j,i,istate) += integrals_array(k,l) * two_bod_alpha_beta_mo_transposed(k,l,n,m,istate)
        enddo
       enddo
