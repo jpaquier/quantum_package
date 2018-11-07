@@ -48,7 +48,7 @@ END_PROVIDER
                                    +          potential_x_beta_mo(i,j,i_state) + potential_c_beta_mo(i,j,i_state)   )
     effective_one_e_potential_without_kin(i,j,i_state) = short_range_Hartree_operator(i,j) + mo_nucl_elec_integral(i,j)  & 
                                    + 0.5d0 * (potential_x_alpha_mo(i,j,i_state) + potential_c_alpha_mo(i,j,i_state)                               &
-                                   +          potential_x_beta_mo(i,j,i_state) + potential_c_beta_mo(i,j,i_state)   )
+                                   +          potential_x_beta_mo(i,j,i_state)  + potential_c_beta_mo(i,j,i_state)   )
    enddo
   enddo
  enddo
