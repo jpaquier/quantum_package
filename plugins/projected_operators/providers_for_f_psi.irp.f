@@ -50,6 +50,7 @@ BEGIN_PROVIDER [double precision, rho2_kl_contracted, (mo_tot_num,mo_tot_num,n_p
  integer :: i,j,k,l
  integer :: ipoint
  double precision, allocatable :: mos_array_r(:),r(:)
+ provide two_bod_alpha_beta_mo_physician
  !$OMP PARALLEL        &
  !$OMP DEFAULT (NONE)  &
  !$OMP PRIVATE (ipoint,r,mos_array_r,k,l,i,j) & 
@@ -84,6 +85,12 @@ BEGIN_PROVIDER [double precision, f_psi_B, (n_points_final_grid)]
  implicit none
  integer :: ipoint
  integer :: k,l 
+ provide V_kl_contracted rho2_kl_contracted
+ !$OMP PARALLEL        &
+ !$OMP DEFAULT (NONE)  &
+ !$OMP PRIVATE (ipoint,k,l) & 
+ !$OMP SHARED  (mo_tot_num, n_points_final_grid, rho2_kl_contracted, V_kl_contracted, f_psi_B)
+ !$OMP DO              
  do ipoint = 1, n_points_final_grid
   f_psi_B(ipoint) = 0.d0
   do l = 1, mo_tot_num ! 2 
@@ -92,6 +99,8 @@ BEGIN_PROVIDER [double precision, f_psi_B, (n_points_final_grid)]
    enddo
   enddo
  enddo
+ !$OMP END DO
+ !$OMP END PARALLEL
 END_PROVIDER 
 
 
