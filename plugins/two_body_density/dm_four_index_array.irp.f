@@ -136,10 +136,10 @@
  !  two_bod_alpha_beta_mo_contracted(n,m,j,i) = \sum_{k,l} <ij|kl> <\Psi|a^{dagger}_{k,alpha} a^{dagger}_{l,beta} a_{n,beta} a_{m,alpha}|\Psi>
  END_DOC
  integer :: i,j,k,l,istate,m,n
- double precision :: cpu_0,cpu_1,accu
+ double precision :: wall_0,wall_1,accu
  two_bod_alpha_beta_mo_contracted = 0.d0
  print*,'providing two_bod_alpha_beta_mo_contracted...'
- call cpu_time(cpu_0)
+ call wall_time(wall_0)
  i=1 
  j=1
  double precision, allocatable :: integrals_array(:,:)
@@ -179,8 +179,8 @@
  deallocate(integrals_array)
  !$OMP END PARALLEL
 
- call cpu_time(cpu_1)
- print*,'two_bod_alpha_beta_mo_contracted provided in',dabs(cpu_1-cpu_0)
+ call wall_time(wall_1)
+ print*,'two_bod_alpha_beta_mo_contracted provided in',dabs(wall_1-wall_0)
 
  END_PROVIDER 
 
