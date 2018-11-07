@@ -31,7 +31,7 @@
    print *,  'Unrecognized dirac_interaction : '//dirac_interaction
    stop 1
   endif
-  mu_erf+=0.05
+ !mu_erf+=0.05
   call ezfio_set_dft_keywords_mu_erf(mu_erf)
  end
 
