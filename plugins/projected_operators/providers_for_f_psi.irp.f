@@ -12,6 +12,9 @@ BEGIN_PROVIDER [double precision, V_kl_contracted, (mo_tot_num,mo_tot_num,n_poin
   l = 1
   call get_mo_bielec_integrals_ij(k,l,mo_tot_num,integrals_array,mo_integrals_map) 
  deallocate(integrals_array)
+ double precision :: wall0,wall1
+ call wall_time(wall0)
+ print*,'Providing  V_kl_contracted ..... '
  !$OMP PARALLEL        &
  !$OMP DEFAULT (NONE)  &
  !$OMP PRIVATE (ipoint,r,mos_array_r,k,l,i,j,integrals_array) & 
@@ -27,6 +30,7 @@ BEGIN_PROVIDER [double precision, V_kl_contracted, (mo_tot_num,mo_tot_num,n_poin
    do k = 1, mo_tot_num ! 1 
     V_kl_contracted(k,l,ipoint) = 0.d0
     call get_mo_bielec_integrals_ij(k,l,mo_tot_num,integrals_array,mo_integrals_map) 
+    integrals_array = 0.d0
     do j = 1, mo_tot_num
      do i = 1, mo_tot_num
                      !1 2                            1 2
@@ -40,6 +44,8 @@ BEGIN_PROVIDER [double precision, V_kl_contracted, (mo_tot_num,mo_tot_num,n_poin
  deallocate(integrals_array)
  !$OMP END PARALLEL
 
+ call wall_time(wall1)
+ print*,'Time to provide V_kl_contracted = ',wall1 - wall0
 END_PROVIDER 
 
 BEGIN_PROVIDER [double precision, rho2_kl_contracted, (mo_tot_num,mo_tot_num,n_points_final_grid)]
@@ -51,6 +57,9 @@ BEGIN_PROVIDER [double precision, rho2_kl_contracted, (mo_tot_num,mo_tot_num,n_p
  integer :: ipoint
  double precision, allocatable :: mos_array_r(:),r(:)
  provide two_bod_alpha_beta_mo_physician
+ double precision :: wall0,wall1
+ print*,'Providing  rho2_kl_contracted ..... '
+ call wall_time(wall0)
  !$OMP PARALLEL        &
  !$OMP DEFAULT (NONE)  &
  !$OMP PRIVATE (ipoint,r,mos_array_r,k,l,i,j) & 
@@ -77,6 +86,8 @@ BEGIN_PROVIDER [double precision, rho2_kl_contracted, (mo_tot_num,mo_tot_num,n_p
  !$OMP END DO
  deallocate(mos_array_r,r)
  !$OMP END PARALLEL
+ call wall_time(wall1)
+ print*,'Time to provide rho2_kl_contracted = ',wall1 - wall0
 
 END_PROVIDER 
 
