@@ -46,19 +46,38 @@
  print*,'providing the mu_of_r_psi_coalescence_vector ...'
  call wall_time(cpu0)
  r = 0.d0
- call local_r12_operator_on_hf(r,r,local_potential)
+!call local_r12_operator_on_hf(r,r,local_potential)
+!!$OMP PARALLEL DO &
+!!$OMP DEFAULT (NONE)  &
+!!$OMP PRIVATE (i_point,r,local_potential,two_body_dm) & 
+!!$OMP shARED (n_points_final_grid,final_grid_points,mu_of_r_psi_coalescence_vector) 
+!do i_point = 1, n_points_final_grid
+! r(1) = final_grid_points(1,i_point)
+! r(2) = final_grid_points(2,i_point)
+! r(3) = final_grid_points(3,i_point)
+! call expectation_value_in_real_space(r,r,local_potential,two_body_dm)
+! mu_of_r_psi_coalescence_vector(i_point) =  local_potential * dsqrt(dacos(-1.d0)) * 0.5d0
+!enddo
+!!$OMP END PARALLEL DO
+
+ provide on_top_of_r_vector_simple 
+ provide f_psi_B
  !$OMP PARALLEL DO &
  !$OMP DEFAULT (NONE)  &
  !$OMP PRIVATE (i_point,r,local_potential,two_body_dm) & 
- !$OMP shARED (n_points_final_grid,final_grid_points,mu_of_r_psi_coalescence_vector) 
+ !$OMP shARED (n_points_final_grid,final_grid_points,mu_of_r_psi_coalescence_vector,f_psi_B,on_top_of_r_vector_simple) 
  do i_point = 1, n_points_final_grid
-  r(1) = final_grid_points(1,i_point)
-  r(2) = final_grid_points(2,i_point)
-  r(3) = final_grid_points(3,i_point)
-  call expectation_value_in_real_space(r,r,local_potential,two_body_dm)
+  local_potential = f_psi_B(i_point) / on_top_of_r_vector_simple(i_point,1)
+  if(on_top_of_r_vector_simple(i_point,1).gt.1.d-12.and.f_psi_B(i_point).gt.1.d-12)then
+   local_potential = f_psi_B(i_point)/on_top_of_r_vector_simple(i_point,1)
+  else 
+   local_potential = 1.d-10
+  endif
   mu_of_r_psi_coalescence_vector(i_point) =  local_potential * dsqrt(dacos(-1.d0)) * 0.5d0
  enddo
  !$OMP END PARALLEL DO
+
+
  do i_point = 1, n_points_final_grid
   k = index_final_points(1,i_point)
   i = index_final_points(2,i_point)

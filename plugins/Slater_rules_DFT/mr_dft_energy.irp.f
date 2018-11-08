@@ -111,7 +111,9 @@ subroutine print_variational_energy_dft_mu_of_r
    print*,''
    write(*, '(A28,X,F16.10)') 'Energy ECMD LDA        = ',Energy_c_md_mu_of_r_LDA
  endif 
+  if(.true.)then
    write(*, '(A28,X,F16.10)') 'mu_average for basis set  = ',mu_average
+  endif
  if(mu_of_r_potential.EQ."hf_integral")then
   print*,'integral_f_hf              = ',integral_f_hf
   print*,'HF_alpha_beta_bielec_energy= ',HF_alpha_beta_bielec_energy

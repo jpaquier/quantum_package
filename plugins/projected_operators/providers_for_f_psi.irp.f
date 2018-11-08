@@ -117,10 +117,11 @@ BEGIN_PROVIDER [double precision, f_psi_B, (n_points_final_grid)]
  implicit none
  integer :: ipoint
  integer :: k,l 
- provide V_kl_contracted rho2_kl_contracted
  double precision :: wall0,wall1
+ provide two_bod_alpha_beta_mo_physician 
  print*,'Providing  f_psi_B ..... '
  call wall_time(wall0)
+ provide V_kl_contracted rho2_kl_contracted
  !$OMP PARALLEL        &
  !$OMP DEFAULT (NONE)  &
  !$OMP PRIVATE (ipoint,k,l) & 
@@ -147,10 +148,11 @@ BEGIN_PROVIDER [double precision, f_psi_B_old, (n_points_final_grid)]
  double precision :: r(3),coulomb,two_body_dm
  integer :: k,l 
   r = 0.d0
-  call expectation_value_in_real_space_no_divide(r,r,coulomb,two_body_dm)
  double precision :: wall0,wall1
  print*,'Providing  f_psi_B_old ..... '
+ provide two_bod_alpha_beta_mo_physician 
  call wall_time(wall0)
+ call expectation_value_in_real_space_no_divide(r,r,coulomb,two_body_dm)
  !$OMP PARALLEL        &
  !$OMP DEFAULT (NONE)  &
  !$OMP PRIVATE (ipoint,r,coulomb,two_body_dm) & 

@@ -189,3 +189,28 @@ double precision function two_dm_in_r_selected_points(i_point,istate)
  two_dm_in_r_selected_points = max(two_dm_in_r_selected_points,1.d-15)
 end
 
+ BEGIN_PROVIDER [double precision, on_top_of_r_vector_simple,(n_points_final_grid,N_states) ]
+ implicit none
+ integer :: ipoint,i,j,k,l 
+ on_top_of_r_vector_simple = 0.d0
+ provide two_bod_alpha_beta_mo_physician mos_in_r_array 
+ !$OMP PARALLEL        &
+ !$OMP DEFAULT (NONE)  &
+ !$OMP PRIVATE (ipoint,k,l,i,j) & 
+ !$OMP SHARED  (mo_tot_num, n_points_final_grid, on_top_of_r_vector_simple, final_grid_points,two_bod_alpha_beta_mo_physician,mos_in_r_array )
+ !$OMP DO              
+ do ipoint = 1, n_points_final_grid
+  do l = 1, mo_tot_num ! 2 
+   do k = 1, mo_tot_num ! 1 
+     do j = 1, mo_tot_num
+      do i = 1, mo_tot_num
+      on_top_of_r_vector_simple(ipoint,1) += two_bod_alpha_beta_mo_physician(i,j,k,l,1) * mos_in_r_array(j,ipoint) * mos_in_r_array(i,ipoint) * mos_in_r_array(l,ipoint) * mos_in_r_array(k,ipoint)
+     enddo
+    enddo
+   enddo
+  enddo
+ enddo
+ !$OMP END DO
+ !$OMP END PARALLEL
+
+ END_PROVIDER 
