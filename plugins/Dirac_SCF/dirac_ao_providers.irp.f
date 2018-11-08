@@ -322,33 +322,64 @@
   enddo 
  END_PROVIDER
 
- BEGIN_PROVIDER [ integer, d_L, (2*dirac_ao_num) ]
- &BEGIN_PROVIDER [ integer, d_I, (dirac_ao_num,2) ]
+ BEGIN_PROVIDER [ integer, dirac_list, (2*dirac_ao_num) ]
+ &BEGIN_PROVIDER [ integer, dirac_inverse_list, (dirac_ao_num,2) ]
   implicit none
   BEGIN_DOC
-  !d_L is the dirac_List mapping between the real index of the dirac_ao_num AOs and 
+  !dirac_list is the dirac_List mapping between the real index of the dirac_ao_num AOs and 
   ! the (2*dirac_ao_num)*(2*dirac_ao_num) positions in the 
-  ! dirac Fock matrix. d_I is the inverse mapping.
+  ! dirac Fock matrix. dirac_inverse_list is the inverse mapping.
   END_DOC
   integer   ::     i
   do i = 1, 2*dirac_ao_num
    if (i .le. large_ao_num) then
-    d_L(i) = i
+    dirac_list(i) = i
    elseif (i .gt. large_ao_num .and. i .le. (2*large_ao_num)) then
-    d_L(i) = i - large_ao_num
+    dirac_list(i) = i - large_ao_num
    elseif (i .gt. (2*large_ao_num) .and. i .le. (2*large_ao_num + small_ao_num)) then
-    d_L(i) = i - large_ao_num
+    dirac_list(i) = i - large_ao_num
    elseif (i .gt. (2*large_ao_num + small_ao_num)) then
-    d_L(i) = i - (large_ao_num + small_ao_num)
+    dirac_list(i) = i - (large_ao_num + small_ao_num)
    endif
   enddo
   do i = 1, dirac_ao_num
    if (i .le. large_ao_num) then
-    d_I(i,1) = i 
-    d_I(i,2) = i + large_ao_num
+    dirac_inverse_list(i,1) = i 
+    dirac_inverse_list(i,2) = i + large_ao_num
    elseif (i .gt. large_ao_num) then
-    d_I(i,1) = i + large_ao_num
-    d_I(i,2) = i + (large_ao_num + small_ao_num) 
+    dirac_inverse_list(i,1) = i + large_ao_num
+    dirac_inverse_list(i,2) = i + (large_ao_num + small_ao_num) 
    endif
   enddo
  END_PROVIDER
+
+!BEGIN_PROVIDER [ integer, d_L, (2*dirac_ao_num) ]
+!&BEGIN_PROVIDER [ integer, d_I, (dirac_ao_num,2) ]
+! implicit none
+! BEGIN_DOC
+! !d_L is the dirac_List mapping between the real index of the dirac_ao_num AOs and 
+! ! the (2*dirac_ao_num)*(2*dirac_ao_num) positions in the 
+! ! dirac Fock matrix. d_I is the inverse mapping.
+! END_DOC
+! integer   ::     i
+! do i = 1, 2*dirac_ao_num
+!  if (i .le. large_ao_num) then
+!   d_L(i) = i
+!  elseif (i .gt. large_ao_num .and. i .le. (2*large_ao_num)) then
+!   d_L(i) = i - large_ao_num
+!  elseif (i .gt. (2*large_ao_num) .and. i .le. (2*large_ao_num + small_ao_num)) then
+!   d_L(i) = i - large_ao_num
+!  elseif (i .gt. (2*large_ao_num + small_ao_num)) then
+!   d_L(i) = i - (large_ao_num + small_ao_num)
+!  endif
+! enddo
+! do i = 1, dirac_ao_num
+!  if (i .le. large_ao_num) then
+!   d_I(i,1) = i 
+!   d_I(i,2) = i + large_ao_num
+!  elseif (i .gt. large_ao_num) then
+!   d_I(i,1) = i + large_ao_num
+!   d_I(i,2) = i + (large_ao_num + small_ao_num) 
+!  endif
+! enddo
+!END_PROVIDER
