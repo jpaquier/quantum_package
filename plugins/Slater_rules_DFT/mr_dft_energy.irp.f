@@ -135,41 +135,22 @@ subroutine print_contribution_dft_mu_of_r
  print*,  '****************************************'
  print*, 'mu_of_r_potential = ',mu_of_r_potential
  print*,  ' MR DFT energy with pure correlation part for the DFT '
+ if(md_correlation_functional.EQ."basis_set_LDA")then
+   print*, ''
    write(*, '(A28,X,F16.10)') 'DFT mu(r)     correlation = ',Energy_c_md_mu_of_r_LDA
-   write(*, '(A28,X,F16.10)') 'DFT mu(r) NO MD corr      = ',energy_c_LDA_mu_of_r
    print*, ''
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!else if(md_correlation_functional.EQ."basis_set_on_top_PBE")then
-!  write(*, '(A34,X,F16.10)') 'TOTAL ENERGY CORR CORRECTED PBE n2=',psi_energy+Energy_c_md_mu_of_r_PBE_on_top+nuclear_repulsion
-!  write(*, '(A34,X,F16.10)') 'TOTAL ENERGY CORR CORRECTED LDA   =',psi_energy+Energy_c_md_mu_of_r_LDA+nuclear_repulsion
-!  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!  print*, ''
-!  write(*, '(A28,X,F16.10)') 'Variational energy of Psi   = ',psi_energy
-!  print*, 'Component of the energy ....'
-!  print*, ''
-!  write(*, '(A28,X,F16.10)') 'nuclear_repulsion           = ',nuclear_repulsion
-!  !write(*, '(A28,X,F16.10)') 'DFT mu(r) correlation       = ',Energy_c_md_mu_of_r_PBE_on_top
-!  write(*, '(A28,X,F16.10)') 'DFT mu(r) E_c,md PBE n2= ',Energy_c_md_mu_of_r_PBE_on_top
-!  write(*, '(A28,X,F16.10)') 'DFT mu(r) E_c,md LDA   = ',Energy_c_md_mu_of_r_LDA
-
-!  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-!endif 
-!  write(*, '(A28,X,F16.10)') 'mu_average for basis set  = ',mu_average
-!if(mu_of_r_potential.EQ."hf_integral")then
-! print*,'integral_f_hf              = ',integral_f_hf
-! print*,'HF_alpha_beta_bielec_energy= ',HF_alpha_beta_bielec_energy
-! print*,'mu(r) expectation values .......'
-! print*,'HF_mu_of_r_bielec_energy   = ',HF_mu_of_r_bielec_energy
-! print*,'absolute error             = ',HF_mu_of_r_bielec_energy - HF_alpha_beta_bielec_energy
-! print*,'relative error             = ',dabs(HF_mu_of_r_bielec_energy - HF_alpha_beta_bielec_energy)/dabs(HF_alpha_beta_bielec_energy)
-!endif
-
+ else if(md_correlation_functional.EQ."basis_set_on_top_PBE")then
+   write(*, '(A28,X,F16.10)') 'Energy ECMD UEG        = ',Energy_c_md_on_top_PBE_mu_of_r_UEG
+   write(*, '(A28,X,F16.10)') 'Energy ECMD NO UEG     = ',Energy_c_md_on_top_PBE_mu_of_r
+   print*,''
+   write(*, '(A28,X,F16.10)') 'Energy ECMD LDA        = ',Energy_c_md_mu_of_r_LDA
+ endif 
+  if(.true.)then
+   write(*, '(A28,X,F16.10)') 'mu_average for basis set  = ',mu_average
+  endif
 
 end
 

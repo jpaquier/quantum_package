@@ -14,12 +14,13 @@ BEGIN_PROVIDER [double precision, V_kl_contracted_transposed, (n_points_final_gr
  deallocate(integrals_array)
  double precision :: wall0,wall1
  call wall_time(wall0)
+
  print*,'Providing  V_kl_contracted_transposed ..... '
  !$OMP PARALLEL        &
  !$OMP DEFAULT (NONE)  &
- !$OMP PRIVATE (ipoint,r,k,l,i,j,integrals_array) & 
+ !$OMP PRIVATE (ipoint,k,l,i,j,integrals_array) & 
  !$OMP SHARED (mo_tot_num, n_points_final_grid, V_kl_contracted_transposed, mo_integrals_map,final_grid_points,mos_in_r_array)
- allocate(integrals_array(mo_tot_num,mo_tot_num),r(3))
+ allocate(integrals_array(mo_tot_num,mo_tot_num))
  !$OMP DO              
   do l = 1, mo_tot_num ! 2 
    do k = 1, mo_tot_num ! 1 
@@ -28,13 +29,13 @@ BEGIN_PROVIDER [double precision, V_kl_contracted_transposed, (n_points_final_gr
     do ipoint = 1, n_points_final_grid
      do j = 1, mo_tot_num
       do i = 1, mo_tot_num
-                     !1 2                            1 2 1
-      V_kl_contracted_transposed(ipoint,k,l) += integrals_array(i,j) * mos_in_r_array(j,ipoint) * mos_in_r_array(i,ipoint)
+                                        !1 2                     1 2 
+       V_kl_contracted_transposed(ipoint,k,l) += integrals_array(i,j) * mos_in_r_array(j,ipoint) * mos_in_r_array(i,ipoint)
+      enddo
      enddo
     enddo
    enddo
   enddo
- enddo
  !$OMP END DO
  deallocate(integrals_array)
  !$OMP END PARALLEL
@@ -56,6 +57,7 @@ BEGIN_PROVIDER [double precision, V_kl_contracted, (mo_tot_num,mo_tot_num,n_poin
    enddo
   enddo
  enddo
+ free V_kl_contracted_transposed 
 
 END_PROVIDER 
 
@@ -109,7 +111,7 @@ BEGIN_PROVIDER [double precision, rho2_kl_contracted, (mo_tot_num,mo_tot_num,n_p
    enddo
   enddo
  enddo
-
+ free rho2_kl_contracted_transposed 
 END_PROVIDER 
 
 

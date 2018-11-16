@@ -45,7 +45,7 @@
  double precision :: cpu0,cpu1,local_potential,two_body_dm
  print*,'providing the mu_of_r_psi_coalescence_vector ...'
  call wall_time(cpu0)
- r = 0.d0
+!r = 0.d0
 !call local_r12_operator_on_hf(r,r,local_potential)
 !!$OMP PARALLEL DO &
 !!$OMP DEFAULT (NONE)  &
@@ -60,8 +60,10 @@
 !enddo
 !!$OMP END PARALLEL DO
 
- provide on_top_of_r_vector_simple 
- provide f_psi_B
+ if(.True.)then
+  provide on_top_of_r_vector_simple 
+  provide f_psi_B
+ endif
  !$OMP PARALLEL DO &
  !$OMP DEFAULT (NONE)  &
  !$OMP PRIVATE (i_point,r,local_potential,two_body_dm) & 

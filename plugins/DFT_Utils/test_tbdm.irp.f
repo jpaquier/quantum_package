@@ -2,10 +2,14 @@ program test
  read_wf = .True.
  touch read_wf
 !call correlation_hole_bis
- call correlation_hole(0.35d0)
+!call correlation_hole(0.35d0)
 !call test_mu
 !call test_corr
- call print_laplacian_spherical
+!call print_laplacian_spherical
+ print*,'energy_x_LDA',energy_x_LDA
+ print*,'energy_c_LDA',energy_c_LDA
+ print*,'energy_x_PBE',energy_x_PBE
+ print*,'energy_c_PBE',energy_c_PBE
 end
 
 subroutine print_laplacian_spherical

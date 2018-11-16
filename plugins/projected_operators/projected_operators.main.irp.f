@@ -3,9 +3,9 @@ program projected_operators
   BEGIN_DOC
 ! TODO
   END_DOC
-  read_wf = .True.
-  touch read_wf
-  call routine_v
+! read_wf = .True.
+! touch read_wf
+! call routine_v
   call routine_rho 
 ! call routine_final
 

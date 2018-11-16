@@ -191,26 +191,40 @@ end
 
  BEGIN_PROVIDER [double precision, on_top_of_r_vector_simple,(n_points_final_grid,N_states) ]
  implicit none
- integer :: ipoint,i,j,k,l 
+ integer :: ipoint
+ double precision :: on_top_of_r_from_provider
+ double precision :: wall0,wall1
  on_top_of_r_vector_simple = 0.d0
  provide two_bod_alpha_beta_mo_physician mos_in_r_array 
+ 
+ call wall_time(wall0)
  !$OMP PARALLEL        &
  !$OMP DEFAULT (NONE)  &
- !$OMP PRIVATE (ipoint,k,l,i,j) & 
- !$OMP SHARED  (mo_tot_num, n_points_final_grid, on_top_of_r_vector_simple, final_grid_points,two_bod_alpha_beta_mo_physician,mos_in_r_array )
+ !$OMP PRIVATE (ipoint) & 
+ !$OMP SHARED  (n_points_final_grid, on_top_of_r_vector_simple )
  !$OMP DO              
  do ipoint = 1, n_points_final_grid
-  do l = 1, mo_tot_num ! 2 
-   do k = 1, mo_tot_num ! 1 
-     do j = 1, mo_tot_num
-      do i = 1, mo_tot_num
-      on_top_of_r_vector_simple(ipoint,1) += two_bod_alpha_beta_mo_physician(i,j,k,l,1) * mos_in_r_array(j,ipoint) * mos_in_r_array(i,ipoint) * mos_in_r_array(l,ipoint) * mos_in_r_array(k,ipoint)
-     enddo
+  on_top_of_r_vector_simple(ipoint,1) = on_top_of_r_from_provider(ipoint)
+ enddo
+ !$OMP END DO
+ !$OMP END PARALLEL
+ call wall_time(wall1)
+ print*,'Time to provide on_top_of_r_vector_simple : ',wall1-wall0
+
+ END_PROVIDER 
+
+ double precision function on_top_of_r_from_provider(ipoint)
+ implicit none
+ integer, intent(in) :: ipoint
+ integer :: i,j,k,l 
+ on_top_of_r_from_provider = 0.d0
+ do l = 1, mo_tot_num ! 2 
+  do k = 1, mo_tot_num ! 1 
+    do j = 1, mo_tot_num
+     do i = 1, mo_tot_num
+     on_top_of_r_from_provider += two_bod_alpha_beta_mo_physician(i,j,k,l,1) * mos_in_r_array(j,ipoint) * mos_in_r_array(i,ipoint) * mos_in_r_array(l,ipoint) * mos_in_r_array(k,ipoint)
     enddo
    enddo
   enddo
  enddo
- !$OMP END DO
- !$OMP END PARALLEL
-
- END_PROVIDER 
+ end
