@@ -15,7 +15,7 @@
  !$OMP PARALLEL DO &
  !$OMP DEFAULT (NONE)  &
  !$OMP PRIVATE (i_point,r,local_potential) & 
- !$OMP shARED (n_points_final_grid,final_grid_points,mu_of_r_hf_coalescence_vector) 
+ !$OMP ShARED (n_points_final_grid,final_grid_points,mu_of_r_hf_coalescence_vector) 
  do i_point = 1, n_points_final_grid
   r(1) = final_grid_points(1,i_point)
   r(2) = final_grid_points(2,i_point)

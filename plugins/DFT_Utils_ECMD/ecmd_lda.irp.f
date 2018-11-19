@@ -6,7 +6,7 @@
  integer :: j,k,l,istate 
  double precision, allocatable :: aos_array(:), r(:), rho_a(:), rho_b(:), ec(:)
  logical :: dospin
- double precision :: r2(3),dr2(3), local_potential,r12,dx2,mu,mu_coulomb,coulomb,two_body_dm
+ double precision :: r2(3),dr2(3), local_potential,r12,dx2,mu,coulomb,two_body_dm
  double precision :: threshold
  double precision :: cpu0,cpu1
  dospin = .True. ! JT dospin have to be set to true for open shell

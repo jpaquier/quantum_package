@@ -3,10 +3,10 @@ program projected_operators
   BEGIN_DOC
 ! TODO
   END_DOC
-! read_wf = .True.
-! touch read_wf
-! call routine_v
-! call routine_rho 
+  read_wf = .True.
+  touch read_wf
+  call routine_v
+  call routine_rho 
   call routine_final
 
 end
@@ -25,7 +25,6 @@ subroutine routine_v
   weight=final_weight_functions_at_final_grid_points(ipoint)
   do l = 1, mo_tot_num
    do k = 1, mo_tot_num
-!   accu += dabs(V_kl_contracted(k,l,ipoint) - V_kl_contracted_sequential(k,l,ipoint)) * weight
     accu += dabs(V_kl_contracted(k,l,ipoint) ) * weight
    enddo
   enddo
@@ -34,25 +33,6 @@ subroutine routine_v
 end
  
 
-subroutine routine_rho2
- implicit none
- integer :: ipoint,k,l
- double precision :: accu, weight
- accu = 0.d0
- do ipoint  = 1, n_points_final_grid
-  weight=final_weight_functions_at_final_grid_points(ipoint)
-  do l = 1, mo_tot_num
-   do k = 1, mo_tot_num
-    accu += dabs(rho2_kl_contracted(k,l,ipoint) - rho2_kl_contracted_sequential(k,l,ipoint)) * weight
-   enddo
-  enddo
- enddo
- print*,'accu = ',accu
-end
- 
-
-
-
 subroutine routine_final
  implicit none
  integer :: ipoint
@@ -60,7 +40,6 @@ subroutine routine_final
  accu = 0.d0
  do ipoint  = 1, n_points_final_grid
   weight=final_weight_functions_at_final_grid_points(ipoint)
-! accu += dabs(f_psi_B_old(ipoint) - f_psi_B(ipoint)) *weight
   accu += (f_psi_B(ipoint)) *weight
  enddo
  print*,'*******************'
