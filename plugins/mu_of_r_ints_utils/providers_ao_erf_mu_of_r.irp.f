@@ -30,7 +30,7 @@ BEGIN_PROVIDER [ logical, ao_bielec_integrals_erf_mu_of_r_in_map ]
 
   
   double precision               :: map_mb
-  PROVIDE read_ao_integrals_mu_of_r disk_access_ao_integrals_mu_of_r
+  PROVIDE read_ao_integrals_mu_of_r disk_ao_integrals_mu_of_r
   if (read_ao_integrals_mu_of_r) then
     print*,'Reading the AO ERF mu of r integrals'
       call map_load_from_disk(trim(ezfio_filename)//'/work/ao_ints_erf_mu_of_r',ao_integrals_erf_mu_of_r_map)
@@ -95,7 +95,7 @@ BEGIN_PROVIDER [ logical, ao_bielec_integrals_erf_mu_of_r_in_map ]
   if (write_ao_integrals_mu_of_r) then
     call ezfio_set_work_empty(.False.)
     call map_save_to_disk(trim(ezfio_filename)//'/work/ao_ints_erf_mu_of_r',ao_integrals_erf_mu_of_r_map)
-    call ezfio_set_mu_of_r_ints_disk_access_ao_integrals_mu_of_r("Read")
+    call ezfio_set_mu_of_r_ints_disk_ao_integrals_mu_of_r("Read")
   endif
   
 END_PROVIDER
