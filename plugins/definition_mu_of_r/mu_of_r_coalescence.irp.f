@@ -21,14 +21,10 @@
   r(2) = final_grid_points(2,i_point)
   r(3) = final_grid_points(3,i_point)
   call expectation_value_in_real_space_for_hf(r,r,local_potential,two_bod)
-  if(dabs(two_bod).gt.1.d-15)then
-   if(local_potential/two_bod.gt.0.d0)then
-    local_potential = local_potential/two_bod 
-   else 
-   local_potential = 1.d+10
-   endif
+  if(dabs(two_bod).lt.1.d-12.or.local_potential.le.0.d0)then
+    local_potential = 1.d-10
   else
-   local_potential = 1.d+10
+   local_potential = local_potential / two_bod
   endif
   mu_of_r_hf_coalescence_vector(i_point) =  local_potential * dsqrt(dacos(-1.d0)) * 0.5d0
  enddo

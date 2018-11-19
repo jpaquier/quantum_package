@@ -6,10 +6,19 @@ program test
 !call test_mu
 !call test_corr
 !call print_laplacian_spherical
- print*,'energy_x_LDA',energy_x_LDA
- print*,'energy_c_LDA',energy_c_LDA
- print*,'energy_x_PBE',energy_x_PBE
- print*,'energy_c_PBE',energy_c_PBE
+!print*,'energy_x_LDA',energy_x_LDA
+!print*,'energy_c_LDA',energy_c_LDA
+!print*,'energy_x_PBE',energy_x_PBE
+!print*,'energy_c_PBE',energy_c_PBE
+ call print_mu_of_r
+end
+
+subroutine print_mu_of_r
+ implicit none
+ print*,'Energy_c_md_mu_of_r_LDA        = ',Energy_c_md_mu_of_r_LDA
+ print*,'Energy_c_md_on_top_PBE_mu_of_r = ',Energy_c_md_on_top_PBE_mu_of_r
+ print*,'mu_average                     = ',mu_average
+
 end
 
 subroutine print_laplacian_spherical

@@ -115,11 +115,6 @@ subroutine expectation_value_in_real_space_for_hf(r1,r2,coulomb,two_bod)
    enddo
   enddo
  enddo
- if(two_bod.le.1.d-12.or.coulomb.le.0.d0)then
-   coulomb = 1.d-10
- else 
-   coulomb = coulomb /  two_bod
- endif
 
 end
 
