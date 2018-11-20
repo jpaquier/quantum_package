@@ -3,11 +3,12 @@ program print_good_orbs
  character(len=100):: str_final_core
  character(len=100):: str_final_act
  character(len=100):: str_final_del
- provide index_ligand_orb_loc
- call routine_core(str_final_core)
- call routine_act(str_final_act)
- print*,'core = ',trim(str_final_core)
- print*,'act  = ',trim(str_final_act)
+!provide index_ligand_orb_loc
+!call routine_core(str_final_core)
+!call routine_act(str_final_act)
+!print*,'core = ',trim(str_final_core)
+!print*,'act  = ',trim(str_final_act)
+ print*,'n_orb_ligand_virt_loc = ',n_orb_ligand_virt_loc
 end
 
 subroutine routine_core(final_str)
