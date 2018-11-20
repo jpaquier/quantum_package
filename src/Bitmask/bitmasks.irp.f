@@ -473,13 +473,28 @@ END_PROVIDER
  END_PROVIDER
 
 
- BEGIN_PROVIDER [ integer, list_inact, (n_inact_orb)]
-&BEGIN_PROVIDER [ integer, list_virt, (n_virt_orb)]
+ BEGIN_PROVIDER [integer, dim_list_core_orb]
+&BEGIN_PROVIDER [integer, dim_list_inact_orb]
+&BEGIN_PROVIDER [integer, dim_list_virt_orb]
+&BEGIN_PROVIDER [integer, dim_list_act_orb]
+ implicit none
+ BEGIN_DOC
+! dimensions for the allocation of list_inact, list_virt, list_core and list_act
+! it is at least 1
+ END_DOC
+ dim_list_core_orb = max(n_core_orb,1)
+ dim_list_inact_orb = max(n_inact_orb,1)
+ dim_list_virt_orb = max(n_virt_orb,1)
+ dim_list_act_orb = max(n_act_orb,1)
+END_PROVIDER 
+
+ BEGIN_PROVIDER [ integer, list_inact, (dim_list_inact_orb)]
+&BEGIN_PROVIDER [ integer, list_virt, (dim_list_virt_orb)]
 &BEGIN_PROVIDER [ integer, list_inact_reverse, (mo_tot_num)]
 &BEGIN_PROVIDER [ integer, list_virt_reverse, (mo_tot_num)]
-&BEGIN_PROVIDER [integer, list_core, (n_core_orb)]
+&BEGIN_PROVIDER [integer, list_core, (dim_list_core_orb)]
 &BEGIN_PROVIDER [integer, list_core_reverse, (mo_tot_num)]
-&BEGIN_PROVIDER [integer, list_act, (n_act_orb)]
+&BEGIN_PROVIDER [integer, list_act, (dim_list_act_orb)]
 &BEGIN_PROVIDER [integer, list_act_reverse, (mo_tot_num)]
 &BEGIN_PROVIDER [ integer(bit_kind), core_bitmask,  (N_int,2)]
 &BEGIN_PROVIDER [ integer(bit_kind), inact_bitmask, (N_int,2) ]

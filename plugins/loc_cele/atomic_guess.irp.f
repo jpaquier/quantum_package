@@ -36,9 +36,15 @@ END_PROVIDER
 
  BEGIN_PROVIDER [integer, n_orb_ligand_loc]
 &BEGIN_PROVIDER [integer, index_ligand_orb_loc, (mo_tot_num)]
+&BEGIN_PROVIDER [integer, index_ligand_orb_loc_sorted, (mo_tot_num)]
  implicit none
+ BEGIN_DOC
+ ! n_orb_ligand_loc = number of ligand-like orbitals that have been selected by the maxoverlap procedure
+ ! index_ligand_orb_loc(i) = index of the ith most overlapping ligand-like orbital 
+ ! index_ligand_orb_loc_sorted(i) = same that index_ligand_orb_loc but sorted per increasing number of orbitals 
+ END_DOC
  double precision :: thr_loc
- thr_loc = 0.05d0
+ thr_loc = 0.1d0
  call find_good_orb(index_ligand_orb_loc, n_orb_ligand_loc,thr_loc)
 !n_orb_ligand_loc = 2 
 !index_ligand_orb_loc(1) = 70
@@ -48,7 +54,17 @@ END_PROVIDER
 !index_ligand_orb_loc(3) = 79
 !index_ligand_orb_loc(4) = 80
  print*, 'n_orb_ligand_loc ',n_orb_ligand_loc
+ integer :: i
+ integer, allocatable :: iorder(:)
+ allocate(iorder(n_orb_ligand_loc))
+ 
+ do i = 1, n_orb_ligand_loc
+  iorder(i) = i
+  index_ligand_orb_loc_sorted(i) = index_ligand_orb_loc(i)
+ enddo
+ call isort(index_ligand_orb_loc_sorted,iorder,n_orb_ligand_loc)
 END_PROVIDER 
+
 
 BEGIN_PROVIDER [integer, n_metal_atoms]
  implicit none
@@ -134,7 +150,7 @@ subroutine find_good_orb(list_orb, n_orb,thr_loc)
       enddo
      ovrlp(j) = -dabs(ovrlp(j))
     enddo
-    print*, 'ovrlp(j)',ovrlp(j),j
+!   print*, 'ovrlp(j)',ovrlp(j),j
    enddo
    call dsort(ovrlp,iorder,elec_beta_num)
    print*, 'MAXIMUM OVERLAPS AND CORRESPONDING ORBITALS '
@@ -195,10 +211,9 @@ subroutine find_good_orb(list_orb, n_orb,thr_loc)
     endif
    enddo
   enddo
-  print*, 'n_orb (loc) = ',n_orb
  endif
  
- do i = 1, n_orb
-  print*, 'list_orb(i) == ',list_orb(i),ovrlp_selected(i)
- enddo
+!do i = 1, n_orb
+! print*, 'list_orb(i) == ',list_orb(i),ovrlp_selected(i)
+!enddo
 end
