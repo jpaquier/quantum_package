@@ -45,8 +45,9 @@ END_PROVIDER
  END_DOC
  double precision :: thr_loc
  thr_loc = 0.1d0
+ print*,''
+ print*,'Selecting the interesting doubly occupied orbitals ...'
  call find_good_orb(index_ligand_orb_loc, n_orb_ligand_loc,thr_loc,list_core_inact,n_core_inact_orb)
- print*, 'n_orb_ligand_loc ',n_orb_ligand_loc
  integer :: i
  integer, allocatable :: iorder(:)
  allocate(iorder(n_orb_ligand_loc))
@@ -69,8 +70,9 @@ END_PROVIDER
  END_DOC
  double precision :: thr_loc
  thr_loc = 0.1d0
+ print*,''
+ print*,'Selecting the interesting virtuals orbitals ...'
  call find_good_orb(index_ligand_virt_orb_loc, n_orb_ligand_virt_loc,thr_loc,list_virt,n_virt_orb)
- print*, 'n_orb_ligand_virt_loc ',n_orb_ligand_virt_loc
  integer :: i
  integer, allocatable :: iorder(:)
  allocate(iorder(n_orb_ligand_virt_loc))
@@ -80,6 +82,7 @@ END_PROVIDER
   index_ligand_virt_orb_loc_sorted(i) = index_ligand_virt_orb_loc(i)
  enddo
  call isort(index_ligand_virt_orb_loc_sorted,iorder,n_orb_ligand_virt_loc)
+ print*,'interesting virtual orbitals selected !'
 END_PROVIDER 
 
 
@@ -138,105 +141,88 @@ END_PROVIDER
 
 subroutine find_good_orb(list_orb, n_orb,thr_loc,list_orb_in,n_orb_in)
  implicit none
+ use bitmasks
  double precision, intent(in) :: thr_loc
  integer, intent(in)  :: list_orb_in(n_orb_in),n_orb_in
  integer, intent(out)  :: n_orb
  integer, intent(out) :: list_orb(mo_tot_num)
- integer :: i,j,k,l,m,n,p,jj
+ integer  :: list_orb_tmp((N_int * bit_kind_size))
+ integer :: i,j,k,l,m,n,p,jj,k1,l1,m1
  double precision :: ovrlp(mo_tot_num)
  double precision :: accu
- integer :: iorder(elec_beta_num)
+ integer :: iorder(mo_tot_num)
  logical :: is_selected(mo_tot_num)
- double precision :: ovrlp_selected(mo_tot_num)
+ integer(bit_kind) :: key(N_int)
+ double precision :: mo_coef_metal(ao_num,mo_tot_num)
+
+ ! normalization of the METAL-CENTERED ACTIVE ORBITALS :
+ ! THESE ORBITALS ARE NOTHING BUT THE ACTIVE ORBITALS WITH AO COEFFICIENTS ONLY ON THE METALS
+ mo_coef_metal = 0.d0
+ do i = 1, n_act_orb
+  accu = 0.d0
+  do k = 1, n_metal_atoms ! you run on the metallic atoms 
+   do l = 1, Nucl_N_Aos(k) ! you run on the AO attached to each metallic atoms 
+    m = Nucl_Aos_transposed(l,k) ! m = AO attached to the Lth AO of the  Kth metalic atom 
+    mo_coef_metal(m,index_metal_atom_orb_loc(i)) = mo_coef(m,index_metal_atom_orb_loc(i))
+    do k1 = 1, n_metal_atoms ! you run on the metallic atoms 
+     do l1 = 1, Nucl_N_Aos(k1) ! you run on the AO attached to each metallic atoms 
+      m1 = Nucl_Aos_transposed(l1,k1) ! m = AO attached to the Lth AO of the  Kth metalic atom 
+      ! you compute the overlap
+      accu += mo_coef(m,index_metal_atom_orb_loc(i)) * ao_overlap(m1,m) * mo_coef(m1,index_metal_atom_orb_loc(i))
+     enddo
+    enddo
+   enddo
+   accu = 1.d0/dsqrt(accu)
+   print*,'accu = ',accu
+  enddo
+  do m = 1, ao_num
+  ! you normalize
+   mo_coef_metal(m,index_metal_atom_orb_loc(i)) = mo_coef_metal(m,index_metal_atom_orb_loc(i))/accu
+  enddo
+ enddo
+
  is_selected = .False.
- n_orb = 0
- if(active_guess)then
-  do i = 1, n_act_orb
-   print*, 'ACTIVE ORBITAL ',i,index_metal_atom_orb_loc(i)
-   print*, 'OVERLAP ...'
-   ovrlp = 0.d0
-   do jj = 1, mo_tot_num
-    iorder(jj) = jj
-   enddo
-   do jj = 1, n_orb_in
-    j = list_orb_in(jj)
-    do k = 1, n_metal_atoms
-      p = index_metal_atoms(k)
-      do l = 1, Nucl_N_Aos(k)
-       m = Nucl_Aos_transposed(l,k)
-       do n = 1, ao_num
-        ovrlp(j) += mo_coef(n,j) * ao_overlap(m,n) * mo_coef(m,index_metal_atom_orb_loc(i))
-       enddo
-      enddo
-     ovrlp(j) = -dabs(ovrlp(j))
-    enddo
-    print*, 'ovrlp(j)',ovrlp(j),j
-   enddo
-   call dsort(ovrlp,iorder,mo_tot_num)
-   print*, 'MAXIMUM OVERLAPS AND CORRESPONDING ORBITALS '
-   print*,iorder(1),ovrlp(1),is_selected(iorder(1)) 
-   print*,iorder(2),ovrlp(2),is_selected(iorder(2)) 
-   if (is_selected(iorder(1)))cycle
-   is_selected(iorder(1)) = .True.
-   n_orb += 1
-   list_orb(n_orb) = iorder(1)
-   ovrlp_selected(n_orb) = dabs(ovrlp(1))
-   do jj = 2, n_orb_in
-    if (is_selected(iorder(jj)))cycle
-    if(ovrlp(jj)/ovrlp(1).gt.thr_loc)then
-     n_orb +=1
-     list_orb(n_orb) = iorder(jj)
-     is_selected(iorder(jj)) = .True.
-     ovrlp_selected(n_orb) = dabs(ovrlp(jj))
-    endif
-   enddo
+! FOR EACH STRONGLY METALLIC ACTIVE ORBITALS 
+ do i = 1, n_act_orb
+  print*, 'ACTIVE ORBITAL ',i,index_metal_atom_orb_loc(i)
+  print*, 'OVERLAP ...'
+  ovrlp = 0.d0
+  do j = 1, mo_tot_num
+   iorder(j) = j
   enddo
-  print*, 'n_orb (loc) = ',n_orb
-  
- else
-  do i = elec_beta_num+1, elec_alpha_num
-   print*, 'SINGLY OCCUPIED ORBITAL ',i,index_metal_atom_orb_loc(i)
-   print*, 'OVERLAP ...'
-   ovrlp = 0.d0
-   do jj = 1, mo_tot_num
-    iorder(jj) = jj
-   enddo
-   do jj = 1, n_orb_in
-    j = list_orb_in(jj)
-    do k = 1, n_metal_atoms
-      p = index_metal_atoms(k)
-      do l = 1, Nucl_N_Aos(k)
-       m = Nucl_Aos_transposed(l,k)
-       do n = 1, ao_num
-        ovrlp(j) += mo_coef(n,j) * ao_overlap(m,n) * mo_coef(m,index_metal_atom_orb_loc(i))
-       enddo
-      enddo
-     ovrlp(j) = -dabs(ovrlp(j))
+! YOU COMPUTE THE OVERLAP WITH ALL THE INPUT ORBITALS 
+  do jj = 1, n_orb_in
+   j = list_orb_in(jj)
+   do n = 1, ao_num
+    do m = 1, ao_num
+     ovrlp(j) += mo_coef(n,j) * ao_overlap(n,m) * mo_coef_metal(m,index_metal_atom_orb_loc(i))
     enddo
-    print*, 'ovrlp(j)',ovrlp(j),j
    enddo
-   call dsort(ovrlp,iorder,mo_tot_num)
-   print*, 'MAXIMUM OVERLAPS AND CORRESPONDING ORBITALS '
-   print*,iorder(1),ovrlp(1),is_selected(iorder(1)) 
-   print*,iorder(2),ovrlp(2),is_selected(iorder(2)) 
-   if (is_selected(iorder(1)))cycle
-   n_orb += 1
-   list_orb(n_orb) = iorder(1)
-   is_selected(iorder(1)) = .True.
-   ovrlp_selected(n_orb) = dabs(ovrlp(1))
-   do j = 2, elec_beta_num
-    if (is_selected(iorder(j)))cycle
-    if(ovrlp(j)/ovrlp(1).gt.thr_loc)then
-     n_orb +=1
-     list_orb(n_orb) = iorder(j)
-     is_selected(iorder(j)) = .True.
-     ovrlp_selected(n_orb) = dabs(ovrlp(j))
-    endif
-   enddo
+   ovrlp(j) = -dabs(ovrlp(j))
   enddo
- endif
- 
-!do i = 1, n_orb
-! print*, 'list_orb(i) == ',list_orb(i),ovrlp_selected(i)
-!enddo
+!! YOU SORT THE OVERLAPS 
+  call dsort(ovrlp,iorder,mo_tot_num)
+  print*, 'MAXIMUM OVERLAPS AND CORRESPONDING ORBITALS '
+  print*,iorder(1),ovrlp(1)
+  print*,iorder(2),ovrlp(2)
+!! YOU SELECT 
+  do jj = 1, n_orb_in
+   if(dabs(ovrlp(jj)).gt.thr_loc)then
+    j = iorder(jj)
+    is_selected(j) = .True.
+   endif
+  enddo
+ enddo
+ key = 0_bit_kind
+ do j = 1, mo_tot_num
+  if(is_selected(j))then
+   call set_bit_to_integer(j,key,N_int)
+  endif
+ enddo
+ call bitstring_to_list( key, list_orb_tmp, n_orb, N_int)
+ print*,'n_orb = ',n_orb
+ do i = 1, n_orb
+  list_orb(i) = list_orb_tmp(i)
+  print*,list_orb(i)
+ enddo
 end
