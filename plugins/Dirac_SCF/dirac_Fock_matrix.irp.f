@@ -474,7 +474,7 @@
 
 
 
- BEGIN_PROVIDER [ complex*16, dirac_Fock_matrix_ao, (2*dirac_ao_num,2*dirac_ao_num) ]
+ BEGIN_PROVIDER [ complex*16, dirac_Fock_matrix_Coulomb_ao, (2*dirac_ao_num,2*dirac_ao_num) ]
   implicit none
   BEGIN_DOC
   !Dirac Fock matrix in AO basis set for the Coulomb bi-eletronic interaction
@@ -482,12 +482,12 @@
   integer                        :: i,j
   do j=1,2*dirac_ao_num
    do i=1,2*dirac_ao_num
-    dirac_Fock_matrix_ao(i,j) = dirac_ao_mono_elec_integral(i,j) + dirac_ao_bi_elec_integral(i,j)
+    dirac_Fock_matrix_Coulomb_ao(i,j) = dirac_ao_mono_elec_integral(i,j) + dirac_ao_bi_elec_integral(i,j)
    enddo
   enddo
  END_PROVIDER
 
- BEGIN_PROVIDER [ complex*16, dirac_Fock_matrix_erf_ao, (2*dirac_ao_num,2*dirac_ao_num) ]
+ BEGIN_PROVIDER [ complex*16, dirac_Fock_matrix_Coulomb_erf_ao, (2*dirac_ao_num,2*dirac_ao_num) ]
   implicit none
   BEGIN_DOC
   !Dirac Fock matrix in AO basis set for the long-range Coulomb bi-eletronic interaction
@@ -495,13 +495,13 @@
   integer                        :: i,j
   do j=1,2*dirac_ao_num
    do i=1,2*dirac_ao_num
-    dirac_Fock_matrix_erf_ao(i,j) = dirac_ao_mono_elec_integral(i,j) + dirac_ao_bi_elec_erf_integral(i,j)
+    dirac_Fock_matrix_Coulomb_erf_ao(i,j) = dirac_ao_mono_elec_integral(i,j) + dirac_ao_bi_elec_erf_integral(i,j)
    enddo
   enddo
  END_PROVIDER
 
  
- BEGIN_PROVIDER [ complex*16, dirac_Fock_matrix_Gaunt_ao, (2*dirac_ao_num,2*dirac_ao_num) ]
+ BEGIN_PROVIDER [ complex*16, dirac_Fock_matrix_Coulomb_Gaunt_ao, (2*dirac_ao_num,2*dirac_ao_num) ]
   implicit none
   BEGIN_DOC
   !Dirac Fock matrix in AO basis set for the Coulomb-Gaunt bi-electronic interaction
@@ -509,12 +509,12 @@
   integer                        :: i,j
   do j=1,2*dirac_ao_num
    do i=1,2*dirac_ao_num
-    dirac_Fock_matrix_Gaunt_ao(i,j) = dirac_ao_mono_elec_integral(i,j) + dirac_ao_bi_elec_Gaunt_integral(i,j)
+    dirac_Fock_matrix_Coulomb_Gaunt_ao(i,j) = dirac_ao_mono_elec_integral(i,j) + dirac_ao_bi_elec_Gaunt_integral(i,j)
    enddo
   enddo
  END_PROVIDER
 
- BEGIN_PROVIDER [ complex*16, dirac_Fock_matrix_Gaunt_erf_ao, (2*dirac_ao_num,2*dirac_ao_num) ]
+ BEGIN_PROVIDER [ complex*16, dirac_Fock_matrix_Coulomb_Gaunt_erf_ao, (2*dirac_ao_num,2*dirac_ao_num) ]
   implicit none
   BEGIN_DOC
   !Dirac Fock matrix in AO basis set for the long-range Coulomb-Gaunt bi-electronic interaction
@@ -522,7 +522,7 @@
   integer                        :: i,j
   do j=1,2*dirac_ao_num
    do i=1,2*dirac_ao_num
-    dirac_Fock_matrix_Gaunt_erf_ao(i,j) = dirac_ao_mono_elec_integral(i,j) + dirac_ao_bi_elec_Gaunt_erf_integral(i,j)
+    dirac_Fock_matrix_Coulomb_Gaunt_erf_ao(i,j) = dirac_ao_mono_elec_integral(i,j) + dirac_ao_bi_elec_Gaunt_erf_integral(i,j)
    enddo
   enddo
  END_PROVIDER
@@ -564,8 +564,8 @@
 
 
  
- BEGIN_PROVIDER [ complex*16, dirac_HF_two_electron_energy_complex]
- &BEGIN_PROVIDER [ double precision, dirac_HF_two_electron_energy] 
+ BEGIN_PROVIDER [ complex*16, dirac_HF_two_electron_Coulomb_energy_complex]
+ &BEGIN_PROVIDER [ double precision, dirac_HF_two_electron_Coulomb_energy] 
   implicit none
   BEGIN_DOC
   !Two-electrons energy of the Coulomb ee interaction
@@ -573,22 +573,22 @@
   ! a VERY small artifact and take only its real part
   END_DOC
   integer :: i,j
-  dirac_HF_two_electron_energy_complex = (0.d0,0.d0)
+  dirac_HF_two_electron_Coulomb_energy_complex = (0.d0,0.d0)
   do j=1, 2*dirac_ao_num
    do i=1, 2*dirac_ao_num
-    dirac_HF_two_electron_energy_complex += 0.5d0* (dirac_ao_bi_elec_integral(i,j)) * dirac_SCF_density_matrix_ao(j,i)
+    dirac_HF_two_electron_Coulomb_energy_complex += 0.5d0* (dirac_ao_bi_elec_integral(i,j)) * dirac_SCF_density_matrix_ao(j,i)
    enddo
   enddo
-  dirac_HF_two_electron_energy = real(dirac_HF_two_electron_energy_complex)
-  if (aimag(dirac_HF_two_electron_energy_complex) .gt. 1.d-10) then
+  dirac_HF_two_electron_Coulomb_energy = real(dirac_HF_two_electron_Coulomb_energy_complex)
+  if (aimag(dirac_HF_two_electron_Coulomb_energy_complex) .gt. 1.d-10) then
   print*, 'Warning! The energy is not real'
-  print*, 'dirac_HF_two_electron_energy_complex =', dirac_HF_two_electron_energy_complex
+  print*, 'dirac_HF_two_electron_Coulomb_energy_complex =', dirac_HF_two_electron_Coulomb_energy_complex
   STOP
   endif
  END_PROVIDER
 
- BEGIN_PROVIDER [ complex*16, dirac_HF_two_electron_erf_energy_complex]
- &BEGIN_PROVIDER [ double precision, dirac_HF_two_electron_erf_energy] 
+ BEGIN_PROVIDER [ complex*16, dirac_HF_two_electron_Coulomb_erf_energy_complex]
+ &BEGIN_PROVIDER [ double precision, dirac_HF_two_electron_Coulomb_erf_energy] 
   implicit none
   BEGIN_DOC
   !Two-electrons energy of the Coulomb ee long-range interaction
@@ -596,23 +596,23 @@
   ! a VERY small artifact and take only its real part
   END_DOC
   integer :: i,j
-  dirac_HF_two_electron_erf_energy_complex = (0.d0,0.d0)
+  dirac_HF_two_electron_Coulomb_erf_energy_complex = (0.d0,0.d0)
   do j=1, 2*dirac_ao_num
    do i=1, 2*dirac_ao_num
-    dirac_HF_two_electron_erf_energy_complex += 0.5d0* (dirac_ao_bi_elec_erf_integral(i,j)) * dirac_SCF_density_matrix_ao(j,i)
+    dirac_HF_two_electron_Coulomb_erf_energy_complex += 0.5d0* (dirac_ao_bi_elec_erf_integral(i,j)) * dirac_SCF_density_matrix_ao(j,i)
    enddo
   enddo
-  dirac_HF_two_electron_erf_energy = real(dirac_HF_two_electron_erf_energy_complex)
-  if (aimag(dirac_HF_two_electron_erf_energy_complex) .gt. 1.d-10) then
+  dirac_HF_two_electron_Coulomb_erf_energy = real(dirac_HF_two_electron_Coulomb_erf_energy_complex)
+  if (aimag(dirac_HF_two_electron_Coulomb_erf_energy_complex) .gt. 1.d-10) then
   print*, 'Warning! The energy is not real'
-  print*, 'dirac_HF_two_electron_erf_energy_complex =', dirac_HF_two_electron_erf_energy_complex
+  print*, 'dirac_HF_two_electron_Coulomb_erf_energy_complex =', dirac_HF_two_electron_Coulomb_erf_energy_complex
   STOP
   endif
  END_PROVIDER
 
 
- BEGIN_PROVIDER [ complex*16, dirac_HF_two_electron_Gaunt_energy_complex]
- &BEGIN_PROVIDER [ double precision, dirac_HF_two_electron_Gaunt_energy] 
+ BEGIN_PROVIDER [ complex*16, dirac_HF_two_electron_Coulomb_Gaunt_energy_complex]
+ &BEGIN_PROVIDER [ double precision, dirac_HF_two_electron_Coulomb_Gaunt_energy] 
   implicit none
   BEGIN_DOC
   !Two-electrons energy of the Coulomb_Gaunt ee interaction
@@ -620,22 +620,22 @@
   ! a VERY small artifact and take only its real part
   END_DOC
   integer :: i,j
-  dirac_HF_two_electron_Gaunt_energy_complex = (0.d0,0.d0)
+  dirac_HF_two_electron_Coulomb_Gaunt_energy_complex = (0.d0,0.d0)
   do j=1, 2*dirac_ao_num
    do i=1, 2*dirac_ao_num
-    dirac_HF_two_electron_Gaunt_energy_complex += 0.5d0* (dirac_ao_bi_elec_Gaunt_integral(i,j)) * dirac_SCF_density_matrix_ao(j,i)
+    dirac_HF_two_electron_Coulomb_Gaunt_energy_complex += 0.5d0* (dirac_ao_bi_elec_Gaunt_integral(i,j)) * dirac_SCF_density_matrix_ao(j,i)
    enddo
   enddo
-  dirac_HF_two_electron_Gaunt_energy = real(dirac_HF_two_electron_Gaunt_energy_complex)
-  if (aimag(dirac_HF_two_electron_Gaunt_energy_complex) .gt. 1.d-10) then
+  dirac_HF_two_electron_Coulomb_Gaunt_energy = real(dirac_HF_two_electron_Coulomb_Gaunt_energy_complex)
+  if (aimag(dirac_HF_two_electron_Coulomb_Gaunt_energy_complex) .gt. 1.d-10) then
   print*, 'Warning! The energy is not real'
-  print*, 'dirac_HF_two_electron_Gaunt_energy_complex =', dirac_HF_two_electron_Gaunt_energy_complex
+  print*, 'dirac_HF_two_electron_Coulomb_Gaunt_energy_complex =', dirac_HF_two_electron_Coulomb_Gaunt_energy_complex
   STOP
   endif
  END_PROVIDER
 
- BEGIN_PROVIDER [ complex*16, dirac_HF_two_electron_Gaunt_erf_energy_complex]
- &BEGIN_PROVIDER [ double precision, dirac_HF_two_electron_Gaunt_erf_energy] 
+ BEGIN_PROVIDER [ complex*16, dirac_HF_two_electron_Coulomb_Gaunt_erf_energy_complex]
+ &BEGIN_PROVIDER [ double precision, dirac_HF_two_electron_Coulomb_Gaunt_erf_energy] 
   implicit none
   BEGIN_DOC
   !Two-electrons energy of the long-range Coulomb_Gaunt ee interaction
@@ -643,170 +643,170 @@
   ! a VERY small artifact and take only its real part
   END_DOC
   integer :: i,j
-  dirac_HF_two_electron_Gaunt_erf_energy_complex = (0.d0,0.d0)
+  dirac_HF_two_electron_Coulomb_Gaunt_erf_energy_complex = (0.d0,0.d0)
   do j=1, 2*dirac_ao_num
    do i=1, 2*dirac_ao_num
-    dirac_HF_two_electron_Gaunt_erf_energy_complex += 0.5d0* (dirac_ao_bi_elec_Gaunt_erf_integral(i,j)) * dirac_SCF_density_matrix_ao(j,i)
+    dirac_HF_two_electron_Coulomb_Gaunt_erf_energy_complex += 0.5d0* (dirac_ao_bi_elec_Gaunt_erf_integral(i,j)) * dirac_SCF_density_matrix_ao(j,i)
    enddo
   enddo
-  dirac_HF_two_electron_Gaunt_erf_energy = real(dirac_HF_two_electron_Gaunt_erf_energy_complex)
-  if (aimag(dirac_HF_two_electron_Gaunt_erf_energy_complex) .gt. 1.d-10) then
+  dirac_HF_two_electron_Coulomb_Gaunt_erf_energy = real(dirac_HF_two_electron_Coulomb_Gaunt_erf_energy_complex)
+  if (aimag(dirac_HF_two_electron_Coulomb_Gaunt_erf_energy_complex) .gt. 1.d-10) then
   print*, 'Warning! The energy is not real'
-  print*, 'dirac_HF_two_electron_Gaunt_erf_energy_complex =', dirac_HF_two_electron_Gaunt_erf_energy_complex
+  print*, 'dirac_HF_two_electron_Coulomb_Gaunt_erf_energy_complex =', dirac_HF_two_electron_Coulomb_Gaunt_erf_energy_complex
   STOP
   endif
  END_PROVIDER
 
 
 
- BEGIN_PROVIDER [ double precision, dirac_HF_energy]
+ BEGIN_PROVIDER [ double precision, dirac_HF_Coulomb_energy]
   implicit none
   BEGIN_DOC
   !Dirac-Hartree-Fock energy for the Coulomb ee interaction
   END_DOC
-  dirac_HF_energy = nuclear_repulsion + dirac_HF_two_electron_energy + dirac_HF_one_electron_energy
+  dirac_HF_Coulomb_energy = nuclear_repulsion + dirac_HF_two_electron_Coulomb_energy + dirac_HF_one_electron_energy
  END_PROVIDER
 
- BEGIN_PROVIDER [ double precision, dirac_HF_erf_energy]
+ BEGIN_PROVIDER [ double precision, dirac_HF_Coulomb_erf_energy]
   implicit none
   BEGIN_DOC
   !Dirac-Hartree-Fock energy for the long-range Coulomb ee interaction
   END_DOC
-  dirac_HF_erf_energy = nuclear_repulsion + dirac_HF_two_electron_erf_energy + dirac_HF_one_electron_energy
+  dirac_HF_Coulomb_erf_energy = nuclear_repulsion + dirac_HF_two_electron_Coulomb_erf_energy + dirac_HF_one_electron_energy
  END_PROVIDER
 
 
- BEGIN_PROVIDER [ double precision, dirac_HF_Gaunt_energy]
+ BEGIN_PROVIDER [ double precision, dirac_HF_Coulomb_Gaunt_energy]
   implicit none
   BEGIN_DOC
   !Dirac-Hartree-Fock energy for the Coulomb_Gaunt ee interaction
   END_DOC
-  dirac_HF_Gaunt_energy = nuclear_repulsion + dirac_HF_two_electron_Gaunt_energy + dirac_HF_one_electron_energy
+  dirac_HF_Coulomb_Gaunt_energy = nuclear_repulsion + dirac_HF_two_electron_Coulomb_Gaunt_energy + dirac_HF_one_electron_energy
  END_PROVIDER
 
- BEGIN_PROVIDER [ double precision, dirac_HF_Gaunt_erf_energy]
+ BEGIN_PROVIDER [ double precision, dirac_HF_Coulomb_Gaunt_erf_energy]
   implicit none
   BEGIN_DOC
   !Dirac-Hartree-Fock energy for the long-range Coulomb_Gaunt ee interaction
   END_DOC
-  dirac_HF_Gaunt_erf_energy = nuclear_repulsion + dirac_HF_two_electron_Gaunt_erf_energy + dirac_HF_one_electron_energy
+  dirac_HF_Coulomb_Gaunt_erf_energy = nuclear_repulsion + dirac_HF_two_electron_Coulomb_Gaunt_erf_energy + dirac_HF_one_electron_energy
  END_PROVIDER
 
 
 
- BEGIN_PROVIDER [ double precision, dirac_SCF_energy]
+ BEGIN_PROVIDER [ double precision, dirac_SCF_Coulomb_energy]
   implicit none 
   BEGIN_DOC
   !Dirac_SCF energy for a Coulomb ee interaction
   END_DOC 
-  dirac_SCF_energy = dirac_HF_energy + dirac_extra_energy_contrib_from_density
+  dirac_SCF_Coulomb_energy = dirac_HF_Coulomb_energy + dirac_extra_energy_contrib_from_density
  END_PROVIDER
 
- BEGIN_PROVIDER [ double precision, dirac_SCF_erf_energy]
+ BEGIN_PROVIDER [ double precision, dirac_SCF_Coulomb_erf_energy]
   implicit none 
   BEGIN_DOC
   !Dirac_SCF energy for a long-range Coulomb ee interaction
   END_DOC 
-  dirac_SCF_erf_energy = dirac_HF_erf_energy + dirac_extra_energy_contrib_from_density
+  dirac_SCF_Coulomb_erf_energy = dirac_HF_Coulomb_erf_energy + dirac_extra_energy_contrib_from_density
  END_PROVIDER
 
 
- BEGIN_PROVIDER [ double precision, dirac_SCF_Gaunt_energy]
+ BEGIN_PROVIDER [ double precision, dirac_SCF_Coulomb_Gaunt_energy]
   implicit none
   BEGIN_DOC
   !Dirac_SCF energy for a Coulomb_Gaunt ee interaction
   END_DOC 
-  dirac_SCF_Gaunt_energy = dirac_HF_Gaunt_energy + dirac_extra_energy_contrib_from_density
+  dirac_SCF_Coulomb_Gaunt_energy = dirac_HF_Coulomb_Gaunt_energy + dirac_extra_energy_contrib_from_density
  END_PROVIDER
 
- BEGIN_PROVIDER [ double precision, dirac_SCF_Gaunt_erf_energy]
+ BEGIN_PROVIDER [ double precision, dirac_SCF_Coulomb_Gaunt_erf_energy]
   implicit none
   BEGIN_DOC
   !Dirac_SCF energy for a long-range Coulomb_Gaunt ee interaction
   END_DOC 
-  dirac_SCF_Gaunt_erf_energy = dirac_HF_Gaunt_erf_energy + dirac_extra_energy_contrib_from_density
+  dirac_SCF_Coulomb_Gaunt_erf_energy = dirac_HF_Coulomb_Gaunt_erf_energy + dirac_extra_energy_contrib_from_density
  END_PROVIDER
 
 
- BEGIN_PROVIDER [complex*16, dirac_Fock_matrix_mo,(2*dirac_mo_tot_num,2*dirac_mo_tot_num)]
+ BEGIN_PROVIDER [complex*16, dirac_Fock_matrix_Coulomb_mo,(2*dirac_mo_tot_num,2*dirac_mo_tot_num)]
   implicit none
   BEGIN_DOC
   ! Fock matrix in the MO basis for a Coulomb ee interaction
   END_DOC
     call dirac_ao_to_mo(                                              &
-        dirac_Fock_matrix_ao,                                         &
-        size(dirac_Fock_matrix_ao,1),                                 &
-        dirac_Fock_matrix_mo,                                         &
-        size(dirac_Fock_matrix_mo,1)                                  &
+        dirac_Fock_matrix_Coulomb_ao,                                         &
+        size(dirac_Fock_matrix_Coulomb_ao,1),                                 &
+        dirac_Fock_matrix_Coulomb_mo,                                         &
+        size(dirac_Fock_matrix_Coulomb_mo,1)                                  &
         )
  END_PROVIDER
 
- BEGIN_PROVIDER [complex*16, dirac_Fock_matrix_erf_mo,(2*dirac_mo_tot_num,2*dirac_mo_tot_num)]
+ BEGIN_PROVIDER [complex*16, dirac_Fock_matrix_Coulomb_erf_mo,(2*dirac_mo_tot_num,2*dirac_mo_tot_num)]
   implicit none
   BEGIN_DOC
   ! Fock matrix in the MO basis for a long-range Coulomb ee interaction
   END_DOC
     call dirac_ao_to_mo(                                              &
-        dirac_Fock_matrix_erf_ao,                                         &
-        size(dirac_Fock_matrix_ao,1),                                 &
-        dirac_Fock_matrix_erf_mo,                                         &
-        size(dirac_Fock_matrix_mo,1)                                  &
+        dirac_Fock_matrix_Coulomb_erf_ao,                                         &
+        size(dirac_Fock_matrix_Coulomb_ao,1),                                 &
+        dirac_Fock_matrix_Coulomb_erf_mo,                                         &
+        size(dirac_Fock_matrix_Coulomb_mo,1)                                  &
         )
  END_PROVIDER
  
 
- BEGIN_PROVIDER [complex*16, dirac_Fock_matrix_Gaunt_mo,(2*dirac_mo_tot_num,2*dirac_mo_tot_num)]
+ BEGIN_PROVIDER [complex*16, dirac_Fock_matrix_Coulomb_Gaunt_mo,(2*dirac_mo_tot_num,2*dirac_mo_tot_num)]
   implicit none
   BEGIN_DOC
   ! Fock matrix in the MO basis for a Coulomb_Gaunt ee interaction
   END_DOC
     call dirac_ao_to_mo(                                              &
-        dirac_Fock_matrix_Gaunt_ao,                                         &
-        size(dirac_Fock_matrix_Gaunt_ao,1),                                 &
-        dirac_Fock_matrix_Gaunt_mo,                                         &
-        size(dirac_Fock_matrix_Gaunt_mo,1)                                  &
+        dirac_Fock_matrix_Coulomb_Gaunt_ao,                                         &
+        size(dirac_Fock_matrix_Coulomb_Gaunt_ao,1),                                 &
+        dirac_Fock_matrix_Coulomb_Gaunt_mo,                                         &
+        size(dirac_Fock_matrix_Coulomb_Gaunt_mo,1)                                  &
         )
  END_PROVIDER
 
- BEGIN_PROVIDER [complex*16, dirac_Fock_matrix_Gaunt_erf_mo,(2*dirac_mo_tot_num,2*dirac_mo_tot_num)]
+ BEGIN_PROVIDER [complex*16, dirac_Fock_matrix_Coulomb_Gaunt_erf_mo,(2*dirac_mo_tot_num,2*dirac_mo_tot_num)]
   implicit none
   BEGIN_DOC
   ! Fock matrix in the MO basis for a long-range Coulomb_Gaunt ee interaction
   END_DOC
     call dirac_ao_to_mo(                                              &
-        dirac_Fock_matrix_Gaunt_erf_ao,                                         &
-        size(dirac_Fock_matrix_Gaunt_ao,1),                                 &
-        dirac_Fock_matrix_Gaunt_erf_mo,                                         &
-        size(dirac_Fock_matrix_Gaunt_mo,1)                                  &
+        dirac_Fock_matrix_Coulomb_Gaunt_erf_ao,                                         &
+        size(dirac_Fock_matrix_Coulomb_Gaunt_ao,1),                                 &
+        dirac_Fock_matrix_Coulomb_Gaunt_erf_mo,                                         &
+        size(dirac_Fock_matrix_Coulomb_Gaunt_mo,1)                                  &
         )
  END_PROVIDER
 
 
  
- BEGIN_PROVIDER [complex*16, dirac_Fock_matrix_diag_mo,(2*dirac_mo_tot_num)]
+ BEGIN_PROVIDER [complex*16, dirac_Fock_matrix_diag_Coulomb_mo,(2*dirac_mo_tot_num)]
   implicit none
   BEGIN_DOC
   !Diagonal of the Fock matrix in the MO basis for a Coulomb ee interaction
   END_DOC
   integer :: i
   do i = 1, 2*dirac_mo_tot_num
-   dirac_Fock_matrix_diag_mo(i) = dirac_Fock_matrix_mo (i,i)
+   dirac_Fock_matrix_diag_Coulomb_mo(i) = dirac_Fock_matrix_Coulomb_mo (i,i)
   enddo
  END_PROVIDER
 
- BEGIN_PROVIDER [complex*16, dirac_Fock_matrix_diag_erf_mo,(2*dirac_mo_tot_num)]
+ BEGIN_PROVIDER [complex*16, dirac_Fock_matrix_diag_Coulomb_erf_mo,(2*dirac_mo_tot_num)]
   implicit none
   BEGIN_DOC
   !Diagonal of the Fock matrix in the MO basis for a long-range Coulomb ee interaction
   END_DOC
   integer :: i
   do i = 1, 2*dirac_mo_tot_num
-   dirac_Fock_matrix_diag_erf_mo(i) = dirac_Fock_matrix_erf_mo (i,i)
+   dirac_Fock_matrix_diag_Coulomb_erf_mo(i) = dirac_Fock_matrix_Coulomb_erf_mo (i,i)
   enddo
  END_PROVIDER
 
 
- BEGIN_PROVIDER [complex*16, dirac_Fock_matrix_Gaunt_diag_mo,(2*dirac_mo_tot_num)]
+ BEGIN_PROVIDER [complex*16, dirac_Fock_matrix_diag_Coulomb_Gaunt_mo,(2*dirac_mo_tot_num)]
   implicit none
   BEGIN_DOC
   !Diagonal of the Fock matrix in the MO basis for a Coulomt_Gaunt ee
@@ -814,11 +814,11 @@
   END_DOC
   integer :: i
   do i = 1, 2*dirac_mo_tot_num
-   dirac_Fock_matrix_Gaunt_diag_mo(i) = dirac_Fock_matrix_Gaunt_mo (i,i)
+   dirac_Fock_matrix_diag_Coulomb_Gaunt_mo(i) = dirac_Fock_matrix_Coulomb_Gaunt_mo (i,i)
   enddo
  END_PROVIDER
 
- BEGIN_PROVIDER [complex*16, dirac_Fock_matrix_Gaunt_diag_erf_mo,(2*dirac_mo_tot_num)]
+ BEGIN_PROVIDER [complex*16, dirac_Fock_matrix_diag_Coulomb_Gaunt_erf_mo,(2*dirac_mo_tot_num)]
   implicit none
   BEGIN_DOC
   !Diagonal of the Fock matrix in the MO basis for a long-range Coulomt_Gaunt ee
@@ -826,14 +826,14 @@
   END_DOC
   integer :: i
   do i = 1, 2*dirac_mo_tot_num
-   dirac_Fock_matrix_Gaunt_diag_erf_mo(i) = dirac_Fock_matrix_Gaunt_erf_mo (i,i)
+   dirac_Fock_matrix_diag_Coulomb_Gaunt_erf_mo(i) = dirac_Fock_matrix_Coulomb_Gaunt_erf_mo (i,i)
   enddo
  END_PROVIDER
 
 
 
- BEGIN_PROVIDER [double precision,eigenvalues_dirac_fock_matrix_mo,(2*(dirac_mo_tot_num))]
- &BEGIN_PROVIDER [complex*16, eigenvectors_dirac_fock_matrix_mo,(2*(dirac_mo_tot_num),2*(dirac_mo_tot_num))]
+ BEGIN_PROVIDER [double precision,eigenvalues_dirac_fock_matrix_Coulomb_mo,(2*(dirac_mo_tot_num))]
+ &BEGIN_PROVIDER [complex*16, eigenvectors_dirac_fock_matrix_Coulomb_mo,(2*(dirac_mo_tot_num),2*(dirac_mo_tot_num))]
   implicit none
   BEGIN_DOC
   !The eigenvalues and eigenvectors in the MO basis for a Coulomb ee
@@ -844,13 +844,13 @@
   complex*16       :: eigenvectors(2*(dirac_mo_tot_num),2*(dirac_mo_tot_num))
   n = 2*(dirac_mo_tot_num)
   nmax = n
-  call lapack_diag_complex(eigenvalues,eigenvectors,dirac_Fock_matrix_mo,nmax,n)
-  eigenvalues_dirac_fock_matrix_mo = eigenvalues
-  eigenvectors_dirac_fock_matrix_mo = eigenvectors
+  call lapack_diag_complex(eigenvalues,eigenvectors,dirac_Fock_matrix_Coulomb_mo,nmax,n)
+  eigenvalues_dirac_fock_matrix_Coulomb_mo = eigenvalues
+  eigenvectors_dirac_fock_matrix_Coulomb_mo = eigenvectors
  END_PROVIDER
 
- BEGIN_PROVIDER [double precision,eigenvalues_dirac_fock_matrix_erf_mo,(2*(dirac_mo_tot_num))]
- &BEGIN_PROVIDER [complex*16, eigenvectors_dirac_fock_matrix_erf_mo,(2*(dirac_mo_tot_num),2*(dirac_mo_tot_num))]
+ BEGIN_PROVIDER [double precision,eigenvalues_dirac_fock_matrix_Coulomb_erf_mo,(2*(dirac_mo_tot_num))]
+ &BEGIN_PROVIDER [complex*16, eigenvectors_dirac_fock_matrix_Coulomb_erf_mo,(2*(dirac_mo_tot_num),2*(dirac_mo_tot_num))]
   implicit none
   BEGIN_DOC
   !The eigenvalues and eigenvectors in the MO basis for a long-range Coulomb ee
@@ -861,14 +861,14 @@
   complex*16       :: eigenvectors(2*(dirac_mo_tot_num),2*(dirac_mo_tot_num))
   n = 2*(dirac_mo_tot_num)
   nmax = n
-  call lapack_diag_complex(eigenvalues,eigenvectors,dirac_Fock_matrix_erf_mo,nmax,n)
-  eigenvalues_dirac_fock_matrix_erf_mo = eigenvalues
-  eigenvectors_dirac_fock_matrix_erf_mo = eigenvectors
+  call lapack_diag_complex(eigenvalues,eigenvectors,dirac_Fock_matrix_Coulomb_erf_mo,nmax,n)
+  eigenvalues_dirac_fock_matrix_Coulomb_erf_mo = eigenvalues
+  eigenvectors_dirac_fock_matrix_Coulomb_erf_mo = eigenvectors
  END_PROVIDER
 
 
- BEGIN_PROVIDER [double precision,eigenvalues_dirac_fock_matrix_Gaunt_mo,(2*(dirac_mo_tot_num))]
- &BEGIN_PROVIDER [complex*16, eigenvectors_dirac_fock_matrix_Gaunt_mo,(2*(dirac_mo_tot_num),2*(dirac_mo_tot_num))]
+ BEGIN_PROVIDER [double precision,eigenvalues_dirac_fock_matrix_Coulomb_Gaunt_mo,(2*(dirac_mo_tot_num))]
+ &BEGIN_PROVIDER [complex*16, eigenvectors_dirac_fock_matrix_Coulomb_Gaunt_mo,(2*(dirac_mo_tot_num),2*(dirac_mo_tot_num))]
  BEGIN_DOC
  !The eigenvalues and eigenvectors in the MO basis for a Coulomb_Gaunt ee
  ! interaction
@@ -879,13 +879,13 @@
   complex*16       :: eigenvectors(2*(dirac_mo_tot_num),2*(dirac_mo_tot_num))
   n = 2*(dirac_mo_tot_num)
   nmax = n
-  call lapack_diag_complex(eigenvalues,eigenvectors,dirac_Fock_matrix_Gaunt_mo,nmax,n)
-  eigenvalues_dirac_fock_matrix_Gaunt_mo = eigenvalues
-  eigenvectors_dirac_fock_matrix_Gaunt_mo = eigenvectors
+  call lapack_diag_complex(eigenvalues,eigenvectors,dirac_Fock_matrix_Coulomb_Gaunt_mo,nmax,n)
+  eigenvalues_dirac_fock_matrix_Coulomb_Gaunt_mo = eigenvalues
+  eigenvectors_dirac_fock_matrix_Coulomb_Gaunt_mo = eigenvectors
  END_PROVIDER
 
- BEGIN_PROVIDER [double precision,eigenvalues_dirac_fock_matrix_Gaunt_erf_mo,(2*(dirac_mo_tot_num))]
- &BEGIN_PROVIDER [complex*16, eigenvectors_dirac_fock_matrix_Gaunt_erf_mo,(2*(dirac_mo_tot_num),2*(dirac_mo_tot_num))]
+ BEGIN_PROVIDER [double precision,eigenvalues_dirac_fock_matrix_Coulomb_Gaunt_erf_mo,(2*(dirac_mo_tot_num))]
+ &BEGIN_PROVIDER [complex*16, eigenvectors_dirac_fock_matrix_Coulomb_Gaunt_erf_mo,(2*(dirac_mo_tot_num),2*(dirac_mo_tot_num))]
  BEGIN_DOC
  !The eigenvalues and eigenvectors in the MO basis for a long-range Coulomb_Gaunt ee
  ! interaction
@@ -896,14 +896,14 @@
   complex*16       :: eigenvectors(2*(dirac_mo_tot_num),2*(dirac_mo_tot_num))
   n = 2*(dirac_mo_tot_num)
   nmax = n
-  call lapack_diag_complex(eigenvalues,eigenvectors,dirac_Fock_matrix_Gaunt_erf_mo,nmax,n)
-  eigenvalues_dirac_fock_matrix_Gaunt_erf_mo = eigenvalues
-  eigenvectors_dirac_fock_matrix_Gaunt_erf_mo = eigenvectors
+  call lapack_diag_complex(eigenvalues,eigenvectors,dirac_Fock_matrix_Coulomb_Gaunt_erf_mo,nmax,n)
+  eigenvalues_dirac_fock_matrix_Coulomb_Gaunt_erf_mo = eigenvalues
+  eigenvectors_dirac_fock_matrix_Coulomb_Gaunt_erf_mo = eigenvectors
  END_PROVIDER
 
 
 
- BEGIN_PROVIDER [complex*16, eigenvectors_dirac_Fock_matrix_ao, (2*(dirac_mo_tot_num),2*(dirac_mo_tot_num))]
+ BEGIN_PROVIDER [complex*16, eigenvectors_dirac_Fock_matrix_Coulomb_ao, (2*(dirac_mo_tot_num),2*(dirac_mo_tot_num))]
  implicit none
  BEGIN_DOC
  !The eigenvectors in the AO basis, which does not diagonalize S, 
@@ -912,11 +912,11 @@
  integer :: n,nmax
   call zgemm('N','N', 2*(dirac_ao_num), 2*(dirac_mo_tot_num), 2*(dirac_ao_num),              &
       (1.d0,0.d0), dirac_mo_coef_S,size(dirac_mo_coef_S,1),                                      &
-      eigenvectors_dirac_Fock_matrix_mo, size(eigenvectors_dirac_Fock_matrix_mo,1),              &
-      (0.d0,0.d0), eigenvectors_dirac_Fock_matrix_ao, size(eigenvectors_dirac_Fock_matrix_ao,1)) 
+      eigenvectors_dirac_Fock_matrix_Coulomb_mo, size(eigenvectors_dirac_Fock_matrix_Coulomb_mo,1),              &
+      (0.d0,0.d0), eigenvectors_dirac_Fock_matrix_Coulomb_ao, size(eigenvectors_dirac_Fock_matrix_Coulomb_ao,1)) 
  END_PROVIDER
 
- BEGIN_PROVIDER [complex*16, eigenvectors_dirac_Fock_matrix_erf_ao, (2*(dirac_mo_tot_num),2*(dirac_mo_tot_num))]
+ BEGIN_PROVIDER [complex*16, eigenvectors_dirac_Fock_matrix_Coulomb_erf_ao, (2*(dirac_mo_tot_num),2*(dirac_mo_tot_num))]
  implicit none
  BEGIN_DOC
  !The eigenvectors in the AO basis, which does not diagonalize S, 
@@ -925,12 +925,12 @@
  integer :: n,nmax
   call zgemm('N','N', 2*(dirac_ao_num), 2*(dirac_mo_tot_num), 2*(dirac_ao_num),              &
       (1.d0,0.d0), dirac_mo_coef_S,size(dirac_mo_coef_S,1),                                      &
-      eigenvectors_dirac_Fock_matrix_erf_mo, size(eigenvectors_dirac_Fock_matrix_erf_mo,1),              &
-      (0.d0,0.d0), eigenvectors_dirac_Fock_matrix_erf_ao, size(eigenvectors_dirac_Fock_matrix_erf_ao,1)) 
+      eigenvectors_dirac_Fock_matrix_Coulomb_erf_mo, size(eigenvectors_dirac_Fock_matrix_Coulomb_erf_mo,1),              &
+      (0.d0,0.d0), eigenvectors_dirac_Fock_matrix_Coulomb_erf_ao, size(eigenvectors_dirac_Fock_matrix_Coulomb_erf_ao,1)) 
  END_PROVIDER
 
 
- BEGIN_PROVIDER [complex*16, eigenvectors_dirac_Fock_matrix_Gaunt_ao, (2*(dirac_mo_tot_num),2*(dirac_mo_tot_num))]
+ BEGIN_PROVIDER [complex*16, eigenvectors_dirac_Fock_matrix_Coulomb_Gaunt_ao, (2*(dirac_mo_tot_num),2*(dirac_mo_tot_num))]
  implicit none
  BEGIN_DOC
  !The eigenvectors in the AO basis, which does not diagonalize S,
@@ -939,11 +939,11 @@
  integer :: n,nmax
   call zgemm('N','N', 2*(dirac_ao_num), 2*(dirac_mo_tot_num), 2*(dirac_ao_num),              &
       (1.d0,0.d0), dirac_mo_coef_S,size(dirac_mo_coef_S,1),                                      &
-      eigenvectors_dirac_Fock_matrix_Gaunt_mo, size(eigenvectors_dirac_Fock_matrix_Gaunt_mo,1),              &
-      (0.d0,0.d0), eigenvectors_dirac_Fock_matrix_Gaunt_ao, size(eigenvectors_dirac_Fock_matrix_Gaunt_ao,1)) 
+      eigenvectors_dirac_Fock_matrix_Coulomb_Gaunt_mo, size(eigenvectors_dirac_Fock_matrix_Coulomb_Gaunt_mo,1),              &
+      (0.d0,0.d0), eigenvectors_dirac_Fock_matrix_Coulomb_Gaunt_ao, size(eigenvectors_dirac_Fock_matrix_Coulomb_Gaunt_ao,1)) 
  END_PROVIDER
 
- BEGIN_PROVIDER [complex*16, eigenvectors_dirac_Fock_matrix_Gaunt_erf_ao, (2*(dirac_mo_tot_num),2*(dirac_mo_tot_num))]
+ BEGIN_PROVIDER [complex*16, eigenvectors_dirac_Fock_matrix_Coulomb_Gaunt_erf_ao, (2*(dirac_mo_tot_num),2*(dirac_mo_tot_num))]
  implicit none
  BEGIN_DOC
  !The eigenvectors in the AO basis, which does not diagonalize S,
@@ -952,6 +952,6 @@
  integer :: n,nmax
   call zgemm('N','N', 2*(dirac_ao_num), 2*(dirac_mo_tot_num), 2*(dirac_ao_num),              &
       (1.d0,0.d0), dirac_mo_coef_S,size(dirac_mo_coef_S,1),                                      &
-      eigenvectors_dirac_Fock_matrix_Gaunt_erf_mo, size(eigenvectors_dirac_Fock_matrix_Gaunt_erf_mo,1),              &
-      (0.d0,0.d0), eigenvectors_dirac_Fock_matrix_Gaunt_erf_ao, size(eigenvectors_dirac_Fock_matrix_Gaunt_erf_ao,1)) 
+      eigenvectors_dirac_Fock_matrix_Coulomb_Gaunt_erf_mo, size(eigenvectors_dirac_Fock_matrix_Coulomb_Gaunt_erf_mo,1),              &
+      (0.d0,0.d0), eigenvectors_dirac_Fock_matrix_Coulomb_Gaunt_erf_ao, size(eigenvectors_dirac_Fock_matrix_Coulomb_Gaunt_erf_ao,1)) 
  END_PROVIDER

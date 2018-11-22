@@ -128,15 +128,15 @@
  !dirac_mo_label = "Canonical"
  !soft_touch dirac_mo_label
  !Choose SCF algorithm
-  if (dirac_interaction == "Coulomb") then
+ !if (dirac_interaction == "Coulomb") then
    call damping_Dirac_SCF  
   !call Roothaan_Hall_Dirac_SCF
-  elseif (dirac_interaction == "Coulomb_Gaunt") then
-   call damping_Dirac_Gaunt_SCF
-  else
-   print *,  'Unrecognized dirac_interaction : '//dirac_interaction
-   stop 1
-  endif
+ !elseif (dirac_interaction == "Coulomb_Gaunt") then
+  !call damping_Dirac_Gaunt_SCF
+ !else
+ ! print *,  'Unrecognized dirac_interaction : '//dirac_interaction
+ ! stop 1
+ !endif
  end
 
  subroutine run_dirac_erf
@@ -149,9 +149,9 @@
  !soft_touch dirac_mo_label
  !Choose SCF algorithm
   if (dirac_interaction == "Coulomb") then
-   call damping_Dirac_erf_SCF  
+ ! call damping_Dirac_erf_SCF  
   elseif (dirac_interaction == "Coulomb_Gaunt") then
-   call damping_Dirac_Gaunt_erf_SCF
+ ! call damping_Dirac_Gaunt_erf_SCF
   else
    print *,  'Unrecognized dirac_interaction : '//dirac_interaction
    stop 1

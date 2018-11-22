@@ -91,36 +91,36 @@
  END_PROVIDER
 
 
- subroutine dirac_huckel_guess
-  implicit none
-  BEGIN_DOC
-  ! Build the dirac MOs using the extended Huckel model (This guess may have
-  ! absolutely no meaning nor usage)
-  END_DOC
-  integer                        :: i,j,j_plus
-  double precision               :: accu
-  double precision               :: c
-  character*(64)                 :: label
-  complex*16, allocatable        :: A(:,:)
-  label = "Guess"
-  c = 0.5d0 * 1.75d0
-  allocate (A(2*dirac_ao_num, 2*dirac_ao_num))
-  A = (0.d0,0.d0)
-  do j=1,2*dirac_ao_num
-   do i=1,2*dirac_ao_num
-    A(i,j) = c * dirac_ao_overlap(i,j) * (dirac_ao_mono_elec_integral_diag(i) + dirac_ao_mono_elec_integral_diag(j))
-   enddo
-   A(j,j) = dirac_ao_mono_elec_integral_diag(j) + dirac_ao_bi_elec_integral(j,j)
-  enddo
-  dirac_Fock_matrix_ao(1:2*dirac_ao_num,1:2*dirac_ao_num) = A(1:2*dirac_ao_num,1:2*dirac_ao_num)
-  TOUCH dirac_Fock_matrix_ao
-  do j =1, elec_num
-   j_plus = j+2*small_ao_num
-   do i = 1, 2*dirac_ao_num
-    dirac_mo_coef (i,j) = eigenvectors_dirac_fock_matrix_mo (i,j_plus)
-   enddo
-  enddo
+!subroutine dirac_huckel_guess
+! implicit none
+! BEGIN_DOC
+! ! Build the dirac MOs using the extended Huckel model (This guess may have
+! ! absolutely no meaning nor usage)
+! END_DOC
+! integer                        :: i,j,j_plus
+! double precision               :: accu
+! double precision               :: c
+! character*(64)                 :: label
+! complex*16, allocatable        :: A(:,:)
+! label = "Guess"
+! c = 0.5d0 * 1.75d0
+! allocate (A(2*dirac_ao_num, 2*dirac_ao_num))
+! A = (0.d0,0.d0)
+! do j=1,2*dirac_ao_num
+!  do i=1,2*dirac_ao_num
+!   A(i,j) = c * dirac_ao_overlap(i,j) * (dirac_ao_mono_elec_integral_diag(i) + dirac_ao_mono_elec_integral_diag(j))
+!  enddo
+!  A(j,j) = dirac_ao_mono_elec_integral_diag(j) + dirac_ao_bi_elec_integral(j,j)
+! enddo
+! dirac_Fock_matrix_ao(1:2*dirac_ao_num,1:2*dirac_ao_num) = A(1:2*dirac_ao_num,1:2*dirac_ao_num)
+! TOUCH dirac_Fock_matrix_ao
+! do j =1, elec_num
+!  j_plus = j+2*small_ao_num
+!  do i = 1, 2*dirac_ao_num
+!   dirac_mo_coef (i,j) = eigenvectors_dirac_fock_matrix_mo (i,j_plus)
+!  enddo
+! enddo
 ! SOFT_TOUCH dirac_mo_coef
- !call save_mos
-  deallocate(A)
- end
+!!call save_mos
+! deallocate(A)
+!end
