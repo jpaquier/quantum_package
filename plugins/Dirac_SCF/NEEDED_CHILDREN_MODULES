@@ -1,6 +1,10 @@
 AO_Basis
+Dirac_AO_Basis
+Dirac_MO_Basis
 Integrals_Monoelec
+Dirac_Integrals_Monoelec
 Integrals_Bielec
+Dirac_Integrals_Bielec
 Integrals_erf
 Hartree_Fock
 Dirac_SCF_Utils
