@@ -6,41 +6,41 @@
   dirac_ao_num = large_ao_num + small_ao_num 
   END_PROVIDER
 
-!BEGIN_PROVIDER [ integer, two_dirac_ao_num ]
-! implicit none
-! BEGIN_DOC
-! ! twice the number of dirac AOs
-! END_DOC
-! logical                        :: has
-! PROVIDE ezfio_filename
-! if (mpi_master) then
-!   call ezfio_has_dirac_ao_basis_two_dirac_ao_num(has)
-! endif
-! IRP_IF MPI
-!   include 'mpif.h'
-!   integer                        :: ierr
-!   call MPI_BCAST( has, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
-!   if (ierr /= MPI_SUCCESS) then
-!     stop 'Unable to read ao_num with MPI'
-!   endif
-! IRP_ENDIF
-! if (.not.has) then
-!   two_dirac_ao_num = 2*dirac_ao_num
-!   call ezfio_set_dirac_ao_basis_two_dirac_ao_num(two_dirac_ao_num) 
-! else
-!   if (mpi_master) then
-!     call ezfio_get_dirac_ao_basis_two_dirac_ao_num(two_dirac_ao_num)
-!   endif
-!   IRP_IF MPI
-!     call MPI_BCAST( ao_num, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
-!     if (ierr /= MPI_SUCCESS) then
-!       stop 'Unable to read ao_num with MPI'
-!     endif
-!   IRP_ENDIF
-! endif
-!!call write_int(6,two_dirac_ao_num,'two_dirac_ao_num')
-! ASSERT (two_dirac_ao_num > 0)
-!END_PROVIDER
+ BEGIN_PROVIDER [ integer, twice_dirac_ao_num ]
+  implicit none
+  BEGIN_DOC
+  ! twice the number of dirac AOs
+  END_DOC
+  logical                        :: has
+  PROVIDE ezfio_filename
+  if (mpi_master) then
+    call ezfio_has_dirac_ao_basis_twice_dirac_ao_num(has)
+  endif
+  IRP_IF MPI
+    include 'mpif.h'
+    integer                        :: ierr
+    call MPI_BCAST( has, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, ierr)
+    if (ierr /= MPI_SUCCESS) then
+      stop 'Unable to read ao_num with MPI'
+    endif
+  IRP_ENDIF
+  if (.not.has) then
+    twice_dirac_ao_num = 2*dirac_ao_num
+    call ezfio_set_dirac_ao_basis_twice_dirac_ao_num(twice_dirac_ao_num) 
+  else
+    if (mpi_master) then
+      call ezfio_get_dirac_ao_basis_twice_dirac_ao_num(twice_dirac_ao_num)
+    endif
+    IRP_IF MPI
+      call MPI_BCAST( ao_num, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierr)
+      if (ierr /= MPI_SUCCESS) then
+        stop 'Unable to read ao_num with MPI'
+      endif
+    IRP_ENDIF
+  endif
+ !call write_int(6,twice_dirac_ao_num,'twice_dirac_ao_num')
+  ASSERT (twice_dirac_ao_num > 0)
+ END_PROVIDER
 
 
  BEGIN_PROVIDER [ integer, dirac_ao_prim_num, (dirac_ao_num) ]

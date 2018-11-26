@@ -1,4 +1,4 @@
- BEGIN_PROVIDER [ double precision, dirac_mo_coef_re ,(two_dirac_ao_num,two_dirac_mo_tot_num) ]
+ BEGIN_PROVIDER [ double precision, dirac_mo_coef_re ,(twice_dirac_ao_num,twice_dirac_mo_tot_num) ]
   implicit none
   BEGIN_DOC
   ! Real part of the coefficient of the ith ao on the jth mo
@@ -10,17 +10,12 @@
     call ezfio_has_dirac_mo_basis_dirac_mo_coef_re(has)
     if (has) then
      call ezfio_get_dirac_mo_basis_dirac_mo_coef_re(dirac_mo_coef_re)
-    else
-    !dirac_mo_coef_re = 0
-    !call ezfio_set_dirac_mo_basis_dirac_mo_coef_re(dirac_mo_coef_re)    
-    ! print *, 'dirac_mo_basis/dirac_mo_coef_re not found in EZFIO file'
-    ! stop 1
     endif
   endif
   IRP_IF MPI
     include 'mpif.h'
     integer :: ierr
-    call MPI_BCAST( dirac_mo_coef_re, (two_dirac_ao_num)*(two_dirac_mo_tot_num), MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
+    call MPI_BCAST( dirac_mo_coef_re, (twice_dirac_ao_num)*(twice_dirac_mo_tot_num), MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
     if (ierr /= MPI_SUCCESS) then
       stop 'Unable to read dirac_mo_coef_re with MPI'
     endif
@@ -31,7 +26,7 @@
   endif
  END_PROVIDER
 
- BEGIN_PROVIDER [ double precision, dirac_mo_coef_im ,(two_dirac_ao_num,two_dirac_mo_tot_num) ]
+ BEGIN_PROVIDER [ double precision, dirac_mo_coef_im ,(twice_dirac_ao_num,twice_dirac_mo_tot_num) ]
   implicit none
   BEGIN_DOC
   ! Imaginary part of the coefficient of the ith ao on the jth mo
@@ -44,17 +39,12 @@
     call ezfio_has_dirac_mo_basis_dirac_mo_coef_im(has)
     if (has) then
       call ezfio_get_dirac_mo_basis_dirac_mo_coef_im(dirac_mo_coef_im)
-    else
-    !dirac_mo_coef_im = 0
-    !call ezfio_set_dirac_mo_basis_dirac_mo_coef_im(dirac_mo_coef_im)      
-    !print *, 'dirac_mo_basis/dirac_mo_coef_im not found in EZFIO file'
-    !stop 1
     endif
   endif
   IRP_IF MPI
     include 'mpif.h'
     integer :: ierr
-    call MPI_BCAST( dirac_mo_coef_im, (two_dirac_ao_num)*(two_dirac_mo_tot_num),MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
+    call MPI_BCAST( dirac_mo_coef_im, (twice_dirac_ao_num)*(twice_dirac_mo_tot_num),MPI_DOUBLE_PRECISION, 0, MPI_COMM_WORLD, ierr)
     if (ierr /= MPI_SUCCESS) then
       stop 'Unable to read dirac_mo_coef_im with MPI'
     endif
@@ -79,8 +69,8 @@
   PROVIDE ezfio_filename 
   if (mpi_master) then
     ! Coefs
-    call ezfio_has_dirac_mo_basis_dirac_mo_coef_Re(exists_Re)
-    call ezfio_has_dirac_mo_basis_dirac_mo_coef_Im(exists_Im)
+    call ezfio_has_dirac_scf_dirac_mo_coef_Re(exists_Re)
+    call ezfio_has_dirac_scf_dirac_mo_coef_Im(exists_Im)
   endif
   IRP_IF MPI
     include 'mpif.h'
@@ -96,9 +86,9 @@
   IRP_ENDIF
   if (exists_Re .and. exists_Im)  then
     if (mpi_master) then
-      call ezfio_get_dirac_mo_basis_dirac_mo_coef_Re(dirac_mo_coef_Re)
+      call ezfio_get_dirac_scf_dirac_mo_coef_Re(dirac_mo_coef_Re)
      !write(*,*) 'Read  dirac_mo_coef_Re'
-      call ezfio_get_dirac_mo_basis_dirac_mo_coef_Im(dirac_mo_coef_Im)
+      call ezfio_get_dirac_scf_dirac_mo_coef_Im(dirac_mo_coef_Im)
      !write(*,*) 'Read  dirac_mo_coef_Im'
       dirac_mo_coef = (1,0)*dirac_mo_coef_Re  + (0,1)*dirac_mo_coef_Im
     endif
@@ -152,6 +142,50 @@
  END_PROVIDER
 
 
+ BEGIN_PROVIDER [ complex*16, dirac_mo_coef_S, (2*(dirac_ao_num),2*(dirac_mo_tot_num))
+ implicit none
+  BEGIN_DOC
+  !Molecular orbital coefficients on AO basis set diagonalizing the overlap matrix S
+  !dirac_mo_coef_S(i,j) = coefficient of the ith ao on the jth mo
+  END_DOC
+  integer                        :: i,i_minus,j,j_minus
+  PROVIDE ezfio_filename
+  dirac_mo_coef_S = (0.d0,0.d0)
+  do j=1, 2*dirac_mo_tot_num
+   if (j .le. large_mo_tot_num) then
+    do i=1, 2*dirac_ao_num
+     if (i .le. large_ao_num) then
+      dirac_mo_coef_S(i,j) = (1.d0,0.d0)*large_mo_coef(i,j)
+     endif
+    enddo
+   elseif (j .gt. large_mo_tot_num .and. j .le. 2*large_mo_tot_num) then
+    j_minus = j - large_mo_tot_num
+    do i=1, 2*dirac_ao_num
+     if (i .gt. large_ao_num .and. i .le. 2*large_ao_num) then
+      i_minus = i - large_ao_num
+      dirac_mo_coef_S(i,j) = (1.d0,0.d0)*large_mo_coef(i_minus,j_minus)
+     endif
+    enddo
+   elseif (j.gt. 2*large_mo_tot_num .and. j .le. (2*large_mo_tot_num+small_mo_tot_num)) then
+    j_minus = j - 2*large_mo_tot_num
+    do i=1, 2*dirac_ao_num
+    i_minus = i - 2*large_ao_num
+     if (i .gt. 2*large_ao_num .and. i .le. (2*large_ao_num+small_ao_num)) then
+      dirac_mo_coef_S(i,j) = (1.d0,0.d0)*small_mo_coef(i_minus,j_minus)
+     endif
+    enddo
+   elseif (j .gt. (2*large_ao_num + small_ao_num)) then
+    j_minus = j - (2*large_mo_tot_num + small_mo_tot_num)
+    do i=1, 2*(large_ao_num+small_ao_num)
+     if (i .gt. (2*large_ao_num+small_ao_num)) then
+      i_minus = i - (2*large_ao_num + small_ao_num)
+      dirac_mo_coef_S(i,j) = (1.d0,0.d0)*small_mo_coef(i_minus,j_minus)
+     endif
+    enddo
+   endif
+  enddo
+ END_PROVIDER
+ 
 
 !BEGIN_PROVIDER [ double precision, dirac_mo_coef_guess, (2*(dirac_ao_num),2*(dirac_mo_tot_num))
 !implicit none
@@ -342,7 +376,7 @@
   END_DOC 
   call ortho_canonical_complex(dirac_mo_overlap,2*dirac_mo_tot_num,2*dirac_mo_tot_num,dirac_mo_coef,2*dirac_ao_num,2*dirac_ao_num)
   dirac_mo_label = 'Orthonormalized'
-! SOFT_TOUCH dirac_mo_coef dirac_mo_label
+  SOFT_TOUCH dirac_mo_coef dirac_mo_label
  end
 
  
