@@ -3,10 +3,10 @@
   ! Produce `Dirac_Hartree_Fock` MO orbital 
   ! output: none for the moment
   END_DOC
- !call check_range_separation
- !call create_dirac_guess
- !call run_dirac
- !call print_dirac_mo_coef
+  call check_range_separation
+  call create_dirac_guess
+  call run_dirac
+  call print_dirac_mo_coef
  end
 
  subroutine check_range_separation
