@@ -28,10 +28,10 @@
   E_min = dirac_SCF_energy
   delta_D_complex = (0.d0,0.d0)
   delta_D = 0.d0
-  do k=1,n_it_scf_max
+  do k=1,dirac_n_it_scf_max
    delta_E = dirac_SCF_energy - E
    E = dirac_SCF_energy
-   if (dabs(delta_E) < thresh_scf)  then
+   if (dabs(delta_E) < dirac_thresh_scf)  then
     exit
    endif
    saving = E < E_min
