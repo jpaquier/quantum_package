@@ -3,36 +3,71 @@ program projected_operators
   BEGIN_DOC
 ! TODO
   END_DOC
-  print *, '  _/                              '
-  print *, ' -:\_?,     _Jm####La             '
-  print *, 'J"(:" >  _]#AZ#Z#UUZ##,           '
-  print *, '_,::./   %(|i%12XmX1*1XL      _?, '
-  print *, '  \..\ _\(vmWQwodY+ia%lnL  _",/ ( '
-  print *, '   .:< ]J=mQD?WXn<uQWmmvd, -.-:=!'
-  print *, '   "{Z jC]QW|=3Zv)Bi3BmXv3  =   _7'
-  print *, '    ]h[Z6)WQ;)jZs]C;|$BZv+, : ./  '
-  print *, '    -#sJX%$Wmm#ev]hinW#Xi:` c ;   '
-  print *, '     #X#X23###1}vI$WWmX1>|,)nr"   '
-  print *, '     4XZ#Xov1v}=)vnXAX1nnv;1n"    '
-  print *, '     ]XX#ZXoovvvivnnnlvvo2*i7     '
-  print *, '     "23Z#1S2oo2XXSnnnoSo2>v"     '
-  print *, '      miX#L -~`""!!1}oSoe|i7      '
-  print *, '      4cn#m,        v221=|v[      '
-  print *, '      ]hI3Zma,;..__wXSe=+vo       '
-  print *, '      ]Zov*XSUXXZXZXSe||vo2       '
-  print *, '      ]Z#><iiii|i||||==vn2(       '
-  print *, '      ]Z#i<ii||+|=||=:{no2[       '
-  print *, '      ]ZUsiiiiivi|=||=vo22[       '
-  print *, '      ]XZvlliiIi|i=|+|vooo        '
-  print *, '      =v1llli||||=|||||lii(       '
-  print *, '      ]iillii||||||||=>=|<        '
-  print *, '      -ziiiii||||||+||==+>        '
-  print *, '       -%|+++||=|=+|=|==/         '
-  print *, '        -a>====+|====-:-          '
-  print *, '          "~,- --   /-            '
-  print *, '            -.     )>             '
-  print *, '           .~      +-             '
-  print *, '           . .... : .             '
-  print *, '            -------~              '
-  print *, ''
+! read_wf = .True.
+! touch read_wf
+! call routine_v
+! call routine_rho 
+  call routine_final
+
+end
+
+subroutine routine_rho
+ implicit none
+ provide rho2_kl_contracted_transposed
+
+end
+subroutine routine_v
+ implicit none
+ integer :: ipoint,k,l
+ double precision :: accu, weight
+ accu = 0.d0
+ do ipoint  = 1, n_points_final_grid
+  weight=final_weight_functions_at_final_grid_points(ipoint)
+  do l = 1, mo_tot_num
+   do k = 1, mo_tot_num
+!   accu += dabs(V_kl_contracted(k,l,ipoint) - V_kl_contracted_sequential(k,l,ipoint)) * weight
+    accu += dabs(V_kl_contracted(k,l,ipoint) ) * weight
+   enddo
+  enddo
+ enddo
+ print*,'accu = ',accu
+end
+ 
+
+subroutine routine_rho2
+ implicit none
+ integer :: ipoint,k,l
+ double precision :: accu, weight
+ accu = 0.d0
+ do ipoint  = 1, n_points_final_grid
+  weight=final_weight_functions_at_final_grid_points(ipoint)
+  do l = 1, mo_tot_num
+   do k = 1, mo_tot_num
+    accu += dabs(rho2_kl_contracted(k,l,ipoint) - rho2_kl_contracted_sequential(k,l,ipoint)) * weight
+   enddo
+  enddo
+ enddo
+ print*,'accu = ',accu
+end
+ 
+
+
+
+subroutine routine_final
+ implicit none
+ integer :: ipoint
+ double precision :: accu, weight
+ accu = 0.d0
+ do ipoint  = 1, n_points_final_grid
+  weight=final_weight_functions_at_final_grid_points(ipoint)
+! accu += dabs(f_psi_B_old(ipoint) - f_psi_B(ipoint)) *weight
+  accu += (f_psi_B(ipoint)) *weight
+ enddo
+ print*,'*******************'
+ print*,'*******************'
+ print*,'*******************'
+ print*,'*******************'
+ print*,'accu = ',accu
+
+
 end

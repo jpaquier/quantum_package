@@ -2,7 +2,7 @@ program test_hij
  implicit none
  read_wf = .true.
  touch read_wf 
- call routine
+ call routine_2
 end
 
 subroutine routine
@@ -63,5 +63,17 @@ subroutine routine
  print*,''
  print*,''
  print*,''
+
+end
+
+subroutine routine_2
+ implicit none
+ double precision :: accu
+ integer :: i
+ accu = 0.d0
+ do i = 1, N_det
+  accu += psi_coef(i,1)**2
+ enddo
+ print*,'accu = ',accu
 
 end

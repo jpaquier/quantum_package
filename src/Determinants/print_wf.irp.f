@@ -29,16 +29,10 @@ subroutine routine
  norm_mono_b_pert = 0.d0
  norm_mono_a_pert_2 = 0.d0
  norm_mono_b_pert_2 = 0.d0
- integer :: number_of_holes,nh
- integer :: number_of_particles,np
- double precision :: accu_e_corr(0:2,0:2)
- accu_e_corr = 0.d0
  do i = 1, min(10000,N_det)
   print*,''
   print*,'i = ',i
   call debug_det(psi_det(1,1,i),N_int)
-  nh = number_of_holes(psi_det(1,1,i))
-  np = number_of_particles(psi_det(1,1,i))
   call get_excitation_degree(psi_det(1,1,i),psi_det(1,1,1),degree,N_int)
   print*,'degree = ',degree
   if(degree == 0)then
@@ -73,7 +67,6 @@ subroutine routine
      norm_mono_b_pert += dabs(coef_1)
      norm_mono_b_pert_2 += dabs(coef_1)**2
     endif
-!  print*,'< h | Ka| p > = ',get_mo_bielec_integral(h1,list_act(1),list_act(1),p1,mo_integrals_map)
     double precision :: hmono,hdouble
     call  i_H_j_verbose(psi_det(1,1,1),psi_det(1,1,i),N_int,hij,hmono,hdouble)
     print*,'hmono         = ',hmono
@@ -85,31 +78,19 @@ subroutine routine
     print*,'h1,p1 = ',h1,p1
     print*,'s2',s2
     print*,'h2,p2 = ',h2,p2
-!  print*,'< h | Ka| p > = ',get_mo_bielec_integral(h1,h2,p1,p2,mo_integrals_map)
    endif
-    print*,'nh,np = ',nh,np 
    
    print*,'<Ref| H |D_I> = ',hij
    print*,'Delta E       = ',h00-hii
    print*,'coef pert (1) = ',coef_1
    print*,'coef 2x2      = ',coef_2_2
    print*,'Delta E_corr  = ',psi_coef(i,1)/psi_coef(1,1) * hij
-   if(nh<3.and.np<3)then
-    accu_e_corr(nh,np) += psi_coef(i,1)/psi_coef(1,1) * hij
-   endif
   endif
    print*,'amplitude     = ',psi_coef(i,1)/psi_coef(1,1)
 
  enddo
 
 
- print*,''
- print*,''
- do nh = 0, 2
-  do np = 0,2
-   print*, 'e_corr = ',nh,np,accu_e_corr(nh,np)
-  enddo
- enddo
  print*,''
  print*,'L1 norm of mono alpha = ',norm_mono_a
  print*,'L1 norm of mono beta  = ',norm_mono_b

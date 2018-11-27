@@ -120,7 +120,7 @@ subroutine nuclear_coulomb_operator_in_real_space(r1,coulomb)
 end
 
 
-subroutine expectation_value_in_real_space_old(r1,r2,coulomb,two_dm)
+subroutine expectation_value_in_real_space_ol(r1,r2,coulomb,two_dm)
 use map_module
  implicit none
  double precision, intent(in) :: r1(3), r2(3)
@@ -170,10 +170,7 @@ use map_module
    enddo
   enddo
  enddo
-!coulomb = coulomb * 0.5d0 
-!print*,coulomb,two_dm
  coulomb = coulomb / two_dm
-!coulomb = exp(log(coulomb) - log(two_dm))
 
 end
 
@@ -215,6 +212,43 @@ use map_module
  else 
   coulomb = 1.d-10
  endif
+
+end
+
+
+subroutine expectation_value_in_real_space_no_divide(r1,r2,coulomb,two_body_dm)
+use map_module
+ implicit none
+ double precision, intent(in) :: r1(3), r2(3)
+ double precision, intent(out):: coulomb, two_body_dm
+ integer :: i,j,k,l,m,n  
+ double precision :: integrals_array(mo_tot_num,mo_tot_num)
+ double precision :: mos_array_r1(mo_tot_num)
+ double precision :: mos_array_r2(mo_tot_num)
+ double precision :: a1,a2,a3,a4
+ double precision :: c1,c2,c3,c4
+ double precision :: threshold
+ double precision :: integral,get_mo_bielec_integral
+ threshold = 0.d0
+
+ call give_all_mos_at_r(r1,mos_array_r1) 
+ call give_all_mos_at_r(r2,mos_array_r2) 
+
+ two_body_dm = 0.d0
+ coulomb = 0.d0
+ double precision :: tmp1
+ do i = 1, mo_tot_num ! 1
+  do j = 1, mo_tot_num ! 2 
+   do m = 1, mo_tot_num ! 1
+    do n = 1, mo_tot_num ! 2
+     !                                               2 1 2 1
+     tmp1 = mos_array_r2(n) * mos_array_r1(m) * mos_array_r2(j) * mos_array_r1(i)
+     coulomb     += two_bod_alpha_beta_mo_contracted(n,m,j,i,1) * tmp1 
+     two_body_dm += two_bod_alpha_beta_mo_physician (n,m,j,i,1) * tmp1 
+    enddo
+   enddo
+  enddo
+ enddo
 
 end
 

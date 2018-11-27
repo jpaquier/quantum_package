@@ -6,9 +6,9 @@ program scf
 ! optional: mo_basis.mo_coef
   END_DOC
   read_wf = .False.
+  density_for_dft ="WFT"
+  touch density_for_dft
   touch read_wf
-  print*,'N_states = ',N_states
-
   print*, '**************************'
   print*, 'mu_erf = ',mu_erf
   print*, '**************************'

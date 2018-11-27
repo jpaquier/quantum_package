@@ -6,8 +6,7 @@ end
 subroutine routine
  implicit none
  integer :: ndet_max
- print*, 'How many determinants would you like ?'
- read(5,*)ndet_max
+ ndet_max = N_det_max
  integer(bit_kind), allocatable :: psi_det_tmp(:,:,:)
  double precision, allocatable :: psi_coef_tmp(:,:)
  allocate(psi_det_tmp(N_int,2,ndet_max),psi_coef_tmp(ndet_max, N_states))
