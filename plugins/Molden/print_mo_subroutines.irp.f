@@ -39,12 +39,12 @@ subroutine print_mos(it)
  enddo
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
- write(i_unit_output,*)'ATOM      ATOMIC                      COORDINATES (BOHR)          '
- write(i_unit_output,*)'          CHARGE         X                   Y                   Z'
- do i = 1, nucl_num
+!write(i_unit_output,*)'ATOM      ATOMIC                      COORDINATES (BOHR)          '
+!write(i_unit_output,*)'          CHARGE         X                   Y                   Z'
+!do i = 1, nucl_num
 ! write(i_unit_output,'(A2 I3 X F3.1 X 3(F16.10))') trim(element_name(int(nucl_charge(i)))),i,(nucl_charge(i)), nucl_coord(i,1), nucl_coord(i,2), nucl_coord(i,3)
-  write(i_unit_output,'(A2,I1, 9X F5.1 X 3(F16.10 ,4X))') trim(element_name(int(nucl_charge(i)))),i,(nucl_charge(i)), nucl_coord(i,1), nucl_coord(i,2), nucl_coord(i,3)
- enddo
+! write(i_unit_output,'(A2,I1, 9X F5.1 X 3(F16.10 ,4X))') trim(element_name(int(nucl_charge(i)))),i,(nucl_charge(i)), nucl_coord(i,1), nucl_coord(i,2), nucl_coord(i,3)
+!enddo
 
  character*(128) :: character_shell
  integer :: i_shell,i_prim,i_ao
@@ -106,7 +106,7 @@ subroutine print_mos(it)
   do i = 1, ao_num
 !   write(i_unit_output,'(2X,I3, 2X A1,  I3, 2X A4 , F9.6)')i,trim(element_name(int(nucl_charge(ao_nucl(i))))),ao_nucl(i),(ao_l_char_space(i)),mo_coef(i,j)
 ! F12.6 for larger coefficients...
-   write(i_unit_output,'(2X,I3, 2X A1,  I3, 2X A4 , F12.6)')i,trim(element_name(int(nucl_charge(ao_nucl(i))))),ao_nucl(i),(ao_l_char_space(i)),mo_coef(i,j)
+   write(i_unit_output,'(2X,I3, 2X A2,  I3, 2X A4 , F12.6)')i,trim(element_name(int(nucl_charge(ao_nucl(i))))),ao_nucl(i),(ao_l_char_space(i)),mo_coef(new_order_all_AOS_for_molden(i),j)
 !  write(i_unit_output,'(I3, X A1, X I3, X A4 X F16.8)')i,trim(element_name(int(nucl_charge(ao_nucl(i))))),ao_nucl(i),(ao_l_char_space(i))
   enddo
   write(i_unit_output,*)''

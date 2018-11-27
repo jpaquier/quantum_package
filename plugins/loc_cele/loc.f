@@ -12,13 +12,13 @@ C     W: new overlap matrix
 C
 C 
       implicit real*8(a-h,o-y),logical*1(z)
-      parameter (id1=300)
+      parameter (id1=700)
       dimension s(id1,id1),t(id1,id1),w(id1,id1)
       data small/1.d-6/
 
       zprt=.true.
       niter=1000000
-      conv=1.d-10
+      conv=1.d-12
 
 C      niter=1000000
 C      conv=1.d-6
