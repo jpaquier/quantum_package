@@ -1,6 +1,5 @@
-
  BEGIN_PROVIDER [ integer, Nucl_list_l_type_Aos, (ao_num,0:7,nucl_num)]
-&BEGIN_PROVIDER [ integer, Nucl_num_l_type_Aos, (0:7,nucl_num)]
+ &BEGIN_PROVIDER [ integer, Nucl_num_l_type_Aos, (0:7,nucl_num)]
  implicit none
  integer :: i,j,k
  BEGIN_DOC
@@ -60,10 +59,6 @@
   enddo
  enddo
  END_PROVIDER
-
-
-
-
 
  BEGIN_PROVIDER [ integer, number_of_small_component_expo_per_shell_per_atom,(0:7,nucl_num)] 
  &BEGIN_PROVIDER [ integer, nmax_of_small_component_expo] 
