@@ -17,16 +17,16 @@
    print*,'**********'
    print*,'Long-range Coulomb interaction'   
    print*, 'mu_erf =',mu_erf
-   print*, 'dirac_SCF_Coulomb_energy =',dirac_SCF_Coulomb_energy
+   print*, 'dirac_HF_two_electron_Coulomb_Exchange_energy=', dirac_HF_two_electron_Coulomb_Exchange_energy
    open (10, file='Energy_DHF_LRC.dat',position ='append') 
-   write(10,*) mu_erf,dirac_SCF_Coulomb_energy
+   write(10,*) mu_erf, dirac_HF_two_electron_Coulomb_Exchange_energy
   elseif (dirac_interaction == "Coulomb_Gaunt") then
    print*,'**********'
    print*,'Long-range Coulomb-Gaunt interaction'
    print*, 'mu_erf =',mu_erf
-   print*, 'dirac_SCF_Coulomb_Gaunt_energy =',dirac_SCF_Coulomb_Gaunt_energy
+   print*, 'dirac_HF_two_electron_Coulomb_Gaunt_Exchange_energy=', dirac_HF_two_electron_Coulomb_Gaunt_Exchange_energy
    open (10, file='Energy_DHF_LRCG.dat', position='append')
-   write(10,*) mu_erf,dirac_SCF_Coulomb_Gaunt_energy
+   write(10,*) mu_erf, dirac_HF_two_electron_Coulomb_Gaunt_Exchange_energy
   else
    print *,  'Unrecognized dirac_interaction : '//dirac_interaction
    stop 1

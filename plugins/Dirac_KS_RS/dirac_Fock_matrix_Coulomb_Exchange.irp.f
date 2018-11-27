@@ -79,21 +79,8 @@
 !!$OMP END PARALLEL
  END_PROVIDER
 
- BEGIN_PROVIDER [ complex*16, dirac_Fock_matrix_Coulomb_ao, (2*dirac_ao_num,2*dirac_ao_num) ]
-  implicit none
-  BEGIN_DOC
-  !Dirac Fock matrix in AO basis set for the Coulomb bi-eletronic interaction
-  END_DOC
-  integer                        :: i,j
-  do j=1,2*dirac_ao_num
-   do i=1,2*dirac_ao_num
-    dirac_Fock_matrix_Coulomb_ao(i,j) = dirac_ao_mono_elec_integral(i,j) + dirac_ao_bi_elec_Coulomb_Exchange_integral(i,j)
-   enddo
-  enddo
- END_PROVIDER
-
- BEGIN_PROVIDER [ complex*16, dirac_HF_two_electron_Coulomb_energy_complex]
- &BEGIN_PROVIDER [ double precision, dirac_HF_two_electron_Coulomb_energy] 
+ BEGIN_PROVIDER [ complex*16, dirac_HF_two_electron_Coulomb_Exchange_energy_complex]
+ &BEGIN_PROVIDER [ double precision, dirac_HF_two_electron_Coulomb_Exchange_energy] 
   implicit none
   BEGIN_DOC
   !Two-electrons energy of the Coulomb ee interaction
@@ -101,33 +88,16 @@
   ! a VERY small artifact and take only its real part
   END_DOC
   integer :: i,j
-  dirac_HF_two_electron_Coulomb_energy_complex = (0.d0,0.d0)
+  dirac_HF_two_electron_Coulomb_Exchange_energy_complex = (0.d0,0.d0)
   do j=1, 2*dirac_ao_num
    do i=1, 2*dirac_ao_num
-    dirac_HF_two_electron_Coulomb_energy_complex += 0.5d0* (dirac_ao_bi_elec_Coulomb_Exchange_integral(i,j)) * dirac_SCF_density_matrix_ao(j,i)
+    dirac_HF_two_electron_Coulomb_Exchange_energy_complex += 0.5d0* (dirac_ao_bi_elec_Coulomb_Exchange_integral(i,j)) * dirac_SCF_density_matrix_ao(j,i)
    enddo
   enddo
-  dirac_HF_two_electron_Coulomb_energy = real(dirac_HF_two_electron_Coulomb_energy_complex)
-  if (aimag(dirac_HF_two_electron_Coulomb_energy_complex) .gt. 1.d-10) then
+  dirac_HF_two_electron_Coulomb_Exchange_energy = real(dirac_HF_two_electron_Coulomb_Exchange_energy_complex)
+  if (aimag(dirac_HF_two_electron_Coulomb_Exchange_energy_complex) .gt. 1.d-10) then
   print*, 'Warning! The energy is not real'
-  print*, 'dirac_HF_two_electron_Coulomb_energy_complex =', dirac_HF_two_electron_Coulomb_energy_complex
+  print*, 'dirac_HF_two_electron_Coulomb_Exchange_energy_complex =', dirac_HF_two_electron_Coulomb_Exchange_energy_complex
   STOP
   endif
  END_PROVIDER
-
- BEGIN_PROVIDER [ double precision, dirac_HF_Coulomb_energy]
-  implicit none
-  BEGIN_DOC
-  !Dirac-Hartree-Fock energy for the Coulomb ee interaction
-  END_DOC
-  dirac_HF_Coulomb_energy = nuclear_repulsion + dirac_HF_two_electron_Coulomb_energy + dirac_HF_one_electron_energy
- END_PROVIDER
-
- BEGIN_PROVIDER [ double precision, dirac_SCF_Coulomb_energy]
-  implicit none 
-  BEGIN_DOC
-  !Dirac_SCF energy for a Coulomb ee interaction
-  END_DOC 
-  dirac_SCF_Coulomb_energy = dirac_HF_Coulomb_energy + dirac_extra_energy_contrib_from_density
- END_PROVIDER
-
