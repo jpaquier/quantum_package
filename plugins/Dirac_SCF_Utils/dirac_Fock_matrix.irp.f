@@ -5,9 +5,9 @@
   END_DOC
   integer                        ::i,j
   if (dirac_interaction == "Coulomb") then
-   dirac_fock_matrix_ao = dirac_fock_matrix_Coulomb_ao
+   dirac_fock_matrix_ao = dirac_fock_matrix_C_ao
   elseif (dirac_interaction == "Coulomb_Gaunt") then
-   dirac_fock_matrix_ao = dirac_fock_matrix_Coulomb_Gaunt_ao
+   dirac_fock_matrix_ao = dirac_fock_matrix_C_G_ao
   else
    print *,  'Unrecognized dirac_interaction : '//dirac_interaction
    stop 1
@@ -21,9 +21,9 @@
   END_DOC
   integer                        ::i,j
   if (dirac_interaction == "Coulomb") then
-   eigenvectors_dirac_fock_matrix_ao = eigenvectors_dirac_fock_matrix_Coulomb_ao
+   eigenvectors_dirac_fock_matrix_ao = eigenvectors_dirac_fock_matrix_C_ao
   elseif (dirac_interaction == "Coulomb_Gaunt") then
-   eigenvectors_dirac_fock_matrix_ao = eigenvectors_dirac_fock_matrix_Coulomb_Gaunt_ao
+   eigenvectors_dirac_fock_matrix_ao = eigenvectors_dirac_fock_matrix_C_G_ao
   else
    print *,  'Unrecognized dirac_interaction : '//dirac_interaction
    stop 1
@@ -37,9 +37,9 @@
   END_DOC
   integer                        ::i,j
   if (dirac_interaction == "Coulomb") then
-   dirac_SCF_energy = dirac_SCF_Coulomb_energy
+   dirac_SCF_energy = dirac_SCF_C_energy
   elseif (dirac_interaction == "Coulomb_Gaunt") then
-   dirac_SCF_energy = dirac_SCF_Coulomb_Gaunt_energy
+   dirac_SCF_energy = dirac_SCF_C_G_energy
   else
    print *,  'Unrecognized dirac_interaction : '//dirac_interaction
    stop 1

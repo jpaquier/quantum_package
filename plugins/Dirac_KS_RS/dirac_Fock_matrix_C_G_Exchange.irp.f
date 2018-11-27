@@ -82,33 +82,17 @@
       dirac_ao_bi_elec_Coulomb_Gaunt_Exchange_integral_tmp(dirac_inverse_list(i,2),dirac_inverse_list(l,1)) -= (dirac_SCF_density_matrix_ao(dirac_inverse_list(j,2),dirac_inverse_list(k,1))) * integral
       !L_alpha L_beta .or. S_alpha S_beta
       dirac_ao_bi_elec_Coulomb_Gaunt_Exchange_integral_tmp(dirac_inverse_list(i,1),dirac_inverse_list(l,2)) -= (dirac_SCF_density_matrix_ao(dirac_inverse_list(j,1),dirac_inverse_list(k,2))) * integral
-      !L_alpha S_alpha .or S_alpha L_alpha
-      dirac_ao_bi_elec_Coulomb_Gaunt_Exchange_integral_tmp(dirac_inverse_list(i,1),dirac_inverse_list(j,1)) -= (dirac_SCF_density_matrix_ao(dirac_inverse_list(l,1),dirac_inverse_list(k,1))) * integral
-      dirac_ao_bi_elec_Coulomb_Gaunt_Exchange_integral_tmp(dirac_inverse_list(i,1),dirac_inverse_list(j,1)) += (dirac_SCF_density_matrix_ao(dirac_inverse_list(l,2),dirac_inverse_list(k,2))) * integral
-      !L_beta S_beta .or S_beta L_beta
-      dirac_ao_bi_elec_Coulomb_Gaunt_Exchange_integral_tmp(dirac_inverse_list(i,2),dirac_inverse_list(j,2)) -= (dirac_SCF_density_matrix_ao(dirac_inverse_list(l,2),dirac_inverse_list(k,2))) * integral
-      dirac_ao_bi_elec_Coulomb_Gaunt_Exchange_integral_tmp(dirac_inverse_list(i,2),dirac_inverse_list(j,2)) += (dirac_SCF_density_matrix_ao(dirac_inverse_list(l,1),dirac_inverse_list(k,1))) * integral
-      !L_beta S_alpha .or S_beta L_alpha
-      dirac_ao_bi_elec_Coulomb_Gaunt_Exchange_integral_tmp(dirac_inverse_list(i,2),dirac_inverse_list(j,1)) -= 2*(dirac_SCF_density_matrix_ao(dirac_inverse_list(l,2),dirac_inverse_list(k,1))) * integral
-      !L_alpha S_beta .or S_alpha L_beta
-      dirac_ao_bi_elec_Coulomb_Gaunt_Exchange_integral_tmp(dirac_inverse_list(i,1),dirac_inverse_list(j,2)) -= 2*(dirac_SCF_density_matrix_ao(dirac_inverse_list(l,1),dirac_inverse_list(k,2))) * integral
      elseif ((i .le. large_ao_num .and. j .gt. large_ao_num .and. k .le. large_ao_num .and. l .gt. large_ao_num)  .or.  &
              (i .gt. large_ao_num .and. j .le. large_ao_num .and. k .gt. large_ao_num .and. l .le. large_ao_num)) then
       !L_alpha S_alpha .or S_alpha L_alpha
-      dirac_ao_bi_elec_Coulomb_Gaunt_Exchange_integral_tmp(dirac_inverse_list(i,1),dirac_inverse_list(j,1)) -= (dirac_SCF_density_matrix_ao(dirac_inverse_list(l,1),dirac_inverse_list(k,1))) * integral
-      dirac_ao_bi_elec_Coulomb_Gaunt_Exchange_integral_tmp(dirac_inverse_list(i,1),dirac_inverse_list(j,1)) += (dirac_SCF_density_matrix_ao(dirac_inverse_list(l,2),dirac_inverse_list(k,2))) * integral
       dirac_ao_bi_elec_Coulomb_Gaunt_Exchange_integral_tmp(dirac_inverse_list(i,1),dirac_inverse_list(l,1)) += 2*(dirac_SCF_density_matrix_ao(dirac_inverse_list(j,2),dirac_inverse_list(k,2))) * integral
       dirac_ao_bi_elec_Coulomb_Gaunt_Exchange_integral_tmp(dirac_inverse_list(i,1),dirac_inverse_list(l,1)) += (dirac_SCF_density_matrix_ao(dirac_inverse_list(j,1),dirac_inverse_list(k,1))) * integral
       !L_beta S_beta .or S_beta L_beta
-      dirac_ao_bi_elec_Coulomb_Gaunt_Exchange_integral_tmp(dirac_inverse_list(i,2),dirac_inverse_list(j,2)) -= (dirac_SCF_density_matrix_ao(dirac_inverse_list(l,2),dirac_inverse_list(k,2))) * integral
-      dirac_ao_bi_elec_Coulomb_Gaunt_Exchange_integral_tmp(dirac_inverse_list(i,2),dirac_inverse_list(j,2)) += (dirac_SCF_density_matrix_ao(dirac_inverse_list(l,1),dirac_inverse_list(k,1))) * integral
       dirac_ao_bi_elec_Coulomb_Gaunt_Exchange_integral_tmp(dirac_inverse_list(i,2),dirac_inverse_list(l,2)) += 2*(dirac_SCF_density_matrix_ao(dirac_inverse_list(j,1),dirac_inverse_list(k,1))) * integral
       dirac_ao_bi_elec_Coulomb_Gaunt_Exchange_integral_tmp(dirac_inverse_list(i,2),dirac_inverse_list(l,2)) += (dirac_SCF_density_matrix_ao(dirac_inverse_list(j,2),dirac_inverse_list(k,2))) * integral
       !L_beta S_alpha .or S_beta L_alpha
-      dirac_ao_bi_elec_Coulomb_Gaunt_Exchange_integral_tmp(dirac_inverse_list(i,2),dirac_inverse_list(j,1)) -= 2*(dirac_SCF_density_matrix_ao(dirac_inverse_list(l,2),dirac_inverse_list(k,1))) * integral
       dirac_ao_bi_elec_Coulomb_Gaunt_Exchange_integral_tmp(dirac_inverse_list(i,2),dirac_inverse_list(l,1)) -= (dirac_SCF_density_matrix_ao(dirac_inverse_list(j,2),dirac_inverse_list(k,1))) * integral
       !L_alpha S_beta .or S_alpha L_beta
-      dirac_ao_bi_elec_Coulomb_Gaunt_Exchange_integral_tmp(dirac_inverse_list(i,1),dirac_inverse_list(j,2)) -= 2*(dirac_SCF_density_matrix_ao(dirac_inverse_list(l,1),dirac_inverse_list(k,2))) * integral
       dirac_ao_bi_elec_Coulomb_Gaunt_Exchange_integral_tmp(dirac_inverse_list(i,1),dirac_inverse_list(l,2)) -= (dirac_SCF_density_matrix_ao(dirac_inverse_list(j,1),dirac_inverse_list(k,2))) * integral
      endif
     enddo
@@ -122,8 +106,8 @@
 !!$OMP END PARALLEL
  END_PROVIDER
 
- BEGIN_PROVIDER [ complex*16, dirac_HF_two_electron_Coulomb_Gaunt_Exchange_energy_complex]
- &BEGIN_PROVIDER [ double precision, dirac_HF_two_electron_Coulomb_Gaunt_Exchange_energy] 
+ BEGIN_PROVIDER [ complex*16, dirac_HF_two_electron_CG_Exchange_energy_complex]
+ &BEGIN_PROVIDER [ double precision, dirac_HF_two_electron_CG_Exchange_energy] 
   implicit none
   BEGIN_DOC
   !Two-electrons energy of the Coulomb_Gaunt ee interaction
@@ -131,16 +115,16 @@
   ! a VERY small artifact and take only its real part
   END_DOC
   integer :: i,j
-  dirac_HF_two_electron_Coulomb_Gaunt_Exchange_energy_complex = (0.d0,0.d0)
+  dirac_HF_two_electron_CG_Exchange_energy_complex = (0.d0,0.d0)
   do j=1, 2*dirac_ao_num
    do i=1, 2*dirac_ao_num
-    dirac_HF_two_electron_Coulomb_Gaunt_Exchange_energy_complex += 0.5d0* (dirac_ao_bi_elec_Coulomb_Gaunt_Exchange_integral(i,j)) * dirac_SCF_density_matrix_ao(j,i)
+    dirac_HF_two_electron_CG_Exchange_energy_complex += 0.5d0* (dirac_ao_bi_elec_Coulomb_Gaunt_Exchange_integral(i,j)) * dirac_SCF_density_matrix_ao(j,i)
    enddo
   enddo
-  dirac_HF_two_electron_Coulomb_Gaunt_Exchange_energy = real(dirac_HF_two_electron_Coulomb_Gaunt_Exchange_energy_complex)
-  if (aimag(dirac_HF_two_electron_Coulomb_Gaunt_Exchange_energy_complex) .gt. 1.d-10) then
+  dirac_HF_two_electron_CG_Exchange_energy = real(dirac_HF_two_electron_CG_Exchange_energy_complex)
+  if (aimag(dirac_HF_two_electron_CG_Exchange_energy_complex) .gt. 1.d-10) then
   print*, 'Warning! The energy is not real'
-  print*, 'dirac_HF_two_electron_Coulomb_Gaunt_Exchange_energy_complex =', dirac_HF_two_electron_Coulomb_Gaunt_Exchange_energy_complex
+  print*, 'dirac_HF_two_electron_CG_Exchange_energy_complex =', dirac_HF_two_electron_CG_Exchange_energy_complex
   STOP
   endif
  END_PROVIDER

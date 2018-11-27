@@ -24,9 +24,9 @@
    print*,'**********'
    print*,'Long-range Coulomb-Gaunt interaction'
    print*, 'mu_erf =',mu_erf
-   print*, 'dirac_HF_two_electron_Coulomb_Gaunt_Exchange_energy=', dirac_HF_two_electron_Coulomb_Gaunt_Exchange_energy
+   print*, 'dirac_HF_two_electron_CG_Exchange_energy=', dirac_HF_two_electron_CG_Exchange_energy
    open (10, file='Energy_DHF_LRCG.dat', position='append')
-   write(10,*) mu_erf, dirac_HF_two_electron_Coulomb_Gaunt_Exchange_energy
+   write(10,*) mu_erf, dirac_HF_two_electron_CG_Exchange_energy
   else
    print *,  'Unrecognized dirac_interaction : '//dirac_interaction
    stop 1
