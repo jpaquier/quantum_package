@@ -300,7 +300,8 @@ END_PROVIDER
 END_PROVIDER
 
 
-BEGIN_PROVIDER [ character*(4), ao_l_char_space, (ao_num) ]
+ BEGIN_PROVIDER [ character*(4), ao_l_char_space, (ao_num) ]
+&BEGIN_PROVIDER [ integer, ao_l_powers, (ao_num,10) ]
  implicit none
  integer :: i
  character*(4) :: give_ao_character_space
@@ -313,48 +314,93 @@ BEGIN_PROVIDER [ character*(4), ao_l_char_space, (ao_num) ]
   ! P type AO
    if(ao_power(i,1)==1)then
     give_ao_character_space = 'X   '
+    ao_l_powers(i,1) = 1
    elseif(ao_power(i,2) == 1)then
     give_ao_character_space = 'Y   '
+    ao_l_powers(i,1) = 2
    else 
     give_ao_character_space = 'Z   '
+    ao_l_powers(i,1) = 3
    endif
   elseif(ao_l(i) == 2)then
   ! D type AO
    if(ao_power(i,1)==2)then
     give_ao_character_space = 'XX  '
+    ao_l_powers(i,1) = 1
+    ao_l_powers(i,2) = 1
    elseif(ao_power(i,2) == 2)then
     give_ao_character_space = 'YY  '
+    ao_l_powers(i,1) = 2
+    ao_l_powers(i,2) = 2
    elseif(ao_power(i,3) == 2)then
     give_ao_character_space = 'ZZ  '
+    ao_l_powers(i,1) = 3
+    ao_l_powers(i,2) = 3
    elseif(ao_power(i,1) == 1 .and. ao_power(i,2) == 1)then
     give_ao_character_space = 'XY  '
+    ao_l_powers(i,1) = 1
+    ao_l_powers(i,2) = 2
    elseif(ao_power(i,1) == 1 .and. ao_power(i,3) == 1)then
     give_ao_character_space = 'XZ  '
+    ao_l_powers(i,1) = 1
+    ao_l_powers(i,2) = 3
    else
     give_ao_character_space = 'YZ  '
+    ao_l_powers(i,1) = 2
+    ao_l_powers(i,2) = 3
    endif
   elseif(ao_l(i) == 3)then
   ! F type AO
    if(ao_power(i,1)==3)then
     give_ao_character_space = 'XXX '
+    ao_l_powers(i,1) = 1
+    ao_l_powers(i,2) = 1
+    ao_l_powers(i,3) = 1
    elseif(ao_power(i,2) == 3)then
     give_ao_character_space = 'YYY '
+    ao_l_powers(i,1) = 2
+    ao_l_powers(i,2) = 2
+    ao_l_powers(i,3) = 2
    elseif(ao_power(i,3) == 3)then
     give_ao_character_space = 'ZZZ '
+    ao_l_powers(i,1) = 3
+    ao_l_powers(i,2) = 3
+    ao_l_powers(i,3) = 3
    elseif(ao_power(i,1) == 2 .and. ao_power(i,2) == 1)then
     give_ao_character_space = 'XXY '
+    ao_l_powers(i,1) = 1
+    ao_l_powers(i,2) = 1
+    ao_l_powers(i,3) = 2
    elseif(ao_power(i,1) == 2 .and. ao_power(i,3) == 1)then
     give_ao_character_space = 'XXZ '
+    ao_l_powers(i,1) = 1
+    ao_l_powers(i,2) = 1
+    ao_l_powers(i,3) = 3
    elseif(ao_power(i,2) == 2 .and. ao_power(i,1) == 1)then
     give_ao_character_space = 'YYX '
+    ao_l_powers(i,1) = 2
+    ao_l_powers(i,2) = 2
+    ao_l_powers(i,3) = 1
    elseif(ao_power(i,2) == 2 .and. ao_power(i,3) == 1)then
     give_ao_character_space = 'YYZ '
+    ao_l_powers(i,1) = 2
+    ao_l_powers(i,2) = 2
+    ao_l_powers(i,3) = 3
    elseif(ao_power(i,3) == 2 .and. ao_power(i,1) == 1)then
     give_ao_character_space = 'ZZX '
+    ao_l_powers(i,1) = 3
+    ao_l_powers(i,2) = 3
+    ao_l_powers(i,3) = 1
    elseif(ao_power(i,3) == 2 .and. ao_power(i,2) == 1)then
     give_ao_character_space = 'ZZY '
+    ao_l_powers(i,1) = 3
+    ao_l_powers(i,2) = 3
+    ao_l_powers(i,3) = 2
    elseif(ao_power(i,3) == 1 .and. ao_power(i,2) == 1 .and. ao_power(i,3) == 1)then
     give_ao_character_space = 'XYZ '
+    ao_l_powers(i,1) = 1
+    ao_l_powers(i,2) = 2
+    ao_l_powers(i,3) = 3
    endif
   elseif(ao_l(i) == 4)then
   ! G type AO

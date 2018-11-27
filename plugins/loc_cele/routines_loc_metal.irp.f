@@ -80,12 +80,15 @@ subroutine loc_cele_routine_metal
        
        
        
-       do i=1,nrot(isym)
-         do j=1,nrot(isym)
+      integer :: m
+       do i=1,nrot(isym) ! mos
+         do j=1,nrot(isym)! ref vector 
            ovl(i,j)=0.d0
-           do k=1,ao_num
-             ovl(i,j)=ovl(i,j)+cmoref(k,i,isym)*ddum(k,j)
-           enddo
+            do m = 1, ao_num
+             do k=1,ao_num
+               ovl(j,i)=ovl(j,i)+cmoref(k,j,isym)*cmo(m,irot(i,isym),isym) * s(k,m,isym)
+             enddo
+            enddo
          enddo
        enddo
        call maxovl(nrot(isym),nrot(isym),ovl,t,wi)

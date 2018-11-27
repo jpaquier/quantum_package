@@ -47,7 +47,7 @@ END_PROVIDER
  thr_loc = 0.1d0
  print*,''
  print*,'Selecting the interesting doubly occupied orbitals ...'
- call find_good_orb(index_ligand_orb_loc, n_orb_ligand_loc,thr_loc,list_core_inact,n_core_inact_orb)
+ call find_good_orb(index_ligand_orb_loc, n_orb_ligand_loc,threshold_overlap,list_inact,n_inact_orb)
  integer :: i
  integer, allocatable :: iorder(:)
  allocate(iorder(n_orb_ligand_loc))
@@ -69,10 +69,10 @@ END_PROVIDER
  ! index_ligand_virt_orb_loc_sorted(i) = same that index_ligand_virt_orb_loc but sorted per increasing number of orbitals 
  END_DOC
  double precision :: thr_loc
- thr_loc = 0.1d0
+ 
  print*,''
  print*,'Selecting the interesting virtuals orbitals ...'
- call find_good_orb(index_ligand_virt_orb_loc, n_orb_ligand_virt_loc,thr_loc,list_virt,n_virt_orb)
+ call find_good_orb(index_ligand_virt_orb_loc, n_orb_ligand_virt_loc,threshold_overlap,list_virt,n_virt_orb)
  integer :: i
  integer, allocatable :: iorder(:)
  allocate(iorder(n_orb_ligand_virt_loc))
@@ -86,25 +86,34 @@ END_PROVIDER
 END_PROVIDER 
 
 
-BEGIN_PROVIDER [integer, n_metal_atoms]
+ BEGIN_PROVIDER [integer, n_metal_atoms]
+&BEGIN_PROVIDER [integer, n_non_metal_atoms]
  implicit none
  integer :: i
- n_metal_Atoms = 0
+ n_metal_atoms = 0
+ n_non_metal_atoms = 0
  do i = 1, nucl_num
   if(nucl_charge(i).gt.20)then
    n_metal_atoms +=1 
+  else 
+   n_non_metal_atoms += 1
   endif
  enddo
 END_PROVIDER 
 
-BEGIN_PROVIDER [integer, index_metal_atoms, (n_metal_atoms)]
+ BEGIN_PROVIDER [integer, index_metal_atoms, (n_metal_atoms)]
+&BEGIN_PROVIDER [integer, index_non_metal_atoms, (n_non_metal_atoms)]
  implicit none
- integer :: i,j
- j = 0
+ integer :: i,j_metal,j_non_metal
+ j_metal = 0
+ j_non_metal = 0
  do i = 1, nucl_num
   if(nucl_charge(i).gt.20)then
-   j+=1 
-   index_metal_atoms(j) = i
+   j_metal+=1 
+   index_metal_atoms(j_metal) = i
+  else 
+   j_non_metal+=1 
+   index_non_metal_atoms(j_non_metal) = i
   endif
  enddo
 END_PROVIDER 
@@ -147,39 +156,79 @@ subroutine find_good_orb(list_orb, n_orb,thr_loc,list_orb_in,n_orb_in)
  integer, intent(out)  :: n_orb
  integer, intent(out) :: list_orb(mo_tot_num)
  integer  :: list_orb_tmp((N_int * bit_kind_size))
- integer :: i,j,k,l,m,n,p,jj,k1,l1,m1
+ integer :: i,j,k,l,m,n,p,jj,k1,l1,m1,kk,kk1
  double precision :: ovrlp(mo_tot_num)
  double precision :: accu
  integer :: iorder(mo_tot_num)
  logical :: is_selected(mo_tot_num)
  integer(bit_kind) :: key(N_int)
  double precision :: mo_coef_metal(ao_num,mo_tot_num)
+ double precision :: mo_coef_list(ao_num,mo_tot_num)
 
+ 
  ! normalization of the METAL-CENTERED ACTIVE ORBITALS :
  ! THESE ORBITALS ARE NOTHING BUT THE ACTIVE ORBITALS WITH AO COEFFICIENTS ONLY ON THE METALS
+!print*,'METALLIC ORBITALS NORMALIZATION '
  mo_coef_metal = 0.d0
  do i = 1, n_act_orb
+  j = list_act(i)
   accu = 0.d0
-  do k = 1, n_metal_atoms ! you run on the metallic atoms 
+  do kk = 1, n_metal_atoms ! you run on the metallic atoms 
+   k = index_metal_atoms(kk)
    do l = 1, Nucl_N_Aos(k) ! you run on the AO attached to each metallic atoms 
     m = Nucl_Aos_transposed(l,k) ! m = AO attached to the Lth AO of the  Kth metalic atom 
-    mo_coef_metal(m,index_metal_atom_orb_loc(i)) = mo_coef(m,index_metal_atom_orb_loc(i))
-    do k1 = 1, n_metal_atoms ! you run on the metallic atoms 
+    mo_coef_metal(m,j) = mo_coef(m,j)
+    do kk1 = 1, n_metal_atoms ! you run on the metallic atoms 
+     k1 = index_metal_atoms(kk1)
      do l1 = 1, Nucl_N_Aos(k1) ! you run on the AO attached to each metallic atoms 
       m1 = Nucl_Aos_transposed(l1,k1) ! m = AO attached to the Lth AO of the  Kth metalic atom 
       ! you compute the overlap
-      accu += mo_coef(m,index_metal_atom_orb_loc(i)) * ao_overlap(m1,m) * mo_coef(m1,index_metal_atom_orb_loc(i))
+      accu += mo_coef(m,j) * ao_overlap(m1,m) * mo_coef(m1,j)
      enddo
     enddo
    enddo
-   accu = 1.d0/dsqrt(accu)
-   print*,'accu = ',accu
   enddo
+  accu = 1.d0/dsqrt(accu)
+! print*,'accu = ',accu
   do m = 1, ao_num
   ! you normalize
-   mo_coef_metal(m,index_metal_atom_orb_loc(i)) = mo_coef_metal(m,index_metal_atom_orb_loc(i))/accu
+   mo_coef_metal(m,j) = mo_coef_metal(m,j)/accu
   enddo
  enddo
+ 
+!print*,''
+!print*,''
+!print*,'NON METALLIC ORBITALS NORMALIZATION '
+!! YOU DO THE OPPOSIT FOR THE INPUT ORBITALS : ANYTHING BUT THE NON-METALLIC ATOMS
+!mo_coef_list = 0.d0
+!do i = 1, n_orb_in
+! j = list_orb_in(i)
+! accu = 0.d0
+! do kk = 1, n_non_metal_atoms ! you run on the non_metallic atoms 
+!  k = index_non_metal_atoms(kk)
+!  do l = 1, Nucl_N_Aos(k) ! you run on the AO attached to each non_metallic atoms 
+!   m = Nucl_Aos_transposed(l,k) ! m = AO attached to the Lth AO of the  Kth non_metalic atom 
+!   mo_coef_list(m,j) =  mo_coef(m,j)
+!   do kk1 = 1, n_non_metal_atoms ! you run on the non_metallic atoms 
+!    k1 = index_non_metal_atoms(kk1)
+!    do l1 = 1, Nucl_N_Aos(k1) ! you run on the AO attached to each non_non_metallic atoms 
+!     m1 = Nucl_Aos_transposed(l1,k1) ! m = AO attached to the Lth AO of the  Kth non_metalic atom 
+!     ! you compute the overlap
+!     accu += mo_coef(m,j) * ao_overlap(m1,m) * mo_coef(m1,j)
+!    enddo
+!   enddo
+!  enddo
+! enddo
+! print*,'accu = ',i,j,accu
+! accu = 1.d0/dsqrt(accu)
+! do m = 1, ao_num
+! ! you normalize
+!  mo_coef_list(m,j) = mo_coef_list(m,j)/accu
+! enddo
+!enddo
+
+ mo_coef_list = mo_coef
+
 
  is_selected = .False.
 ! FOR EACH STRONGLY METALLIC ACTIVE ORBITALS 
@@ -195,18 +244,20 @@ subroutine find_good_orb(list_orb, n_orb,thr_loc,list_orb_in,n_orb_in)
    j = list_orb_in(jj)
    do n = 1, ao_num
     do m = 1, ao_num
-     ovrlp(j) += mo_coef(n,j) * ao_overlap(n,m) * mo_coef_metal(m,index_metal_atom_orb_loc(i))
+     ovrlp(j) += mo_coef_list(n,j) * ao_overlap(n,m) * mo_coef_metal(m,list_act(i))
     enddo
    enddo
    ovrlp(j) = -dabs(ovrlp(j))
+   print*,j,dabs(ovrlp(j)),thr_loc
   enddo
 !! YOU SORT THE OVERLAPS 
   call dsort(ovrlp,iorder,mo_tot_num)
   print*, 'MAXIMUM OVERLAPS AND CORRESPONDING ORBITALS '
-  print*,iorder(1),ovrlp(1)
-  print*,iorder(2),ovrlp(2)
+ !print*,iorder(1),ovrlp(1)
+ !print*,iorder(2),ovrlp(2)
 !! YOU SELECT 
   do jj = 1, n_orb_in
+    print*,iorder(jj),dabs(ovrlp(jj)),thr_loc
    if(dabs(ovrlp(jj)).gt.thr_loc)then
     j = iorder(jj)
     is_selected(j) = .True.
