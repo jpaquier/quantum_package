@@ -5,9 +5,9 @@
   END_DOC
   integer                        ::i,j
   if (dirac_interaction == "Coulomb") then
-   dirac_fock_matrix_ao = dirac_fock_matrix_C_ao
+   dirac_fock_matrix_ao = dirac_Fock_matrix_C_ao
   elseif (dirac_interaction == "Coulomb_Gaunt") then
-   dirac_fock_matrix_ao = dirac_fock_matrix_C_G_ao
+   dirac_fock_matrix_ao = dirac_Fock_matrix_C_G_ao
   else
    print *,  'Unrecognized dirac_interaction : '//dirac_interaction
    stop 1
@@ -21,9 +21,9 @@
   END_DOC
   integer                        ::i,j
   if (dirac_interaction == "Coulomb") then
-   eigenvectors_dirac_fock_matrix_ao = eigenvectors_dirac_fock_matrix_C_ao
+   eigenvectors_dirac_fock_matrix_ao = eigenvectors_dirac_Fock_matrix_C_ao
   elseif (dirac_interaction == "Coulomb_Gaunt") then
-   eigenvectors_dirac_fock_matrix_ao = eigenvectors_dirac_fock_matrix_C_G_ao
+   eigenvectors_dirac_fock_matrix_ao = eigenvectors_dirac_Fock_matrix_C_G_ao
   else
    print *,  'Unrecognized dirac_interaction : '//dirac_interaction
    stop 1
