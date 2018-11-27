@@ -69,8 +69,8 @@
   PROVIDE ezfio_filename 
   if (mpi_master) then
     ! Coefs
-    call ezfio_has_dirac_scf_dirac_mo_coef_Re(exists_Re)
-    call ezfio_has_dirac_scf_dirac_mo_coef_Im(exists_Im)
+    call ezfio_has_dirac_mo_basis_dirac_mo_coef_Re(exists_Re)
+    call ezfio_has_dirac_mo_basis_dirac_mo_coef_Im(exists_Im)
   endif
   IRP_IF MPI
     include 'mpif.h'
@@ -86,9 +86,9 @@
   IRP_ENDIF
   if (exists_Re .and. exists_Im)  then
     if (mpi_master) then
-      call ezfio_get_dirac_scf_dirac_mo_coef_Re(dirac_mo_coef_Re)
+      call ezfio_get_dirac_mo_basis_dirac_mo_coef_Re(dirac_mo_coef_Re)
      !write(*,*) 'Read  dirac_mo_coef_Re'
-      call ezfio_get_dirac_scf_dirac_mo_coef_Im(dirac_mo_coef_Im)
+      call ezfio_get_dirac_mo_basis_dirac_mo_coef_Im(dirac_mo_coef_Im)
      !write(*,*) 'Read  dirac_mo_coef_Im'
       dirac_mo_coef = (1,0)*dirac_mo_coef_Re  + (0,1)*dirac_mo_coef_Im
     endif
@@ -350,9 +350,9 @@
   logical                        :: exists
   PROVIDE ezfio_filename
   if (mpi_master) then
-    call ezfio_has_dirac_scf_dirac_mo_label(exists)
+    call ezfio_has_dirac_mo_basis_dirac_mo_label(exists)
     if (exists) then
-      call ezfio_get_dirac_scf_dirac_mo_label(dirac_mo_label)
+      call ezfio_get_dirac_mo_basis_dirac_mo_label(dirac_mo_label)
       dirac_mo_label = trim(dirac_mo_label)
     else
       dirac_mo_label = 'no_label'
