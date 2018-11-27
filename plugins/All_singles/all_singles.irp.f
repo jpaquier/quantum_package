@@ -24,7 +24,6 @@ subroutine routine
   pt2=-1.d0
   E_before = ref_bitmask_energy
   pt2_max = 1.d-10
-  n_det_max = 200000
   do while (N_det < n_det_max.and.maxval(abs(pt2(1:N_st))) > pt2_max)
     n_det_before = N_det
     i += 1
@@ -33,9 +32,11 @@ subroutine routine
     call H_apply_just_mono(pt2, norm_pert, H_pert_diag,  N_st)
     call diagonalize_CI
     print*,'N_det = ',N_det
-    print*,'E        = ',CI_energy
-    print*,'pt2      = ',pt2
-    print*,'E+PT2    = ',E_before + pt2
+    do i = 1, N_states
+     write(*,'(A10,I2,A4,F16.10)')'E         ',i," =  ",CI_energy(i)
+     write(*,'(A10,I2,A4,F16.10)')'pt2       ',i," =  ",pt2(i)
+     write(*,'(A10,I2,A4,F16.10)')'E+PT2     ',i," =  ",E_before(i) + pt2(i)
+    enddo
     if(N_states_diag.gt.1)then
      print*,'Variational Energy difference'
      do i = 2, N_st

@@ -1,4 +1,4 @@
-program Dirac_Kohn_Sham_Range_Separated
+program DM_for_dft
   implicit none
   BEGIN_DOC
 ! TODO
