@@ -17,7 +17,7 @@
    print*, 'dirac_HF_one_electron_mass_energy=', dirac_HF_one_electron_mass_energy
    print*, 'dirac_HF_one_electron_kinetic_energy=', dirac_HF_one_electron_kinetic_energy
    print*, 'dirac_HF_one_electron_nucl_energy=', dirac_HF_one_electron_nucl_energy
-   open (10, file='Energy_DHF_LRC.dat',position ='append') 
+   open (10, file='Energy_DHF_mono.dat',position ='append') 
    write(10,*) 'dirac_HF_one_electron_energy=', dirac_HF_one_electron_energy
    write(10,*) 'dirac_HF_one_electron_mass_energy=', dirac_HF_one_electron_mass_energy
    write(10,*) 'dirac_HF_one_electron_kinetic_energy=', dirac_HF_one_electron_kinetic_energy

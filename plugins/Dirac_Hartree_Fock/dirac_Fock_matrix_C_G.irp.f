@@ -1,5 +1,5 @@
  BEGIN_PROVIDER [ complex*16, dirac_ao_bi_elec_C_G_integral, (2*dirac_ao_num, 2*dirac_ao_num) ]
-  use map_module
+ use map_module
   implicit none
   BEGIN_DOC
   !Array of the bi-electronic Fock matrix for the Coulomb-Gaunt interaction,

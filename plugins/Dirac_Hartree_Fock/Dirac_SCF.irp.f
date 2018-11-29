@@ -4,6 +4,7 @@
   END_DOC
   call create_dirac_guess
   call run_dirac
+  call print_dirac_energies
   call print_dirac_mo_coef
  end
 
@@ -40,6 +41,37 @@
   use bitmasks
   implicit none
   call damping_Dirac_SCF  
+ end
+
+ subroutine print_dirac_energies
+  BEGIN_DOC
+  ! Print dirac bi-electronic energies 
+  END_DOC
+  use bitmasks
+  implicit none
+  PROVIDE ezfio_filename
+ if (dirac_interaction == "Coulomb") then
+  dirac_C_Hartree_Energy = dirac_HF_two_electron_C_Hartree_energy 
+  call ezfio_set_dirac_scf_utils_dirac_c_hartree_energy(dirac_C_Hartree_Energy)
+  dirac_C_Exchange_Energy = dirac_HF_two_electron_C_Exchange_energy
+  call ezfio_set_dirac_scf_utils_dirac_c_exchange_energy(dirac_C_Exchange_Energy)
+ elseif (dirac_interaction == "Coulomb_Gaunt") then
+  dirac_C_Hartree_Energy = dirac_HF_two_electron_C_Hartree_energy
+  call ezfio_set_dirac_scf_utils_dirac_c_hartree_energy(dirac_C_Hartree_Energy)
+  dirac_C_Exchange_Energy = dirac_HF_two_electron_C_Exchange_energy
+  call ezfio_set_dirac_scf_utils_dirac_c_exchange_energy(dirac_C_Exchange_Energy) 
+  dirac_G_Hartree_Energy = dirac_HF_two_electron_G_Hartree_energy
+  call ezfio_set_dirac_scf_utils_dirac_g_hartree_energy(dirac_G_Hartree_Energy)
+  dirac_G_Exchange_Energy = dirac_HF_two_electron_G_Exchange_energy
+  call ezfio_set_dirac_scf_utils_dirac_g_exchange_energy(dirac_G_Exchange_Energy) 
+  dirac_C_G_Hartree_Energy = dirac_HF_two_electron_C_G_Hartree_energy
+  call ezfio_set_dirac_scf_utils_dirac_c_g_hartree_energy(dirac_C_G_Hartree_Energy)
+  dirac_C_G_Exchange_Energy = dirac_HF_two_electron_C_G_Exchange_energy
+  call ezfio_set_dirac_scf_utils_dirac_c_g_exchange_energy(dirac_C_G_Exchange_Energy) 
+ else
+  print *,  'Unrecognized dirac_interaction : '//dirac_interaction
+  stop 1
+ endif
  end
 
  subroutine print_dirac_mo_coef
