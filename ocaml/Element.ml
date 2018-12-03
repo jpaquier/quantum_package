@@ -10,7 +10,8 @@ type t =
 |Na|Mg                              |Al|Si|P |S |Cl|Ar
 |K |Ca|Sc|Ti|V |Cr|Mn|Fe|Co|Ni|Cu|Zn|Ga|Ge|As|Se|Br|Kr
 |Rb|Sr|Y |Zr|Nb|Mo|Tc|Ru|Rh|Pd|Ag|Cd|In|Sn|Sb|Te|I |Xe
-                           |Pt          
+                           |Pt                     |Rn
+						   |Og
 [@@deriving sexp]
 
 let of_string x = 
@@ -71,6 +72,8 @@ let of_string x =
 |  "I"   |  "Iodine"      ->  I
 |  "Xe"  |  "Xenon"       ->  Xe
 |  "Pt"  |  "Platinum"    ->  Pt
+|  "Rn"  |  "Radon"       ->  Rn
+|  "Og"  |  "Oganesson"   ->  Og
 | x -> raise (ElementError ("Element "^x^" unknown"))
 
 
@@ -131,6 +134,8 @@ let to_string = function
 | I   -> "I"
 | Xe  -> "Xe"
 | Pt  -> "Pt"
+| Rn  -> "Rn"
+| Og  -> "Og"
 
 
 let to_long_string = function
@@ -190,7 +195,8 @@ let to_long_string = function
 | I   ->  "Iodine"
 | Xe  ->  "Xenon"
 | Pt  ->  "Platinum"
-
+| Rn  ->  "Radon"
+| Og  ->  "Oganesson"
 
 let to_charge c = 
   let result = match c with
@@ -250,6 +256,8 @@ let to_charge c =
   | I   -> 53
   | Xe  -> 54
   | Pt  -> 78
+  | Rn  -> 86
+  | Og  -> 118
   in Charge.of_int result
 
 
@@ -310,6 +318,8 @@ let of_charge c = match (Charge.to_int c) with
 |  53  -> I
 |  54  -> Xe
 |  78  -> Pt
+|  86  -> Rn
+|  118 -> Og
 | x -> raise (ElementError ("Element of charge "^(string_of_int x)^" unknown"))
 
 
@@ -371,6 +381,8 @@ let covalent_radius x =
   | I   -> 1.39
   | Xe  -> 1.40
   | Pt  -> 1.30
+  | Rn  -> 0.
+  | Og  -> 0.
   in
   Units.angstrom_to_bohr *. (result x)
   |> Positive_float.of_float
@@ -433,6 +445,8 @@ let vdw_radius x =
   | I   -> 1.98
   | Xe  -> 2.16
   | Pt  -> 1.75
+  | Rn  -> 0.
+  | Og  -> 0.
   in
   Units.angstrom_to_bohr *. (result x)
   |> Positive_float.of_float
@@ -495,6 +509,8 @@ let mass x =
   | I   -> 126.90447
   | Xe  -> 131.293
   | Pt  -> 195.084
+  | Rn  -> 222. 
+  | Og  -> 294.
   in
   result x
   |> Positive_float.of_float

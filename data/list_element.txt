@@ -54,3 +54,4 @@
  53   I Iodine 126.904470
  54  Xe Xenon 131.293000
  78  Pt Platinum 195.084000
+ 86  Rn Radon 222.000000
