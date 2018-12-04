@@ -49,14 +49,15 @@
    print *,  'Unrecognized dirac_interaction : '//dirac_interaction
    stop 1
   endif
-  if (mu_erf .le. 2) then
-   mu_erf += 0.25d0
-  elseif (mu_erf .le. 6) then
-   mu_erf+=0.5d0
-  elseif (mu_erf .le. 10) then
-   mu_erf+=1.0d0
+ !for Oganesson 
+ if (mu_erf .lt. 50) then
+   mu_erf += 5d0
+  elseif (mu_erf .lt. 200) then
+   mu_erf+=15d0
+  elseif (mu_erf .lt. 500) then
+   mu_erf+=30.0d0
   else
-   mu_erf+=2.0d0
+   mu_erf+=50.0d0
   endif
   call ezfio_set_dft_keywords_mu_erf(mu_erf)
  end
