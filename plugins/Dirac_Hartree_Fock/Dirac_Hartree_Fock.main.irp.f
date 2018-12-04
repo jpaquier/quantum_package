@@ -1,6 +1,7 @@
 program Dirac_Hartree_Fock
   implicit none
   integer :: i,j
+  double precision :: pi
   complex*16 :: ortho(2*dirac_ao_num)
 
  print*, "small_ao_num =",small_ao_num
@@ -19,15 +20,29 @@ program Dirac_Hartree_Fock
  do i=1,2*dirac_mo_tot_num
   print*,i,eigenvalues_dirac_fock_matrix_C_G_mo(i)
  enddo
-
- do j= 2*small_ao_num+3, 2*small_ao_num+3
-  do i= 1, 10
-   print*,i,j+1,dirac_mo_coef(i,j) 
+ do j= 2*small_ao_num+1, 2*small_ao_num + 2*large_ao_num
+  do i= 1, large_ao_num
+   print*, i,j, dirac_mo_coef(i,j)
+  enddo
+  print*,'************'
  enddo
- print*,'**********************'
-  do i= large_ao_num+1, large_ao_num+10
-   print*,i,j+1,dirac_mo_coef(i,j+1)
-  enddo 
+
+ pi = 4d0*atan(1d0)
+ do j= 2*small_ao_num+1, 2*small_ao_num + 2*large_ao_num
+  if ( modulo(j,2) == 1) then 
+  do i= 1, large_ao_num
+   if (Abs(dirac_mo_coef(i,j)) .lt. 10**(-5)) then
+    print*,i,j, 0,0
+   else
+    print*,i,j, Abs(dirac_mo_coef(i,j))/Abs(dirac_mo_coef(i+large_ao_num,j+1)), atan(aimag(dirac_mo_coef(i,j))/real(dirac_mo_coef(i,j))) -atan(-aimag(dirac_mo_coef(i+large_ao_num,j+1))/real(dirac_mo_coef(i+large_ao_num,j+1)))
+   endif 
+  enddo
+ print*,'*********************'
+  do i = large_ao_num+1, 2*large_ao_num
+   print*,i,j, Abs(dirac_mo_coef(i,j))/Abs(dirac_mo_coef(i-large_ao_num,j+1)), atan(aimag(dirac_mo_coef(i,j))/real(dirac_mo_coef(i,j))) -atan(-aimag(dirac_mo_coef(i-large_ao_num,j+1))/real(dirac_mo_coef(i-large_ao_num,j+1)))  
+  enddo
+ print*,'*******************************************'
+  endif 
  enddo
 
 ! ortho = (0.d0,0.d0)
