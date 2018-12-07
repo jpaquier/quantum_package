@@ -80,7 +80,13 @@
   END_DOC
   use bitmasks
   implicit none
+  integer :: i,j
   PROVIDE ezfio_filename
+  do j= 1, 2*dirac_ao_num
+   do i= 1, 2*dirac_ao_num
+    dirac_mo_coef(i,j) =dirac_mo_coef(i,j)*(Abs(dirac_mo_coef(2,2*small_ao_num+1))/dirac_mo_coef(2,2*small_ao_num+1))
+   enddo
+  enddo
   dirac_mo_coef_Re = Real(dirac_mo_coef)
   dirac_mo_coef_Im = Aimag(dirac_mo_coef)
   call ezfio_set_dirac_mo_basis_dirac_mo_coef_Re(dirac_mo_coef_Re)

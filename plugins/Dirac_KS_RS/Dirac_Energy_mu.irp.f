@@ -50,15 +50,15 @@
    stop 1
   endif
  !for Oganesson 
- if (mu_erf .lt. 50) then
-   mu_erf += 5d0
-  elseif (mu_erf .lt. 200) then
-   mu_erf+=15d0
-  elseif (mu_erf .lt. 500) then
-   mu_erf+=30.0d0
-  else
-   mu_erf+=50.0d0
-  endif
-  call ezfio_set_dft_keywords_mu_erf(mu_erf)
+!if (mu_erf .lt. 50) then
+!  mu_erf += 5d0
+! elseif (mu_erf .lt. 200) then
+!  mu_erf+=15d0
+! elseif (mu_erf .lt. 500) then
+!  mu_erf+=30.0d0
+! else
+!  mu_erf+=50.0d0
+! endif
+! call ezfio_set_dft_keywords_mu_erf(mu_erf)
  end
 
