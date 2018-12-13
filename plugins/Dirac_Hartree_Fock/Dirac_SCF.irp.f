@@ -81,10 +81,12 @@
   use bitmasks
   implicit none
   integer :: i,j
+  complex*16 :: dirac_mo_coef_temp
   PROVIDE ezfio_filename
+  dirac_mo_coef_temp = dirac_mo_coef(1,2*small_ao_num+1)
   do j= 1, 2*dirac_ao_num
    do i= 1, 2*dirac_ao_num
-    dirac_mo_coef(i,j) =dirac_mo_coef(i,j)*(Abs(dirac_mo_coef(2,2*small_ao_num+1))/dirac_mo_coef(2,2*small_ao_num+1))
+    dirac_mo_coef(i,j) =dirac_mo_coef(i,j)*(Abs(dirac_mo_coef_temp)/dirac_mo_coef_temp)
    enddo
   enddo
   dirac_mo_coef_Re = Real(dirac_mo_coef)
