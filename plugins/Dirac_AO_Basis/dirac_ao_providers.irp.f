@@ -144,7 +144,7 @@
   enddo
  END_PROVIDER
 
- BEGIN_PROVIDER [ double precision, dirac_ao_power_ordered_transp_per_nucl, (3,N_AOs_max,nucl_num) ]
+ BEGIN_PROVIDER [ double precision, dirac_ao_power_ordered_transp_per_nucl, (3,N_dirac_AOs_max,nucl_num) ]
  implicit none
  integer :: i,j,k,l
   do i = 1, nucl_num

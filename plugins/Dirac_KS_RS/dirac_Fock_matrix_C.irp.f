@@ -89,6 +89,19 @@
 !!$OMP END PARALLEL
  END_PROVIDER
 
+ BEGIN_PROVIDER [ complex*16, dirac_Fock_matrix_C_no_xc_ao, (2*dirac_ao_num,2*dirac_ao_num) ]
+  implicit none
+  BEGIN_DOC
+  !Dirac Fock matrix in AO basis set for the Coulomb bi-eletronic interaction
+  END_DOC
+  integer                        :: i,j
+  do j=1,2*dirac_ao_num
+   do i=1,2*dirac_ao_num
+    dirac_Fock_matrix_C_no_xc_ao(i,j) = dirac_ao_mono_elec_integral(i,j) + dirac_ao_bi_elec_C_integral(i,j)
+   enddo
+  enddo
+ END_PROVIDER
+
  BEGIN_PROVIDER [ complex*16, dirac_Fock_matrix_C_ao, (2*dirac_ao_num,2*dirac_ao_num) ]
   implicit none
   BEGIN_DOC
@@ -97,7 +110,7 @@
   integer                        :: i,j
   do j=1,2*dirac_ao_num
    do i=1,2*dirac_ao_num
-    dirac_Fock_matrix_C_ao(i,j) = dirac_ao_mono_elec_integral(i,j) + dirac_ao_bi_elec_C_integral(i,j)
+    dirac_Fock_matrix_C_ao(i,j) = dirac_Fock_matrix_C_no_xc_ao(i,j)
    enddo
   enddo
  END_PROVIDER
