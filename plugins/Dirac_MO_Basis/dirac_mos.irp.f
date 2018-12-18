@@ -369,15 +369,15 @@
  !IRP_ENDIF
  END_PROVIDER
 
- subroutine orthonormalize_dirac_mos
-  implicit none
-  BEGIN_DOC
-  !Orthonormalized complex MOs
-  END_DOC 
-  call ortho_canonical_complex(dirac_mo_overlap,2*dirac_mo_tot_num,2*dirac_mo_tot_num,dirac_mo_coef,2*dirac_ao_num,2*dirac_ao_num)
-  dirac_mo_label = 'Orthonormalized'
-  SOFT_TOUCH dirac_mo_coef dirac_mo_label
- end
+!subroutine orthonormalize_dirac_mos
+! implicit none
+! BEGIN_DOC
+! !Orthonormalized complex MOs
+! END_DOC 
+! call ortho_canonical_complex(dirac_mo_overlap,2*dirac_mo_tot_num,2*dirac_mo_tot_num,dirac_mo_coef,2*dirac_ao_num,2*dirac_ao_num)
+! dirac_mo_label = 'Orthonormalized'
+! SOFT_TOUCH dirac_mo_coef dirac_mo_label
+!end
 
  
 
