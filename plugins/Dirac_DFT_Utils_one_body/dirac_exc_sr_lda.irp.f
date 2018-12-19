@@ -6,17 +6,11 @@
  double precision :: kF,tmp_c
  kF = (3* pi**2 *rho)**(c_1_3)
  tmp_c = speed_of_light/kF
- ex =     -0.008062883608299872*kF**4*(0.8333333333333333 + 0.3333333333333333*tmp_c**2 +  & 
-          0.6666666666666667*Sqrt(1.d0 + tmp_c**2)*ArcSinh(1.d0/tmp_c) -                   &  
-          0.5*(Sqrt(1.d0 + tmp_c**2) - tmp_c**2*ArcSinh(1.d0/tmp_c))**2 -                  &  
-          0.3333333333333333*(1.d0 + tmp_c**2)**2*Log(1.d0 + tmp_c**(-2)))                   
+ ex =    0.001343813934716645*kF**4*(-2.d0 + tmpc**2 - 2.d0*Sqrt(1.d0 + tmpc**2)*(2.d0 + 3.d0*tmpc**2)*ArcCsch(tmpc)    &
+         + 3.d0*tmpc**4*ArcCsch(tmpc)**2 + 2.d0*(1.d0 + tmpc**2)**2*Log(1.d0 + tmpc**(-2)))
 
- vx =    -2.583856390024985*kF*(2.d0 + tmp_c*(2.d0*Sqrt(1.d0 + tmp_c**(-2))*Sqrt(1.d0 + tmp_c**2) +     &   
-          tmp_c*(5.d0 + 3.d0*tmp_c*(tmp_c - Sqrt(1.d0 + tmp_c**(-2))*Sqrt(1.d0 + tmp_c**2)))) +         &
-          tmp_c*(8.d0*Sqrt(1.d0 + tmp_c**(-2)) + 3.d0*tmp_c**2*(4.d0*Sqrt(1.d0 + tmp_c**(-2)) +         &
-          Sqrt(1.d0 + tmp_c**(-2))*tmp_c**2 - 1.d0*tmp_c*Sqrt(1.d0 + tmp_c**2)))*ArcCsch(tmp_c)         &
-          - 4.d0*Sqrt(1.d0 + tmp_c**(-2))*tmp_c*(1.d0 + tmp_c**2)**1.5*Log(1.d0 + tmp_c**(-2)))         &
-                /(Sqrt(1.d0 + tmp_c**(-2))*tmp_c*Sqrt(1.d0 + tmp_c**2))      
+ vx =   (0.1061032953945969*kF*(-1.d0*Sqrt(1.d0 + tmpc**2)*(2.d0 + 3.d0*tmpc**2)*ArcCsch(tmpc) +                        &
+        (1.d0 + tmpc**2)*(-1.d0 + (1.d0 + tmpc**2)*Log(1.d0 + tmpc**(-2)))))/(1.d0 + tmpc**2)
  end
 
 
@@ -51,19 +45,15 @@
  tmp_c = speed_of_light/kF
  tmp_mu = mu_erf/kF
  if (dirac_exchange_functional == dirac_short_range_LDA_P2) then
-  ex =  ((0.07957747154594767*kF*(-2.d0*tmp_mu**2*(-2.d0 + tmp_mu**2) + 2.718281828459045**(1.d0/tmp_mu**2)*(-3.d0 - 6.d0*tmp_mu**2 + 2.d0*tmp_mu**4) + &
-        7.089815403622064*2.718281828459045**(1.d0/tmp_mu**2)*tmp_mu*Erf(1.d0/tmp_mu)))/E**(1.d0/tmp_mu**2) + (0.02652582384864922*kF*(1.d0 +           &   
-        (18.d0 - 6.d0/E**(1.d0/tmp_mu**2))*tmp_mu**4 + 12.d0*(-1.d0 + E**(-1.d0/tmp_mu**2))*tmp_mu**6 - 10.6347231054331*tmp_mu**3*Erf(1.d0/tmp_mu)) -  &
-        (0.003978873577297383*kF*(-2.d0*tmp_mu**2*(-2.d0 + tmp_mu**2) + 2.718281828459045**(1.d0/tmp_mu**2)*(-3.d0 - 6.d0*tmp_mu**2 + 2.d0*tmp_mu**4) + &
-        7.089815403622064*2.718281828459045**(1.d0/tmp_mu**2)*tmp_mu*Erf(1.d0/tmp_mu))*(96.d0*tmp_mu**4 + 312.d0*tmp_mu**6 - 648.d0*tmp_mu**8 +         &
-        2.718281828459045**(1.d0/tmp_mu**2)*(-13.d0 - 540.d0*tmp_mu**4 - 960.d0*tmp_mu**6 + 648.d0*tmp_mu**8)  +                                        & 
-        957.12507948898*2.718281828459045**(1.d0/tmp_mu**2)*tmp_mu**3*(0.177777777777778 + 1.d0*tmp_mu**2)*Erf(1.d0/tmp_mu)))                           &
-        /(E**(2.d0/tmp_mu**2)*(1.d0 + (18.d0 - 6.d0/E**(1.d0/tmp_mu**2))*tmp_mu**4 + 12.d0*(-1.d0 + E**(-1.d0/tmp_mu**2))*tmp_mu**6 -                   &
-        10.6347231054331*tmp_mu**3*Erf(1.d0/tmp_mu))))/tmp_c**2)                                                                                        &
-        /(1.d0 - (0.05d0*(96.d0*tmp_mu**4 + 312.d0*tmp_mu**6 - 648.d0*tmp_mu**8 + 2.718281828459045**(1/tmp_mu**2)*(-13.d0 -                            &
-        540.d0*tmp_mu**4 - 960.d0*tmp_mu**6 + 648.d0*tmp_mu**8) + 957.12507948898*2.718281828459045**(1.d0/tmp_mu**2)*tmp_mu**3*(0.177777777777778      &
-        + 1.d0*tmp_mu**2)*Erf(1.d0/tmp_mu)))/(E**(1.d0/tmp_mu**2)*tmp_c**2*(1.d0 + (18.d0 - 6.d0/E**(1.d0/tmp_mu**2))*tmp_mu**4 + 12.d0*(-1.d0          &
-        + E**(-1.d0/tmp_mu**2))*tmp_mu**6 - 10.6347231054331*tmp_mu**3*Erf(1.d0/tmp_mu)))) 
+  ex =  (0.00004479379782388818*kF**4*(60.d0*(-3.d0 + 2.d0*tmpmu**2*(-3.d0 + tmpmu**2 - (1.d0*(-2.d0 + tmpmu**2))*dexp(-1.d0/tmpmu**2)) +
+        7.089815403622064*tmpmu*Erf(1.d0/tmpmu)) + (20.d0*(1.d0 + 6.d0*tmpmu**4*(3.d0 - 2.d0*tmpmu**2 + (-1.d0 + 2.d0*tmpmu**2)*dexp(-1.d0/tmpmu**2)) -
+        10.6347231054331*tmpmu**3*Erf(1.d0/tmpmu))**2 - (3.d0*(-2.d0*tmpmu**2*(-2.d0 + tmpmu**2) + dexp(1.d0/tmpmu**2)*(-3.d0 - 6.d0*tmpmu**2 + 
+        2.d0*tmpmu**4 + 7.089815403622064*tmpmu*Erf(1.d0/tmpmu)))*(24.d0*tmpmu**4*(4.d0 + 13.d0*tmpmu**2 - 27.d0*tmpmu**4) + dexp(1.d0/tmpmu**2)*(-13.d0 - 
+        540.d0*tmpmu**4 - 960.d0*tmpmu**6 + 648.d0*tmpmu**8 + 21.26944621086619*tmpmu**3*(8.d0 + 45.d0*tmpmu**2)*Erf(1.d0/tmpmu))))*dexp(-2.d0/tmpmu**2))/
+        (tmpc**2*(1.d0 + 6.d0*tmpmu**4*(3.d0- 2.d0*tmpmu**2 + (-1.d0 + 2.d0*tmpmu**2)*dexp(-1.d0/tmpmu**2)) - 10.6347231054331*tmpmu**3*Erf(1.d0/tmpmu)))))/
+        (1.d0 + (0.05d0*(24.d0*tmpmu**4*(4.d0 + 13.d0*tmpmu**2 - 27.d0*tmpmu**4) + dexp(1.d0/tmpmu**2)*(-13.d0 - 540.d0*tmpmu**4 - 960.d0*tmpmu**6 +
+        648.d0*tmpmu**8 + 21.26944621086619*tmpmu**3*(8.d0 + 45.d0*tmpmu**2)*Erf(1.d0/tmpmu))))/(tmpc**2*(6.d0*tmpmu**4 - 12.d0*tmpmu**6 +      
+        dexp(1.d0/tmpmu**2)*(-1.d0 - 18.d0*tmpmu**4 + 12.d0*tmpmu**6 + 10.6347231054331*tmpmu**3*Erf(1.d0/tmpmu))))) 
   
   vx =  
   
