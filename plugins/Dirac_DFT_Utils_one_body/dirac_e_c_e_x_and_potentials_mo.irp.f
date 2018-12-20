@@ -5,8 +5,8 @@
  ! relativistic exchange/correlation potentials on the AO basis
  END_DOC
 
-  if(trim(dirac_exchange_functional)=="dirac_short_range_LDA")then
- ! dirac_potential_x_ao = dirac_potential_x_ao_LDA
+  if(trim(dirac_exchange_functional)=="dirac_short_range_LDA_P2")then
+  !dirac_potential_x_ao = dirac_potential_x_ao_LDA
   else if(dirac_exchange_functional.EQ."None")then
    dirac_potential_x_ao = 0.d0 
   else 

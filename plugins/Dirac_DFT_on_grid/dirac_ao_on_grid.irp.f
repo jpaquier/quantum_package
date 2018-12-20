@@ -2,7 +2,7 @@
  &BEGIN_PROVIDER[double precision, dirac_aos_in_r_array_transp, (n_points_final_grid,2*dirac_ao_num)]
  implicit none
  integer :: i,j
- complex*16 :: dirac_aos_array(2*dirac_ao_num), 
+ complex*16 :: dirac_aos_array(2*dirac_ao_num) 
  double precision :: r(3)
  do i = 1, n_points_final_grid
   r(1) = final_grid_points(1,i) 
