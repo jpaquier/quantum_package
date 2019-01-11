@@ -110,7 +110,7 @@
   integer                        :: i,j
   do j=1,2*dirac_ao_num
    do i=1,2*dirac_ao_num
-    dirac_Fock_matrix_C_ao(i,j) = dirac_Fock_matrix_C_no_xc_ao(i,j)
+    dirac_Fock_matrix_C_ao(i,j) = dirac_Fock_matrix_C_no_xc_ao(i,j) + dirac_ao_potential_xc(i,j)
    enddo
   enddo
  END_PROVIDER

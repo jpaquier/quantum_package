@@ -5,23 +5,15 @@
  ! relativistic exchange/correlation potentials on the AO basis
  END_DOC
 
-  if(trim(dirac_exchange_functional)=="dirac_short_range_LDA_P2")then
-  !dirac_potential_x_ao = dirac_potential_x_ao_LDA
-  else if(dirac_exchange_functional.EQ."None")then
-   dirac_potential_x_ao = 0.d0 
-  else 
-   print*, 'Exchange functional required does not exist ...'
-   print*,'dirac_exchange_functional',dirac_exchange_functional
-   stop
+  if(dirac_exchange_functional.EQ."None")then
+   dirac_potential_x_ao = (0.d0,0.d0) 
+  else
+   dirac_potential_x_ao = dirac_potential_x_ao_LDA
   endif
-  if(trim(dirac_correlation_functional)=="dirac_short_range_LDA")then
- ! dirac_potential_c_ao = dirac_potential_c_ao_LDA
-  else if(dirac_correlation_functional.EQ."None")then
-   dirac_potential_c_ao = 0.d0 
-  else 
-   print*, 'Correlation functional required does not exist ...'
-   print*,'dirac_correlation_functional',dirac_correlation_functional
-   stop
+  if(dirac_correlation_functional.EQ."None")then
+   dirac_potential_c_ao = (0.d0,0.d0) 
+  else
+   dirac_potential_c_ao = dirac_potential_c_ao_LDA
   endif
  END_PROVIDER 
 
@@ -49,25 +41,17 @@
  END_PROVIDER 
 
 
- BEGIN_PROVIDER [complex*16, dirac_energy_x, (N_states)]
- &BEGIN_PROVIDER [complex*16, dirac_energy_c, (N_states)]
+ BEGIN_PROVIDER [double precision, dirac_energy_x, (N_states)]
+ &BEGIN_PROVIDER [double precision, dirac_energy_c, (N_states)]
  implicit none
-  if(trim(dirac_exchange_functional)=="dirac_short_range_LDA")then
-  !dirac_energy_x = dirac_energy_x_LDA
-  else if(dirac_exchange_functional.EQ."None")then
-   dirac_energy_x = 0.d0 
-  else 
-   print*, 'Exchange functional required does not exist ...'
-   print*,'dirac_exchange_functional',dirac_exchange_functional
-   stop
+  if(dirac_exchange_functional.EQ."None")then
+   dirac_energy_x = 0.d0
+  else
+   dirac_energy_x = dirac_energy_x_LDA
   endif
-  if(trim(dirac_correlation_functional)=="dirac_short_range_LDA")then
-  !dirac_energy_c = energy_c_LDA
-  else if(dirac_correlation_functional.EQ."None")then
-   dirac_energy_c = 0.d0 
-  else 
-   print*, 'Correlation functional required does not ecist ...'
-   print*,'dirac_correlation_functional',dirac_correlation_functional
-   stop
-  endif
+  if(dirac_correlation_functional.EQ."None")then
+   dirac_energy_c = 0.d0
+  else
+   dirac_energy_c = dirac_energy_c_LDA
+  endif  
  END_PROVIDER 

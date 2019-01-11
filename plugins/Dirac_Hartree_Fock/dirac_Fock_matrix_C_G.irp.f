@@ -181,7 +181,7 @@
   BEGIN_DOC
   !Dirac_SCF energy for a Coulomb_Gaunt ee interaction
   END_DOC 
-  dirac_SCF_C_G_energy = dirac_HF_C_G_energy + dirac_extra_energy_contrib_from_density
+  dirac_SCF_C_G_energy = dirac_HF_C_G_energy 
  END_PROVIDER
 
  BEGIN_PROVIDER [complex*16, dirac_Fock_matrix_C_G_mo,(2*dirac_mo_tot_num,2*dirac_mo_tot_num)]

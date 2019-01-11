@@ -1,11 +1,3 @@
- BEGIN_PROVIDER [ double precision, dirac_extra_energy_contrib_from_density]
- implicit none
-  BEGIN_DOC
-  !Contribution from electronic density
-  END_DOC
-  dirac_extra_energy_contrib_from_density = 0.d0
- END_PROVIDER
-
  BEGIN_PROVIDER [ complex*16, dirac_HF_one_electron_energy_complex]
  &BEGIN_PROVIDER [ double precision, dirac_HF_one_electron_energy]
   implicit none

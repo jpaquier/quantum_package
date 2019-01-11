@@ -5,8 +5,9 @@
   END_DOC
   call check_range_separation
   call create_dirac_guess
-  call run_dirac
-  call print_dirac_mo_coef
+  print*, dirac_energy_x_LDA(1)
+! call run_dirac
+! call print_dirac_mo_coef
  end
 
  subroutine check_range_separation
@@ -20,27 +21,27 @@
   print *, '**************************'
   print *, 'mu_erf = ',mu_erf
   print *, '**************************'
- !if (dirac_exchange_functional == "None") then
- ! ifound_x = 1
- !else
- ! ifound_x = index(dirac_exchange_functional,"short_range")
- !endif
- !if (dirac_correlation_functional == "None") then
- ! ifound_c = 1
- !else
- ! ifound_c = index(dirac_correlation_functional,"short_range")
- !endif
- !print*,ifound_x,ifound_c
- !if(ifound_x ==0 .or. ifound_c == 0)then
- ! print *,'YOU ARE USING THE RELATIVISTIC RANGE SEPARATED KS PROGRAM BUT YOUR INPUT KEYWORD FOR '
- ! print *,'dirac_exchange_functional is ', dirac_exchange_functional
- ! print *,'dirac_correlation_functional is ', dirac_correlation_functional
- ! print *,'CHANGE THE dirac_exchange_functional AND dirac_correlation_functional KEYWORDS TO RELATIVISTIC RANGE SEPARATED FUNCTIONALS'
- ! stop
- !else
- ! print *,'dirac_exchange_functional =',dirac_exchange_functional
- ! print *,'dirac_correlation_functional =',dirac_correlation_functional
- !endif
+  if (dirac_exchange_functional == "None") then
+   ifound_x = 1
+  else
+   ifound_x = index(dirac_exchange_functional,"short_range")
+  endif
+  if (dirac_correlation_functional == "None") then
+   ifound_c = 1
+  else
+   ifound_c = index(dirac_correlation_functional,"short_range")
+  endif
+  print*,ifound_x,ifound_c
+  if(ifound_x ==0 .or. ifound_c == 0)then
+   print *,'YOU ARE USING THE RELATIVISTIC RANGE SEPARATED KS PROGRAM BUT YOUR INPUT KEYWORD FOR '
+   print *,'dirac_exchange_functional is ', dirac_exchange_functional
+   print *,'dirac_correlation_functional is ', dirac_correlation_functional
+   print *,'CHANGE THE dirac_exchange_functional AND dirac_correlation_functional KEYWORDS TO RELATIVISTIC RANGE SEPARATED FUNCTIONALS'
+   stop
+  else
+   print *,'dirac_exchange_functional = ',dirac_exchange_functional
+   print *,'dirac_correlation_functional = ',dirac_correlation_functional
+  endif
  end
  
 
