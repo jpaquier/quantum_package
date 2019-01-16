@@ -42,6 +42,7 @@
  dirac_energy_x_LDA = 0.d0
  dirac_energy_c_LDA = 0.d0
  do istate = 1, N_states
+! do i = 20000,30000
   do i = 1, n_points_final_grid
    r(1) = final_grid_points(1,i)
    r(2) = final_grid_points(2,i)
@@ -50,7 +51,9 @@
    rho(istate) = dirac_one_body_dm_at_r(i,istate)
    call dirac_ec_LDA_sr(mu_erf,rho(istate),e_c,v_c)
    call dirac_ex_LDA_sr(mu_erf,rho(istate),e_x,v_x)
-   print*,r(1),r(2),r(3),weight,rho(istate),e_x
+
+   print*,r(1),r(2),r(3),rho(istate),e_x,v_x
+
    dirac_energy_x_LDA(istate) += weight * e_x
    dirac_energy_c_LDA(istate) += weight * e_c
   enddo
