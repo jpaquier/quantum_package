@@ -15,12 +15,17 @@ BEGIN_PROVIDER [ double precision, dirac_ao_integrals_threshold  ]
     
     call ezfio_has_dirac_integrals_bielec_dirac_threshold_ao(has)
     if (has) then
+      write(6,'(A)') '.. >>>>> [ IO READ: dirac_ao_integrals_threshold ] <<<<< ..'
       call ezfio_get_dirac_integrals_bielec_dirac_threshold_ao(dirac_ao_integrals_threshold)
     else
       print *, 'dirac_integrals_bielec/dirac_threshold_ao not found in EZFIO file'
       stop 1
     endif
   endif
+  IRP_IF MPI_DEBUG
+    print *,  irp_here, mpi_rank
+    call MPI_BARRIER(MPI_COMM_WORLD, ierr)
+  IRP_ENDIF
   IRP_IF MPI
     include 'mpif.h'
     integer :: ierr
@@ -31,9 +36,6 @@ BEGIN_PROVIDER [ double precision, dirac_ao_integrals_threshold  ]
   IRP_ENDIF
 
   call write_time(6)
-  if (mpi_master) then
-    write(6, *) 'Read  dirac_ao_integrals_threshold'
-  endif
 
 END_PROVIDER
 
@@ -49,12 +51,17 @@ BEGIN_PROVIDER [ character*(32), dirac_interaction  ]
     
     call ezfio_has_dirac_integrals_bielec_dirac_interaction(has)
     if (has) then
+      write(6,'(A)') '.. >>>>> [ IO READ: dirac_interaction ] <<<<< ..'
       call ezfio_get_dirac_integrals_bielec_dirac_interaction(dirac_interaction)
     else
       print *, 'dirac_integrals_bielec/dirac_interaction not found in EZFIO file'
       stop 1
     endif
   endif
+  IRP_IF MPI_DEBUG
+    print *,  irp_here, mpi_rank
+    call MPI_BARRIER(MPI_COMM_WORLD, ierr)
+  IRP_ENDIF
   IRP_IF MPI
     include 'mpif.h'
     integer :: ierr
@@ -65,8 +72,5 @@ BEGIN_PROVIDER [ character*(32), dirac_interaction  ]
   IRP_ENDIF
 
   call write_time(6)
-  if (mpi_master) then
-    write(6, *) 'Read  dirac_interaction'
-  endif
 
 END_PROVIDER
